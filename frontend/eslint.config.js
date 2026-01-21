@@ -38,6 +38,11 @@ export default defineConfig([
             ['^\\u0000'],          // side effect
             ['^node:'],            // node built-in
             ['^react', '^@?\\w'],  // external
+            ['^@/apis'],           
+            ['^@/hooks'],          
+            ['^@/components'],     
+            ['^@/pages'],          
+            ['^@/utils', '^@/types'], 
             ['^@/'],               // absolute alias
             ['^\\.'],              // relative
           ],

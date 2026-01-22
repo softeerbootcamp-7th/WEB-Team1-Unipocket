@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Checkbox } from "@/components/ui/checkbox";
-import type { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "../components/data-table/DataTableColumnHeader";
+import { Checkbox } from '@/components/ui/checkbox';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTableColumnHeader } from '../components/data-table/DataTableColumnHeader';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -29,12 +29,12 @@ export type Payment = {
 
 export const columns: ColumnDef<Payment>[] = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -51,14 +51,14 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const payment = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="h-8 w-8 p-0 bg-violet-200">
+            <button className="h-8 w-8 bg-violet-200 p-0">
               <span className="sr-only">Open menu</span>
             </button>
           </DropdownMenuTrigger>
@@ -78,11 +78,11 @@ export const columns: ColumnDef<Payment>[] = [
     },
   },
   {
-    accessorKey: "date",
+    accessorKey: 'date',
     header: ({ column }) => {
       return (
         <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           <div className="ml-2 h-4 w-4 bg-amber-200">날짜</div>
         </button>
@@ -90,49 +90,49 @@ export const columns: ColumnDef<Payment>[] = [
     },
   },
   {
-    accessorKey: "merchant",
+    accessorKey: 'merchant',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래처" />
     ),
   },
   {
-    accessorKey: "category",
-    header: "카테고리",
+    accessorKey: 'category',
+    header: '카테고리',
   },
   {
-    accessorKey: "localCurrency",
-    header: "현지 금액",
+    accessorKey: 'localCurrency',
+    header: '현지 금액',
   },
   {
-    accessorKey: "localAmount",
-    header: "기준 금액(W)",
+    accessorKey: 'localAmount',
+    header: '기준 금액(W)',
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("localAmount"));
-      const formatted = new Intl.NumberFormat("ko-KR", {
-        style: "currency",
-        currency: "KRW",
+      const amount = parseFloat(row.getValue('localAmount'));
+      const formatted = new Intl.NumberFormat('ko-KR', {
+        style: 'currency',
+        currency: 'KRW',
       }).format(amount);
       return <div className="text-right">{formatted}</div>;
     },
   },
   {
-    accessorKey: "baseAmount",
-    header: "환율(W)",
+    accessorKey: 'baseAmount',
+    header: '환율(W)',
     cell: ({ row }) => {
-      const amount = row.getValue("baseAmount");
-      return <div className="text-right">{amount}</div>;
+      // const amount = row.getValue('baseAmount');
+      return <div className="text-right">amt</div>;
     },
   },
   {
-    accessorKey: "exchangeRate",
-    header: "결제 수단",
+    accessorKey: 'exchangeRate',
+    header: '결제 수단',
   },
   {
-    accessorKey: "paymentMethod",
-    header: "여행",
+    accessorKey: 'paymentMethod',
+    header: '여행',
   },
   {
-    accessorKey: "trip",
-    header: "여행",
+    accessorKey: 'trip',
+    header: '여행',
   },
 ];

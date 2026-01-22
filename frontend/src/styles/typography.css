@@ -1,0 +1,411 @@
+@theme {
+  --font-sans: 'Pretendard', -apple-system, sans-serif;
+  /* TODO: 폰트 결정 나면 figure에 추가 */
+  --font-figure: 'Pretendard', -apple-system, sans-serif;
+}
+
+/* --- Display 1 (56px / 129%) --- */
+@utility display1-bold {
+  font-size: 56px;
+  line-height: 1.29;
+  font-weight: 700;
+}
+@utility display1-medium {
+  font-size: 56px;
+  line-height: 1.29;
+  font-weight: 500;
+}
+@utility display1-regular {
+  font-size: 56px;
+  line-height: 1.29;
+  font-weight: 400;
+}
+
+/* --- Display 2 (40px / 130%) --- */
+@utility display2-bold {
+  font-size: 40px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+@utility display2-medium {
+  font-size: 40px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+@utility display2-regular {
+  font-size: 40px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+/* --- Title 1 (36px / 133%) --- */
+@utility title1-bold {
+  font-size: 36px;
+  line-height: 1.33;
+  font-weight: 700;
+}
+@utility title1-medium {
+  font-size: 36px;
+  line-height: 1.33;
+  font-weight: 500;
+}
+@utility title1-regular {
+  font-size: 36px;
+  line-height: 1.33;
+  font-weight: 400;
+}
+
+/* --- Title 2 (28px / 136%) --- */
+@utility title2-bold {
+  font-size: 28px;
+  line-height: 1.36;
+  font-weight: 700;
+}
+@utility title2-semibold {
+  font-size: 28px;
+  line-height: 1.36;
+  font-weight: 600;
+}
+@utility title2-medium {
+  font-size: 28px;
+  line-height: 1.36;
+  font-weight: 500;
+}
+@utility title2-regular {
+  font-size: 28px;
+  line-height: 1.36;
+  font-weight: 400;
+}
+
+/* --- Title 3 (24px / 133%) --- */
+@utility title3-bold {
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 700;
+}
+@utility title3-semibold {
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 600;
+}
+@utility title3-medium {
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 500;
+}
+@utility title3-regular {
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 400;
+}
+
+/* --- Heading 1 (22px / 136%) --- */
+@utility heading1-bold {
+  font-size: 22px;
+  line-height: 1.36;
+  font-weight: 700;
+}
+@utility heading1-medium {
+  font-size: 22px;
+  line-height: 1.36;
+  font-weight: 500;
+}
+@utility heading1-regular {
+  font-size: 22px;
+  line-height: 1.36;
+  font-weight: 400;
+}
+
+/* --- Heading 2 (20px / 140%) --- */
+@utility heading2-bold {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+@utility heading2-medium {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+@utility heading2-regular {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+/* --- Headline 1 (18px / 145%) --- */
+@utility headline1-bold {
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+@utility headline1-medium {
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+@utility headline1-regular {
+  font-size: 18px;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+/* --- Headline 2 (17px / 141%) --- */
+@utility headline2-bold {
+  font-size: 17px;
+  line-height: 1.41;
+  font-weight: 700;
+}
+@utility headline2-medium {
+  font-size: 17px;
+  line-height: 1.41;
+  font-weight: 500;
+}
+@utility headline2-regular {
+  font-size: 17px;
+  line-height: 1.41;
+  font-weight: 400;
+}
+
+/* --- Body 1 (16px) - Normal(150%) / Reading(163%) --- */
+@utility body1-normal-bold {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+@utility body1-normal-medium {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+@utility body1-normal-regular {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+@utility body1-reading-bold {
+  font-size: 16px;
+  line-height: 1.63;
+  font-weight: 700;
+}
+@utility body1-reading-medium {
+  font-size: 16px;
+  line-height: 1.63;
+  font-weight: 500;
+}
+@utility body1-reading-regular {
+  font-size: 16px;
+  line-height: 1.63;
+  font-weight: 400;
+}
+
+/* --- Body 2 (15px) - Normal(147%) / Reading(160%) --- */
+@utility body2-normal-bold {
+  font-size: 15px;
+  line-height: 1.47;
+  font-weight: 700;
+}
+@utility body2-normal-medium {
+  font-size: 15px;
+  line-height: 1.47;
+  font-weight: 500;
+}
+@utility body2-normal-regular {
+  font-size: 15px;
+  line-height: 1.47;
+  font-weight: 400;
+}
+
+@utility body2-reading-bold {
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+@utility body2-reading-medium {
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+@utility body2-reading-regular {
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* --- Label 1 (14px) - Normal(143%) / Reading(157%) --- */
+@utility label1-normal-bold {
+  font-size: 14px;
+  line-height: 1.43;
+  font-weight: 700;
+}
+@utility label1-normal-medium {
+  font-size: 14px;
+  line-height: 1.43;
+  font-weight: 500;
+}
+@utility label1-normal-regular {
+  font-size: 14px;
+  line-height: 1.43;
+  font-weight: 400;
+}
+
+@utility label1-reading-bold {
+  font-size: 14px;
+  line-height: 1.57;
+  font-weight: 700;
+}
+@utility label1-reading-medium {
+  font-size: 14px;
+  line-height: 1.57;
+  font-weight: 500;
+}
+@utility label1-reading-regular {
+  font-size: 14px;
+  line-height: 1.57;
+  font-weight: 400;
+}
+
+/* --- Label 2 (13px / 138%) --- */
+@utility label2-bold {
+  font-size: 13px;
+  line-height: 1.38;
+  font-weight: 700;
+}
+@utility label2-medium {
+  font-size: 13px;
+  line-height: 1.38;
+  font-weight: 500;
+}
+@utility label2-regular {
+  font-size: 13px;
+  line-height: 1.38;
+  font-weight: 400;
+}
+
+/* --- Caption 1 (12px / 133%) --- */
+@utility caption1-bold {
+  font-size: 12px;
+  line-height: 1.33;
+  font-weight: 700;
+}
+@utility caption1-medium {
+  font-size: 12px;
+  line-height: 1.33;
+  font-weight: 500;
+}
+@utility caption1-regular {
+  font-size: 12px;
+  line-height: 1.33;
+  font-weight: 400;
+}
+
+/* --- Caption 2 (11px / 127%) --- */
+@utility caption2-bold {
+  font-size: 11px;
+  line-height: 1.27;
+  font-weight: 700;
+}
+@utility caption2-medium {
+  font-size: 11px;
+  line-height: 1.27;
+  font-weight: 500;
+}
+@utility caption2-regular {
+  font-size: 11px;
+  line-height: 1.27;
+  font-weight: 400;
+}
+
+/* --- Figure (Font Family Overrides) --- */
+/* --- Figure: Title 3 (24px / 133%) --- */
+@utility figure-title3-semibold {
+  font-family: var(--font-figure);
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 600;
+}
+@utility figure-title3-medium {
+  font-family: var(--font-figure);
+  font-size: 24px;
+  line-height: 1.33;
+  font-weight: 500;
+}
+
+/* --- Figure: Heading 1 (22px / 136%) --- */
+@utility figure-heading1-semibold {
+  font-family: var(--font-figure);
+  font-size: 22px;
+  line-height: 1.36;
+  font-weight: 600;
+}
+
+/* --- Figure: Label 2 (13px, 12px / 138%) --- */
+/* 스펙상 Label 2가 13px과 12px 두 가지로 나뉩니다 */
+@utility figure-label2-medium {
+  font-family: var(--font-figure);
+  font-size: 13px;
+  line-height: 1.38;
+  font-weight: 500;
+}
+@utility figure-label2-small-medium {
+  font-family: var(--font-figure);
+  font-size: 12px;
+  line-height: 1.38;
+  font-weight: 500;
+}
+
+/* --- Figure: Body 2 (Size Variations) --- */
+/* Body 2라는 이름으로 18, 15, 14px가 혼재되어 있어 사이즈로 구분합니다 */
+/* 주의: 스펙상의 행간(14px)이 폰트 크기보다 작거나 같아 빡빡할 수 있습니다 */
+
+/* 18px */
+@utility figure-body2-18-semibold {
+  font-family: var(--font-figure);
+  font-size: 18px;
+  line-height: 14px; /* Image spec: 14px */
+  font-weight: 600;
+}
+
+/* 15px */
+@utility figure-body2-15-semibold {
+  font-family: var(--font-figure);
+  font-size: 15px;
+  line-height: 14px; /* Image spec: 14px */
+  font-weight: 600;
+}
+@utility figure-body2-15-medium {
+  font-family: var(--font-figure);
+  font-size: 15px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+/* 14px */
+@utility figure-body2-14-semibold {
+  font-family: var(--font-figure);
+  font-size: 14px;
+  line-height: 14px;
+  font-weight: 600;
+}
+@utility figure-body2-14-regular {
+  font-family: var(--font-figure);
+  font-size: 14px;
+  line-height: 14px;
+  font-weight: 400;
+}
+
+/* --- Figure: Caption (12px, 11px) --- */
+@utility figure-caption1-medium {
+  font-family: var(--font-figure);
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+@utility figure-caption2-medium {
+  font-family: var(--font-figure);
+  font-size: 11px;
+  line-height: normal; /* Image spec: auto */
+  font-weight: 500;
+}

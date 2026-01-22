@@ -1,5 +1,3 @@
-'use client';
-
 import { Checkbox } from '@/components/ui/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '../components/data-table/DataTableColumnHeader';

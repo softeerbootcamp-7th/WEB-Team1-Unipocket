@@ -1,6 +1,6 @@
 ## 관련 이슈
 
-close #issue_number
+closes #issue
 
 ## 작업 내용
 

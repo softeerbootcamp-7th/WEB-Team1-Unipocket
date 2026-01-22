@@ -1,0 +1,42 @@
+// 1. Bank Logos (한글 파일명 -> 영어 변수명 매핑)
+import NHBank from './bankLogos/농협.svg';
+import ShinhanBank from './bankLogos/신한.svg';
+import KakaoBank from './bankLogos/카카오뱅크.svg';
+import TossBank from './bankLogos/토스.svg';
+import TravelWallet from './bankLogos/트레블월렛.svg';
+import HanaBank from './bankLogos/하나.svg';
+import HyundaiCard from './bankLogos/현대카드.svg';
+
+export const BankLogos = {
+  NH: NHBank,
+  Shinhan: ShinhanBank,
+  Kakao: KakaoBank,
+  Toss: TossBank,
+  TravelWallet: TravelWallet,
+  Hana: HanaBank,
+  Hyundai: HyundaiCard,
+};
+
+// 2. Cards
+import CardDefault from './cards/Default.svg';
+import CardDefault2 from './cards/Variant2.svg';
+import CardDefault3 from './cards/Variant3.svg';
+
+export const Cards = {
+  Default: CardDefault,
+  Variant2: CardDefault2,
+  Variant3: CardDefault3,
+} as const;
+
+// 3. Icons
+import Analytics from './Icons/analytics.svg';
+import Home from './Icons/home.svg';
+import Logo from './Icons/Logo.svg';
+import Trip from './Icons/trip.svg';
+
+export const Icons = {
+  Logo,
+  Analytics,
+  Home,
+  Trip,
+} as const;

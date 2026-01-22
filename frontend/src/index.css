@@ -1,6 +1,0 @@
-@theme {
-  --font-sans:
-    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
-@import '@fontsource/pretendard';
-@import 'tailwindcss';

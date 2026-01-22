@@ -118,7 +118,7 @@ export const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: 'baseAmount',
     header: '환율(W)',
-    cell: ({ row }) => {
+    cell: () => {
       // const amount = row.getValue('baseAmount');
       return <div className="text-right">amt</div>;
     },

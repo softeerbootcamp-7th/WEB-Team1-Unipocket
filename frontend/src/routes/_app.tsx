@@ -1,6 +1,6 @@
 import { createFileRoute,Outlet } from '@tanstack/react-router'
 
-import Menu from '@/components/common/menu/menu'
+import Menu from '@/components/common/menu/Menu'
 
 export const Route = createFileRoute('/_app')({
   component: AppLayout,

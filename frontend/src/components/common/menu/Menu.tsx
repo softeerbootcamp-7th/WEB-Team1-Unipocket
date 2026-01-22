@@ -1,4 +1,4 @@
-import MenuItem from '@/components/common/menu/menuItem'
+import MenuItem from '@/components/common/menu/MenuItem'
 
 const Menu = () => {
   return (

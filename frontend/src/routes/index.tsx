@@ -1,9 +1,11 @@
+import { createFileRoute } from '@tanstack/react-router';
+
 import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
 import FloatingActionProvider from '@/components/data-table/FloatingActionProvider';
+
 import { columns } from '@/payments/columns';
 import { getData } from '@/payments/dummy';
-import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   component: RouteComponent,

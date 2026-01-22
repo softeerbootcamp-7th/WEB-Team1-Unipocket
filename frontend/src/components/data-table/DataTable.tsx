@@ -8,7 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+
 import { columns } from '@/payments/columns';
+
 import { useDataTable } from './context';
 
 const DataTable = () => {

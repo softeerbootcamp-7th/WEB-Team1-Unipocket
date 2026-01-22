@@ -1,14 +1,14 @@
+import { useEffect, useReducer } from 'react';
 import {
+  type ColumnDef,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
-import { useEffect, useReducer } from "react";
-import type { FloatingBarVariant, TableUIAction, TableUIState } from "./type";
-import { DataTableContext } from "./context";
+import { DataTableContext } from './context';
+import type { FloatingBarVariant, TableUIAction, TableUIState } from './type';
 
 interface DataTableProviderProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -19,33 +19,33 @@ interface DataTableProviderProps<TData, TValue> {
 
 const tableReducer = (state: TableUIState, action: TableUIAction) => {
   switch (action.type) {
-    case "SET_BAR_VARIANT":
+    case 'SET_BAR_VARIANT':
       return { ...state, floatingBarVariant: action.payload };
-    case "SET_FILTERS":
+    case 'SET_FILTERS':
       return { ...state, filters: [...(state.filters || []), action.payload] };
-    case "RESET_FILTERS":
+    case 'RESET_FILTERS':
       return {
         ...state,
         filters: [
           ...(state.filters || []).filter((filter) => filter != action.payload),
         ],
       };
-    case "TOGGLE_ROW_SELECTION":
+    case 'TOGGLE_ROW_SELECTION':
       // 특정 행 선택 토글 로직
       return state;
-    case "SET_SORTING":
+    case 'SET_SORTING':
       return {
         ...state,
         sorting:
-          typeof action.payload === "function"
+          typeof action.payload === 'function'
             ? action.payload(state.sorting)
             : action.payload,
       };
-    case "SET_ROW_SELECTION":
+    case 'SET_ROW_SELECTION':
       return {
         ...state,
         rowSelection:
-          typeof action.payload === "function"
+          typeof action.payload === 'function'
             ? action.payload(state.rowSelection)
             : action.payload,
       };
@@ -73,9 +73,9 @@ const DataTableProvider = <TData, TValue>({
 
     if (selectedCount > 0) {
       // 예: 특정 조건(props 등)에 따라 어떤 바를 띄울지 결정
-      dispatch({ type: "SET_BAR_VARIANT", payload: floatingBarVariant });
+      dispatch({ type: 'SET_BAR_VARIANT', payload: floatingBarVariant });
     } else {
-      dispatch({ type: "SET_BAR_VARIANT", payload: "NONE" });
+      dispatch({ type: 'SET_BAR_VARIANT', payload: 'NONE' });
     }
   }, [floatingBarVariant, tableState.rowSelection]);
 
@@ -88,9 +88,9 @@ const DataTableProvider = <TData, TValue>({
     },
     // 중요: 핸들러를 dispatch와 연결
     onSortingChange: (updater) =>
-      dispatch({ type: "SET_SORTING", payload: updater }),
+      dispatch({ type: 'SET_SORTING', payload: updater }),
     onRowSelectionChange: (updater) =>
-      dispatch({ type: "SET_ROW_SELECTION", payload: updater }),
+      dispatch({ type: 'SET_ROW_SELECTION', payload: updater }),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

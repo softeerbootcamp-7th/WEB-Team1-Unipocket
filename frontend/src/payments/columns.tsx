@@ -1,6 +1,6 @@
-import { Checkbox } from '@/components/ui/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
-import { DataTableColumnHeader } from '../components/data-table/DataTableColumnHeader';
+
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
+import { DataTableColumnHeader } from '../components/data-table/DataTableColumnHeader';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.

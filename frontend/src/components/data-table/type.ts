@@ -2,9 +2,9 @@ import type {
   RowSelectionState,
   SortingState,
   Updater,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
-type FloatingBarVariant = "MANAGEMENT" | "ADD_TO_LEDGER" | "NONE";
+type FloatingBarVariant = 'MANAGEMENT' | 'ADD_TO_LEDGER' | 'NONE';
 
 type FilterConfig = Record<string, string[]>;
 
@@ -17,11 +17,11 @@ type TableUIState = {
 };
 
 type TableUIAction =
-  | { type: "SET_BAR_VARIANT"; payload: FloatingBarVariant }
-  | { type: "SET_FILTERS"; payload: FilterConfig } // 필터 부분 업데이트
-  | { type: "RESET_FILTERS"; payload: FilterConfig } // 필터 초기화
-  | { type: "TOGGLE_ROW_SELECTION"; payload: string }
-  | { type: "SET_SORTING"; payload: Updater<SortingState> }
-  | { type: "SET_ROW_SELECTION"; payload: Updater<RowSelectionState> };
+  | { type: 'SET_BAR_VARIANT'; payload: FloatingBarVariant }
+  | { type: 'SET_FILTERS'; payload: FilterConfig } // 필터 부분 업데이트
+  | { type: 'RESET_FILTERS'; payload: FilterConfig } // 필터 초기화
+  | { type: 'TOGGLE_ROW_SELECTION'; payload: string }
+  | { type: 'SET_SORTING'; payload: Updater<SortingState> }
+  | { type: 'SET_ROW_SELECTION'; payload: Updater<RowSelectionState> };
 
-export type { FloatingBarVariant, TableUIState, TableUIAction, FilterConfig };
+export type { FilterConfig, FloatingBarVariant, TableUIAction, TableUIState };

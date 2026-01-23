@@ -28,7 +28,7 @@ const Menu = () => {
             key={to}
             logo={<Icon className="h-5 w-5" />}
             label={label}
-            active={pathname === to}
+            isActive={pathname === to}
             onClick={() => navigate({ to })}
           />
         ))}

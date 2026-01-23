@@ -4,23 +4,23 @@ interface MenuItemProps {
   logo: React.ReactNode;
   label: string;
   onClick: () => void;
-  active: boolean;
+  isActive: boolean;
 }
 
-const MenuItem = ({ logo, label, onClick, active }: MenuItemProps) => {
+const MenuItem = ({ logo, label, onClick, isActive }: MenuItemProps) => {
   return (
     <button
       type="button"
       onClick={onClick}
       className={clsx(
         'flex w-8 cursor-pointer flex-col items-center gap-0.5',
-        active ? 'text-label-neutral' : 'text-label-alternative',
+        isActive ? 'text-label-neutral' : 'text-label-alternative',
       )}
     >
       <div
         className={clsx(
           'flex h-7 w-7 items-center justify-center px-1',
-          active ? 'bg-fill-strong rounded-sm' : '',
+          isActive ? 'bg-fill-strong rounded-sm' : '',
         )}
       >
         {logo}

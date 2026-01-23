@@ -32,11 +32,11 @@ export const Cards = {
 import Analytics from './Icons/analytics.svg';
 import Home from './Icons/home.svg';
 import Logo from './Icons/Logo.svg';
-import Trip from './Icons/trip.svg';
+import Travel from './Icons/travel.svg';
 
 export const Icons = {
   Logo,
   Analytics,
   Home,
-  Trip,
+  Travel,
 } as const;

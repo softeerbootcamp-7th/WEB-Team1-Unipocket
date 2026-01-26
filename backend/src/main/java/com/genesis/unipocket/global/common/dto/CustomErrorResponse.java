@@ -12,9 +12,9 @@ import com.genesis.unipocket.global.exception.ErrorCode;
  * @since 2026-01-25
  * @author bluefishez
  */
-public record ErrorResponse(String code, String message) {
+public record CustomErrorResponse(String code, String message) {
 
-	public static ErrorResponse of(ErrorCode errorCode) {
-		return new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
+	public static CustomErrorResponse of(ErrorCode errorCode) {
+		return new CustomErrorResponse(errorCode.getCode(), errorCode.getMessage());
 	}
 }

@@ -3,23 +3,9 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { DataTableColumnHeader } from '../components/common/data-table/DataTableColumnHeader';
+import type { Expense } from './dummy';
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Payment = {
-  id: string;
-  date: string;
-  merchant: string;
-  category: string;
-  localCurrency: string;
-  localAmount: number;
-  baseAmount: number;
-  exchangeRate: number;
-  paymentMethod: string;
-  trip?: string;
-};
-
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Expense>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -42,63 +28,75 @@ export const columns: ColumnDef<Payment>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-
+  // {
+  //   accessorKey: 'date',
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="날짜" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const date = new Date(row.getValue('date'));
+  //     return <div>{date.toLocaleDateString('ko-KR')}</div>;
+  //   },
+  // },
   {
-    accessorKey: 'date',
-    header: ({ column }) => {
-      return (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          <div className="ml-2 h-4 w-4 bg-amber-200">날짜</div>
-        </button>
-      );
-    },
-  },
-  {
-    accessorKey: 'merchant',
+    accessorKey: 'storeName', // 데이터의 storeName 매핑
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="거래처" />
     ),
   },
   {
-    accessorKey: 'category',
+    id: 'category',
+    accessorKey: 'category.name', // 중첩 객체 접근
     header: '카테고리',
   },
   {
-    accessorKey: 'localCurrency',
+    id: 'amount',
     header: '현지 금액',
+    cell: ({ row }) => {
+      const amount = row.original.amount;
+      const currency = row.original.currency;
+      return (
+        <div className="font-medium">
+          {amount.toLocaleString()} {currency}
+        </div>
+      );
+    },
   },
   {
-    accessorKey: 'localAmount',
-    header: '기준 금액(W)',
+    accessorKey: 'krwAmount',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="기준 금액" />
+    ),
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('localAmount'));
+      const amount = parseFloat(row.getValue('krwAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
       }).format(amount);
-      return <div className="text-right">{formatted}</div>;
+      return <div className="text-right font-semibold">{formatted}</div>;
     },
   },
   {
-    accessorKey: 'baseAmount',
-    header: '환율(W)',
-    cell: () => {
-      // const amount = row.getValue('baseAmount');
-      return <div className="text-right">amt</div>;
-    },
+    accessorKey: 'memo',
+    header: '메모',
+    cell: ({ row }) => (
+      <div className="max-w-[150px] truncate">
+        {row.getValue('memo') || '-'}
+      </div>
+    ),
   },
   {
-    accessorKey: 'exchangeRate',
-    header: '결제 수단',
-  },
-  {
-    accessorKey: 'paymentMethod',
+    id: 'travel',
+    accessorKey: 'travel.name', // 여행 이름 매핑
     header: '여행',
   },
   {
-    accessorKey: 'trip',
-    header: '여행',
+    accessorKey: 'hasReceipt',
+    header: '영수증',
+    cell: ({ row }) => (
+      <div className="text-center">
+        {row.getValue('hasReceipt') ? '✅' : '❌'}
+      </div>
+    ),
   },
 ];

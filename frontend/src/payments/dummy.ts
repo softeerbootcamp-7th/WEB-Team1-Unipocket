@@ -1,87 +1,158 @@
-import { type Payment } from './columns';
+export interface Travel {
+  id: number;
+  name: string;
+}
 
-export function getData(): Payment[] {
-  // Fetch data from your API here.
+export interface Budget {
+  id: number;
+  name: string;
+  countryCode: string;
+}
+
+export interface Category {
+  code: string;
+  name: string;
+  iconUrl: string;
+}
+
+export interface Expense {
+  id: number;
+  date: string; // ISO 8601 날짜 문자열
+  amount: number;
+  currency: string;
+  krwAmount: number;
+  storeName: string;
+  memo: string | null; // 메모는 없을 수 있으므로 null 허용
+  hasReceipt: boolean;
+  travel: Travel;
+  budget: Budget;
+  category: Category;
+}
+
+// getData 함수가 반환하는 타입
+export type ExpenseList = Expense[];
+
+export function getData(): ExpenseList {
   return [
     {
-      id: '1',
-      date: '2025.12.02',
-      merchant: 'Coles (Wollongong Central) Groceries',
-      category: '생활',
-      localCurrency: 'USD',
-      localAmount: 20,
-      baseAmount: 29414,
-      exchangeRate: 1471,
-      paymentMethod: 'Chase Bank',
+      id: 101,
+      date: '2024-02-05T18:00:00',
+      amount: 1200,
+      currency: 'JPY',
+      krwAmount: 10800, // 원화 환산 참고값
+      storeName: '이치란 라멘',
+      memo: '차슈 추가',
+      hasReceipt: true, // 영수증 이미지 유무
+
+      travel: {
+        id: 10,
+        name: '오사카 식도락 여행',
+      },
+      budget: {
+        id: 55,
+        name: '오사카 메인 예산',
+        countryCode: 'JP',
+      },
+
+      category: {
+        code: 'FOOD',
+        name: '식비',
+        iconUrl: 'https://api.app.com/icons/food.png',
+      },
     },
     {
-      id: '2',
-      date: '2025.12.02',
-      merchant: '김이람',
-      category: '수입',
-      localCurrency: 'USD',
-      localAmount: 65646.9,
-      baseAmount: 65.9,
-      exchangeRate: 1455,
-      paymentMethod: '하나 비바 X',
+      id: 101,
+      date: '2024-02-05T18:00:00',
+      amount: 1200,
+      currency: 'JPY',
+      krwAmount: 10800, // 원화 환산 참고값
+      storeName: '이치란 라멘',
+      memo: '차슈 추가',
+      hasReceipt: true, // 영수증 이미지 유무
+
+      travel: {
+        id: 10,
+        name: '오사카 식도락 여행',
+      },
+      budget: {
+        id: 55,
+        name: '오사카 메인 예산',
+        countryCode: 'JP',
+      },
+
+      category: {
+        code: 'FOOD',
+        name: '식비',
+        iconUrl: 'https://api.app.com/icons/food.png',
+      },
     },
     {
-      id: '3',
-      date: '2025.12.02',
-      merchant: '스픽',
-      category: '생활',
-      localCurrency: 'KRW',
-      localAmount: 9417,
-      baseAmount: 9417,
-      exchangeRate: 1,
-      paymentMethod: '하나 비바 X',
+      id: 101,
+      date: '2024-02-05T18:00:00',
+      amount: 1200,
+      currency: 'JPY',
+      krwAmount: 10800, // 원화 환산 참고값
+      storeName: '이치란 라멘',
+      memo: '차슈 추가',
+      hasReceipt: true, // 영수증 이미지 유무
+
+      travel: {
+        id: 10,
+        name: '오사카 식도락 여행',
+      },
+      budget: {
+        id: 55,
+        name: '오사카 메인 예산',
+        countryCode: 'JP',
+      },
+
+      category: {
+        code: 'FOOD',
+        name: '식비',
+        iconUrl: 'https://api.app.com/icons/food.png',
+      },
     },
     {
-      id: '4',
-      date: '2025.12.02',
-      merchant: 'Coles (Wollongong Central) Groceries',
-      category: '생활',
-      localCurrency: 'CAD',
-      localAmount: 421.12,
-      baseAmount: 29414,
-      exchangeRate: 1471,
-      paymentMethod: '하나 비바 X',
+      id: 102,
+      date: '2024-02-04T12:30:00',
+      amount: 500,
+      currency: 'JPY',
+      krwAmount: 4500,
+      storeName: '편의점',
+      memo: null,
+      hasReceipt: false,
+
+      travel: { id: 10, name: '오사카 식도락 여행' },
+      budget: { id: 55, name: '오사카 메인 예산', countryCode: 'JP' },
+      category: { code: 'SNACK', name: '간식', iconUrl: '...' },
     },
     {
-      id: '5',
-      date: '2025.12.02',
-      merchant: 'AIRBNB',
-      category: '거주',
-      localCurrency: 'USD',
-      localAmount: 129.99,
-      baseAmount: 191175123,
-      exchangeRate: 1471,
-      paymentMethod: '하나 비바 X',
-      trip: '뉴욕',
+      id: 102,
+      date: '2024-02-04T12:30:00',
+      amount: 500,
+      currency: 'JPY',
+      krwAmount: 4500,
+      storeName: '편의점',
+      memo: null,
+      hasReceipt: false,
+
+      travel: { id: 10, name: '오사카 식도락 여행' },
+      budget: { id: 55, name: '오사카 메인 예산', countryCode: 'JP' },
+      category: { code: 'SNACK', name: '간식', iconUrl: '...' },
     },
     {
-      id: '6',
-      date: '2025.12.01',
-      merchant: 'AIRBNB',
-      category: '거주',
-      localCurrency: 'USD',
-      localAmount: 213.11,
-      baseAmount: 191175,
-      exchangeRate: 1431,
-      paymentMethod: '현금',
-      trip: '뉴욕',
-    },
-    {
-      id: '7',
-      date: '2025.12.01',
-      merchant: 'AIRBNB',
-      category: '거주',
-      localCurrency: 'USD',
-      localAmount: 213.11,
-      baseAmount: 191175,
-      exchangeRate: 1431,
-      paymentMethod: 'Chase Bank',
-      trip: '뉴욕',
+      id: 102,
+      date: '2024-02-04T12:30:00',
+      amount: 500,
+      currency: 'JPY',
+      krwAmount: 4500,
+      storeName: '편의점',
+      memo: null,
+      hasReceipt: false,
+
+      travel: { id: 10, name: '오사카 식도락 여행' },
+      budget: { id: 55, name: '오사카 메인 예산', countryCode: 'JP' },
+      category: { code: 'SNACK', name: '간식', iconUrl: '...' },
     },
   ];
 }

@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { DataTableColumnHeader } from '../components/data-table/DataTableColumnHeader';
+import { DataTableColumnHeader } from '../components/common/data-table/DataTableColumnHeader';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.

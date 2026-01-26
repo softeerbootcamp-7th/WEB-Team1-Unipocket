@@ -1,6 +1,6 @@
 package com.genesis.unipocket.global.exception;
 
-import com.genesis.unipocket.global.common.dto.ErrorResponse;
+import com.genesis.unipocket.global.common.dto.CustomErrorResponse;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -28,13 +28,14 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  */
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler {
 
 	/**
 	 * 비즈니스 로직 실행 중 발생하는 커스텀 예외 처리
 	 */
-	@ExceptionHandler(GlobalException.class)
-	protected ResponseEntity<ErrorResponse> handleServiceException(GlobalException e) {
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<CustomErrorResponse> handleServiceException(BusinessException e) {
+
 		logException(e.getCode(), e);
 		return createErrorResponse(e.getCode());
 	}
@@ -42,91 +43,59 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * &#064;Valid  검증 실패 시 발생 (400)
 	 */
-	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(
-			@NonNull MethodArgumentNotValidException e,
-			@NonNull HttpHeaders headers,
-			@NonNull HttpStatusCode status,
-			@NonNull WebRequest request) {
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<CustomErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
 
 		logException(ErrorCode.INVALID_INPUT_VALUE, e);
-
-		return handleExceptionInternal(e, ErrorCode.INVALID_INPUT_VALUE, headers, status, request);
+		return createErrorResponse(ErrorCode.INVALID_INPUT_VALUE);
 	}
 
 	/**
 	 * 지원하지 않는 HTTP 메소드 호출 시 발생 (405)
 	 */
-	@Override
-	protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
-			@NonNull HttpRequestMethodNotSupportedException e,
-			@NonNull HttpHeaders headers,
-			@NonNull HttpStatusCode status,
-			@NonNull WebRequest request) {
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	public ResponseEntity<CustomErrorResponse> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException e) {
 
 		logException(ErrorCode.METHOD_NOT_ALLOWED, e);
-
-		return handleExceptionInternal(e, ErrorCode.METHOD_NOT_ALLOWED, headers, status, request);
+		return createErrorResponse(ErrorCode.METHOD_NOT_ALLOWED);
 	}
 
 	/**
 	 * 없는 리소스(URL) 요청 시 발생 (404)
 	 */
-	@Override
-	protected ResponseEntity<Object> handleNoResourceFoundException(
-			@NonNull NoResourceFoundException e,
-			@NonNull HttpHeaders headers,
-			@NonNull HttpStatusCode status,
-			@NonNull WebRequest request) {
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<CustomErrorResponse> handleNoResourceFoundException(NoResourceFoundException e) {
 
 		logException(ErrorCode.RESOURCE_NOT_FOUND, e);
-
-		return ResponseEntity.status(status).body(ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND));
+		return createErrorResponse(ErrorCode.RESOURCE_NOT_FOUND);
 	}
 
 	/**
 	 * 지원하지 않는 미디어 타입(Content-Type) 요청 시 발생 (415)
 	 */
-	@Override
-	protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
-			@NonNull HttpMediaTypeNotSupportedException e,
-			@NonNull HttpHeaders headers,
-			@NonNull HttpStatusCode status,
-			@NonNull WebRequest request) {
+	@ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+	public ResponseEntity<CustomErrorResponse> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
 
 		logException(ErrorCode.UNSUPPORTED_MEDIA_TYPE, e);
-
-		return handleExceptionInternal(
-				e, ErrorCode.UNSUPPORTED_MEDIA_TYPE, headers, status, request);
+		return createErrorResponse(ErrorCode.UNSUPPORTED_MEDIA_TYPE);
 	}
 
 	/**
 	 * 그 외 정의되지 않은 모든 시스템 예외 처리 (500)
 	 */
 	@ExceptionHandler(Exception.class)
-	protected ResponseEntity<ErrorResponse> handleException(Exception e) {
+	public ResponseEntity<CustomErrorResponse> handleException(Exception e) {
+
 		logException(ErrorCode.INTERNAL_SERVER_ERROR, e);
 		return createErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR);
-	}
-
-	private ResponseEntity<Object> handleExceptionInternal(
-			Exception e,
-			ErrorCode errorCode,
-			HttpHeaders headers,
-			HttpStatusCode status,
-			WebRequest request) {
-
-		return super.handleExceptionInternal(
-				e, ErrorResponse.of(errorCode), headers, status, request);
 	}
 
 	private void logException(ErrorCode errorCode, Exception e) {
 		if (errorCode.getStatus().is5xxServerError()) {
 			log.error(
-					"Server Error: [{} - {}] {}",
+					"Server Error: [{} - {}]",
 					errorCode.getCode(),
 					errorCode.getMessage(),
-					e.getMessage(),
 					e);
 		} else {
 			log.warn(
@@ -137,7 +106,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		}
 	}
 
-	private ResponseEntity<ErrorResponse> createErrorResponse(ErrorCode errorCode) {
-		return ResponseEntity.status(errorCode.getStatus()).body(ErrorResponse.of(errorCode));
+	private ResponseEntity<CustomErrorResponse> createErrorResponse(ErrorCode errorCode) {
+		return ResponseEntity.status(errorCode.getStatus()).body(CustomErrorResponse.of(errorCode));
 	}
 }

@@ -11,5 +11,4 @@ public class UnipocketApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(UnipocketApplication.class, args);
 	}
-
 }

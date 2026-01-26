@@ -38,15 +38,19 @@ jobs:
 
       # 3) Gradle Wrapper 권한 부여
       - name: Grant execute permission for gradlew
-        run: chmod +x ./backend/gradlew
+        run: chmod +x backend/gradlew
 
       # 4) Spotless Check
       - name: Run Spotless check
-        run: ./gradlew --no-daemon spotlessCheck
+        run: |
+          cd backend
+          ./gradlew --no-daemon spotlessCheck
 
       # 5) 빌드(JAR 파일 생성)
       - name: Build jar
-        run: ./backend/gradlew --no-daemon build -x test --stacktrace
+        run: |
+          cd backend
+          ./gradlew --no-daemon build -x test --stacktrace
 
       # 빌드 실패 시 로그 업로드
       - name: Upload Build Logs on failure

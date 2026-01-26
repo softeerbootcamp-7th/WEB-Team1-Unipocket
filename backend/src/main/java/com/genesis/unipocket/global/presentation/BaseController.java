@@ -1,8 +1,6 @@
 package com.genesis.unipocket.global.presentation;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -13,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BaseController {
 
-    @GetMapping("/health-check")
-    public String healthCheck() {
-        return "OK";
-    }
+	@GetMapping("/health-check")
+	public String healthCheck() {
+		return "OK";
+	}
 }

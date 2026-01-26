@@ -1,4 +1,4 @@
-import { CATEGORY_STYLE, type CategoryType } from "@/types/category";
+import { CATEGORY_STYLE, type CategoryType } from '@/types/category';
 
 interface CategoryProps {
   type: CategoryType;
@@ -7,10 +7,10 @@ interface CategoryProps {
 const Category = ({ type }: CategoryProps) => {
   const { label, bg, text } = CATEGORY_STYLE[type];
   return (
-    <button className={`inline-flex items-center rounded-sm ${bg} px-1.5 py-0.75 border-radius-md cursor-pointer`}>
-      <p className={`category-regular ${text}`}>
-        {label}
-      </p>
+    <button
+      className={`inline-flex items-center rounded-sm ${bg} border-radius-md cursor-pointer px-1.5 py-0.75`}
+    >
+      <p className={`category-regular ${text}`}>{label}</p>
     </button>
   );
 };

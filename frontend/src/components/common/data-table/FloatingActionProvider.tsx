@@ -1,14 +1,14 @@
-import { useDataTable } from "./context";
+import { useDataTable } from './context';
 
 const FloatingActionProvider = () => {
   const { table, tableState, dispatch } = useDataTable();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
-  if (tableState.floatingBarVariant === "NONE") return null;
+  if (tableState.floatingBarVariant === 'NONE') return null;
 
   return (
-    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white shadow-2xl border rounded-lg p-4">
-      {tableState.floatingBarVariant === "MANAGEMENT" ? (
+    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 rounded-lg border bg-white p-4 shadow-2xl">
+      {tableState.floatingBarVariant === 'MANAGEMENT' ? (
         // 1번 바: 카테고리/결제수단/여행/숨김
         <div className="flex gap-4">
           <button
@@ -33,7 +33,7 @@ const FloatingActionProvider = () => {
           <span>{selectedRows.length}개 선택됨</span>
           <button
             onClick={() =>
-              dispatch({ type: "SET_BAR_VARIANT", payload: "ADD_TO_LEDGER" })
+              dispatch({ type: 'SET_BAR_VARIANT', payload: 'ADD_TO_LEDGER' })
             }
           >
             가계부에 추가하기

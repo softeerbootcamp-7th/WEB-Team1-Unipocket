@@ -1,6 +1,6 @@
-import { type Column } from "@tanstack/react-table";
+import { type Column } from '@tanstack/react-table';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface DataTableColumnHeaderProps<
   TData,
@@ -20,6 +20,6 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>{title}</div>
+    <div className={cn('flex items-center gap-2', className)}>{title}</div>
   );
 }

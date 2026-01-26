@@ -1,0 +1,48 @@
+@theme {
+  /* ---------- Modal Radius Tokens ---------- */
+  --radius-modal-20: 20px;
+  --radius-modal-16: 16px;
+  --radius-modal-12: 12px;
+  --radius-modal-10: 10px;
+  --radius-modal-8: 8px;
+  --radius-modal-6: 6px;
+  --radius-modal-5: 5px;
+  --radius-modal-4: 4px;
+  --radius-modal-2: 2px;
+}
+
+@utility rounded-modal-20 {
+  border-radius: var(--radius-modal-20);
+}
+
+@utility rounded-modal-16 {
+  border-radius: var(--radius-modal-16);
+}
+
+@utility rounded-modal-12 {
+  border-radius: var(--radius-modal-12);
+}
+
+@utility rounded-modal-10 {
+  border-radius: var(--radius-modal-10);
+}
+
+@utility rounded-modal-8 {
+  border-radius: var(--radius-modal-8);
+}
+
+@utility rounded-modal-6 {
+  border-radius: var(--radius-modal-6);
+}
+
+@utility rounded-modal-5 {
+  border-radius: var(--radius-modal-5);
+}
+
+@utility rounded-modal-4 {
+  border-radius: var(--radius-modal-4);
+}
+
+@utility rounded-modal-2 {
+  border-radius: var(--radius-modal-2);
+}

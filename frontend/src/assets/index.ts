@@ -30,6 +30,8 @@ export const Cards = {
 
 // 3. Icons
 import Analytics from './Icons/analytics.svg';
+import CaretDown from './Icons/caret-down.svg';
+import Close from './Icons/close.svg';
 import Home from './Icons/home.svg';
 import Logo from './Icons/Logo.svg';
 import Travel from './Icons/travel.svg';
@@ -39,4 +41,6 @@ export const Icons = {
   Analytics,
   Home,
   Travel,
+  CaretDown,
+  Close,
 } as const;

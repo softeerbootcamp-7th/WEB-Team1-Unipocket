@@ -30,10 +30,9 @@ public class GlobalExceptionHandler {
 	 * 비즈니스 로직 실행 중 발생하는 커스텀 예외 처리
 	 */
 	@ExceptionHandler(BusinessException.class)
-	public ResponseEntity<CustomErrorResponse> handleServiceException(
+	public ResponseEntity<CustomErrorResponse> handleBusinessException(
 			HttpServletRequest req, BusinessException e) {
 
-		logException(e.getCode(), req, e);
 		return createErrorResponse(e.getCode());
 	}
 

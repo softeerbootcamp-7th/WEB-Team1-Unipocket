@@ -19,7 +19,7 @@ const Button = ({
     'w-fit flex items-center justify-center box-border transition-colors',
 
     /* --- disabled --- */
-    disabled && 'cursor-not-allowed text-label-disable',
+    disabled && 'cursor-not-allowed text-label-assistive',
 
     /* --- outlined --- */
     !disabled &&
@@ -33,7 +33,7 @@ const Button = ({
       variant === 'solid' &&
       'bg-primary-normal text-inverse-label hover:bg-primary-strong cursor-pointer',
 
-    disabled && variant === 'solid' && 'bg-fill-disable',
+    disabled && variant === 'solid' && 'bg-interactive-disable',
 
     /* --- danger --- */
     !disabled &&

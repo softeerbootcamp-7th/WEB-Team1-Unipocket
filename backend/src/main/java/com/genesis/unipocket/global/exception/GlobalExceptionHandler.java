@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
 				req.getRequestURI(),
 				queryString,
 				clientIp,
-				userAgent,
+				userAgent != null ? userAgent : "None",
 				errorCode.getCode(),
 				errorCode.getMessage(),
 				e);

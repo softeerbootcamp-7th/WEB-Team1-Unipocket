@@ -35,6 +35,7 @@ import Close from './Icons/close.svg';
 import Home from './Icons/home.svg';
 import Logo from './Icons/Logo.svg';
 import Travel from './Icons/travel.svg';
+import Refresh from './Icons/refresh.svg';
 
 export const Icons = {
   Logo,
@@ -43,4 +44,5 @@ export const Icons = {
   Travel,
   CaretDown,
   Close,
+  Refresh,
 } as const;

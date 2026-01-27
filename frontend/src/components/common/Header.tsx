@@ -43,7 +43,7 @@ const Header = () => {
         <img
           src={ProfileImage}
           alt="프로필 이미지"
-          className="h-8 w-8 rounded-full object-cover"
+          className="h-8 w-8 rounded-full object-cover cursor-pointer"
         />
       </div>
     </div>

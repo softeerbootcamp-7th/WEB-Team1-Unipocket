@@ -32,7 +32,7 @@ const DropDown = ({ selected, onSelect, options }: DropDownProps) => {
       </Filter>
 
       {isOpen && (
-        <ul className="absolute left-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-md border border-line-normal-normal bg-background-normal shadow-lg">
+        <ul className="absolute left-0 top-full z-50 p-1 mt-1.5 w-50 overflow-hidden rounded-modal-10 border border-line-solid-normal bg-background-normal shadow-lg">
           {options?.map((option) => (
             <OptionItem
               key={option.id}

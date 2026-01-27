@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 interface OptionItemProps {
   label: string;
   isSelected: boolean;
@@ -10,12 +12,12 @@ const OptionItem = ({ label, isSelected, onSelect }: OptionItemProps) => {
       <button
         type="button"
         onClick={() => onSelect(label)}
-        className={[
-          'flex w-full items-center px-3 py-2 text-sm text-left transition-colors',
+        className={clsx(
+          'flex w-full items-center p-2 label2-medium text-left transition-colors',
           isSelected
-            ? 'bg-primary-normal/10 text-primary-normal'
-            : 'hover:bg-fill-alternative text-label-neutral',
-        ].join(' ')}
+            ? 'bg-primary-normal/10 text-primary-normal' // @TODO: bg 대신 chip 추가
+            : 'hover:bg-fill-alternative text-label-normal',
+        )}
       >
         {label}
       </button>

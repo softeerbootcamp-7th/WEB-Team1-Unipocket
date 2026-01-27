@@ -14,4 +14,3 @@ export const getLocalTime = () => {
     timeZone: 'Asia/Seoul', // 현재는 한국 시간만을 기준으로 사용
   }).format(new Date());
 };
-

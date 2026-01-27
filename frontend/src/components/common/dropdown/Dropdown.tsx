@@ -26,12 +26,12 @@ const DropDown = ({ selected, onSelect, options }: DropDownProps) => {
 
   return (
     <div className="relative inline-block w-fit">
-      <Filter isOpen={isOpen} onClick={() => setIsOpen(v => !v)}>
+      <Filter isOpen={isOpen} onClick={() => setIsOpen((v) => !v)}>
         {selected || DEFAULT_PLACEHOLDER}
       </Filter>
 
       {isOpen && (
-        <ul className="absolute left-0 top-full z-50 p-1 mt-1.5 w-50 overflow-hidden rounded-modal-10 border border-line-solid-normal bg-background-normal shadow-lg">
+        <ul className="rounded-modal-10 border-line-solid-normal bg-background-normal absolute top-full left-0 z-50 mt-1.5 w-50 overflow-hidden border p-1 shadow-lg">
           {options?.map((option) => (
             <OptionItem
               key={option.id}

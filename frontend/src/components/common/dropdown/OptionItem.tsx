@@ -13,7 +13,7 @@ const OptionItem = ({ label, isSelected, onSelect }: OptionItemProps) => {
         type="button"
         onClick={() => onSelect(label)}
         className={clsx(
-          'flex w-full items-center p-2 label2-medium text-left transition-colors',
+          'label2-medium flex w-full items-center p-2 text-left transition-colors',
           isSelected
             ? 'bg-primary-normal/10 text-primary-normal' // @TODO: bg 대신 chip 추가
             : 'hover:bg-fill-alternative text-label-normal',

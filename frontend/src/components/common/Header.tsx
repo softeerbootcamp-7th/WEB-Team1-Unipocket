@@ -28,22 +28,18 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="sticky top-0 z-10 flex justify-between border-b border-line-solid-normal bg-background-alternative px-8 py-3">
-      <Dropdown
-        selected={selected}
-        onSelect={setSelected}
-        options={options}
-      />
+    <div className="border-line-solid-normal bg-background-alternative sticky top-0 z-10 flex justify-between border-b px-8 py-3">
+      <Dropdown selected={selected} onSelect={setSelected} options={options} />
       <div className="flex items-center gap-5">
         <div className="flex items-center gap-2">
           <span className="label2-medium text-label-neutral">{time}</span>
-          <Icons.Refresh className="h-4 w-4 cursor-pointer text-label-neutral"/>
+          <Icons.Refresh className="text-label-neutral h-4 w-4 cursor-pointer" />
         </div>
         <Button>모바일</Button>
         <img
           src={ProfileImage}
           alt="프로필 이미지"
-          className="h-8 w-8 rounded-full object-cover cursor-pointer"
+          className="h-8 w-8 cursor-pointer rounded-full object-cover"
         />
       </div>
     </div>

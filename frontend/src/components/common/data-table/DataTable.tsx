@@ -83,7 +83,7 @@ const DataTable = () => {
                     </TableCell>
                     <TableCell
                       colSpan={table.getVisibleLeafColumns().length - 1}
-                      className="px-3 py-4 text-sm font-semibold text-gray-500"
+                      className="figure-body2-14-semibold text-label-alternative px-3 py-4"
                     >
                       {date}
                     </TableCell>

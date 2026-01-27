@@ -1,8 +1,21 @@
 import { Icons } from '@/assets';
+import { cn } from '@/lib/utils';
 
 import { useDataTable } from './context';
 
 const Divider = () => <div className="bg-line-solid-normal/30 h-6 w-px" />;
+
+const FloatingActionButton = ({
+  children,
+  onClick,
+  className,
+}: React.ComponentProps<'button'>) => {
+  return (
+    <button onClick={onClick} className={cn('label1-normal-medium', className)}>
+      {children}
+    </button>
+  );
+};
 
 const FloatingActionProvider = () => {
   const { table, tableState, dispatch } = useDataTable();
@@ -16,33 +29,40 @@ const FloatingActionProvider = () => {
         // 1번 바: 카테고리/결제수단/여행/숨김
         <div className="flex items-center gap-4">
           <span className="mr-auto">{selectedRows.length}개 선택됨</span>
-          <button
+          <FloatingActionButton
             onClick={() => {
               /* 카테고리 변경 로직 */
             }}
           >
             카테고리
-          </button>
+          </FloatingActionButton>
           <Divider />
-          <button
+          <FloatingActionButton
             onClick={() => {
-              /* 결제수단 변경 로직 */
+              /* 카테고리 변경 로직 */
             }}
           >
             결제수단
-          </button>
+          </FloatingActionButton>
           <Divider />
-          <button
+          <FloatingActionButton
             onClick={() => {
-              /* 결제수단 변경 로직 */
+              /* 카테고리 변경 로직 */
             }}
           >
             여행
-          </button>
+          </FloatingActionButton>
           <Divider />
-          <button className="text-status-negative">삭제</button>
+          <FloatingActionButton
+            className="text-status-negative"
+            onClick={() => {
+              /* 삭제 로직 */
+            }}
+          >
+            삭제
+          </FloatingActionButton>
           <Divider />
-          <Icons.Close height={10} width={10} />
+          <Icons.Close height={20} width={20} />
         </div>
       ) : (
         // 2번 바: 현재 가계부에 추가하기

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import Filter from '../Filter';
-
 import OptionItem from './OptionItem';
 
 interface Option {
@@ -15,7 +14,7 @@ interface DropDownProps {
   options?: Option[];
 }
 
-const DEFAULT_PLACEHOLDER = '미국 교환학생';
+const DEFAULT_PLACEHOLDER = '미국 교환학생'; // @TODO: 추후 기본값 처리 방법 변경 (API 연동)
 
 const DropDown = ({ selected, onSelect, options }: DropDownProps) => {
   const [isOpen, setIsOpen] = useState(false);

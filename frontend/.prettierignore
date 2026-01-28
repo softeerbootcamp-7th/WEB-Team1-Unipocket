@@ -11,3 +11,5 @@ coverage
 .vite
 
 *.d.ts
+
+src/routeTree.gen.ts

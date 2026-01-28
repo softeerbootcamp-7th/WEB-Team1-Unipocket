@@ -36,6 +36,11 @@ dependencies {
 	testImplementation 'org.testcontainers:junit-jupiter'
 	testImplementation 'org.testcontainers:mysql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3' // JWT
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3' // JWT 구현체
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3' // JWT JSON 처리
 }
 
 tasks.named('test') {

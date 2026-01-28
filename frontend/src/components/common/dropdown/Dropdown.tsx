@@ -28,7 +28,7 @@ const DropDown = ({ selected, onSelect, options }: DropDownProps) => {
     <div className="relative inline-block w-fit">
       <Filter isOpen={isOpen} onClick={() => setIsOpen((v) => !v)}>
         {/* @TODO: 추후 기본값 처리 방법 변경 (API 연동) */}
-        {selectedName || options?.[0].name} 
+        {selectedName || options?.[0].name}
       </Filter>
 
       {isOpen && (

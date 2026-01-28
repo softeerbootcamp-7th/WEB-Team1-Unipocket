@@ -8,87 +8,87 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppTravelRouteImport } from './routes/_app.travel'
-import { Route as AppSettingRouteImport } from './routes/_app.setting'
-import { Route as AppInitRouteImport } from './routes/_app.init'
-import { Route as AppHomeRouteImport } from './routes/_app.home'
-import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as LoginRouteImport } from './routes/login';
+import { Route as AppRouteImport } from './routes/_app';
+import { Route as IndexRouteImport } from './routes/index';
+import { Route as AppTravelRouteImport } from './routes/_app.travel';
+import { Route as AppSettingRouteImport } from './routes/_app.setting';
+import { Route as AppInitRouteImport } from './routes/_app.init';
+import { Route as AppHomeRouteImport } from './routes/_app.home';
+import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics';
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AppTravelRoute = AppTravelRouteImport.update({
   id: '/travel',
   path: '/travel',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppSettingRoute = AppSettingRouteImport.update({
   id: '/setting',
   path: '/setting',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppInitRoute = AppInitRouteImport.update({
   id: '/init',
   path: '/init',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
   getParentRoute: () => AppRoute,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/analytics': typeof AppAnalyticsRoute
-  '/home': typeof AppHomeRoute
-  '/init': typeof AppInitRoute
-  '/setting': typeof AppSettingRoute
-  '/travel': typeof AppTravelRoute
+  '/': typeof IndexRoute;
+  '/login': typeof LoginRoute;
+  '/analytics': typeof AppAnalyticsRoute;
+  '/home': typeof AppHomeRoute;
+  '/init': typeof AppInitRoute;
+  '/setting': typeof AppSettingRoute;
+  '/travel': typeof AppTravelRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/analytics': typeof AppAnalyticsRoute
-  '/home': typeof AppHomeRoute
-  '/init': typeof AppInitRoute
-  '/setting': typeof AppSettingRoute
-  '/travel': typeof AppTravelRoute
+  '/': typeof IndexRoute;
+  '/login': typeof LoginRoute;
+  '/analytics': typeof AppAnalyticsRoute;
+  '/home': typeof AppHomeRoute;
+  '/init': typeof AppInitRoute;
+  '/setting': typeof AppSettingRoute;
+  '/travel': typeof AppTravelRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_app': typeof AppRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_app/analytics': typeof AppAnalyticsRoute
-  '/_app/home': typeof AppHomeRoute
-  '/_app/init': typeof AppInitRoute
-  '/_app/setting': typeof AppSettingRoute
-  '/_app/travel': typeof AppTravelRoute
+  __root__: typeof rootRouteImport;
+  '/': typeof IndexRoute;
+  '/_app': typeof AppRouteWithChildren;
+  '/login': typeof LoginRoute;
+  '/_app/analytics': typeof AppAnalyticsRoute;
+  '/_app/home': typeof AppHomeRoute;
+  '/_app/init': typeof AppInitRoute;
+  '/_app/setting': typeof AppSettingRoute;
+  '/_app/travel': typeof AppTravelRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
     | '/login'
@@ -96,9 +96,16 @@ export interface FileRouteTypes {
     | '/home'
     | '/init'
     | '/setting'
-    | '/travel'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/analytics' | '/home' | '/init' | '/setting' | '/travel'
+    | '/travel';
+  fileRoutesByTo: FileRoutesByTo;
+  to:
+    | '/'
+    | '/login'
+    | '/analytics'
+    | '/home'
+    | '/init'
+    | '/setting'
+    | '/travel';
   id:
     | '__root__'
     | '/'
@@ -108,82 +115,82 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/init'
     | '/_app/setting'
-    | '/_app/travel'
-  fileRoutesById: FileRoutesById
+    | '/_app/travel';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
-  LoginRoute: typeof LoginRoute
+  IndexRoute: typeof IndexRoute;
+  AppRoute: typeof AppRouteWithChildren;
+  LoginRoute: typeof LoginRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/login';
+      path: '/login';
+      fullPath: '/login';
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/_app';
+      path: '';
+      fullPath: '/';
+      preLoaderRoute: typeof AppRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_app/travel': {
-      id: '/_app/travel'
-      path: '/travel'
-      fullPath: '/travel'
-      preLoaderRoute: typeof AppTravelRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/travel';
+      path: '/travel';
+      fullPath: '/travel';
+      preLoaderRoute: typeof AppTravelRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/setting': {
-      id: '/_app/setting'
-      path: '/setting'
-      fullPath: '/setting'
-      preLoaderRoute: typeof AppSettingRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/setting';
+      path: '/setting';
+      fullPath: '/setting';
+      preLoaderRoute: typeof AppSettingRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/init': {
-      id: '/_app/init'
-      path: '/init'
-      fullPath: '/init'
-      preLoaderRoute: typeof AppInitRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/init';
+      path: '/init';
+      fullPath: '/init';
+      preLoaderRoute: typeof AppInitRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/home': {
-      id: '/_app/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AppHomeRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/home';
+      path: '/home';
+      fullPath: '/home';
+      preLoaderRoute: typeof AppHomeRouteImport;
+      parentRoute: typeof AppRoute;
+    };
     '/_app/analytics': {
-      id: '/_app/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AppAnalyticsRouteImport
-      parentRoute: typeof AppRoute
-    }
+      id: '/_app/analytics';
+      path: '/analytics';
+      fullPath: '/analytics';
+      preLoaderRoute: typeof AppAnalyticsRouteImport;
+      parentRoute: typeof AppRoute;
+    };
   }
 }
 
 interface AppRouteChildren {
-  AppAnalyticsRoute: typeof AppAnalyticsRoute
-  AppHomeRoute: typeof AppHomeRoute
-  AppInitRoute: typeof AppInitRoute
-  AppSettingRoute: typeof AppSettingRoute
-  AppTravelRoute: typeof AppTravelRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRoute;
+  AppHomeRoute: typeof AppHomeRoute;
+  AppInitRoute: typeof AppInitRoute;
+  AppSettingRoute: typeof AppSettingRoute;
+  AppTravelRoute: typeof AppTravelRoute;
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -192,15 +199,15 @@ const AppRouteChildren: AppRouteChildren = {
   AppInitRoute: AppInitRoute,
   AppSettingRoute: AppSettingRoute,
   AppTravelRoute: AppTravelRoute,
-}
+};
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

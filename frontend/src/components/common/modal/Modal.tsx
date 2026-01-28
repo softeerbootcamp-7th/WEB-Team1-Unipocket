@@ -1,32 +1,51 @@
+import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Button from '../Button';
 import Icon from '../Icon';
+import { ModalContext } from './useModalContext';
+
+type ConfirmType = 'confirm' | 'next' | 'delete';
+
+const BUTTON_CONFIG: Record<
+  ConfirmType,
+  { text: string; variant: 'outlined' | 'solid' | 'danger' }
+> = {
+  confirm: { text: '확인', variant: 'solid' },
+  next: { text: '다음', variant: 'solid' },
+  delete: { text: '삭제', variant: 'danger' },
+};
 
 interface ModalProps {
   children?: React.ReactNode;
+  isOpen?: boolean;
   onClose?: () => void;
   onConfirm?: () => void;
-  isOpen?: boolean;
+  confirmType?: ConfirmType;
 }
 
 /**
  * Modal 컴포넌트 (Container/Wrapper)
  *
- * 모달의 UI 구조(backdrop, close 버튼, 취소/확인 버튼)만 제공합니다.
- * 실제 모달 내용은 children으로 받아서 표시합니다.
- *
- * @example
- * const [isOpen, setIsOpen] = useState(true);
- * <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} onConfirm={handleConfirm}>
- *   <LocaleConfirmModal type="country" {...props} />
- * </Modal>
+ * - Context API를 통해 내부 컨텐츠(children)의 유효성 검사 상태(isReady)를 관리합니다.
+ * - useModalContext는 선택적으로 사용: 버튼 블로킹이 필요한 경우에만 자식 컴포넌트에서 호출하세요.
+ * - confirmType에 따라 버튼의 텍스트와 스타일이 자동으로 변경됩니다.
+ * - confirmType: 'confirm': '확인' | 'next': '다음' | 'delete': '삭제' 로 매핑됩니다.
  */
-const Modal = ({ children, onClose, onConfirm, isOpen }: ModalProps) => {
-  if (!isOpen) return null;
+const Modal = ({
+  children,
+  isOpen,
+  onClose,
+  onConfirm,
+  confirmType = 'confirm',
+}: ModalProps) => {
+  // 모달의 확인 버튼 활성화 여부 (기본값 true: 단순 알림 모달 등을 위해)
+  const [isReady, setReady] = useState(true);
+
+  const { text: confirmText, variant: confirmVariant } =
+    BUTTON_CONFIG[confirmType];
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // backdrop 자체를 클릭했을 때만 닫기
     if (e.target === e.currentTarget) {
       onClose?.();
     }
@@ -35,10 +54,10 @@ const Modal = ({ children, onClose, onConfirm, isOpen }: ModalProps) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <ModalContext.Provider value={{ setReady }}>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            className="bg-label-normal/52 fixed inset-0 z-50 flex items-center justify-center"
             onClick={handleBackdropClick}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -56,18 +75,25 @@ const Modal = ({ children, onClose, onConfirm, isOpen }: ModalProps) => {
               <div className="flex w-full justify-end">
                 <Icon iconName="Close" onClick={onClose} />
               </div>
+
               {children}
+
               <div className="flex h-20 w-full flex-row items-center justify-end gap-3">
                 <Button variant="outlined" size="lg" onClick={onClose}>
                   취소
                 </Button>
-                <Button variant="solid" size="lg" onClick={onConfirm}>
-                  확인
+                <Button
+                  variant={confirmVariant}
+                  size="lg"
+                  onClick={onConfirm}
+                  disabled={!isReady}
+                >
+                  {confirmText}
                 </Button>
               </div>
             </motion.div>
           </motion.div>
-        </>
+        </ModalContext.Provider>
       )}
     </AnimatePresence>
   );

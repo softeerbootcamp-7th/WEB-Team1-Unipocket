@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 import { ErrorFallback } from '@/components/common/ErrorFallback';
+import Header from '@/components/common/Header';
 import Menu from '@/components/common/menu/Menu';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -53,9 +54,12 @@ function AppLayout() {
   return (
     <div className="flex">
       <Menu />
-      <main className="flex-1">
-        <Outlet />
-      </main>
+      <div className="flex flex-1 flex-col">
+        <Header />
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

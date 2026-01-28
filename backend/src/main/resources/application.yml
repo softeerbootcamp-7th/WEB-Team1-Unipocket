@@ -16,12 +16,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # 프로덕션: validate, 개발: update
+      ddl-auto: update # 프로덕션: validate, 개발: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
-        show_sql: false  # 프로덕션에서는 false
+        show_sql: false # 프로덕션에서는 false
         use_sql_comments: false
         default_batch_fetch_size: 100
     open-in-view: false
@@ -47,7 +47,7 @@ oauth2:
 
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
-    client-secret: ${KAKAO_CLIENT_SECRET:}  # 선택사항: 없으면 공백
+    client-secret: ${KAKAO_CLIENT_SECRET:} # 선택사항: 없으면 공백
     redirect-uri: ${FRONTEND_URL:http://localhost:3000}/callback
     authorization-uri: https://kauth.kakao.com/oauth/authorize
     token-uri: https://kauth.kakao.com/oauth/token
@@ -59,8 +59,8 @@ oauth2:
 # JWT 설정
 jwt:
   secret: ${JWT_SECRET}
-  access-token-validity: 3600000      # 1시간 (밀리초)
-  refresh-token-validity: 1209600000  # 14일 (밀리초)
+  access-token-validity: 3600000 # 1시간 (밀리초)
+  refresh-token-validity: 1209600000 # 14일 (밀리초)
 
 # 프론트엔드 URL
 frontend:

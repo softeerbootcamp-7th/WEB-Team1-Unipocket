@@ -14,41 +14,41 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class OAuth2Properties {
 
-    private Google google;
-    private Kakao kakao;
+	private Google google;
+	private Kakao kakao;
 
-    @Getter
-    @Setter
-    public static class Google {
-        private String clientId;
-        private String clientSecret;
-        private String redirectUri;
-        private String authorizationUri;
-        private String tokenUri;
-        private String userInfoUri;
-        private String jwksUri;
-        private String issuer;
-        private String scope;
-    }
+	@Getter
+	@Setter
+	public static class Google {
+		private String clientId;
+		private String clientSecret;
+		private String redirectUri;
+		private String authorizationUri;
+		private String tokenUri;
+		private String userInfoUri;
+		private String jwksUri;
+		private String issuer;
+		private String scope;
+	}
 
-    @Getter
-    @Setter
-    public static class Kakao {
-        private String clientId;
-        private String clientSecret;  // 선택사항
-        private String redirectUri;
-        private String authorizationUri;
-        private String tokenUri;
-        private String userInfoUri;
-        private String jwksUri;
-        private String issuer;
-        private String scope;
+	@Getter
+	@Setter
+	public static class Kakao {
+		private String clientId;
+		private String clientSecret; // 선택사항
+		private String redirectUri;
+		private String authorizationUri;
+		private String tokenUri;
+		private String userInfoUri;
+		private String jwksUri;
+		private String issuer;
+		private String scope;
 
-        /**
-         * Client Secret이 설정되어 있는지 확인
-         */
-        public boolean hasClientSecret() {
-            return clientSecret != null && !clientSecret.isBlank();
-        }
-    }
+		/**
+		 * Client Secret이 설정되어 있는지 확인
+		 */
+		public boolean hasClientSecret() {
+			return clientSecret != null && !clientSecret.isBlank();
+		}
+	}
 }

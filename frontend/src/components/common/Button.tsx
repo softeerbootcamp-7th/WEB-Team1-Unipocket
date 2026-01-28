@@ -1,11 +1,10 @@
+import type { ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
 
-export interface ButtonProps {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'outlined' | 'solid' | 'danger';
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  disabled?: boolean;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-  children: React.ReactNode;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
 const Button = ({
@@ -14,6 +13,8 @@ const Button = ({
   disabled = false,
   onClick,
   children,
+  ref,
+  ...props
 }: ButtonProps) => {
   const buttonClass = clsx(
     'w-fit flex items-center justify-center box-border transition-colors',
@@ -50,7 +51,13 @@ const Button = ({
   );
 
   return (
-    <button className={buttonClass} disabled={disabled} onClick={onClick}>
+    <button
+      ref={ref}
+      className={buttonClass}
+      disabled={disabled}
+      onClick={onClick}
+      {...props}
+    >
       {children}
     </button>
   );

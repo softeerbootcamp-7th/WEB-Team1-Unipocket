@@ -2,6 +2,7 @@ import './styles/index.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { AuthProvider } from 'react-oidc-context';
 import { QueryClient } from '@tanstack/react-query';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 
@@ -19,6 +20,13 @@ const router = createRouter({
   },
 });
 
+const oidcConfig = {
+  authority: '<your authority>',
+  client_id: '<your client id>',
+  redirect_uri: '<your redirect uri>',
+  // ...
+};
+
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
@@ -27,6 +35,8 @@ declare module '@tanstack/react-router' {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider {...oidcConfig}>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 );

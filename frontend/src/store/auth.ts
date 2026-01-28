@@ -6,7 +6,7 @@ export interface AuthState {
   setAuthenticated: (isAuth: boolean) => void;
 }
 
-const useAuth = create<AuthState>()(
+const useAuthStore = create<AuthState>()(
   // persist -> 상태를 브라우저 저장소(LocalStorage 등)에 자동으로 저장
   persist(
     (set) => ({
@@ -19,4 +19,4 @@ const useAuth = create<AuthState>()(
   ),
 );
 
-export default useAuth;
+export default useAuthStore;

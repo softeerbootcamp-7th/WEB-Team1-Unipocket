@@ -39,7 +39,8 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           echo "${{ secrets.EC2_SSH_KEY }}" | ssh-add -
           ssh-keyscan -H -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-           
+          
+          echo "export JPA_DDL_AUTO='${{ secrets.JPA_DDL_AUTO }}'" >> env.sh
           echo "export LOG_PATH='${{ secrets.LOG_PATH }}'" >> env.sh
           echo "export DB_URL='${{ secrets.DB_URL }}'" > env.sh
           echo "export DB_USER='${{ secrets.DB_USER }}'" >> env.sh

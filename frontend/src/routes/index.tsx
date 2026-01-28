@@ -1,40 +1,46 @@
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
-import useAuth from '@/store/auth';
+import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const Route = createFileRoute('/')({
-  // 1. 보안 체크: 로그인 안됐으면 쫓아냄
-  beforeLoad: async () => {
-    const { isAuthenticated } = useAuth.getState();
-    if (isAuthenticated) {
+  beforeLoad: async ({ location }) => {
+    // 실제 API를 호출하는 코드
+    // const { queryClient } = context;
+    // const user = await queryClient.ensureQueryData(userQueryOptions);  // 여기서 발생하는 401 에러는 전역 에러 핸들러가 처리하거나 errorComponent가 잡습니다.
+
+    // API 대신 사용할 임시 유저 데이터
+    const mockUser = {
+      id: '1',
+      name: '홍길동',
+      email: 'honggildong@example.com',
+    };
+
+    // 실제 API 호출 느낌을 내기 위한 0.5초 대기 로직
+    const user = await new Promise<typeof mockUser | null>((resolve) => {
+      setTimeout(() => {
+        resolve(mockUser); // 0.5초 뒤에 홍길동 데이터를 반환
+        // resolve(null); // 만약 로그인 안 된 상태를 테스트하고 싶다면 null을 넣으세요.
+      }, 500);
+    });
+
+    if (user) {
       throw redirect({
-        to: '/home', // 파일 이름이 '_app.home.tsx'라도 주소는 '/home'입니다!
+        to: '/home',
+        search: { redirect: location.href },
       });
     }
+
+    return { user };
   },
-  // 2. 로딩 안전망: 하위 페이지 로딩 시 보여줄 스피너
-  pendingComponent: () => (
-    <div className="flex h-64 items-center justify-center">
-      <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-blue-500" />
-    </div>
-  ),
-  // 3. 에러 안전망: 하위 페이지에서 에러 발생 시 처리
+  pendingComponent: () => <Skeleton className="h-64" />,
   errorComponent: ({ error, reset }) => {
     return (
-      <div className="m-4 rounded border border-red-200 bg-red-50 p-4">
-        <h2 className="font-bold text-red-800">오류가 발생했습니다</h2>
-        <p className="mb-4 text-red-600">{error.message}</p>
-        <button
-          onClick={() => {
-            const router = useRouter();
-            reset();
-            router.invalidate();
-          }}
-          className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-        >
-          다시 시도
-        </button>
-      </div>
+      <ErrorFallback
+        error={error}
+        reset={reset}
+        title="서비스 이용에 불편을 드려 죄송합니다."
+      />
     );
   },
   component: RouteComponent,

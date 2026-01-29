@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { DataTable } from '@/components/common/data-table/DataTable';
 import DataTableProvider from '@/components/common/data-table/DataTableProvider';
-import FloatingActionProvider from '@/components/common/data-table/FloatingActionProvider';
+import SelectionActionProvider from '@/components/common/data-table/SelectionActionProvider';
 
 import { columns } from '@/payments/columns';
 import { getData } from '@/payments/dummy';
@@ -21,7 +21,7 @@ function RouteComponent() {
         floatingBarVariant={'MANAGEMENT'}
       >
         <DataTable />
-        <FloatingActionProvider />
+        <SelectionActionProvider />
       </DataTableProvider>
     </div>
   );

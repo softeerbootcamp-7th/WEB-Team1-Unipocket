@@ -5,7 +5,7 @@ import { useDataTable } from './context';
 
 const Divider = () => <div className="bg-line-solid-normal/30 h-6 w-px" />;
 
-const FloatingActionButton = ({
+const SelectionActionButton = ({
   children,
   onClick,
   className,
@@ -17,7 +17,7 @@ const FloatingActionButton = ({
   );
 };
 
-const FloatingActionProvider = () => {
+const SelectionActionProvider = () => {
   const { table, tableState, dispatch } = useDataTable();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
@@ -29,38 +29,38 @@ const FloatingActionProvider = () => {
         // 1번 바: 카테고리/결제수단/여행/숨김
         <div className="flex items-center gap-4">
           <span className="mr-auto">{selectedRows.length}개 선택됨</span>
-          <FloatingActionButton
+          <SelectionActionButton
             onClick={() => {
               /* 카테고리 변경 로직 */
             }}
           >
             카테고리
-          </FloatingActionButton>
+          </SelectionActionButton>
           <Divider />
-          <FloatingActionButton
+          <SelectionActionButton
             onClick={() => {
               /* 카테고리 변경 로직 */
             }}
           >
             결제수단
-          </FloatingActionButton>
+          </SelectionActionButton>
           <Divider />
-          <FloatingActionButton
+          <SelectionActionButton
             onClick={() => {
               /* 카테고리 변경 로직 */
             }}
           >
             여행
-          </FloatingActionButton>
+          </SelectionActionButton>
           <Divider />
-          <FloatingActionButton
+          <SelectionActionButton
             className="text-status-negative"
             onClick={() => {
               /* 삭제 로직 */
             }}
           >
             삭제
-          </FloatingActionButton>
+          </SelectionActionButton>
           <Divider />
           <Icons.Close height={20} width={20} />
         </div>
@@ -81,4 +81,4 @@ const FloatingActionProvider = () => {
   );
 };
 
-export default FloatingActionProvider;
+export default SelectionActionProvider;

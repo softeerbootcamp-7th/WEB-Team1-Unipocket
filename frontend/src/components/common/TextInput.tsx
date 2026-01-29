@@ -36,13 +36,13 @@ const TextInput = ({
         <input
           disabled={isDisabled}
           className={clsx(
-            'body1-normal-regular w-full rounded-xl p-3 pr-10 outline-none',
+            'body2-normal-regular w-full h-12 rounded-xl p-3 pr-10 outline-none placeholder:body1-normal-regular',
             isDisabled
               ? 'bg-interaction-disable text-label-disable cursor-not-allowed'
-              : 'text-label-normal border border-solid',
+              : 'text-label-normal border border-solid focus:border-2',
             isError
-              ? 'border-status-negative'
-              : 'border-line-normal-neutral focus:border-primary-normal',
+              ? 'border-status-negative/43'
+              : 'border-line-normal-neutral focus:border-primary-normal/43',
           )}
           value={value}
           placeholder={placeholder}

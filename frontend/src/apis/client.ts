@@ -50,13 +50,13 @@ export const customFetch = async (
 
     // 타임아웃 에러 처리 (AbortError)
     if (error instanceof Error && error.name === ERROR_NAMES.ABORT_ERROR) {
-      throw new Error(
-        '요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.',
-      );
+      throw new ApiError({
+        message: '요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.',
+        status: 408, // 요청 시간 초과
+      });
     }
 
     // 이미 ApiError라면 그대로 던지고, 아니면
-    // debugger;
     throw error;
   }
 };

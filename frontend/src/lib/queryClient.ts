@@ -14,7 +14,7 @@ const handleGlobalError = (error: DefaultError) => {
     if (error.status === 401) {
       console.log('인증 만료! 로그인 페이지로 이동합니다.');
       queryClient.clear();
-      window.location.href = '/login';
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
     }
   }
 };

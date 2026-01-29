@@ -8,7 +8,7 @@ interface DividerProps {
 const DIVIDER_STYLE = {
   thin: 'h-px w-full bg-line-normal-normal',
   thick: 'h-3 w-full bg-line-normal-alternative',
-  vertical: 'w-px h-8 bg-line-normal-normal',
+  vertical: 'w-px bg-line-normal-normal',
 } as const;
 
 const Divider = ({ style, className }: DividerProps) => {

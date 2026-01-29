@@ -6,6 +6,8 @@ import { Icons } from '@/assets';
 interface TextInputProps {
   title?: string;
   placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
   errorMessage?: string;
   isError?: boolean;
   isDisabled?: boolean;
@@ -14,11 +16,12 @@ interface TextInputProps {
 const TextInput = ({
   title,
   placeholder,
+  value,
+  onChange,
   errorMessage,
   isError = false,
   isDisabled = false,
 }: TextInputProps) => {
-  const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const showClearButton = value.length > 0 && isFocused && !isDisabled;
@@ -46,14 +49,14 @@ const TextInput = ({
           autoComplete="off"
           onFocus={() => !isDisabled && setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          onChange={(e) => !isDisabled && setValue(e.target.value)}
+          onChange={(e) => !isDisabled && onChange(e.target.value)}
         />
 
         {!isDisabled && showClearButton && (
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setValue('')}
+            onClick={() => onChange('')}
             className="absolute top-1/2 right-3 -translate-y-1/2"
           >
             <Icons.CloseCircle className="text-label-neutral h-5.5 w-5.5" />

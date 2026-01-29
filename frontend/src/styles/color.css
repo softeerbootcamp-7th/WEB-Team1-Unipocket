@@ -37,7 +37,8 @@
   --color-status-negative: #ff4242;
   --color-status-negative-strong: #e63a3a;
 
-  --color-material-dimmer: #17171985;
+  --color-dimmer-strong: #17171985;
+  --color-dimmer-normal: #1717193d;
 
   --color-inverse-primary: #69b5c4;
   --color-inverse-background: #1b1c1e;

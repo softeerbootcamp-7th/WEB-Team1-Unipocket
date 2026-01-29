@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
-import { ErrorFallback } from '@/components/common/ErrorFallback';
 import Header from '@/components/common/Header';
 import Menu from '@/components/common/menu/Menu';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,15 +37,6 @@ export const Route = createFileRoute('/_app')({
     return { user };
   },
   pendingComponent: () => <Skeleton className="h-64" />,
-  errorComponent: ({ error, reset }) => {
-    return (
-      <ErrorFallback
-        error={error}
-        reset={reset}
-        title="서비스 이용에 불편을 드려 죄송합니다."
-      />
-    );
-  },
   component: AppLayout,
 });
 

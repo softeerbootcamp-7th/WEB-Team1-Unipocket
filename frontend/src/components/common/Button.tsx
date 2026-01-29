@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 
-interface ButtonProps {
+export interface ButtonProps {
   variant?: 'outlined' | 'solid' | 'danger';
   size?: 'xs' | 'sm' | 'md' | 'lg';
   disabled?: boolean;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
   children: React.ReactNode;
 }
 

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import Button from '../Button';
+import Button, { type ButtonProps } from '../Button';
 import Icon from '../Icon';
 import { ModalContext } from './useModalContext';
 
-type ConfirmType = 'confirm' | 'next' | 'delete';
+type ActionType = 'confirm' | 'next' | 'delete';
 
 const BUTTON_CONFIG: Record<
-  ConfirmType,
-  { text: string; variant: 'outlined' | 'solid' | 'danger' }
+  ActionType,
+  { text: string; variant: NonNullable<ButtonProps['variant']> }
 > = {
   confirm: { text: '확인', variant: 'solid' },
   next: { text: '다음', variant: 'solid' },
@@ -17,11 +17,11 @@ const BUTTON_CONFIG: Record<
 };
 
 export interface ModalProps {
-  children?: React.ReactNode;
-  isOpen?: boolean;
-  onClose?: () => void;
-  onConfirm?: () => void;
-  confirmType?: ConfirmType;
+  children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  onAction: () => void;
+  actionType?: ActionType;
 }
 
 /**
@@ -29,25 +29,25 @@ export interface ModalProps {
  *
  * - Context API를 통해 내부 컨텐츠(children)의 유효성 검사 상태(isReady)를 관리합니다.
  * - useModalContext는 선택적으로 사용: 버튼 블로킹이 필요한 경우에만 자식 컴포넌트에서 호출하세요.
- * - confirmType에 따라 버튼의 텍스트와 스타일이 자동으로 변경됩니다.
- * - confirmType: 'confirm': '확인' | 'next': '다음' | 'delete': '삭제' 로 매핑됩니다.
+ * - ActionType에 따라 버튼의 텍스트와 스타일이 자동으로 변경됩니다.
+ * - ActionType: 'confirm': '확인' | 'next': '다음' | 'delete': '삭제' 로 매핑됩니다.
  */
 const Modal = ({
   children,
   isOpen,
   onClose,
-  onConfirm,
-  confirmType = 'confirm',
+  onAction,
+  actionType = 'confirm',
 }: ModalProps) => {
   // 모달의 확인 버튼 활성화 여부 (기본값 true: 단순 알림 모달 등을 위해)
   const [isReady, setReady] = useState(true);
 
   const { text: confirmText, variant: confirmVariant } =
-    BUTTON_CONFIG[confirmType];
+    BUTTON_CONFIG[actionType];
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose?.();
+      onClose();
     }
   };
 
@@ -85,7 +85,7 @@ const Modal = ({
                 <Button
                   variant={confirmVariant}
                   size="lg"
-                  onClick={onConfirm}
+                  onClick={onAction}
                   disabled={!isReady}
                 >
                   {confirmText}

@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import { type IconName, Icons } from '@/assets';
 
 interface IconProps {
@@ -21,7 +23,10 @@ const Icon = ({ width = 24, height = 24, iconName, onClick }: IconProps) => {
 
   return (
     <div
-      className={`text-label-alternative hover:bg-fill-normal cursor-pointer rounded-lg transition-opacity w-[${width}] h-[${height}] flex items-center justify-center`}
+      className={clsx(
+        'text-label-alternative hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
+        `w-[${width}px] h-[${height}px]`,
+      )}
       onClick={onClick}
     >
       <IconComponent width={width} height={height} />

@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import type { ModalProps } from './Modal';
 import Modal from './Modal';
 
@@ -33,9 +35,10 @@ const LocaleConfirmModal = ({
   return (
     <Modal {...modalProps}>
       <div
-        className={`text-label-neutral flex flex-col items-center justify-center gap-8 ${
-          isCountry ? 'w-80 py-12.25' : 'w-95 py-25'
-        }`}
+        className={clsx(
+          'text-label-neutral flex flex-col items-center justify-center gap-8',
+          isCountry ? 'w-80 py-12.25' : 'w-95 py-25',
+        )}
       >
         <div className="flex flex-col items-center gap-4">
           <img

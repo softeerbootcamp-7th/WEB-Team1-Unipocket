@@ -36,7 +36,7 @@ const TextInput = ({
         <input
           disabled={isDisabled}
           className={clsx(
-            'body2-normal-regular w-full h-12 rounded-xl p-3 pr-10 outline-none placeholder:body1-normal-regular',
+            'body2-normal-regular placeholder:body1-normal-regular h-12 w-full rounded-xl p-3 pr-10 outline-none',
             isDisabled
               ? 'bg-interaction-disable text-label-disable cursor-not-allowed'
               : 'text-label-normal border border-solid focus:border-2',

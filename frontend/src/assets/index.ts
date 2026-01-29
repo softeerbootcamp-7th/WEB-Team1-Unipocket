@@ -46,3 +46,5 @@ export const Icons = {
   Close,
   Refresh,
 } as const;
+
+export type IconName = keyof typeof Icons;

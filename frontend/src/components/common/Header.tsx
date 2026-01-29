@@ -45,7 +45,7 @@ const Header = () => {
           <span className="label2-medium text-label-neutral">{time}</span>
           <Icons.Refresh className="text-label-neutral h-4 w-4 cursor-pointer" />
         </div>
-        <Button>모바일</Button>
+        <Button onClick={() => {}}>모바일</Button>
         <img
           src={ProfileImage}
           alt="프로필 이미지"

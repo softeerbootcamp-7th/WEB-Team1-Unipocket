@@ -43,17 +43,15 @@ const UploadPopover = () => {
   return (
     <Popover modal={true}>
       <PopoverTrigger asChild>
-        <div role="button">
-          <Button variant="solid" size="lg">
-            지출 내역 추가하기
-          </Button>
-        </div>
+        <Button variant="solid" size="lg">
+          지출 내역 추가하기
+        </Button>
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
         sideOffset={12}
-        className="rounded-modal-20 border-line-normal-alternative shadow-popover flex w-fit flex-col items-center justify-center gap-2 border border-none bg-white px-8 py-3.5"
+        className="rounded-modal-20 border-line-normal-alternative shadow-popover flex w-fit flex-col items-center justify-center gap-2 border bg-white px-8 py-3.5"
       >
         <UploadMenuItem
           Icon={Icons.Phone}

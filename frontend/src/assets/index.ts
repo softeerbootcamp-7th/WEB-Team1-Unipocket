@@ -29,15 +29,19 @@ export const Cards = {
 } as const;
 
 // 3. Icons
+import AlertCircle from './Icons/alert-circle.svg';
 import Analytics from './Icons/analytics.svg';
 import CaretDown from './Icons/caret-down.svg';
 import Close from './Icons/close.svg';
+import CloseCircle from './Icons/close-circle.svg';
 import Home from './Icons/home.svg';
 import Logo from './Icons/Logo.svg';
-import Travel from './Icons/travel.svg';
 import Refresh from './Icons/refresh.svg';
+import Travel from './Icons/travel.svg';
 
 export const Icons = {
+  AlertCircle,
+  CloseCircle,
   Logo,
   Analytics,
   Home,

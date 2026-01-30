@@ -57,4 +57,6 @@ export const countryCode = [
   'HU',
   'AU',
   'HK',
-];
+] as const;
+
+export type CountryCode = (typeof countryCode)[number];

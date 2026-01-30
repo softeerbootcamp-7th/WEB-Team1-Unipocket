@@ -3,8 +3,8 @@ import { useMatches } from '@tanstack/react-router';
 
 import Control from '@/components/common/Control';
 
-import countryData from '@/datas/country_data.json';
 import { countryCode } from '@/datas/countryCode';
+import { getCountryInfo } from '@/lib/country';
 
 interface CountryItemProps {
   flagImg: string;
@@ -83,7 +83,7 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
         <input type="text" />
         <div className="flex h-170 w-118 flex-col overflow-y-auto">
           {countryCode.map((code) => {
-            const data = countryData[code as keyof typeof countryData];
+            const data = getCountryInfo(code);
 
             if (!data) return null;
 

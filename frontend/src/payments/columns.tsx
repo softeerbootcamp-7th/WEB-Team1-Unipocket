@@ -1,5 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
+import { DataTableColumnCell } from '@/components/common/data-table/DataTableColumnCell';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { DataTableColumnHeader } from '../components/common/data-table/DataTableColumnHeader';
@@ -11,8 +12,9 @@ export const columns: ColumnDef<Expense>[] = [
     header: ({ table }) => (
       <Checkbox
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
+          table.getIsAllPageRowsSelected()
+          // ||
+          // (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -39,64 +41,42 @@ export const columns: ColumnDef<Expense>[] = [
   //   },
   // },
   {
-    accessorKey: 'storeName', // 데이터의 storeName 매핑
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="거래처" />
+    accessorKey: 'storeName',
+    header: () => <DataTableColumnHeader>거래처</DataTableColumnHeader>,
+    cell: ({ row }) => (
+      <DataTableColumnCell>{row.getValue('storeName')}</DataTableColumnCell>
     ),
   },
   {
-    id: 'category',
     accessorKey: 'category.name', // 중첩 객체 접근
-    header: '카테고리',
+    header: () => <DataTableColumnHeader>카테고리</DataTableColumnHeader>,
+    // cell: ({ row }) => (
+    //   <DataTableColumnCell>{row.getValue('category')}</DataTableColumnCell>
+    // ),
   },
   {
     id: 'amount',
-    header: '현지 금액',
+    header: () => <DataTableColumnHeader>현지 금액</DataTableColumnHeader>,
     cell: ({ row }) => {
       const amount = row.original.amount;
       const currency = row.original.currency;
       return (
-        <div className="font-medium">
+        <DataTableColumnCell>
           {amount.toLocaleString()} {currency}
-        </div>
+        </DataTableColumnCell>
       );
     },
   },
   {
     accessorKey: 'krwAmount',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="기준 금액" />
-    ),
+    header: () => <DataTableColumnHeader>원화 금액</DataTableColumnHeader>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('krwAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
       }).format(amount);
-      return <div className="text-right font-semibold">{formatted}</div>;
+      return <DataTableColumnCell>{formatted}</DataTableColumnCell>;
     },
-  },
-  {
-    accessorKey: 'memo',
-    header: '메모',
-    cell: ({ row }) => (
-      <div className="max-w-[150px] truncate">
-        {row.getValue('memo') || '-'}
-      </div>
-    ),
-  },
-  {
-    id: 'travel',
-    accessorKey: 'travel.name', // 여행 이름 매핑
-    header: '여행',
-  },
-  {
-    accessorKey: 'hasReceipt',
-    header: '영수증',
-    cell: ({ row }) => (
-      <div className="text-center">
-        {row.getValue('hasReceipt') ? '✅' : '❌'}
-      </div>
-    ),
   },
 ];

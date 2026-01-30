@@ -12,6 +12,7 @@ interface TextInputProps {
   isError?: boolean;
   isDisabled?: boolean;
   className?: string;
+  prefix?: React.ReactNode;
 }
 
 const TextInput = ({
@@ -23,6 +24,7 @@ const TextInput = ({
   isError = false,
   isDisabled = false,
   className,
+  prefix,
 }: TextInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -35,10 +37,16 @@ const TextInput = ({
       )}
 
       <div className="relative">
+        {prefix && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1 body1-normal-medium text-label-assistive pointer-events-none">
+            {prefix}
+          </div>
+        )}
         <input
           disabled={isDisabled}
           className={clsx(
             'body2-normal-regular placeholder:body1-normal-regular h-12 w-full rounded-xl p-3 pr-10 outline-none',
+            prefix ? 'pl-10.5' : 'pl-3',
             isDisabled
               ? 'bg-interaction-disable text-label-disable cursor-not-allowed'
               : 'text-label-normal border border-solid focus:border-2',

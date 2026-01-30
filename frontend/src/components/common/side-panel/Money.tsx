@@ -31,7 +31,7 @@ const Money = () => {
     setLocalCurrency(value);
 
     if (!Number.isNaN(num)) {
-      setBaseCurrency(num === 0 ? '' : Math.round(num * RATE).toString());
+      setBaseCurrency(num === 0 ? '' : ((num * RATE).toFixed(0)));
     }
   };
 
@@ -61,6 +61,7 @@ const Money = () => {
             placeholder="0"
             onChange={handleLocalChange}
             className="w-61"
+            prefix="$"
           />
           <div className="mt-auto flex w-25">
             <DropDown
@@ -99,6 +100,7 @@ const Money = () => {
             placeholder="0"
             onChange={handleBaseChange}
             className="w-61"
+            prefix="₩"
           />
           <p className="body2-normal-medium text-label-assistive mt-auto ml-2.75 flex h-9 w-20 items-center">
             KRW

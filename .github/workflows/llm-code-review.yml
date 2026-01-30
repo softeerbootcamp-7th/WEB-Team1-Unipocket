@@ -22,4 +22,4 @@ jobs:
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           language: Korean
-          upload-log: "true"
+          instructions: "Exclude `pnpm-lock.yaml` and `.svg` files from review targets."

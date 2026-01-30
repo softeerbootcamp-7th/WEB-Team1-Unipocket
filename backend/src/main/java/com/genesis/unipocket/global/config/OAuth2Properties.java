@@ -5,7 +5,6 @@ import com.genesis.unipocket.global.exception.oauth.OAuthException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +17,11 @@ import org.springframework.stereotype.Component;
  * </p>
  */
 @Getter
-@Setter
 @Component
 @ConfigurationProperties(prefix = "oauth2")
 public class OAuth2Properties {
 
-	private List<OidcProviderConfig> providers = new ArrayList<>();
+	private final List<OidcProviderConfig> providers = new ArrayList<>();
 
 	/**
 	 * Provider 타입으로 설정 조회
@@ -40,7 +38,6 @@ public class OAuth2Properties {
 	 * - 외부에서 단독으로 생성해서 쓸 일이 없으므로 static inner class로 유지
 	 */
 	@Getter
-	@Setter
 	public static class OidcProviderConfig {
 		private ProviderType type; // 분리된 Enum 사용
 		private String clientId;

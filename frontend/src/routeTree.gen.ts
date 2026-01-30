@@ -12,11 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppTravelRouteImport } from './routes/_app.travel'
-import { Route as AppSettingRouteImport } from './routes/_app.setting'
-import { Route as AppInitRouteImport } from './routes/_app.init'
-import { Route as AppHomeRouteImport } from './routes/_app.home'
-import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppTravelRouteImport } from './routes/_app/travel'
+import { Route as AppSettingRouteImport } from './routes/_app/setting'
+import { Route as AppInitRouteImport } from './routes/_app/init'
+import { Route as AppHomeRouteImport } from './routes/_app/home'
+import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',

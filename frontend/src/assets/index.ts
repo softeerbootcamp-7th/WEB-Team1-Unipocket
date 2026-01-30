@@ -41,6 +41,7 @@ import Home from './Icons/home.svg';
 import Logo from './Icons/Logo.svg';
 import Phone from './Icons/phone.svg';
 import Refresh from './Icons/refresh.svg';
+import Swap from './Icons/swap.svg';
 import Travel from './Icons/travel.svg';
 
 export const Icons = {
@@ -57,6 +58,7 @@ export const Icons = {
   Camera,
   FileBox,
   Edit,
+  Swap,
 } as const;
 
 export type IconName = keyof typeof Icons;

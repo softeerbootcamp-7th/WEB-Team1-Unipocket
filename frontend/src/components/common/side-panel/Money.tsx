@@ -24,8 +24,8 @@ const RATE = 1464; // USD -> KRW
 const Money = () => {
   const [localCurrency, setLocalCurrency] = useState('');
   const [baseCurrency, setBaseCurrency] = useState('');
-  const [localCurrencyType, setLocalCurrencyType] = useState<number | null>(1);
-  const [amountError, setAmountError] = useState<string | null>(null);
+  const [localCurrencyType, setLocalCurrencyType] = useState(1);
+  const [amountError, setAmountError] = useState<string | null>('');
 
   const validateNumber = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');

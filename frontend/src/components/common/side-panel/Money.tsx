@@ -50,10 +50,21 @@ const Money = () => {
 
     if (direction === 'toBase') {
       setLocalCurrency(sanitized);
-      setBaseCurrency(sanitized === '' ? '' : (num * RATE).toFixed(0));
+      setBaseCurrency(
+        sanitized === ''
+          ? ''
+          : Number((num * RATE).toFixed(0)).toLocaleString(),
+      );
     } else {
       setBaseCurrency(sanitized);
-      setLocalCurrency(sanitized === '' ? '' : (num / RATE).toFixed(2));
+      setLocalCurrency(
+        sanitized === ''
+          ? ''
+          : Number((num / RATE).toFixed(2)).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }),
+      );
     }
   };
 

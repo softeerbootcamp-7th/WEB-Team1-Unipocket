@@ -27,15 +27,17 @@ const Money = () => {
   const [localCurrencyType, setLocalCurrencyType] = useState<number | null>(1);
   const [amountError, setAmountError] = useState<string | null>(null);
 
-
   const validateNumber = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');
-    const isValid = value === sanitized && (sanitized.match(/\./g)?.length ?? 0) <= 1;
+    const isValid =
+      value === sanitized && (sanitized.match(/\./g)?.length ?? 0) <= 1;
     return { sanitized, isValid };
   };
 
-
-  const handleCurrencyChange = (value: string, direction: 'toBase' | 'toLocal') => {
+  const handleCurrencyChange = (
+    value: string,
+    direction: 'toBase' | 'toLocal',
+  ) => {
     const { sanitized, isValid } = validateNumber(value);
 
     if (!isValid) {
@@ -54,7 +56,6 @@ const Money = () => {
       setLocalCurrency(sanitized === '' ? '' : (num / RATE).toFixed(2));
     }
   };
-
 
   return (
     <div className="flex w-90 flex-col gap-6">
@@ -77,7 +78,7 @@ const Money = () => {
             isError={!!amountError}
             errorMessage={amountError ?? undefined}
           />
-          <div className="mt-auto flex w-25">
+          <div className="flex w-25 pt-7">
             <DropDown
               selected={localCurrencyType}
               onSelect={setLocalCurrencyType}
@@ -118,7 +119,7 @@ const Money = () => {
             isError={!!amountError}
             errorMessage={amountError ?? undefined}
           />
-          <p className="body2-normal-medium text-label-assistive mt-auto ml-2.75 flex h-9 w-20 items-center">
+          <p className="body2-normal-medium text-label-assistive ml-2.75 w-20 items-center pt-10.5">
             KRW
           </p>
         </div>

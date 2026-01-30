@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useMatches } from '@tanstack/react-router';
 
 import Dropdown from '@/components/common/dropdown/Dropdown';
 
@@ -9,6 +10,8 @@ import { getLocalTime } from '@/lib/utils';
 import Button from './Button';
 
 const Header = () => {
+  const matches = useMatches();
+  const isInitPath = matches.some((match) => match.routeId === '/_app/init');
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [time, setTime] = useState(getLocalTime());
 
@@ -19,7 +22,7 @@ const Header = () => {
     { id: 3, name: '독일 교환학생' },
   ];
 
-  const showDropdown = true;
+  const showDropdown = !isInitPath;
 
   // 1분마다 한국 시간 갱신
   useEffect(() => {
@@ -41,10 +44,12 @@ const Header = () => {
         )}
       </div>
       <div className="flex items-center gap-5">
-        <div className="flex items-center gap-2">
-          <span className="label2-medium text-label-neutral">{time}</span>
-          <Icons.Refresh className="text-label-neutral h-4 w-4 cursor-pointer" />
-        </div>
+        {!isInitPath && (
+          <div className="flex items-center gap-2">
+            <span className="label2-medium text-label-neutral">{time}</span>
+            <Icons.Refresh className="text-label-neutral h-4 w-4 cursor-pointer" />
+          </div>
+        )}
         <Button onClick={() => {}}>모바일</Button>
         <img
           src={ProfileImage}

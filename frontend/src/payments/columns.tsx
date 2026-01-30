@@ -11,11 +11,7 @@ export const columns: ColumnDef<Expense>[] = [
     id: 'select',
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected()
-          // ||
-          // (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
+        checked={table.getIsAllPageRowsSelected()}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
@@ -30,16 +26,6 @@ export const columns: ColumnDef<Expense>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  // {
-  //   accessorKey: 'date',
-  //   header: ({ column }) => (
-  //     <DataTableHeader column={column} title="날짜" />
-  //   ),
-  //   cell: ({ row }) => {
-  //     const date = new Date(row.getValue('date'));
-  //     return <div>{date.toLocaleDateString('ko-KR')}</div>;
-  //   },
-  // },
   {
     accessorKey: 'storeName',
     header: () => <DataTableHeader>거래처</DataTableHeader>,

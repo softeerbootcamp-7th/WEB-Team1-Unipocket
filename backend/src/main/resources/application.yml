@@ -1,11 +1,3 @@
 spring:
   application:
     name: unipocket
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    url: ${DB_URL}
-  jpa:
-    hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate}

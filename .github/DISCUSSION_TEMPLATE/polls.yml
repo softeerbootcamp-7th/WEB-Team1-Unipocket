@@ -25,6 +25,8 @@ body:
         - 현재 상황:
         - 결정이 필요한 이유:
         - 관련 링크/토론:
+    validations:
+      required: true
 
   - type: textarea
     id: options

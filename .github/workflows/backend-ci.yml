@@ -4,6 +4,8 @@ on:
     branches:
       - develop
       - main
+      - backend
+      - feat-be/**
       - story/**
     paths:
       - "backend/src/**"

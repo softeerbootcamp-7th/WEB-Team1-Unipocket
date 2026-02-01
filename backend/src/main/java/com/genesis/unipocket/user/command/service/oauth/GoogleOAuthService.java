@@ -15,8 +15,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <b>Google OAuth Service</b>
- * @author bluefishez
- * @since 2026-01-29
+ * @author 김동균
+ * @since 2026-01-30
  */
 @Slf4j
 @RequiredArgsConstructor

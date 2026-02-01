@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * <b>OAuth Provider Factory</b>
  * @author 김동균
- * @since 2026-01-29
+ * @since 2026-01-30
  */
 @Component
 @RequiredArgsConstructor

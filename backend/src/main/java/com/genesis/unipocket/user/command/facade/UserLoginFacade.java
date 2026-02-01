@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <b>사용자 로그인 Facade</b>
- * @author bluefishez
- * @since 2026-01-29
+ * @author 김동균
+ * @since 2026-01-30
  */
 @Service
 @RequiredArgsConstructor

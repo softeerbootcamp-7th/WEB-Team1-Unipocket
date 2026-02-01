@@ -2,6 +2,12 @@
 <configuration>
     <property name="LOG_PATH" value="${LOG_PATH:-./logs}" />
     <property name="LOG_FILE_NAME" value="application" />
+    <property name="LOG_LEVEL" value="${LOG_LEVEL:-INFO}" />
+
+    <root level="${LOG_LEVEL}">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING_FILE" />
+    </root>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

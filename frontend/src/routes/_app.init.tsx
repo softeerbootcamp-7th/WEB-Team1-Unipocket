@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import InitPage from '@/components/init-page/InitPage';
+import InitPage from '@/pages/InitPage';
 
 export const Route = createFileRoute('/_app/init')({
   component: RouteComponent,

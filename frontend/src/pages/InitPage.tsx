@@ -1,4 +1,4 @@
-import LocaleSelectModal from '../common/modal/LocaleSelectModal';
+import LocaleSelectModal from '../components/common/modal/LocaleSelectModal';
 
 const InitPage = () => {
   return (

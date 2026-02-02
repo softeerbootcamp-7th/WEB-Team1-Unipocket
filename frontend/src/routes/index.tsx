@@ -1,6 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import LandingHeader from '@/components/landing-page/LandingHeader';
 import { Skeleton } from '@/components/ui/skeleton';
+
+import LandingPage from '@/pages/LandingPage';
 
 import { redirectIfAuthenticated } from '@/lib/auth';
 
@@ -14,5 +17,14 @@ export const Route = createFileRoute('/')({
 });
 
 function RouteComponent() {
-  return <div>Unipocket</div>;
+  return (
+    <div className="flex min-h-screen min-w-360 flex-col">
+      <header className="sticky top-0 z-50 bg-white">
+        <LandingHeader />
+      </header>
+      <main>
+        <LandingPage />
+      </main>
+    </div>
+  );
 }

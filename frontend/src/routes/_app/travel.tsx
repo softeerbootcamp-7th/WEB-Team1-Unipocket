@@ -15,7 +15,7 @@ export const Route = createFileRoute('/_app/travel')({
 function RouteComponent() {
   const data = getData();
   return (
-    <div className="p-10">
+    <div className="h-screen overflow-y-auto p-10">
       <DataTableProvider columns={columns} data={data}>
         <DataTable
           groupBy={(row: Expense) =>

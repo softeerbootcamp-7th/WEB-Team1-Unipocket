@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { Icons } from '@/assets';
 import { cn } from '@/lib/utils';
 
@@ -21,45 +23,34 @@ const SelectionActionProvider = () => {
   const { table, tableState } = useDataTable();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
+  const actionButtons = [
+    { label: '카테고리', onClick: () => console.log('카테고리 변경') },
+    { label: '결제수단', onClick: () => console.log('결제수단 변경') },
+    { label: '여행', onClick: () => console.log('여행 변경') },
+    {
+      label: '삭제',
+      onClick: () => console.log('삭제 실행'),
+      className: 'text-status-negative',
+    },
+  ];
+
   if (!tableState.selectionMode) return null;
 
   return (
     <div className="bg-inverse-background text-inverse-label body2-normal-bold fixed bottom-30 left-1/2 w-112.5 -translate-x-1/2 truncate rounded-xl p-3 px-3.5 shadow-2xl">
       <div className="flex items-center gap-4">
         <span className="mr-auto">{selectedRows.length}개 선택됨</span>
-        <SelectionActionButton
-          onClick={() => {
-            /* 카테고리 변경 로직 */
-          }}
-        >
-          카테고리
-        </SelectionActionButton>
-        <Divider />
-        <SelectionActionButton
-          onClick={() => {
-            /* 카테고리 변경 로직 */
-          }}
-        >
-          결제수단
-        </SelectionActionButton>
-        <Divider />
-        <SelectionActionButton
-          onClick={() => {
-            /* 카테고리 변경 로직 */
-          }}
-        >
-          여행
-        </SelectionActionButton>
-        <Divider />
-        <SelectionActionButton
-          className="text-status-negative"
-          onClick={() => {
-            /* 삭제 로직 */
-          }}
-        >
-          삭제
-        </SelectionActionButton>
-        <Divider />
+        {actionButtons.map((button, index) => (
+          <React.Fragment key={button.label}>
+            <SelectionActionButton
+              onClick={button.onClick}
+              className={button.className}
+            >
+              {button.label}
+            </SelectionActionButton>
+            {index < actionButtons.length - 1 && <Divider />}
+          </React.Fragment>
+        ))}
         <Icons.Close height={20} width={20} />
       </div>
     </div>

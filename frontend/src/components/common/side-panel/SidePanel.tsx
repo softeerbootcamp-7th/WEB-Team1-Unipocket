@@ -14,8 +14,8 @@ const SidePanel = () => {
 
   return (
     <div className="flex w-100 flex-col gap-8 pb-50 border-l border-line-normal-normal bg-background-normal shadow-panel">
-      <div className="flex p-4 justify-between">
-        <Icon iconName="ChevronForward" width={24} height={24} />
+      <div className="flex p-4 justify-between items-center">
+        <Icon color="text-label-neutral" iconName="ChevronForward" width={24} height={24} />
         <div className="flex gap-2">
             <Button>저장</Button>
             <Button>삭제</Button>

@@ -1,21 +1,20 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 export const useDebouncedEffect = (
   effect: () => void | (() => void),
   deps: React.DependencyList,
   delay = 500,
 ) => {
-  const cleanupRef = useRef<ReturnType<typeof effect> | undefined>(undefined);
-
   useEffect(() => {
+    let cleanup: void | (() => void);
     const timer = setTimeout(() => {
-      cleanupRef.current = effect();
+      cleanup = effect();
     }, delay);
 
     return () => {
       clearTimeout(timer);
-      if (typeof cleanupRef.current === 'function') {
-        cleanupRef.current();
+      if (typeof cleanup === 'function') {
+        cleanup();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

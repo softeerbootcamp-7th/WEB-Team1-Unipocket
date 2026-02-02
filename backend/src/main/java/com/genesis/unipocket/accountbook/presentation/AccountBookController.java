@@ -22,6 +22,6 @@ public class AccountBookController {
 	public ResponseEntity<CreateAccountBookRes> createAccountBook(
 			@Valid @RequestBody CreateAccountBookReq req) {
 
-		return ResponseEntity.ok(CreateAccountBookRes.builder().build());
+		return ResponseEntity.ok(CreateAccountBookRes.from(null));
 	}
 }

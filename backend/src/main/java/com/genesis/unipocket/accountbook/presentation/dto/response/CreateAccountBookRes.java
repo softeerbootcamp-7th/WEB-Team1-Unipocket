@@ -2,7 +2,7 @@ package com.genesis.unipocket.accountbook.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.genesis.unipocket.accountbook.facade.dto.AccountBookDto;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,13 +10,13 @@ import lombok.Getter;
  * @author bluefishez
  * @since 2026-01-30
  */
-@Builder
 @Getter
+@AllArgsConstructor
 public class CreateAccountBookRes {
 
 	@JsonUnwrapped private AccountBookDto accountBookDto;
 
 	public static CreateAccountBookRes from(AccountBookDto accountBookDto) {
-		return CreateAccountBookRes.builder().accountBookDto(accountBookDto).build();
+		return new CreateAccountBookRes(accountBookDto);
 	}
 }

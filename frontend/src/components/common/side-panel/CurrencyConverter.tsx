@@ -21,7 +21,7 @@ const currencyOptions: CurrencyOption[] = [
 // 환율 고정 (API 연동 후 선택 가능하도록 변경 예정)
 const RATE = 1464; // USD -> KRW
 
-const Money = () => {
+const CurrencyConverter = () => {
   const [localCurrency, setLocalCurrency] = useState('');
   const [baseCurrency, setBaseCurrency] = useState('');
   const [localCurrencyType, setLocalCurrencyType] = useState(1);
@@ -139,4 +139,4 @@ const Money = () => {
   );
 };
 
-export default Money;
+export default CurrencyConverter;

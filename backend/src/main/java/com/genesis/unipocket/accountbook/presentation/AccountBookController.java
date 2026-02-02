@@ -5,6 +5,7 @@ import com.genesis.unipocket.accountbook.presentation.dto.request.CreateAccountB
 import com.genesis.unipocket.accountbook.presentation.dto.response.CreateAccountBookRes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +23,6 @@ public class AccountBookController {
 	public ResponseEntity<CreateAccountBookRes> createAccountBook(
 			@Valid @RequestBody CreateAccountBookReq req) {
 
-		return ResponseEntity.ok(CreateAccountBookRes.from(null));
+		return ResponseEntity.status(HttpStatus.CREATED).body(CreateAccountBookRes.from(null));
 	}
 }

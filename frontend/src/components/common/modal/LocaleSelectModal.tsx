@@ -3,7 +3,7 @@ import { useMatches } from '@tanstack/react-router';
 
 import Control from '@/components/common/Control';
 
-import { countryCode } from '@/datas/countryCode';
+import { countryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 interface CountryItemProps {

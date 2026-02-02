@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import type { CountryCode } from '@/datas/countryCode';
+import type { CountryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 import type { ModalProps } from './Modal';

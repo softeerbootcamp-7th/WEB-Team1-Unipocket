@@ -1,5 +1,5 @@
-import countryData from '@/datas/country_data.json';
-import type { CountryCode } from '@/datas/countryCode';
+import type { CountryCode } from '@/data/countryCode';
+import countryData from '@/data/countryData.json';
 
 export interface CountryInfo {
   code: CountryCode;

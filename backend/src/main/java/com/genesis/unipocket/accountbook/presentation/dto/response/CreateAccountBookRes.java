@@ -1,5 +1,6 @@
 package com.genesis.unipocket.accountbook.presentation.dto.response;
 
+import com.genesis.unipocket.accountbook.facade.dto.AccountBookDto;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 
@@ -17,4 +18,16 @@ public record CreateAccountBookRes(
 		CountryCode baseCountryCode,
 		Integer budget,
 		LocalDate startDate,
-		LocalDate endDate) {}
+		LocalDate endDate) {
+	public static CreateAccountBookRes from(AccountBookDto accountBookDto) {
+		return new CreateAccountBookRes(
+				accountBookDto.id(),
+				accountBookDto.userId(),
+				accountBookDto.title(),
+				accountBookDto.localCountryCode(),
+				accountBookDto.baseCountryCode(),
+				accountBookDto.budget(),
+				accountBookDto.startDate(),
+				accountBookDto.endDate());
+	}
+}

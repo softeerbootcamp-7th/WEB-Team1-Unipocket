@@ -69,18 +69,22 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
   };
 
   const { title, subTitle } = getTextContent();
-
   return (
-    <div className="rounded-modal-20 bg-background-normal flex h-221 w-133 flex-col items-center gap-12 px-7.5 py-13">
+    <div className="rounded-modal-20 bg-background-normal flex flex-col items-center gap-12 px-7.5 py-13">
       {/* text section */}
       <div className="flex flex-col items-center gap-1.5 text-center">
         <span className="text-label-normal title3-semibold">{title}</span>
-        <span className="text-label-assistive heading2-medium">{subTitle}</span>
+        <span className="text-label-alternative heading2-medium">
+          {subTitle}
+        </span>
       </div>
 
       {/* select section */}
-      <div>
-        <input type="text" />
+      <div className="flex flex-col gap-4.5">
+        <input
+          type="text"
+          className="bg-fill-normal rounded-modal-10 h-15 w-full"
+        />
         <div className="flex h-142.5 w-118 flex-col overflow-y-auto">
           {countryCode.map((code) => {
             const data = getCountryInfo(code);

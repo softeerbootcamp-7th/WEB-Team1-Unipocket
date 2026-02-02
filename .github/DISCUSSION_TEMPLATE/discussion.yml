@@ -1,0 +1,62 @@
+title: "[Discussion] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        이 카테고리는 특정 주제에 대한 자유로운 토론 공간입니다.
+        명확한 질문/정답이 아니라도 괜찮습니다. (질문 해결 목적이면 Q&A로 올려주세요)
+
+  - type: input
+    id: topic
+    attributes:
+      label: 토론 주제
+      description: 한 문장으로 토론의 핵심을 요약해 주세요.
+      placeholder: "예) API 응답 포맷을 통일할지 여부"
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 배경/맥락
+      description: 왜 이 토론이 필요한지, 현재 상황은 어떤지 적어 주세요.
+      placeholder: |
+        - 현재 방식:
+        - 문제/불편:
+        - 관련 링크/이슈:
+    validations:
+      required: true
+
+  - type: textarea
+    id: options
+    attributes:
+      label: 고려 중인 선택지
+      description: 선택지가 있다면 장단점을 포함해 적어 주세요.
+      placeholder: |
+        1) 선택지 A
+           - 장점:
+           - 단점:
+        2) 선택지 B
+           - 장점:
+           - 단점:
+
+  - type: textarea
+    id: questions
+    attributes:
+      label: 팀에게 묻고 싶은 것
+      description: 어떤 의견/결정을 원하는지 구체화해 주세요.
+      placeholder: |
+        - 어떤 기준으로 선택하면 좋을지?
+        - 리스크나 놓친 포인트가 있는지?
+
+  - type: dropdown
+    id: decision_needed
+    attributes:
+      label: 이 글의 목표
+      options:
+        - "의견 수렴(결정은 나중에)"
+        - "결정 필요(이번 스프린트 내)"
+        - "경험 공유/회고"
+        - "정보 수집"
+    validations:
+      required: true

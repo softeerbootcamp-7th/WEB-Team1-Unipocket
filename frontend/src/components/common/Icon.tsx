@@ -19,7 +19,13 @@ interface IconProps {
  * @example
  * <Icon iconName="Close" width={12} onClick={() => handleClose()} />
  */
-const Icon = ({ width = 24, height = 24, color = 'text-label-alternative', iconName, onClick }: IconProps) => {
+const Icon = ({
+  width = 24,
+  height = 24,
+  color = 'text-label-alternative',
+  iconName,
+  onClick,
+}: IconProps) => {
   const IconComponent = Icons[iconName];
 
   return (

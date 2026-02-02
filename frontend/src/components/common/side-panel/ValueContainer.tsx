@@ -1,6 +1,6 @@
-import type React from "react";
+import type React from 'react';
 
-import Category from "../Category";
+import Category from '../Category';
 
 interface ValueItemProps {
   label: string;
@@ -27,25 +27,22 @@ const VALUE_ITEM_OPTIONS: ValueItemProps[] = [
   },
 ];
 
-
 const ValueItem = ({ label, value }: ValueItemProps) => {
   return (
     <div className="flex h-8 items-center">
-        <p className="w-25 label1-normal-bold text-label-alternative">{label}</p>
-        <p className="w-63 px-1 label1-normal-medium text-label-normal">{value}</p>
+      <p className="label1-normal-bold text-label-alternative w-25">{label}</p>
+      <p className="label1-normal-medium text-label-normal w-63 px-1">
+        {value}
+      </p>
     </div>
-  )
-}
+  );
+};
 
 const ValueContainer = () => {
   return (
     <div className="flex flex-col gap-2">
       {VALUE_ITEM_OPTIONS.map(({ label, value }) => (
-        <ValueItem
-          key={label}
-          label={label}
-          value={value}
-        />
+        <ValueItem key={label} label={label} value={value} />
       ))}
     </div>
   );

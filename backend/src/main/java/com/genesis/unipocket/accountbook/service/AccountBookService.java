@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * <b>가계부 서비스</b>
  * <p>
@@ -17,22 +21,48 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AccountBookService {
-	private final AccountBookJpaRepository jpaRepository;
+	private final AccountBookJpaRepository repository;
 
 	@Transactional
 	public AccountBookDto create(long userId, CreateAccountBookReq req) {
 
+		String title = getUniqueTitle(req.getTitle());
+
 		AccountBookEntity newEntity =
 				AccountBookEntity.create(
 						userId,
-						req.getTitle(),
+						title,
 						req.getLocalCountryCode(),
 						req.getBaseCountryCode(),
 						req.getStartDate(),
 						req.getEndDate());
 
-		AccountBookEntity savedEntity = jpaRepository.save(newEntity);
+		AccountBookEntity savedEntity = repository.save(newEntity);
 
 		return AccountBookDto.from(savedEntity);
+	}
+
+	private String getUniqueTitle(String title) {
+		String baseName = title.replaceAll("\\s\\(\\d+\\)$", "");
+
+		List<String> existingNames = repository.findNamesStartingWith(baseName);
+
+		// 중복이 없으면 바로 반환
+		if (!existingNames.contains(title)) {
+			return title;
+		}
+
+		// 최대 숫자 탐색
+		int maxNum = 0;
+		Pattern pattern = Pattern.compile(Pattern.quote(baseName) + "\\s\\((\\d+)\\)$");
+
+		for (String name : existingNames) {
+			Matcher matcher = pattern.matcher(name);
+			if (matcher.matches()) {
+				maxNum = Math.max(maxNum, Integer.parseInt(matcher.group(1)));
+			}
+		}
+
+		return String.format("%s (%d)", baseName, maxNum + 1);
 	}
 }

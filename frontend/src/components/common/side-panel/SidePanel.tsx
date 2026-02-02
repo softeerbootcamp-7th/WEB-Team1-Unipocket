@@ -19,18 +19,13 @@ const uploadTitleMap: Record<Exclude<SidePanelInputMode, 'manual'>, string> = {
 
 interface SidePanelProps {
   mode?: SidePanelInputMode;
-
-  // file / image 전용
-  files?: File[];
-  onFilesChange?: (files: File[]) => void;
-
-  // 저장
-  onSave?: () => void;
+  file?: File; // file / image 전용
 }
 
 const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
+  const isSaving = false;
 
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -51,8 +46,17 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
         />
         <div className="flex gap-4 items-center">
           <div className="flex gap-1 items-center">
-            <p className="text-label-alternative label2-medium">저장 중...</p>
-            <Icons.Loading className="animate-spin w-3 h-3 text-label-assistive" />
+            {isSaving ? (
+              <>
+                <p className="label2-medium text-label-alternative">저장 중...</p>
+                <Icons.Loading className="h-3 w-3 animate-spin text-label-assistive" />
+              </>
+            ) : (
+              <>
+                <p className="label2-medium text-label-alternative">저장됨</p>
+                <Icons.CheckmarkCircle className="h-3 w-3" />
+              </>
+            )}
           </div>
           <Button>삭제</Button>
         </div>

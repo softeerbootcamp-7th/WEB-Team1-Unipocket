@@ -24,16 +24,19 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // --- 스크롤 방지 로직 추가 ---
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = 'hidden';
+    const scrollContainer = document.querySelector('.overflow-y-auto');
 
-    inputRef.current?.focus();
-    inputRef.current?.select();
+    if (scrollContainer instanceof HTMLElement) {
+      const originalStyle = scrollContainer.style.overflow;
+      scrollContainer.style.overflow = 'hidden';
 
-    return () => {
-      document.body.style.overflow = originalStyle;
-    };
+      inputRef.current?.focus();
+      inputRef.current?.select();
+
+      return () => {
+        scrollContainer.style.overflow = originalStyle;
+      };
+    }
   }, []);
 
   const handleSave = () => {

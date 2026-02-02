@@ -39,3 +39,6 @@ out/
 ### DS_Store ###
 *.DS_Store
 **/*.DS_Store
+
+### Local-only config ###
+src/main/resources/application-local.yml

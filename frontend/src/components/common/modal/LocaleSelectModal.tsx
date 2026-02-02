@@ -13,6 +13,7 @@ interface CountryItemProps {
   checked: boolean;
   value: string;
   onChange: (value: string) => void;
+  isLast: boolean;
 }
 
 const CountryItem = ({
@@ -22,9 +23,14 @@ const CountryItem = ({
   checked,
   value,
   onChange,
+  isLast,
 }: CountryItemProps) => {
   return (
-    <div className="border-line-normal-normal flex w-full items-center justify-center gap-6 border-b py-5 pr-2.5 pl-2">
+    <div
+      className={`border-line-normal-normal flex w-full items-center justify-center gap-6 border-b py-5 pr-2.5 pl-2 ${
+        isLast ? 'border-b-0' : ''
+      }`}
+    >
       <Control
         name="currency-select"
         value={value}
@@ -86,7 +92,7 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
           className="bg-fill-normal rounded-modal-10 h-15 w-full"
         />
         <div className="flex h-142.5 w-118 flex-col overflow-y-auto">
-          {countryCode.map((code) => {
+          {countryCode.map((code, index) => {
             const data = getCountryInfo(code);
 
             if (!data) return null;
@@ -100,6 +106,7 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
                 currency={`${data.currencySign} ${data.currencyName}`}
                 checked={selectedCode === code}
                 onChange={setSelectedCode}
+                isLast={index === countryCode.length - 1}
               />
             );
           })}

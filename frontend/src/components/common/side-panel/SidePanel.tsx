@@ -6,11 +6,13 @@ import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
 
 import CurrencyConverter from './CurrencyConverter';
+import ValueContainer from './ValueContainer';
 
 const SidePanel = () => {
   const [memo, setMemo] = useState('');
 
   const title = 'Coles (Wollongong Central) Groceries';
+  const showUploader = false;
 
   return (
     <div className="flex w-100 flex-col gap-8 pb-50 border-l border-line-normal-normal bg-background-normal shadow-panel">
@@ -23,7 +25,7 @@ const SidePanel = () => {
       </div>
       <div className="flex flex-col gap-10 px-5">
         <div className="heading1-bold text-label-strong word-break">{title}</div>
-        <div>value container</div>
+        <ValueContainer />
         <Divider style="thin" />
         <CurrencyConverter />
         <Divider style="thin" />
@@ -33,8 +35,10 @@ const SidePanel = () => {
           title="메모"
           placeholder="메모를 입력해 주세요."
         />
-        <Divider style="thin" />
-        <div>uploader</div>
+        
+        {showUploader && (
+          <><Divider style="thin" /><div>업로더</div></>
+        )}
       </div>
     </div>
   );

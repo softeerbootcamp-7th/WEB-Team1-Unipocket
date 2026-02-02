@@ -11,6 +11,7 @@ interface CurrencyOption {
   name: string;
 }
 
+// test
 const currencyOptions: CurrencyOption[] = [
   { id: 1, name: 'USD' },
   { id: 2, name: 'KRW' },

@@ -5,8 +5,6 @@ import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
 
-import { Icons } from '@/assets'
-
 import CurrencyConverter from './CurrencyConverter';
 import ValueContainer from './ValueContainer';
 
@@ -25,7 +23,7 @@ interface SidePanelProps {
 const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
-  const isSaving = false;
+  //const isEditing = false; // @TODO 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
 
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -44,9 +42,9 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
           width={24}
           height={24}
         />
-        <div className="flex gap-4 items-center">
-          <div className="flex gap-1 items-center">
-            {isSaving ? (
+        <div className="flex gap-2 items-center">
+          {/*<div className="flex gap-1 items-center">
+            {isEditing ? (
               <>
                 <p className="label2-medium text-label-alternative">저장 중...</p>
                 <Icons.Loading className="h-3 w-3 animate-spin text-label-assistive" />
@@ -57,16 +55,17 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
                 <Icons.CheckmarkCircle className="h-3 w-3" />
               </>
             )}
-          </div>
+          </div>*/}
+          <Button variant='solid'>저장</Button>
           <Button>삭제</Button>
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">
         <textarea
           ref={ref}
-          className="heading1-bold text-label-strong resize-none overflow-hidden border-0 bg-transparent leading-tight outline-0"
+          className="heading1-bold text-label-strong resize-none overflow-hidden border-0 bg-transparent leading-tight outline-0 placeholder:text-label-assistive "
           value={title}
-          placeholder="제목을 입력해 주세요."
+          placeholder="거래처를 입력해 주세요."
           onChange={(e) => {
             setTitle(e.target.value);
           }}

@@ -12,10 +12,10 @@ const SidePanel = () => {
   const [memo, setMemo] = useState('');
 
   const title = 'Coles (Wollongong Central) Groceries';
-  const showUploader = false;
+  const showUploader = true;
 
   return (
-    <div className="flex w-100 flex-col gap-8 pb-50 border-l border-line-normal-normal bg-background-normal shadow-panel">
+    <div className="flex w-100 h-screen overflow-y-auto scrollbar fixed right-0 top-0 z-50 flex-col gap-8 pb-50 border-l border-line-normal-normal bg-background-normal shadow-panel">
       <div className="flex p-4 justify-between items-center">
         <Icon color="text-label-neutral" iconName="ChevronForward" width={24} height={24} />
         <div className="flex gap-2">

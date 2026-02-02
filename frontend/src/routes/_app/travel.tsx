@@ -3,10 +3,12 @@ import { createFileRoute } from '@tanstack/react-router';
 import { DataTable } from '@/components/common/data-table/DataTable';
 import DataTableCellEditor from '@/components/common/data-table/DataTableCellEditor';
 import DataTableProvider from '@/components/common/data-table/DataTableProvider';
+import { columns } from '@/components/common/data-table/payments/columns';
+import {
+  type Expense,
+  getData,
+} from '@/components/common/data-table/payments/dummy';
 import SelectionActionProvider from '@/components/common/data-table/SelectionActionProvider';
-
-import { columns } from '@/payments/columns';
-import { type Expense, getData } from '@/payments/dummy';
 
 export const Route = createFileRoute('/_app/travel')({
   component: RouteComponent,

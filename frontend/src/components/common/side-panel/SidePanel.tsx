@@ -42,7 +42,7 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
           width={24}
           height={24}
         />
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           {/*<div className="flex gap-1 items-center">
             {isEditing ? (
               <>
@@ -56,14 +56,14 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
               </>
             )}
           </div>*/}
-          <Button variant='solid'>저장</Button>
+          <Button variant="solid">저장</Button>
           <Button>삭제</Button>
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">
         <textarea
           ref={ref}
-          className="heading1-bold text-label-strong resize-none overflow-hidden border-0 bg-transparent leading-tight outline-0 placeholder:text-label-assistive "
+          className="heading1-bold text-label-strong placeholder:text-label-assistive resize-none overflow-hidden border-0 bg-transparent leading-tight outline-0"
           value={title}
           placeholder="거래처를 입력해 주세요."
           onChange={(e) => {

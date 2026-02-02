@@ -4,23 +4,21 @@ import type { Table } from '@tanstack/react-table';
 
 import type { TableUIAction, TableUIState } from './type';
 
-export interface DataTableContextType<TData, TValue> {
+export interface DataTableContextType<TData> {
   table: Table<TData>;
-  tableState: TableUIState<TValue>;
-  dispatch: React.Dispatch<TableUIAction<TValue>>;
+  tableState: TableUIState;
+  dispatch: React.Dispatch<TableUIAction>;
 }
 
-export const DataTableContext = createContext<DataTableContextType<
-  unknown,
-  unknown
-> | null>(null);
+export const DataTableContext =
+  createContext<DataTableContextType<unknown> | null>(null);
 
-export const useDataTable = <TData, TValue>() => {
+export const useDataTable = <TData>() => {
   const context = useContext(DataTableContext);
 
   if (!context) {
     throw new Error('useDataTable must be used within a DataTableProvider');
   }
 
-  return context as DataTableContextType<TData, TValue>;
+  return context as DataTableContextType<TData>;
 };

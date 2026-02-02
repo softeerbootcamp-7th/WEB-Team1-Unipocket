@@ -87,7 +87,7 @@ const DataTableProvider = <TData, TValue = unknown>({
           table,
           tableState,
           dispatch,
-        } as DataTableContextType<unknown, unknown>
+        } as DataTableContextType<unknown>
       }
     >
       {children}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Icons } from '@/assets';
+import { checkDateEqual } from '@/lib/date.utils';
 
 import { CalendarView } from './CalendarView';
 
@@ -37,11 +38,11 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
     let newEnd: Date | null = null;
 
     if (startDate && !endDate) {
-      if (date.getTime() < startDate.getTime()) {
-        newStart = date;
+      if (checkDateEqual(date, startDate)) {
+        newStart = null;
         newEnd = null;
-      } else if (date.getTime() === startDate.getTime()) {
-        newStart = startDate; // Keep selection if same date clicked (or could toggle off)
+      } else if (date < startDate) {
+        newStart = date;
         newEnd = null;
       } else {
         newStart = startDate;

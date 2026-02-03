@@ -4,7 +4,7 @@ import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.exception.oauth.OAuthException;
 import com.genesis.unipocket.user.command.persistence.entity.OAuthLoginStateEntity;
-import com.genesis.unipocket.user.command.persistence.repository.OAuthLoginStateJpaRepository;
+import com.genesis.unipocket.user.command.persistence.repository.OAuthLoginStateRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OAuthLoginStateService {
 
-	private final OAuthLoginStateJpaRepository loginStateRepository;
+	private final OAuthLoginStateRepository loginStateRepository;
 
 	@Transactional
 	public void saveLoginState(String state, ProviderType providerType) {

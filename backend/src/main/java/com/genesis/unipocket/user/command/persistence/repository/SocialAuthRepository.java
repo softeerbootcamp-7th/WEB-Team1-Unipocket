@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author 김동균
  * @since 2026-01-30
  */
-public interface SocialAuthJpaRepository extends JpaRepository<SocialAuthEntity, Long> {
+public interface SocialAuthRepository extends JpaRepository<SocialAuthEntity, Long> {
 
 	/**
 	 * Provider와 Provider ID로 소셜 인증 정보 조회

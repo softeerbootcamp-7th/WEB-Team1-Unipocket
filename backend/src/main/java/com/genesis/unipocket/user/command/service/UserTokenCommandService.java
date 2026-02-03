@@ -3,7 +3,7 @@ package com.genesis.unipocket.user.command.service;
 import com.genesis.unipocket.global.auth.JwtProvider;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.user.command.persistence.repository.UserJpaRepository;
+import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
 import com.genesis.unipocket.user.command.presentation.dto.response.LoginResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserTokenCommandService {
 
-	private final UserJpaRepository userRepository;
+	private final UserRepository userRepository;
 	private final JwtProvider jwtProvider; // 🆕 기술 도구 주입
 
 	@Value("${jwt.access-token-validity}")

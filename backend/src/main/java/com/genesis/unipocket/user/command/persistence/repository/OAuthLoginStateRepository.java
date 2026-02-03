@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author 김동균
  * @since 2026-01-30
  */
-public interface OAuthLoginStateJpaRepository extends JpaRepository<OAuthLoginStateEntity, String> {
+public interface OAuthLoginStateRepository extends JpaRepository<OAuthLoginStateEntity, String> {
 
 	Optional<OAuthLoginStateEntity> findByState(String state);
 }

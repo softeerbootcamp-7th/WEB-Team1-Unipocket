@@ -3,8 +3,8 @@ package com.genesis.unipocket.user.command.service;
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.user.command.persistence.entity.SocialAuthEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.command.persistence.repository.SocialAuthJpaRepository;
-import com.genesis.unipocket.user.command.persistence.repository.UserJpaRepository;
+import com.genesis.unipocket.user.command.persistence.repository.SocialAuthRepository;
+import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
 import com.genesis.unipocket.user.command.presentation.dto.response.LoginResponse;
 import com.genesis.unipocket.user.command.service.oauth.dto.OAuthUserInfo;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserCommandService {
 
-	private final UserJpaRepository userRepository;
-	private final SocialAuthJpaRepository socialAuthRepository;
+	private final UserRepository userRepository;
+	private final SocialAuthRepository socialAuthRepository;
 	private final UserTokenCommandService userTokenCommandService;
 
 	/**

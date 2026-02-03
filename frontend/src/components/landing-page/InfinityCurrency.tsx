@@ -122,10 +122,6 @@ const MarqueeRow = ({
       })}
     </div>
   );
-};
-
-const InfiniteCurrency = () => {
-  const [activeCode, setActiveCode] = useState<string | null>(null);
 
   return (
     <div className="group flex">

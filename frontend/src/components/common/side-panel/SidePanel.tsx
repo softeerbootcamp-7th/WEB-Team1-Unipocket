@@ -23,7 +23,7 @@ interface SidePanelProps {
 const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
-  //const isEditing = false; // @TODO 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
+  //const isEditing = false; // @TODO: 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
 
   const ref = useRef<HTMLTextAreaElement>(null);
 

@@ -53,8 +53,8 @@ const LocaleConfirmModal = ({
         <div className="flex w-full flex-col items-center gap-2.5">
           {isCountry ? (
             <>
-              <p className="heading2-bold">
-                {countryName}(으)로 설정하시겠습니까?
+              <p className="heading2-bold text-center">
+                {countryName}(으)로 <br /> 설정하시겠습니까?
               </p>
               <p className="heading2-bold text-label-alternative">
                 {currencySign} {currencyName}
@@ -62,8 +62,8 @@ const LocaleConfirmModal = ({
             </>
           ) : (
             <>
-              <p className="heading2-bold">
-                기준 통화를 {currencyName}(으)로 변경하시겠습니까?
+              <p className="heading2-bold text-center">
+                기준 통화를 {currencyName}(으)로 <br /> 변경하시겠습니까?
               </p>
               <p className="text-label-alternative body1-normal-regular">
                 기존 KRW에서 {currencySign}(으)로 변경됩니다.

@@ -86,13 +86,15 @@ const CalendarMonthView = ({
   );
 };
 
+interface CalendarMonthPopoverProps {
+  date: Date;
+  onDateChange: (date: Date) => void;
+}
+
 const CalendarMonthPopover = ({
   date,
   onDateChange,
-}: {
-  date: Date;
-  onDateChange: (date: Date) => void;
-}) => {
+}: CalendarMonthPopoverProps) => {
   const [open, setOpen] = useState(false);
 
   const handleDateChange = (newDate: Date) => {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { clsx } from 'clsx';
 
+import DropDown from '@/components/common/dropdown/Dropdown';
 import Icon from '@/components/common/Icon';
 
 const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -28,16 +29,23 @@ export default function DateTimePicker() {
 
   const dates: Date[] = [];
 
-  for (let i = startWeekDay - 1; i >= 0; i--) {
-    dates.push(new Date(year, month - 1, prevMonthDays - i));
+  // 이전 달
+  for (let i = 0; i < startWeekDay; i++) {
+    dates.push(
+      new Date(year, month - 1, prevMonthDays - startWeekDay + 1 + i),
+    );
   }
 
+  // 이번 달
   for (let i = 1; i <= daysInMonth; i++) {
     dates.push(new Date(year, month, i));
   }
 
+  // 다음 달
+  let nextMonthDay = 1;
   while (dates.length % 7 !== 0) {
-    dates.push(new Date(year, month + 1, dates.length));
+    dates.push(new Date(year, month + 1, nextMonthDay));
+    nextMonthDay++;
   }
 
   const selectedDateTime =
@@ -91,7 +99,7 @@ export default function DateTimePicker() {
               onClick={() => setSelectedDate(date)}
               className={clsx(
                 'figure-body2-14-semibold mx-auto flex h-7 w-8 items-center justify-center rounded-full',
-                !isCurrentMonth && 'text-label-disable opacity-16',
+                !isCurrentMonth && !isSelected && 'text-label-disable',
                 !isSelected &&
                   'hover:bg-inverse-label hover:text-primary-normal',
                 isSelected && 'bg-primary-normal text-inverse-label',
@@ -104,31 +112,30 @@ export default function DateTimePicker() {
       </div>
 
       <div className="flex items-center justify-center gap-3">
-        <select
-          value={hour}
-          onChange={(e) => setHour(Number(e.target.value))}
-          className="rounded-lg border px-3 py-2"
-        >
-          {Array.from({ length: 24 }).map((_, i) => (
-            <option key={i} value={i}>
-              {i.toString().padStart(2, '0')}
-            </option>
-          ))}
-        </select>
-
-        <span className="text-gray-400">:</span>
-
-        <select
-          value={minute}
-          onChange={(e) => setMinute(Number(e.target.value))}
-          className="rounded-lg border px-3 py-2"
-        >
-          {Array.from({ length: 60 }).map((_, i) => (
-            <option key={i} value={i}>
-              {i.toString().padStart(2, '0')}
-            </option>
-          ))}
-        </select>
+        <div className="w-16">
+          <DropDown
+            selected={hour}
+            onSelect={(value) => setHour(value)}
+            options={Array.from({ length: 24 }).map((_, i) => ({
+              id: i,
+              name: i.toString().padStart(2, '0'),
+            }))}
+            size="md"
+          />
+        </div>
+        <p className="text-gray-400">:</p>
+        <div className="w-16">
+          <DropDown
+            selected={minute}
+            onSelect={(value) => setMinute(value)}
+            options={Array.from({ length: 60 }).map((_, i) => ({
+              id: i,
+              name: i.toString().padStart(2, '0'),
+            }))}
+            size="md"
+          />
+        </div>
+        
       </div>
 
       {selectedDateTime && (

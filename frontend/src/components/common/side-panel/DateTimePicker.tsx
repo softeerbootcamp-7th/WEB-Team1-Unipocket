@@ -65,8 +65,6 @@ export default function DateTimePicker() {
       minute,
     );
 
-  console.log('Selected DateTime:', selectedDateTime?.toISOString());
-
   return (
     <div className="rounded-modal-10 border-line-normal-normal bg-background-normal w-65 space-y-4 border p-4">
       <div className="flex items-center justify-between">

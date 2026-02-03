@@ -70,9 +70,9 @@ export default function DateTimePicker() {
           height={20}
           onClick={() => setCurrentMonth(new Date(year, month - 1))}
         />
-        <p className="text-label-normal headline2-bold">
+        <span className="text-label-normal headline2-bold">
           {year}년 {month + 1}월
-        </p>
+        </span>
         <Icon
           iconName="ChevronForward"
           color="text-label-normal"
@@ -123,7 +123,7 @@ export default function DateTimePicker() {
             size="md"
           />
         </div>
-        <p className="text-gray-400">:</p>
+        <span className="text-gray-400">:</span>
         <div className="w-16">
           <DropDown
             selected={minute}
@@ -139,9 +139,9 @@ export default function DateTimePicker() {
       </div>
 
       {selectedDateTime && (
-        <p className="label2-medium text-center text-gray-600">
+        <span className="label2-medium text-center text-gray-600">
           선택됨: {selectedDateTime.toLocaleString('ko-KR')}
-        </p>
+        </span>
       )}
     </div>
   );

@@ -1,5 +1,16 @@
 package com.genesis.unipocket.global.exception;
 
+/**
+ * <b>전체 비즈니스 에러 코드</b>
+ * <p>
+ * 커스텀 예외 정의를 해둔 enum 이며, ErrorResponse 정의에 사용됩니다.
+ * <br>
+ * 적절한 HTTP 응답 코드, 프론트 엔드에게 전달하기 위한 에러 코드를 위한 별도의 코드네임과 전달 메세지를 담습니다.
+ * </p>
+ * @author bluefishez
+ * @since 2026-01-25
+ */
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -27,7 +38,6 @@ public enum ErrorCode {
 	UNSUPPORTED_MEDIA_TYPE(
 			HttpStatus.UNSUPPORTED_MEDIA_TYPE, "415_UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 미디어 타입입니다."),
 
-	// ========== 여기부터 추가 ==========
 	// OAuth 에러
 	INVALID_OAUTH_PROVIDER(
 			HttpStatus.BAD_REQUEST, "400_INVALID_OAUTH_PROVIDER", "지원하지 않는 OAuth Provider입니다."),

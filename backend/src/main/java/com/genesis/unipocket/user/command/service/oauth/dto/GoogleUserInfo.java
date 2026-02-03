@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * <b>Google 사용자 정보 DTO</b>
- * @author bluefishez
+ * 
+ * @author 김동균
  * @since 2026-01-29
  */
 @Getter

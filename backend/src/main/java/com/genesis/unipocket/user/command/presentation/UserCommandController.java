@@ -25,82 +25,82 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class UserCommandController {
 
-	private final OAuthAuthorizeFacade authorizeFacade;
-	private final UserLoginFacade loginFacade;
+    private final OAuthAuthorizeFacade authorizeFacade;
+    private final UserLoginFacade loginFacade;
 
-	@Value("${app.frontend.url:http://localhost:3000}")
-	private String frontendUrl;
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
-	/**
-	 * OAuth 인증 시작: 소셜 로그인 페이지로 리다이렉트
-	 */
-	@GetMapping("/oauth2/authorize/{provider}")
-	public void authorize(@PathVariable("provider") String provider, HttpServletResponse response)
-			throws IOException {
+    /**
+     * OAuth 인증 시작: 소셜 로그인 페이지로 리다이렉트
+     */
+    @GetMapping("/oauth2/authorize/{provider}")
+    public void authorize(@PathVariable("provider") String provider, HttpServletResponse response)
+            throws IOException {
 
-		log.info("OAuth authorize request for provider: {}", provider);
-		ProviderType providerType = getProviderType(provider);
+        log.info("OAuth authorize request for provider: {}", provider);
+        ProviderType providerType = getProviderType(provider);
 
-		AuthorizeResponse authResponse = authorizeFacade.authorize(providerType);
-		response.sendRedirect(authResponse.getAuthorizationUrl());
-	}
+        AuthorizeResponse authResponse = authorizeFacade.authorize(providerType);
+        response.sendRedirect(authResponse.getAuthorizationUrl());
+    }
 
-	/**
-	 * OAuth 콜백 처리: 로그인 완료 후 프론트엔드로 리다이렉트
-	 */
-	@GetMapping("/oauth2/callback/{provider}")
-	public void callback(
-			@PathVariable("provider") String provider,
-			@RequestParam("code") String code,
-			@RequestParam(value = "state", required = false) String state,
-			HttpServletResponse response)
-			throws IOException {
+    /**
+     * OAuth 콜백 처리: 로그인 완료 후 프론트엔드로 리다이렉트
+     */
+    @GetMapping("/oauth2/callback/{provider}")
+    public void callback(
+            @PathVariable("provider") String provider,
+            @RequestParam("code") String code,
+            @RequestParam(value = "state", required = false) String state,
+            HttpServletResponse response)
+            throws IOException {
 
-		log.info("OAuth callback received for provider: {}", provider);
-		ProviderType providerType = getProviderType(provider);
+        log.info("OAuth callback received for provider: {}", provider);
+        ProviderType providerType = getProviderType(provider);
 
-		LoginResponse loginResponse = loginFacade.login(providerType, code, state);
+        LoginResponse loginResponse = loginFacade.login(providerType, code, state);
 
-		addCookie(
-				response,
-				"access_token",
-				loginResponse.getAccessToken(),
-				loginResponse.getExpiresIn().intValue());
+        addCookie(
+                response,
+                "access_token",
+                loginResponse.getAccessToken(),
+                loginResponse.getExpiresIn().intValue());
 
-		String redirectUrl = createRedirectUrl();
-		response.sendRedirect(redirectUrl);
-	}
+        String redirectUrl = createRedirectUrl();
+        response.sendRedirect(redirectUrl);
+    }
 
-	/**
-	 * Provider 문자열을 Enum으로 변환하고 유효성 검증
-	 */
-	private ProviderType getProviderType(String provider) {
-		try {
-			return ProviderType.valueOf(provider.toUpperCase());
-		} catch (IllegalArgumentException e) {
-			log.error("Invalid OAuth provider: {}", provider);
-			throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
-		}
-	}
+    /**
+     * Provider 문자열을 Enum으로 변환하고 유효성 검증
+     */
+    private ProviderType getProviderType(String provider) {
+        try {
+            return ProviderType.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid OAuth provider: {}", provider);
+            throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
+        }
+    }
 
-	/**
-	 * 쿠키 추가 유틸리티
-	 */
-	private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-		Cookie cookie = new Cookie(name, value);
-		cookie.setPath("/");
-		cookie.setMaxAge(maxAge);
+    /**
+     * 쿠키 추가 유틸리티
+     */
+    private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
 
-		// HTTPS 환경에서는 Secure 설정 권장 (개발 환경 고려하여 일단 false 또는 조건부)
-		// cookie.setSecure(true);
+        // HTTPS 환경에서는 Secure 설정 권장 (개발 환경 고려하여 일단 false 또는 조건부)
+        // cookie.setSecure(true);
 
-		response.addCookie(cookie);
-	}
+        response.addCookie(cookie);
+    }
 
-	/**
-	 * 프론트엔드 리다이렉트 URL 생성 유틸리티
-	 */
-	private String createRedirectUrl() {
-		return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
-	}
+    /**
+     * 프론트엔드 리다이렉트 URL 생성 유틸리티
+     */
+    private String createRedirectUrl() {
+        return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
+    }
 }

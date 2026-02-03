@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
  * application.yml의 oauth2 설정을 바인딩하는 클래스입니다.
  * OIDC 표준을 준수하며, 여러 Provider를 동일한 인터페이스로 관리합니다.
  * </p>
- * @author bluefishez
+ * 
+ * @author 김동균
  * @since 2026-01-29
  */
 @Getter

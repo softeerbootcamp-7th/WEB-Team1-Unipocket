@@ -15,7 +15,7 @@ const LandingHeader = () => {
   ];
 
   return (
-    <nav className="bg-background-alternative flex items-center justify-between px-8 py-3">
+    <nav className="bg-background-alternative border-fill-normal flex items-center justify-between border-b px-8 py-3">
       {/* 로고 영역 */}
       <Link to="/" hash="home">
         <Icons.LogoText className="h-8 w-25" />

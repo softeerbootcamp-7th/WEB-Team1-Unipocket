@@ -13,9 +13,9 @@ import org.springframework.web.client.RestClient;
  */
 @Configuration
 public class RestClientConfig {
-    // 타임아웃 설정을 변수로 추출
-    private static final int CONNECT_TIMEOUT_SECONDS = 5;
-    private static final int READ_TIMEOUT_SECONDS = 10;
+	// 타임아웃 설정을 변수로 추출
+	private static final int CONNECT_TIMEOUT_SECONDS = 5;
+	private static final int READ_TIMEOUT_SECONDS = 10;
 
 	@Bean
 	public RestClient restClient() {

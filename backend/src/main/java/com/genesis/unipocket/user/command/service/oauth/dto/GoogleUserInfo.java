@@ -13,38 +13,38 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GoogleUserInfo implements OAuthUserInfo {
 
-    @JsonProperty("sub")
-    private String sub;
+	@JsonProperty("sub")
+	private String sub;
 
-    @JsonProperty("email")
-    private String email;
+	@JsonProperty("email")
+	private String email;
 
-    @JsonProperty("name")
-    private String name;
+	@JsonProperty("name")
+	private String name;
 
-    @JsonProperty("picture")
-    private String picture;
+	@JsonProperty("picture")
+	private String picture;
 
-    @JsonProperty("email_verified")
-    private Boolean emailVerified;
+	@JsonProperty("email_verified")
+	private Boolean emailVerified;
 
-    @Override
-    public String getProviderId() {
-        return sub;
-    }
+	@Override
+	public String getProviderId() {
+		return sub;
+	}
 
-    @Override
-    public String getEmail() {
-        return email;
-    }
+	@Override
+	public String getEmail() {
+		return email;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public String getProfileImageUrl() {
-        return picture;
-    }
+	@Override
+	public String getProfileImageUrl() {
+		return picture;
+	}
 }

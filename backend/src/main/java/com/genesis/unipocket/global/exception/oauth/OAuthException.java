@@ -13,7 +13,7 @@ import com.genesis.unipocket.global.exception.ErrorCode;
  */
 public class OAuthException extends BusinessException {
 
-    public OAuthException(ErrorCode code) {
-        super(code);
-    }
+	public OAuthException(ErrorCode code) {
+		super(code);
+	}
 }

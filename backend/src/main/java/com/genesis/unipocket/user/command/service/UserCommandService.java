@@ -25,59 +25,64 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserCommandService {
 
-    private final UserJpaRepository userRepository;
-    private final SocialAuthJpaRepository socialAuthRepository;
-    private final UserTokenCommandService userTokenCommandService;
+	private final UserJpaRepository userRepository;
+	private final SocialAuthJpaRepository socialAuthRepository;
+	private final UserTokenCommandService userTokenCommandService;
 
-    /**
-     * OAuth 로그인 또는 회원가입 처리
-     *
-     * @param userInfo OAuth 사용자 정보
-     * @param providerType OAuth Provider 타입
-     * @return 로그인 응답 (JWT 토큰)
-     */
-    @Transactional
-    public LoginResponse loginOrRegister(OAuthUserInfo userInfo, ProviderType providerType) {
-        // 1. 소셜 인증 정보 조회 또는 생성
-        SocialAuthEntity socialAuth = socialAuthRepository
-                .findByProviderAndProviderId(providerType, userInfo.getProviderId())
-                .orElseGet(() -> createNewUser(userInfo, providerType));
+	/**
+	 * OAuth 로그인 또는 회원가입 처리
+	 *
+	 * @param userInfo OAuth 사용자 정보
+	 * @param providerType OAuth Provider 타입
+	 * @return 로그인 응답 (JWT 토큰)
+	 */
+	@Transactional
+	public LoginResponse loginOrRegister(OAuthUserInfo userInfo, ProviderType providerType) {
+		// 1. 소셜 인증 정보 조회 또는 생성
+		SocialAuthEntity socialAuth =
+				socialAuthRepository
+						.findByProviderAndProviderId(providerType, userInfo.getProviderId())
+						.orElseGet(() -> createNewUser(userInfo, providerType));
 
-        // 2. 사용자 정보 가져오기
-        UserEntity user = socialAuth.getUser();
+		// 2. 사용자 정보 가져오기
+		UserEntity user = socialAuth.getUser();
 
-        // 3. JWT 토큰 생성
-        return userTokenCommandService.createTokens(user.getId());
-    }
+		// 3. JWT 토큰 생성
+		return userTokenCommandService.createTokens(user.getId());
+	}
 
-    /**
-     * 새로운 사용자 생성
-     *
-     * @param userInfo OAuth 사용자 정보
-     * @param providerType OAuth Provider 타입
-     * @return 생성된 소셜 인증 정보
-     */
-    private SocialAuthEntity createNewUser(OAuthUserInfo userInfo, ProviderType providerType) {
-        log.info("Creating new user from OAuth: provider={}, providerId={}",
-                providerType, userInfo.getProviderId());
+	/**
+	 * 새로운 사용자 생성
+	 *
+	 * @param userInfo OAuth 사용자 정보
+	 * @param providerType OAuth Provider 타입
+	 * @return 생성된 소셜 인증 정보
+	 */
+	private SocialAuthEntity createNewUser(OAuthUserInfo userInfo, ProviderType providerType) {
+		log.info(
+				"Creating new user from OAuth: provider={}, providerId={}",
+				providerType,
+				userInfo.getProviderId());
 
-        // 사용자 엔티티 생성
-        UserEntity user = UserEntity.builder()
-                .email(userInfo.getEmail())
-                .name(userInfo.getName())
-                .profileImgUrl(userInfo.getProfileImageUrl())
-                .build();
+		// 사용자 엔티티 생성
+		UserEntity user =
+				UserEntity.builder()
+						.email(userInfo.getEmail())
+						.name(userInfo.getName())
+						.profileImgUrl(userInfo.getProfileImageUrl())
+						.build();
 
-        userRepository.save(user);
+		userRepository.save(user);
 
-        // 소셜 인증 정보 생성
-        SocialAuthEntity socialAuth = SocialAuthEntity.builder()
-                .user(user)
-                .provider(providerType)
-                .email(userInfo.getEmail())
-                .providerId(userInfo.getProviderId())
-                .build();
+		// 소셜 인증 정보 생성
+		SocialAuthEntity socialAuth =
+				SocialAuthEntity.builder()
+						.user(user)
+						.provider(providerType)
+						.email(userInfo.getEmail())
+						.providerId(userInfo.getProviderId())
+						.build();
 
-        return socialAuthRepository.save(socialAuth);
-    }
+		return socialAuthRepository.save(socialAuth);
+	}
 }

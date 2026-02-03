@@ -13,9 +13,9 @@ import com.genesis.unipocket.user.command.service.oauth.dto.OAuthUserInfo;
  */
 public interface OAuthProviderService {
 
-    String getAuthorizationUrl(String state);
+	String getAuthorizationUrl(String state);
 
-    OAuthTokenResponse getAccessToken(String code);
+	OAuthTokenResponse getAccessToken(String code);
 
-    OAuthUserInfo getUserInfo(String accessToken);
+	OAuthUserInfo getUserInfo(String accessToken);
 }

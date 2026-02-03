@@ -12,7 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AuthorizeResponse {
 
-    private String authorizationUrl;
+	private String authorizationUrl;
 
-    private String state;
+	private String state;
 }

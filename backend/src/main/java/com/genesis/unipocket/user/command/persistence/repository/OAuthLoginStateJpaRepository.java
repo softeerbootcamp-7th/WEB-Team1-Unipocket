@@ -1,9 +1,8 @@
 package com.genesis.unipocket.user.command.persistence.repository;
 
 import com.genesis.unipocket.user.command.persistence.entity.OAuthLoginStateEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * <b>OAuth 로그인 State Repository</b>
@@ -12,5 +11,5 @@ import java.util.Optional;
  */
 public interface OAuthLoginStateJpaRepository extends JpaRepository<OAuthLoginStateEntity, String> {
 
-    Optional<OAuthLoginStateEntity> findByState(String state);
+	Optional<OAuthLoginStateEntity> findByState(String state);
 }

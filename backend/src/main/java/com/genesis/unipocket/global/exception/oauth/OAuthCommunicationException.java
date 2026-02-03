@@ -15,21 +15,22 @@ import lombok.Getter;
 @Getter
 public class OAuthCommunicationException extends BusinessException {
 
-    private final CommunicationType type;
+	private final CommunicationType type;
 
-    public OAuthCommunicationException(CommunicationType type) {
-        super(getErrorCode(type));
-        this.type = type;
-    }
+	public OAuthCommunicationException(CommunicationType type) {
+		super(getErrorCode(type));
+		this.type = type;
+	}
 
-    private static ErrorCode getErrorCode(CommunicationType type) {
-        return switch (type) {
-            case TOKEN -> ErrorCode.OAUTH_TOKEN_REQUEST_FAILED;
-            case USERINFO -> ErrorCode.OAUTH_USERINFO_REQUEST_FAILED;
-        };
-    }
+	private static ErrorCode getErrorCode(CommunicationType type) {
+		return switch (type) {
+			case TOKEN -> ErrorCode.OAUTH_TOKEN_REQUEST_FAILED;
+			case USERINFO -> ErrorCode.OAUTH_USERINFO_REQUEST_FAILED;
+		};
+	}
 
-    public enum CommunicationType {
-        TOKEN, USERINFO
-    }
+	public enum CommunicationType {
+		TOKEN,
+		USERINFO
+	}
 }

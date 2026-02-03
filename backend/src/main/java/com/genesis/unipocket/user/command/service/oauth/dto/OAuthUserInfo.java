@@ -7,11 +7,11 @@ package com.genesis.unipocket.user.command.service.oauth.dto;
  */
 public interface OAuthUserInfo {
 
-    String getProviderId();
+	String getProviderId();
 
-    String getEmail();
+	String getEmail();
 
-    String getName();
+	String getName();
 
-    String getProfileImageUrl();
+	String getProfileImageUrl();
 }

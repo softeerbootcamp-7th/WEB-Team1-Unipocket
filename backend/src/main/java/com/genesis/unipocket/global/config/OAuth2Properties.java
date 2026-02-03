@@ -1,14 +1,13 @@
 package com.genesis.unipocket.global.config;
 
-import com.genesis.unipocket.global.exception.oauth.OAuthException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.exception.oauth.OAuthException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <b>OAuth2 Provider 설정</b>
@@ -25,62 +24,62 @@ import java.util.List;
 @ConfigurationProperties(prefix = "oauth2")
 public class OAuth2Properties {
 
-    private List<OidcProviderConfig> providers = new ArrayList<>();
+	private List<OidcProviderConfig> providers = new ArrayList<>();
 
-    public OidcProviderConfig getProvider(ProviderType type) {
-        return providers.stream()
-                .filter(p -> p.getType() == type)
-                .findFirst()
-                .orElseThrow(() -> new OAuthException(ErrorCode.INVALID_OAUTH_PROVIDER));
-    }
+	public OidcProviderConfig getProvider(ProviderType type) {
+		return providers.stream()
+				.filter(p -> p.getType() == type)
+				.findFirst()
+				.orElseThrow(() -> new OAuthException(ErrorCode.INVALID_OAUTH_PROVIDER));
+	}
 
-    @Getter
-    @Setter
-    public static class OidcProviderConfig {
-        private ProviderType type;
-        private String clientId;
-        private String clientSecret;
-        private String redirectUri;
-        private String authorizationUri;
-        private String tokenUri;
-        private String userInfoUri;
-        private String jwksUri;
-        private String issuer;
-        private String scope;
+	@Getter
+	@Setter
+	public static class OidcProviderConfig {
+		private ProviderType type;
+		private String clientId;
+		private String clientSecret;
+		private String redirectUri;
+		private String authorizationUri;
+		private String tokenUri;
+		private String userInfoUri;
+		private String jwksUri;
+		private String issuer;
+		private String scope;
 
-        public boolean hasClientSecret() {
-            return clientSecret != null && !clientSecret.isBlank();
-        }
+		public boolean hasClientSecret() {
+			return clientSecret != null && !clientSecret.isBlank();
+		}
 
-        public boolean isClientSecretRequired() {
-            return type != null && type.isClientSecretRequired();
-        }
+		public boolean isClientSecretRequired() {
+			return type != null && type.isClientSecretRequired();
+		}
 
-        public void validate() {
-            if (type == null) {
-                throw new OAuthException(ErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
-            }
-            if (clientId == null || clientId.isBlank()) {
-                throw new OAuthException(ErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
-            }
-            if (type.isClientSecretRequired() && !hasClientSecret()) {
-                throw new OAuthException(ErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
-            }
-        }
-    }
+		public void validate() {
+			if (type == null) {
+				throw new OAuthException(ErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
+			}
+			if (clientId == null || clientId.isBlank()) {
+				throw new OAuthException(ErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
+			}
+			if (type.isClientSecretRequired() && !hasClientSecret()) {
+				throw new OAuthException(ErrorCode.OAUTH_PROVIDER_NOT_CONFIGURED);
+			}
+		}
+	}
 
-    public enum ProviderType {
-        GOOGLE(true),
-        KAKAO(false);
+	public enum ProviderType {
+		GOOGLE(true),
+		KAKAO(false);
 
-        private final boolean clientSecretRequired;
+		private final boolean clientSecretRequired;
 
-        ProviderType(boolean clientSecretRequired) {
-            this.clientSecretRequired = clientSecretRequired;
-        }
+		ProviderType(boolean clientSecretRequired) {
+			this.clientSecretRequired = clientSecretRequired;
+		}
 
-        public boolean isClientSecretRequired() {
-            return clientSecretRequired;
-        }
-    }
+		public boolean isClientSecretRequired() {
+			return clientSecretRequired;
+		}
+	}
 }

@@ -32,7 +32,30 @@ public enum ErrorCode {
 			HttpStatus.METHOD_NOT_ALLOWED, "405_METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메소드입니다."),
 
 	UNSUPPORTED_MEDIA_TYPE(
-			HttpStatus.UNSUPPORTED_MEDIA_TYPE, "415_UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 미디어 타입입니다.");
+			HttpStatus.UNSUPPORTED_MEDIA_TYPE, "415_UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 미디어 타입입니다."),
+
+	// Account Book
+	ACCOUNT_BOOK_CREATE_VALIDATION_FAILED(
+			HttpStatus.BAD_REQUEST,
+			CodeLiterals.ACCOUNT_BOOK_CREATE_VALIDATION_FAILED,
+			"입력값이 올바르지 않습니다."),
+	ACCOUNT_BOOK_INVALID_DATE_RANGE(
+			HttpStatus.BAD_REQUEST,
+			"400_ACCOUNT_BOOK_INVALID_DATE_RANGE",
+			"시작 날짜는 종료 날짜보다 이전이어야 합니다."),
+	ACCOUNT_BOOK_INVALID_COUNTRY_CODE(
+			HttpStatus.BAD_REQUEST,
+			"400_ACCOUNT_BOOK_INVALID_COUNTRY_CODE",
+			"현지 통화와 기준 통화는 달라야 합니다."),
+	ACCOUNT_BOOK_INVALID_BUDGET(
+			HttpStatus.BAD_REQUEST, "400_ACCOUNT_BOOK_INVALID_BUDGET", "예산은 0 이상이어야 합니다."),
+	ACCOUNT_BOOK_UNAUTHORIZED_ACCESS(
+			HttpStatus.FORBIDDEN, "403_ACCOUNT_BOOK_UNAUTHORIZED_ACCESS", "해당 가계부에 접근할 권한이 없습니다.");
+
+	public static class CodeLiterals {
+		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =
+				"400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED";
+	}
 
 	private final HttpStatus status;
 	private final String code;

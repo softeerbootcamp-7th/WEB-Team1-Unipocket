@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { Icons } from '@/assets';
 interface UploadBoxProps {
@@ -26,9 +26,10 @@ const uploadPolicy = {
 
 const UploadBox = ({ type }: UploadBoxProps) => {
   const policy = uploadPolicy[type];
+  const fileIInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const validateAndProcessFiles = (fileList: FileList | null) => {
+  const validateAndProcessFiles = useCallback((fileList: FileList | null) => {
     if (!fileList) return;
     const files = Array.from(fileList);
 
@@ -52,12 +53,9 @@ const UploadBox = ({ type }: UploadBoxProps) => {
       const fileName = file.name.toLowerCase();
       const fileType = file.type.toLowerCase();
 
-      return !allowedExtensions.some((allowed) => {
-        if (allowed.startsWith('.')) {
-          return fileName.endsWith(allowed); // 확장자 체크 (.csv)
-        }
-        return fileType === allowed; // MIME 타입 체크 (image/jpeg)
-      });
+      return !allowedExtensions.some(allowed => 
+        allowed.startsWith('.') ? fileName.endsWith(allowed) : fileType === allowed
+      );
     });
 
     if (hasInvalidFile) {
@@ -75,38 +73,45 @@ const UploadBox = ({ type }: UploadBoxProps) => {
 
     // @TODO: 성공 시 로직 추가
     console.log('업로드 준비 완료:', files);
-    // onUpload(files); // Props로 받은 업로드 함수 실행 등
-  };
+    // onUpload(files
+  }, [policy]);
 
-  // 핸들러: 드래그 영역에 들어왔을 때
-  const handleDragEnter = (e: React.DragEvent) => {
+  // 드래그 영역에 들어왔을 때
+  const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
-  };
+  }, []);
 
-  // 핸들러: 드래그 영역에서 벗어났을 때
-  const handleDragLeave = (e: React.DragEvent) => {
+  // 드래그 영역에서 벗어났을 때
+  const onDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-  };
+  }, []);
 
-  // 핸들러: 드롭했을 때
-  const handleDrop = (e: React.DragEvent) => {
+  // 드롭했을 때
+  const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
 
     const { files } = e.dataTransfer;
     validateAndProcessFiles(files);
-  };
+  }, [validateAndProcessFiles]);
 
-  // 핸들러: 클릭으로 업로드할 때
+  // 클릭으로 업로드할 때
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     validateAndProcessFiles(e.target.files);
-    e.target.value = ''; // 같은 파일 재업로드 가능하도록 초기화
+    e.target.value = ''; // 같은 이름의 파일 재업로드 가능하도록 초기화
   };
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); // Space 사용 시 페이지 스크롤 방지
+      fileIInputRef.current?.click();
+    }
+  }, []);
 
   return (
     <label
@@ -114,12 +119,14 @@ const UploadBox = ({ type }: UploadBoxProps) => {
         flex cursor-pointer flex-col items-center justify-center gap-5 py-10 border-2 border-dashed transition-colors
         ${isDragging ? 'bg-blue-50 border-blue-400' : 'hover:bg-background-alternative border-transparent'}
       `}
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
     >
       <input
+        ref={fileIInputRef}
         type="file"
         className="hidden"
         accept={policy.accept}

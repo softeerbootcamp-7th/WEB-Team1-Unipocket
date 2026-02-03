@@ -18,8 +18,8 @@ export const Route = createFileRoute('/')({
 
 function RouteComponent() {
   return (
-    <div className="flex min-h-screen min-w-360 flex-col">
-      <header className="sticky top-0 z-50 bg-white">
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-10">
         <LandingHeader />
       </header>
       <main>

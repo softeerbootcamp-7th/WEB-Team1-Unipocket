@@ -62,8 +62,8 @@ public enum ErrorCode {
 
 	// ========== Token Errors (4000~4999) ==========
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "T001", "토큰이 만료되었습니다."),
-	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "T002", "유효하지 않은 토큰입니다.");
-  
+	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "T002", "유효하지 않은 토큰입니다."),
+
 	// Account Book
 	ACCOUNT_BOOK_CREATE_VALIDATION_FAILED(
 			HttpStatus.BAD_REQUEST,

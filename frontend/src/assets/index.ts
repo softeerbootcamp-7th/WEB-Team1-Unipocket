@@ -17,6 +17,14 @@ export const BankLogos = {
   Hyundai: HyundaiCard,
 };
 
+import Google from './authLogos/google.svg';
+import Kakao from './authLogos/kakao.svg';
+
+export const AuthLogos = {
+  Google,
+  Kakao,
+};
+
 // 2. Cards
 import CardDefault from './cards/Default.svg';
 import CardDefault2 from './cards/Variant2.svg';

@@ -7,7 +7,6 @@ import java.time.LocalDate;
 
 public record CreateAccountBookRes(
 		Long id,
-		Long userId,
 		String title,
 		CountryCode localCountryCode,
 		CountryCode baseCountryCode,
@@ -18,7 +17,6 @@ public record CreateAccountBookRes(
 	public static CreateAccountBookRes from(AccountBookDto dto) {
 		return new CreateAccountBookRes(
 				dto.id(),
-				dto.userId(),
 				dto.title(),
 				dto.localCountryCode(),
 				dto.baseCountryCode(),

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { clsx } from 'clsx';
 
 import Calendar, {
   type DateRange,
@@ -15,12 +16,12 @@ interface DatePickItemProps {
 }
 
 const DatePickItem = ({ label, date }: DatePickItemProps) => {
-  const borderColor = date
-    ? 'border-primary-normal'
-    : 'border-line-normal-normal';
   return (
     <div
-      className={`rounded-modal-10 flex w-48.5 flex-col items-center gap-1 border px-6.5 py-3 transition-colors ${borderColor}`}
+      className={clsx(
+        'rounded-modal-10 flex w-48.5 flex-col items-center gap-1 border px-6.5 py-3 transition-colors',
+        date ? 'border-primary-normal' : 'border-line-normal-normal',
+      )}
     >
       <span className="text-label-normal body2-normal-medium">{label}</span>
       {date ? (

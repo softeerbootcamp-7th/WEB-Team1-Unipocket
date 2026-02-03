@@ -38,7 +38,7 @@ const DropDown = ({
       </Filter>
 
       {isOpen && (
-        <ul className="rounded-modal-10 border-line-solid-normal bg-background-normal absolute top-full left-0 z-50 mt-1.5 w-50 overflow-hidden border p-1 shadow-lg">
+        <ul className="scrollbar rounded-modal-10 border-line-solid-normal bg-background-normal absolute top-full left-0 z-50 mt-1.5 max-h-60 w-50 overflow-hidden overflow-y-auto border p-1 shadow-lg">
           {options?.map((option) => (
             <OptionItem
               key={option.id}

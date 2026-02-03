@@ -1,4 +1,4 @@
-import { checkDateEqual } from '@/components/common/calendar/date.utils';
+import { isSameDay } from '@/components/common/calendar/date.utils';
 
 import { cn } from '@/lib/utils';
 
@@ -22,9 +22,9 @@ export const CalendarDay = ({
   onDateClick,
 }: CalendarDayProps) => {
   const dayOfWeek = fullDate.getDay(); // 0: 일요일, 6: 토요일
-  const isCheckIn = checkDateEqual(fullDate, startDate);
-  const isCheckOut = checkDateEqual(fullDate, endDate);
-  const isToday = checkDateEqual(fullDate, today);
+  const isCheckIn = isSameDay(fullDate, startDate);
+  const isCheckOut = isSameDay(fullDate, endDate);
+  const isToday = isSameDay(fullDate, today);
 
   let isInRange = false;
   if (startDate && endDate) {

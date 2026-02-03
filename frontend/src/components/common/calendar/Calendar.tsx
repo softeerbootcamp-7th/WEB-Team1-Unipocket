@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { checkDateEqual } from '@/components/common/calendar/date.utils';
+import { isSameDay } from '@/components/common/calendar/date.utils';
 
 import Icon from '../Icon';
 import { CalendarView } from './CalendarView';
@@ -38,7 +38,7 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
     let newEnd: Date | null = null;
 
     if (startDate && !endDate) {
-      if (checkDateEqual(date, startDate)) {
+      if (isSameDay(date, startDate)) {
         newStart = null;
         newEnd = null;
       } else if (date < startDate) {

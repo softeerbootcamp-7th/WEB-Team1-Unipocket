@@ -1,13 +1,14 @@
 export const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
 // 두 Date 객체가 같은 날짜인지 확인
-export const checkDateEqual = (date1: Date | null, date2: Date | null) => {
-  if (!date1 || !date2) return false;
-  const d1 = new Date(date1.getTime());
-  const d2 = new Date(date2.getTime());
-  d1.setHours(0, 0, 0, 0);
-  d2.setHours(0, 0, 0, 0);
-  return d1.getTime() === d2.getTime();
+export const isSameDay = (a: Date | null, b: Date | null) => {
+  if (!a || !b) return false;
+
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 };
 
 // 달력을 렌더링하기 위한 배열 생성 (항상 6주 = 42일)

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.application;
+package com.genesis.unipocket.accountbook.service;
 
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
 import com.genesis.unipocket.accountbook.dto.request.CreateAccountBookReq;

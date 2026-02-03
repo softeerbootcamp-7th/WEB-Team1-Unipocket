@@ -1,6 +1,5 @@
-package com.genesis.unipocket.accountbook.facade;
+package com.genesis.unipocket.accountbook.service;
 
-import com.genesis.unipocket.accountbook.application.AccountBookService;
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
 import com.genesis.unipocket.accountbook.dto.request.CreateAccountBookReq;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AccountBookFacade {
+public class AccountBookUseCase {
 	private final AccountBookService accountBookService;
 
 	public AccountBookDto createAccountBook(long userId, CreateAccountBookReq req) {

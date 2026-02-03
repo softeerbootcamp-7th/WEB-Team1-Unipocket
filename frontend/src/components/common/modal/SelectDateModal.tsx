@@ -48,7 +48,6 @@ const SelectDateContent = ({
 }: SelectDateContentProps) => {
   const { setActionReady } = useModalContext();
 
-  // 여기서 useEffect로 버튼 제어
   useEffect(() => {
     setActionReady(!!startDate && !!endDate);
   }, [startDate, endDate, setActionReady]);

@@ -6,12 +6,14 @@ import {
 } from '@/components/common/calendar/date.utils';
 
 import { CalendarDay } from './CalendarDay';
+import CalendarMonthPopover from './CalendarMonthPopover';
 
 type CalendarViewProps = {
   displayDate: Date;
   startDate: Date | null;
   endDate: Date | null;
   onDateClick: (date: Date) => void;
+  onDisplayDateChange?: (date: Date) => void;
 };
 
 export const CalendarView = ({
@@ -19,11 +21,8 @@ export const CalendarView = ({
   startDate,
   endDate,
   onDateClick,
+  onDisplayDateChange,
 }: CalendarViewProps) => {
-  const year = displayDate.getFullYear();
-  const monthIndex = displayDate.getMonth();
-  const month = monthIndex + 1;
-
   const calendarDays = useMemo(() => {
     return getCalendarDateArr(displayDate);
   }, [displayDate]);
@@ -35,8 +34,11 @@ export const CalendarView = ({
   }, []);
 
   return (
-    <section className="flex flex-col gap-4">
-      <p className="text-label-normal headline1-bold text-center">{`${year}년 ${month}월`}</p>
+    <section className="flex flex-col items-center gap-4">
+      <CalendarMonthPopover
+        date={displayDate}
+        onDateChange={(newDate) => onDisplayDateChange?.(newDate)}
+      />
       <div className="flex flex-col gap-1">
         {/* 요일 section */}
         <div className="flex w-91 flex-row items-center justify-around">

@@ -5,8 +5,10 @@ import ProfileImage from '@/assets/images/profile.png';
 import { cn } from '@/lib/utils';
 
 const LandingHeader = () => {
-  const { hash } = useLocation();
+  const { hash, pathname } = useLocation();
+
   const currentId = hash.replace('#', '') || 'home';
+  const isLoginPath = pathname.includes('/login');
 
   const navItems = [
     { id: 'home', label: '홈' },
@@ -15,28 +17,30 @@ const LandingHeader = () => {
   ];
 
   return (
-    <nav className="bg-background-alternative border-fill-normal flex items-center justify-between border-b px-8 py-3">
+    <nav className="bg-background-alternative border-fill-normal sticky top-0 z-10 flex items-center justify-between border-b px-8 py-3">
       {/* 로고 영역 */}
       <Link to="/" hash="home">
         <Icons.LogoText className="h-8 w-25" />
       </Link>
 
       {/* 메뉴 영역: map으로 반복 처리 */}
-      <div className="body1-normal-bold flex gap-10">
-        {navItems.map((item) => (
-          <Link
-            key={item.id}
-            to="/"
-            hash={item.id}
-            className={cn(
-              'transition-all duration-300',
-              currentId !== item.id && 'text-gray-400',
-            )}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
+      {!isLoginPath && (
+        <div className="body1-normal-bold flex gap-10">
+          {navItems.map((item) => (
+            <Link
+              key={item.id}
+              to="/"
+              hash={item.id}
+              className={cn(
+                'transition-all duration-300',
+                currentId !== item.id && 'text-gray-400',
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* 프로필 영역 */}
       <img

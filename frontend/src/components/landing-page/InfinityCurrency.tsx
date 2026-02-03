@@ -1,75 +1,145 @@
-import { useEffect, useState } from 'react';
-
-import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import clsx from 'clsx';
 
 import Button from '../common/Button';
 
-const InfiniteCurrency = () => {
-  const currencyList = [
-    { symbol: '$', code: 'AUD', krw: '₩ 1,009' },
-    { symbol: '$', code: 'CAD', krw: '₩ 1,064' },
-    { symbol: '$', code: 'USD', krw: '₩ 1,451' },
-    { symbol: 'kr', code: 'SEK', krw: '₩ 162' },
-    { symbol: 'kr', code: 'NOK', krw: '₩ 150' },
-    { symbol: 'Fr', code: 'CHF', krw: '₩ 1,870' },
-    { symbol: '€', code: 'EUR', krw: '₩ 1,719' },
-    { symbol: '£', code: 'GBP', krw: '₩ 1,987' },
-    { symbol: '¥', code: 'JPY', krw: '₩ 9' },
-    { symbol: '¥', code: 'CNY', krw: '₩ 209' },
-  ];
+interface Currency {
+  symbol: string;
+  code: string;
+  krw: string;
+}
 
-  // 현재 강조될 버튼의 인덱스 관리
-  const [activeIdx, setActiveIdx] = useState(2);
-  const [activeLine, setActiveLine] = useState(0); // 0: 첫번째 줄, 1: 두번째 줄
+const CURRENCY_LIST_1: Currency[] = [
+  { symbol: '$', code: 'AUD', krw: '₩ 1,009' },
+  { symbol: '$', code: 'CAD', krw: '₩ 1,064' },
+  { symbol: '$', code: 'USD', krw: '₩ 1,451' },
+  { symbol: 'kr', code: 'SEK', krw: '₩ 162' },
+  { symbol: 'kr', code: 'NOK', krw: '₩ 150' },
+];
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIdx((prev) => (prev + 1) % currencyList.length);
-      setActiveLine((prev) => (prev === 0 ? 1 : 0)); // 줄을 번갈아 가며 선택
-    }, 8000); // 속도에 맞춰 적절히 조절
-    return () => clearInterval(timer);
-  }, [currencyList.length]);
+const CURRENCY_LIST_2: Currency[] = [
+  { symbol: 'Fr', code: 'CHF', krw: '₩ 1,870' },
+  { symbol: '€', code: 'EUR', krw: '₩ 1,719' },
+  { symbol: '£', code: 'GBP', krw: '₩ 1,987' },
+  { symbol: '¥', code: 'JPY', krw: '₩ 9' },
+  { symbol: '¥', code: 'CNY', krw: '₩ 209' },
+];
 
-  // 반복되는 리스트 렌더링 함수
-  const renderList = (isReverse = false) => (
+interface CurrencyItemProps {
+  currency: Currency;
+  isActive: boolean;
+  isReverse: boolean;
+  onSelect: (code: string) => void;
+}
+
+const CurrencyItem = ({
+  currency,
+  isActive,
+  isReverse,
+  onSelect,
+}: CurrencyItemProps) => {
+  return (
     <div
-      className={cn(
-        isReverse ? 'animate-marquee-reverse' : 'animate-marquee',
-        'flex gap-4',
-      )}
+      className="relative flex shrink-0 flex-col items-center"
+      onMouseEnter={() => onSelect(currency.code)}
     >
-      {currencyList.map((c, i) => {
-        const isSelected = i % currencyList.length === activeIdx;
-        return (
-          <div key={i} className="relative flex flex-col items-center">
-            {isSelected && (
-              <div
-                className={cn(
-                  'absolute flex items-center',
-                  !isReverse
-                    ? '-top-16 flex-col'
-                    : '-bottom-16 flex-col-reverse',
-                )}
-              >
-                <span className="text-primary-normal">{c.krw}</span>
-                <div className="bg-primary-normal h-5 w-5 rounded-full" />
-                <div className="bg-primary-normal h-5 w-0.5" />
-              </div>
-            )}
+      <div
+        className={clsx(
+          'absolute flex flex-col items-center transition-opacity duration-300',
+          isActive ? 'z-10 opacity-100' : 'z-0 opacity-0',
+          !isReverse ? '-top-16' : '-bottom-16 flex-col-reverse',
+        )}
+      >
+        <span className="text-primary-normal mb-1 font-bold whitespace-nowrap">
+          {currency.krw}
+        </span>
 
-            <Button variant={isSelected ? 'solid' : 'outlined'} size="lg">
-              {c.symbol} {c.code}
-            </Button>
-          </div>
-        );
-      })}
+        {/* 동그라미 컨테이너 */}
+        <div className="relative mb-0.5 flex h-2 w-2 items-center justify-center">
+          {/* 1. 퍼져나가는 효과 (Ping/Ripple) */}
+          {isActive && (
+            <div className="bg-primary-normal/60 animate-ripple-infinite absolute h-full w-full rounded-full" />
+          )}
+
+          {/* 2. 중심에 고정된 작은 동그라미 */}
+          <div className="bg-primary-normal relative h-full w-full rounded-full" />
+        </div>
+
+        {/* 수직 선 */}
+        <div className="bg-primary-normal h-4 w-0.5" />
+      </div>
+
+      {/* 버튼 */}
+      <Button
+        variant={isActive ? 'solid' : 'outlined'}
+        size="lg"
+        onClick={() => onSelect(currency.code)}
+      >
+        {currency.symbol} {currency.code}
+      </Button>
     </div>
   );
+};
+
+interface MarqueeRowProps {
+  items: Currency[];
+  activeCode: string | null;
+  onSelect: (code: string) => void;
+  reverse: boolean;
+}
+
+const MarqueeRow = ({
+  items,
+  activeCode,
+  onSelect,
+  reverse,
+}: MarqueeRowProps) => {
+  const doubleItems = [...items, ...items];
 
   return (
-    <div className="flex flex-col gap-4">
-      {renderList(false)}
-      {renderList(true)}
+    <div className="group">
+      <div
+        className={clsx(
+          'flex gap-3',
+          'group-hover:[animation-play-state:paused]',
+          reverse ? 'animate-marquee-reverse' : 'animate-marquee',
+        )}
+      >
+        {doubleItems.map((currency, idx) => {
+          const uniqueKey = `${currency.code}-${idx}`;
+          const isActive = activeCode === currency.code;
+          return (
+            <CurrencyItem
+              key={uniqueKey}
+              currency={currency}
+              isActive={isActive}
+              isReverse={reverse}
+              onSelect={onSelect}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const InfiniteCurrency = () => {
+  const [activeCode, setActiveCode] = useState<string | null>(null);
+
+  return (
+    <div className="flex w-full flex-col gap-4">
+      <MarqueeRow
+        items={CURRENCY_LIST_1}
+        activeCode={activeCode}
+        onSelect={setActiveCode}
+        reverse={false}
+      />
+      <MarqueeRow
+        items={CURRENCY_LIST_2}
+        activeCode={activeCode}
+        onSelect={setActiveCode}
+        reverse={true}
+      />
     </div>
   );
 };

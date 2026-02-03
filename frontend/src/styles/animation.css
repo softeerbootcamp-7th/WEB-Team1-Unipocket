@@ -17,19 +17,37 @@
       transform: translateX(0);
     }
     to {
-      transform: translateX(-100%);
+      transform: translateX(-50%);
     }
   }
 
   @keyframes marquee-reverse {
     from {
-      transform: translateX(-100%);
+      transform: translateX(-50%);
     }
     to {
       transform: translateX(0);
     }
   }
 
-  --animate-marquee: marquee 25s linear infinite;
-  --animate-marquee-reverse: marquee-reverse 25s linear infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 30s linear infinite;
+}
+
+@theme {
+  /* ... 기존 marquee 설정들 ... */
+
+  /* 점점 커지며 사라지는 효과 */
+  --animate-ripple-infinite: ripple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes ripple {
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
 }

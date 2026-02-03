@@ -47,8 +47,8 @@ export const mockCheckAuth = async () => {
   // 실제 API 호출 느낌을 내기 위한 0.5초 대기 로직
   return new Promise<typeof mockUser | null>((resolve) => {
     setTimeout(() => {
-      resolve(mockUser); // 0.5초 뒤에 홍길동 데이터를 반환
-      // resolve(null); // 만약 로그인 안 된 상태를 테스트하고 싶다면 null을 넣으세요.
+      // resolve(mockUser); // 0.5초 뒤에 홍길동 데이터를 반환
+      resolve(null); // 만약 로그인 안 된 상태를 테스트하고 싶다면 null을 넣으세요.
     }, 500);
   });
 };

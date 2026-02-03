@@ -2,13 +2,18 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
+function Table({
+  className,
+  height,
+  ...props
+}: React.ComponentProps<'table'> & { height: number }) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className={cn('w-full overflow-auto', className)}
+      style={{ height }}
     >
-      <table data-slot="table" className={cn('w-full', className)} {...props} />
+      <table data-slot="table" className="w-full" {...props} />
     </div>
   );
 }
@@ -18,7 +23,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
     <thead
       data-slot="table-header"
       className={cn(
-        '[&_tr]:border-line-solid-neutral caption1-medium',
+        '[&_tr]:border-line-solid-neutral caption1-medium bg-white',
         className,
       )}
       {...props}
@@ -57,7 +62,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     <tr
       data-slot="table-row"
       className={cn(
-        'data-[state=selected]:bg-primary-normal/8 data-[state=error]:bg-status-negative/8 border-b transition-colors',
+        'data-[state=selected]:bg-primary-normal/8 data-[state=error]:bg-status-negative/8 border-b bg-white transition-colors hover:bg-white!',
         className,
       )}
       {...props}

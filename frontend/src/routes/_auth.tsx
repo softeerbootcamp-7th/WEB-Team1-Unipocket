@@ -1,29 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 import LandingHeader from '@/components/landing-page/LandingHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import LandingPage from '@/pages/LandingPage';
-
 import { redirectIfAuthenticated } from '@/lib/auth';
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
     const user = await redirectIfAuthenticated();
     return { user };
   },
   pendingComponent: () => <Skeleton className="h-64" />,
-  component: RouteComponent,
+  component: AppLayout,
 });
 
-function RouteComponent() {
+function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10">
-        <LandingHeader />
-      </header>
-      <main>
-        <LandingPage />
+      <LandingHeader />
+      <main className="flex-1 overflow-hidden">
+        <Outlet />
       </main>
     </div>
   );

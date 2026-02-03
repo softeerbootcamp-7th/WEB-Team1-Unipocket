@@ -1,7 +1,7 @@
-import React from 'react';
-import { flexRender } from '@tanstack/react-table';
+import React, { useCallback, useMemo } from 'react';
+import { type Cell, flexRender, type Row } from '@tanstack/react-table';
 
-import { Checkbox } from '@/components/ui/checkbox'; // 체크박스 컴포넌트 임포트
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -13,24 +13,46 @@ import {
 
 import { useDataTable } from './context';
 
-const DataTable = () => {
-  const { table } = useDataTable();
-  const rows = table.getRowModel().rows;
+interface DataTableProps<TData> {
+  groupBy?: (row: TData) => string;
+}
 
-  // 1. 데이터를 날짜별로 그룹화
-  const groupedRows = rows.reduce(
-    (acc, row) => {
-      const date = new Date(row.original.date).toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
+const DataTable = <TData,>({ groupBy }: DataTableProps<TData>) => {
+  const { table, dispatch } = useDataTable();
+  const rows = table.getRowModel().rows as Row<TData>[];
+
+  const groupedRows = useMemo(() => {
+    return rows.reduce(
+      (acc, row) => {
+        const key = groupBy ? groupBy(row.original) : 'Ungrouped';
+
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(row);
+        return acc;
+      },
+      {} as Record<string, Row<TData>[]>,
+    );
+  }, [rows, groupBy]);
+
+  const handleCellClick = useCallback(
+    (
+      cell: Cell<TData, unknown>,
+      currentTarget: EventTarget & HTMLTableCellElement,
+    ) => {
+      const rect = currentTarget.getBoundingClientRect();
+
+      dispatch({
+        type: 'SET_ACTIVE_CELL',
+        payload: {
+          rowId: cell.row.id,
+          columnId: cell.column.id,
+          rect,
+          value: cell.getValue(),
+        },
       });
-      if (!acc[date]) acc[date] = [];
-      acc[date].push(row);
-      return acc;
     },
-    {} as Record<string, typeof rows>,
-  );
+    [dispatch],
+  ); // dispatch가 바뀌지 않는 한 함수 재사용
 
   return (
     <div className="overflow-hidden rounded-md">
@@ -66,7 +88,7 @@ const DataTable = () => {
                 <React.Fragment key={date}>
                   {/* 날짜 그룹 헤더 행 */}
                   <TableRow className="border-none bg-transparent hover:bg-transparent">
-                    <TableCell className="w-[50px] px-3 py-4">
+                    <TableCell className="w-12.5 px-3 py-4">
                       {/* 3. 그룹 선택 체크박스 */}
                       <Checkbox
                         checked={
@@ -95,14 +117,25 @@ const DataTable = () => {
                       key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
+                      {row.getVisibleCells().map((cell) => {
+                        const isSelectColumn = cell.column.id === 'select';
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            onClick={
+                              isSelectColumn
+                                ? undefined
+                                : (e) => handleCellClick(cell, e.currentTarget)
+                            }
+                            className={isSelectColumn ? '' : 'cursor-pointer'}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </React.Fragment>

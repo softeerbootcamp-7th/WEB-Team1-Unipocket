@@ -5,6 +5,7 @@ import { type IconName, Icons } from '@/assets';
 interface IconProps {
   width?: number;
   height?: number;
+  color?: string;
   iconName: IconName;
   onClick?: () => void;
 }
@@ -18,13 +19,20 @@ interface IconProps {
  * @example
  * <Icon iconName="Close" width={12} onClick={() => handleClose()} />
  */
-const Icon = ({ width = 24, height = 24, iconName, onClick }: IconProps) => {
+const Icon = ({
+  width = 24,
+  height = 24,
+  color = 'text-label-alternative',
+  iconName,
+  onClick,
+}: IconProps) => {
   const IconComponent = Icons[iconName];
 
   return (
     <div
       className={clsx(
-        'text-label-alternative hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
+        color,
+        'hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
         `w-[${width}px] h-[${height}px]`,
       )}
       onClick={onClick}

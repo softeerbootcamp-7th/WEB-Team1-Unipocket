@@ -50,3 +50,7 @@
 @utility shadow-popover {
   box-shadow: 0 0 0 1000vh rgba(0, 0, 0, 0.4);
 }
+
+@utility shadow-panel {
+  box-shadow: -12px 0 40px 0 rgba(0, 0, 0, 0.05);
+}

@@ -1,4 +1,4 @@
-name: request pr review
+name: remind pr review
 
 on:
   workflow_dispatch:

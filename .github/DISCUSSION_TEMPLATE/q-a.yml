@@ -1,0 +1,77 @@
+title: "[Q&A] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        이 카테고리는 명확한 질문과 답변을 위한 공간입니다.
+        토론 목적이면 Discussion 카테고리를 이용해 주세요.
+
+  - type: input
+    id: question
+    attributes:
+      label: 질문 요약
+      description: 한 문장으로 질문 핵심을 적어 주세요.
+      placeholder: "예) Spring Security에서 CORS 설정이 왜 적용되지 않나요?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: situation
+    attributes:
+      label: 문제 상황 설명
+      description: 무엇을 하다가, 어떤 문제가 발생했는지 구체적으로
+      placeholder: |
+        - 하고 있던 작업:
+        - 발생한 현상:
+        - 영향 범위:
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 재현 방법 / 에러 메시지
+      description: 재현 단계, 로그, 에러 메시지(가능하면 그대로 붙여넣기)
+      placeholder: |
+        1)
+        2)
+        3)
+        에러 로그:
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected_vs_actual
+    attributes:
+      label: 기대한 동작 vs 실제 동작
+      placeholder: |
+        - 기대:
+        - 실제:
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 시도해본 것
+      description: 이미 해본 해결 시도/찾아본 문서
+      placeholder: |
+        - 시도 1:
+        - 시도 2:
+        - 참고 링크:
+    validations:
+      required: false
+
+  - type: textarea
+    id: env
+    attributes:
+      label: 환경 정보(가능하면)
+      description: 버전/환경은 답변 속도를 크게 올립니다.
+      placeholder: |
+        - OS:
+        - Java:
+        - Spring Boot:
+        - DB:
+        - 빌드 도구(Gradle/Maven):
+    validations:
+      required: false

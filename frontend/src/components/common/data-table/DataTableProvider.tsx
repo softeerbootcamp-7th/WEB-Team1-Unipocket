@@ -1,70 +1,58 @@
-import { useEffect, useReducer } from 'react';
+import { type ComponentPropsWithoutRef, useEffect, useReducer } from 'react';
 import {
   type ColumnDef,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  type Updater,
   useReactTable,
 } from '@tanstack/react-table';
 
-import { DataTableContext } from './context';
-import type { FloatingBarVariant, TableUIAction, TableUIState } from './type';
+import { DataTableContext, type DataTableContextType } from './context';
+import type { TableUIAction, TableUIState } from './type';
 
-interface DataTableProviderProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  floatingBarVariant: FloatingBarVariant;
-  children: React.ReactNode;
-}
+const applyUpdater = <T,>(updater: Updater<T>, old: T) => {
+  return typeof updater === 'function'
+    ? (updater as (old: T) => T)(old)
+    : updater;
+};
 
 const tableReducer = (state: TableUIState, action: TableUIAction) => {
   switch (action.type) {
-    case 'SET_BAR_VARIANT':
-      return { ...state, floatingBarVariant: action.payload };
-    case 'SET_FILTERS':
-      return { ...state, filters: [...(state.filters || []), action.payload] };
-    case 'RESET_FILTERS':
-      return {
-        ...state,
-        filters: [
-          ...(state.filters || []).filter((filter) => filter != action.payload),
-        ],
-      };
-    case 'TOGGLE_ROW_SELECTION':
-      // 특정 행 선택 토글 로직
-      return state;
-    case 'SET_SORTING':
-      return {
-        ...state,
-        sorting:
-          typeof action.payload === 'function'
-            ? action.payload(state.sorting)
-            : action.payload,
-      };
+    case 'SET_SELECTION_MODE':
+      return { ...state, selectionMode: action.payload };
     case 'SET_ROW_SELECTION':
       return {
         ...state,
-        rowSelection:
-          typeof action.payload === 'function'
-            ? action.payload(state.rowSelection)
-            : action.payload,
+        rowSelection: applyUpdater(action.payload, state.rowSelection),
+      };
+    case 'SET_ACTIVE_CELL':
+      return {
+        ...state,
+        activeCell: action.payload,
       };
     default:
       return state;
   }
 };
 
-const DataTableProvider = <TData, TValue>({
+interface DataTableProviderProps<
+  TData,
+  TValue,
+> extends ComponentPropsWithoutRef<'div'> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+}
+
+const DataTableProvider = <TData, TValue = unknown>({
   columns,
   data,
-  floatingBarVariant,
   children,
 }: DataTableProviderProps<TData, TValue>) => {
   const [tableState, dispatch] = useReducer(tableReducer, {
-    floatingBarVariant,
-    sorting: [],
+    selectionMode: null,
     rowSelection: {},
-    filters: [],
+    activeCell: null,
   });
 
   // 행 선택 상태에 따른 자동 바 노출 로직 (useEffect)
@@ -72,33 +60,36 @@ const DataTableProvider = <TData, TValue>({
     const selectedCount = Object.keys(tableState.rowSelection).length;
 
     if (selectedCount > 0) {
-      // 예: 특정 조건(props 등)에 따라 어떤 바를 띄울지 결정
-      dispatch({ type: 'SET_BAR_VARIANT', payload: floatingBarVariant });
+      dispatch({ type: 'SET_SELECTION_MODE', payload: 'MANAGEMENT' });
     } else {
-      dispatch({ type: 'SET_BAR_VARIANT', payload: 'NONE' });
+      dispatch({ type: 'SET_SELECTION_MODE', payload: null });
     }
-  }, [floatingBarVariant, tableState.rowSelection]);
+  }, [tableState.rowSelection]);
 
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data,
     columns,
     state: {
-      sorting: tableState.sorting,
       rowSelection: tableState.rowSelection,
     },
-    // 중요: 핸들러를 dispatch와 연결
-    onSortingChange: (updater) =>
-      dispatch({ type: 'SET_SORTING', payload: updater }),
     onRowSelectionChange: (updater) =>
       dispatch({ type: 'SET_ROW_SELECTION', payload: updater }),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    manualFiltering: false, // 클라이언트 사이드 필터링 사용 시
+    manualFiltering: false,
   });
 
   return (
-    <DataTableContext.Provider value={{ table, tableState, dispatch }}>
+    <DataTableContext.Provider
+      value={
+        {
+          table,
+          tableState,
+          dispatch,
+        } as DataTableContextType<unknown>
+      }
+    >
       {children}
     </DataTableContext.Provider>
   );

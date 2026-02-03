@@ -1,0 +1,67 @@
+title: "[Idea] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        이 카테고리는 새로운 기능/개선 아이디어 제안용입니다.
+        아직 구현 계획이 없어도 괜찮습니다. 목적과 기대효과만 명확하면 충분합니다.
+
+  - type: input
+    id: summary
+    attributes:
+      label: 아이디어 요약
+      description: 한 문장 요약
+      placeholder: "예) 로그인 세션 만료 시 자동 재로그인 플로우 추가"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 목적/문제 정의
+      description: 어떤 문제를 해결하려는지, 왜 필요한지
+      placeholder: |
+        - 현재 불편:
+        - 사용자/팀에 미치는 영향:
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 제안 내용
+      description: 어떤 방식으로 개선하면 좋을지(대략적인 수준이면 OK)
+      placeholder: |
+        - 핵심 아이디어:
+        - 화면/흐름 변화(있다면):
+        - API/데이터 변화(있다면):
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: 기대 효과
+      description: 정성/정량 모두 가능
+      placeholder: |
+        - 사용자 경험:
+        - 개발/운영 효율:
+        - 성능/안정성:
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 참고 사례(선택)
+      description: 유사 서비스/레퍼런스/링크
+      placeholder: |
+        - 링크 1:
+        - 링크 2:
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 범위/우선순위(감)
+      options:
+        - "작게(이번 스프린트 가능)"
+        - "중간(계획 필요)"
+        - "크게(장기 과제)"
+    validations:
+      required: true

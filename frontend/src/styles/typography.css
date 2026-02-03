@@ -103,7 +103,7 @@
 @utility heading1-bold {
   font-size: 22px;
   line-height: 1.36;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility heading1-medium {
   font-size: 22px;
@@ -137,7 +137,7 @@
 @utility headline1-bold {
   font-size: 18px;
   line-height: 1.45;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility headline1-medium {
   font-size: 18px;
@@ -154,7 +154,7 @@
 @utility headline2-bold {
   font-size: 17px;
   line-height: 1.41;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility headline2-medium {
   font-size: 17px;
@@ -187,7 +187,7 @@
 @utility body1-reading-bold {
   font-size: 16px;
   line-height: 1.63;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility body1-reading-medium {
   font-size: 16px;
@@ -220,7 +220,7 @@
 @utility body2-reading-bold {
   font-size: 15px;
   line-height: 1.6;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility body2-reading-medium {
   font-size: 15px;
@@ -237,7 +237,7 @@
 @utility label1-normal-bold {
   font-size: 14px;
   line-height: 1.43;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility label1-normal-medium {
   font-size: 14px;
@@ -253,7 +253,7 @@
 @utility label1-reading-bold {
   font-size: 14px;
   line-height: 1.57;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility label1-reading-medium {
   font-size: 14px;
@@ -270,7 +270,7 @@
 @utility label2-bold {
   font-size: 13px;
   line-height: 1.38;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility label2-medium {
   font-size: 13px;
@@ -287,7 +287,7 @@
 @utility caption1-bold {
   font-size: 12px;
   line-height: 1.33;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility caption1-medium {
   font-size: 12px;
@@ -304,7 +304,7 @@
 @utility caption2-bold {
   font-size: 11px;
   line-height: 1.27;
-  font-weight: 700;
+  font-weight: 600;
 }
 @utility caption2-medium {
   font-size: 11px;

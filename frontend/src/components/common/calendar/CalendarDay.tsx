@@ -1,4 +1,5 @@
 import { checkDateEqual } from '@/lib/date.utils';
+import { cn } from '@/lib/utils';
 
 type CalendarDayProps = {
   day: number;
@@ -33,48 +34,50 @@ export const CalendarDay = ({
   }
 
   const getRangeBackgroundClass = () => {
-    const classes: string[] = [];
+    const isRange = (isCheckIn && endDate) || isInRange || isCheckOut;
 
-    if ((isCheckIn && endDate) || isInRange || isCheckOut) {
-      classes.push('bg-primary-normal/8');
-    } else if (isToday) {
-      classes.push('bg-primary-normal/8 rounded-full');
-    } else {
-      return '';
-    }
-
-    if (isCheckIn && endDate) classes.push('rounded-l-full left-[2.4px]');
-    if (isCheckOut) classes.push('rounded-r-full right-[2.4px]');
-    if (dayOfWeek === 0 && !isCheckIn) classes.push('rounded-l-[0px]');
-    if (dayOfWeek === 6 && !isCheckOut) classes.push('rounded-r-[0px]');
-
-    return classes.join(' ');
+    return cn({
+      'bg-primary-normal/8': isRange,
+      'bg-primary-normal/8 rounded-full': !isRange && isToday,
+      'rounded-l-full left-[2.4px]': isCheckIn && endDate,
+      'rounded-r-full right-[2.4px]': isCheckOut,
+      'rounded-l-[0px]': dayOfWeek === 0 && !isCheckIn,
+      'rounded-r-[0px]': dayOfWeek === 6 && !isCheckOut,
+    });
   };
 
   const getSelectedCircleClass = () => {
-    if (isCheckIn || isCheckOut) {
-      return 'bg-primary-normal text-inverse-label rounded-full';
-    }
-    return '';
+    return cn({
+      'bg-primary-normal text-inverse-label rounded-full':
+        isCheckIn || isCheckOut,
+    });
   };
 
-  const dayColor =
-    isInRange || isToday
-      ? 'text-primary-normal'
-      : isCurrentMonth
-        ? 'text-label-normal'
-        : 'text-label-disable';
+  const dayColor = cn({
+    'text-primary-normal': isInRange || isToday,
+    'text-label-normal': !isInRange && !isToday && isCurrentMonth,
+    'text-label-disable': !isInRange && !isToday && !isCurrentMonth,
+  });
 
   return (
     <button
       onClick={() => onDateClick(fullDate)}
-      className={`figure-body2-15-semibold relative h-9 w-13 cursor-pointer p-[2.4px] text-center ${dayColor}`}
+      className={cn(
+        'figure-body2-15-semibold relative h-9 w-13 cursor-pointer p-[2.4px] text-center',
+        dayColor,
+      )}
     >
       <div
-        className={`absolute inset-y-[2.4px] right-0 left-0 ${getRangeBackgroundClass()}`}
+        className={cn(
+          'absolute inset-y-[2.4px] right-0 left-0',
+          getRangeBackgroundClass(),
+        )}
       />
       <span
-        className={`relative z-10 flex h-full w-full items-center justify-center ${getSelectedCircleClass()}`}
+        className={cn(
+          'relative z-10 flex h-full w-full items-center justify-center',
+          getSelectedCircleClass(),
+        )}
       >
         {day}
       </span>

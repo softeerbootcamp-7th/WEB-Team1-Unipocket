@@ -54,3 +54,7 @@
 @utility shadow-panel {
   box-shadow: -12px 0 40px 0 rgba(0, 0, 0, 0.05);
 }
+
+@utility shadow-card {
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
+}

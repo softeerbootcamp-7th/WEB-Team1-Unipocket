@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { dayNames } from './date.utils';
+import { dayNames } from '../components/common/calendar/date.utils';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

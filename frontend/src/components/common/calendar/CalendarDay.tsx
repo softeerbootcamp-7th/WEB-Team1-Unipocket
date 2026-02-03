@@ -1,4 +1,5 @@
-import { checkDateEqual } from '@/lib/date.utils';
+import { checkDateEqual } from '@/components/common/calendar/date.utils';
+
 import { cn } from '@/lib/utils';
 
 type CalendarDayProps = {

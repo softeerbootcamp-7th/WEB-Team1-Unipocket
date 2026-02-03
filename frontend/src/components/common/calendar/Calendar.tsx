@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { Icons } from '@/assets';
-import { checkDateEqual } from '@/lib/date.utils';
+import { checkDateEqual } from '@/components/common/calendar/date.utils';
 
+import Icon from '../Icon';
 import { CalendarView } from './CalendarView';
 
 export interface DateRange {
@@ -59,10 +59,10 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
   return (
     <div className="bg-background-normal border-line-normal-normal rounded-modal-10 relative flex h-105 w-fit flex-row items-start border px-4 py-8">
       <button
-        className="text-label-normal absolute top-8 left-8"
+        className="text-label-normal absolute top-8 left-8 rotate-180"
         onClick={() => handleMonthChange('prev')}
       >
-        <Icons.ChevronForward className="h-6 w-6 rotate-180" />
+        <Icon iconName="ChevronForward" />
       </button>
 
       <CalendarView
@@ -76,7 +76,7 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
         className="text-label-normal absolute top-8 right-8"
         onClick={() => handleMonthChange('next')}
       >
-        <Icons.ChevronForward className="h-6 w-6" />
+        <Icon iconName="ChevronForward" />
       </button>
     </div>
   );

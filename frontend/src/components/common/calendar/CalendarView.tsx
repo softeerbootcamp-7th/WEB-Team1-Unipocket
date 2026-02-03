@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
-import { dayNames, getCalendarDateArr } from '@/lib/date.utils';
+import {
+  dayNames,
+  getCalendarDateArr,
+} from '@/components/common/calendar/date.utils';
 
 import { CalendarDay } from './CalendarDay';
 

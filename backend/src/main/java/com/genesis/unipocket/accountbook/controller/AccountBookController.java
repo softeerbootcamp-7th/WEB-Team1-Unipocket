@@ -1,8 +1,8 @@
-package com.genesis.unipocket.accountbook;
+package com.genesis.unipocket.accountbook.controller;
 
 import com.genesis.unipocket.accountbook.dto.request.CreateAccountBookReq;
 import com.genesis.unipocket.accountbook.dto.response.CreateAccountBookRes;
-import com.genesis.unipocket.accountbook.facade.AccountBookFacade;
+import com.genesis.unipocket.accountbook.service.AccountBookUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/account-books")
 public class AccountBookController {
 
-	private final AccountBookFacade accountBookFacade;
+	private final AccountBookUseCase accountBookUseCase;
 
 	@PostMapping
 	public ResponseEntity<CreateAccountBookRes> createAccountBook(
@@ -25,7 +25,7 @@ public class AccountBookController {
 
 		long userId = 1L;
 
-		var accountDto = accountBookFacade.createAccountBook(userId, req);
+		var accountDto = accountBookUseCase.createAccountBook(userId, req);
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(CreateAccountBookRes.from(accountDto));

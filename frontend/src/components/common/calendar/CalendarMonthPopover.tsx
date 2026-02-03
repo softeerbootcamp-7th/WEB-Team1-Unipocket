@@ -31,9 +31,7 @@ const CalendarMonthView = ({
   const handleMonthClick = (monthIndex: number) => {
     if (!onDateChange) return;
 
-    const newDate = new Date(displayDate);
-    newDate.setFullYear(viewYear); // 현재 보고 있는 연도
-    newDate.setMonth(monthIndex); // 선택한 월
+    const newDate = new Date(viewYear, monthIndex, 1);
     onDateChange(newDate);
   };
 

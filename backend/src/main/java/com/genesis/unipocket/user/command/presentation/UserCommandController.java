@@ -1,25 +1,26 @@
 package com.genesis.unipocket.user.command.presentation;
 
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.user.command.facade.UserLoginFacade;
 import com.genesis.unipocket.user.command.presentation.dto.response.AuthorizeResponse;
 import com.genesis.unipocket.user.command.presentation.dto.response.LoginResponse;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 /**
  * <b>사용자 Command Controller</b>
- * @author 김동균
- * @since 2026-01-30
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -32,54 +33,79 @@ public class UserCommandController {
     private String frontendUrl;
 
     /**
-     * OAuth 인증 시작
-     *
-     * 사용자가 이 URL에 접속하면:
-     * 1. State 생성 및 DB 저장
-     * 2. Google/Kakao 로그인 페이지로 자동 리다이렉트
+     * OAuth 인증 시작: 소셜 로그인 페이지로 리다이렉트
      */
     @GetMapping("/oauth2/authorize/{provider}")
     public void authorize(
             @PathVariable("provider") String provider,
             HttpServletResponse response) throws IOException {
 
-        ProviderType providerType = ProviderType.valueOf(provider.toUpperCase());
+        log.info("OAuth authorize request for provider: {}", provider);
+        ProviderType providerType = getProviderType(provider);
 
-        // State 생성 및 인증 URL 받기
         AuthorizeResponse authResponse = authorizeFacade.authorize(providerType);
-
-        // Google/Kakao 로그인 페이지로 리다이렉트
         response.sendRedirect(authResponse.getAuthorizationUrl());
     }
 
     /**
-     * OAuth 콜백 처리
-     *
-     * Google/Kakao 로그인 완료 후:
-     * 1. 토큰 발급
-     * 2. 프론트엔드로 리다이렉트 (토큰 포함)
+     * OAuth 콜백 처리: 로그인 완료 후 프론트엔드로 리다이렉트
      */
     @GetMapping("/oauth2/callback/{provider}")
     public void callback(
             @PathVariable("provider") String provider,
             @RequestParam("code") String code,
-            @RequestParam("state") String state,
+            @RequestParam(value = "state", required = false) String state,
             HttpServletResponse response) throws IOException {
 
-        ProviderType providerType = ProviderType.valueOf(provider.toUpperCase());
+        log.info("OAuth callback received for provider: {}", provider);
+        ProviderType providerType = getProviderType(provider);
 
-        // 로그인 처리 및 토큰 발급
         LoginResponse loginResponse = loginFacade.login(providerType, code, state);
 
-        // 프론트엔드로 리다이렉트 (토큰을 쿼리 파라미터로 전달)
-        String redirectUrl = String.format(
-                "%s/auth/callback?access_token=%s&refresh_token=%s&expires_in=%d",
-                frontendUrl,
-                URLEncoder.encode(loginResponse.getAccessToken(), StandardCharsets.UTF_8),
-                URLEncoder.encode(loginResponse.getRefreshToken(), StandardCharsets.UTF_8),
-                loginResponse.getExpiresIn()
-        );
+        addCookie(response, "access_token", loginResponse.getAccessToken(), loginResponse.getExpiresIn().intValue());
+        addCookie(response, "refresh_token", loginResponse.getRefreshToken(), 7 * 24 * 60 * 60); // 7 days
 
+        String redirectUrl = buildRedirectUrl();
         response.sendRedirect(redirectUrl);
+    }
+
+    /**
+     * Provider 문자열을 Enum으로 변환하고 유효성 검증
+     */
+    private ProviderType getProviderType(String provider) {
+        try {
+            return ProviderType.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid OAuth provider: {}", provider);
+            throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
+        }
+    }
+
+    /**
+     * 쿠키 추가 유틸리티
+     */
+    private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+
+        // Refresh Token은 HttpOnly 설정 (JS 접근 불가, 보안 강화)
+        if ("refresh_token".equals(name)) {
+            cookie.setHttpOnly(true);
+        }
+        // HTTPS 환경에서는 Secure 설정 권장 (개발 환경 고려하여 일단 false 또는 조건부)
+        // cookie.setSecure(true);
+
+        response.addCookie(cookie);
+    }
+
+    /**
+     * 프론트엔드 리다이렉트 URL 생성 유틸리티
+     */
+    private String buildRedirectUrl() {
+        return UriComponentsBuilder.fromUriString(frontendUrl)
+                .path("/auth/callback")
+                .build()
+                .toUriString();
     }
 }

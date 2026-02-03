@@ -10,7 +10,7 @@ import java.util.Optional;
  * @author 김동균
  * @since 2026-01-30
  */
-public interface OAuthLoginStateJpaRepository extends JpaRepository<OAuthLoginStateEntity, Long> {
+public interface OAuthLoginStateJpaRepository extends JpaRepository<OAuthLoginStateEntity, String> {
 
     Optional<OAuthLoginStateEntity> findByState(String state);
 }

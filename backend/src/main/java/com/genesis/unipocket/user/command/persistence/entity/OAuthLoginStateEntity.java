@@ -37,7 +37,7 @@ public class OAuthLoginStateEntity {
     private LocalDateTime createdAt;
 
     @Builder
-    public OAuthLoginStateEntity(String state, ProviderType providerType, String ipAddress, LocalDateTime expiresAt) {
+    public OAuthLoginStateEntity(String state, ProviderType providerType, LocalDateTime expiresAt) {
         this.state = state;
         this.providerType = providerType;
         this.expiresAt = expiresAt;

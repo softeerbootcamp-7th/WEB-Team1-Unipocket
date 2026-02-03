@@ -1,0 +1,35 @@
+{
+  "countryTimeRegion": {
+    "KR": "KOREA",
+    "JP": "JAPAN",
+    "CN": "CHINA",
+    "TW": "CHINA",
+    "HK": "CHINA",
+
+    "US": "US_EAST",
+    "CA": "US_EAST",
+
+    "GB": "EUROPE",
+    "FR": "EUROPE",
+    "DE": "EUROPE",
+    "IT": "EUROPE",
+    "ES": "EUROPE",
+    "NL": "EUROPE",
+    "BE": "EUROPE",
+    "AT": "EUROPE",
+    "IE": "EUROPE",
+    "PT": "EUROPE",
+    "FI": "EUROPE",
+    "GR": "EUROPE",
+    "LU": "EUROPE",
+    "CH": "EUROPE",
+
+    "AU": "OCEANIA",
+    "NZ": "OCEANIA",
+
+    "AE": "MIDDLE_EAST",
+    "SA": "MIDDLE_EAST",
+    "QA": "MIDDLE_EAST",
+    "KW": "MIDDLE_EAST"
+  }
+}

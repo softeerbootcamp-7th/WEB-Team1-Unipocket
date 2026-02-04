@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.command.entity;
+package com.genesis.unipocket.accountbook.command.persistence.entity;
 
 import com.genesis.unipocket.global.base.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -32,7 +32,7 @@ public class AccountBookEntity extends BaseEntity {
 
 	// TODO: User 모델을 받으면 새롭게 주입 예정
 	@Column(nullable = false, name = "user_id")
-	private Long userId;
+	private String userId;
 
 	@Column(columnDefinition = "CHAR(4)")
 	@Enumerated(value = EnumType.STRING)
@@ -55,7 +55,7 @@ public class AccountBookEntity extends BaseEntity {
 	private LocalDate endDate;
 
 	public static AccountBookEntity create(
-			Long userId,
+			String userId,
 			String title,
 			CountryCode localCountryCode,
 			CountryCode baseCountryCode,

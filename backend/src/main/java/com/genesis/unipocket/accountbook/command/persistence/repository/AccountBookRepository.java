@@ -1,6 +1,6 @@
-package com.genesis.unipocket.accountbook.command.repository;
+package com.genesis.unipocket.accountbook.command.persistence.repository;
 
-import com.genesis.unipocket.accountbook.command.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,5 +13,5 @@ public interface AccountBookRepository extends JpaRepository<AccountBookEntity, 
 			"SELECT a.title FROM AccountBookEntity a WHERE a.userId = :userId AND a.title LIKE"
 					+ " CONCAT(:baseName, '%')")
 	List<String> findNamesStartingWith(
-			@Param("userId") Long userId, @Param("baseName") String baseName);
+			@Param("userId") String userId, @Param("baseName") String baseName);
 }

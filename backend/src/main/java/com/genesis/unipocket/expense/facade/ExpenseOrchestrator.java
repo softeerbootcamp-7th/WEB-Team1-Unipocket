@@ -4,6 +4,8 @@ import com.genesis.unipocket.expense.application.ExpenseService;
 import com.genesis.unipocket.expense.facade.converter.ExpenseFacadeConverter;
 import com.genesis.unipocket.expense.presentation.dto.ExpenseManualCreateRequest;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,8 +31,8 @@ public class ExpenseOrchestrator {
 		// TODO: accountBookId - standardCurrency 정합성 검증
 
 		CurrencyCode localCurrency = request.localCurrency();
-		Double localAmount = request.localAmount();
-		Double standardAmount = request.standardAmount();
+		BigDecimal localAmount = request.localAmount();
+		BigDecimal standardAmount = request.standardAmount();
 		LocalDateTime occurredAt = request.occurredAt();
 		// TODO: 환율 유효성 검증
 

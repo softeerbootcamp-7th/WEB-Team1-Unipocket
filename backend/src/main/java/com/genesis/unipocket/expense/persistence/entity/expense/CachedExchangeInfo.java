@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * <b>노출용 기준화폐 & 환율 정보</b>
  * <p>유저 노출용 정보
@@ -22,7 +24,7 @@ class CachedExchangeInfo {
 
 	private CurrencyCode standardCurrencyCode;
 
-	private Double standardCurrencyAmount;
+	private BigDecimal standardCurrencyAmount;
 
-	private Double cachedExchangeRate;
+	private BigDecimal cachedExchangeRate;
 }

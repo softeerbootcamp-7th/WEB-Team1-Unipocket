@@ -5,6 +5,8 @@ import com.genesis.unipocket.expense.persistence.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.global.base.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;
 
@@ -83,7 +85,7 @@ public class Expense extends BaseEntity {
 		return originExchangeInfo != null ? originExchangeInfo.getLocalCurrencyCode() : null;
 	}
 
-	public Double getLocalAmount() {
+	public BigDecimal getLocalAmount() {
 		return originExchangeInfo != null ? originExchangeInfo.getLocalCurrencyAmount() : null;
 	}
 
@@ -93,7 +95,7 @@ public class Expense extends BaseEntity {
 				: originExchangeInfo.getBillingCurrencyCode();
 	}
 
-	public Double getStandardAmount() {
+	public BigDecimal getStandardAmount() {
 		return cachedExchangeInfo != null
 				? cachedExchangeInfo.getStandardCurrencyAmount()
 				: originExchangeInfo.getBillingCurrencyAmount();

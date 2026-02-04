@@ -3,6 +3,8 @@ package com.genesis.unipocket.expense.presentation.dto;
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -17,8 +19,8 @@ public record ExpenseManualCreateRequest(
 		Category category,
 		String paymentMethod,
 		@NotNull LocalDateTime occurredAt,
-		@NotNull Double localAmount,
+		@NotNull BigDecimal localAmount,
 		@NotNull CurrencyCode localCurrency,
-		@NotNull Double standardAmount,
+		@NotNull BigDecimal standardAmount,
 		@NotNull CurrencyCode standardCurrency,
 		String memo) {}

@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * <b>기준화폐 & 환율 정보 원본</b>
  * <p>기준 화폐 변경과 독립적으로 유지되는 정보
@@ -27,23 +29,23 @@ class OriginExchangeInfo {
 	private CurrencyCode billingCurrencyCode;
 
 	@Column(nullable = false)
-	private double localCurrencyAmount;
+	private BigDecimal localCurrencyAmount;
 
 	@Column(nullable = false)
-	private double billingCurrencyAmount;
+	private BigDecimal billingCurrencyAmount;
 
 	public static OriginExchangeInfo of(
 			CurrencyCode localCurrency,
 			CurrencyCode billingCurrency,
-			double localAmount,
-			double billingAmount) {
+			BigDecimal localAmount,
+			BigDecimal billingAmount) {
 		if (localCurrency == null || billingCurrency == null) {
 			throw new IllegalArgumentException("currency must not be null");
 		}
-		if (localAmount <= 0 || billingAmount <= 0) {
+		if (localAmount == null || billingAmount == null || localAmount.signum() <= 0 || billingAmount.signum() <= 0) {
 			throw new IllegalArgumentException("amount must be positive");
 		}
-		if (localCurrency == billingCurrency && Double.compare(localAmount, billingAmount) != 0) {
+		if (localCurrency == billingCurrency && localAmount.compareTo(billingAmount) != 0) {
 			throw new IllegalArgumentException("same currency must have same amount");
 		}
 

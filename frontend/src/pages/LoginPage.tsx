@@ -1,25 +1,6 @@
-import LoginButton from '@/components/login-page/LoginButton';
+import LoginContainer from '@/components/login-page/LoginContainer';
 
-import { AuthLogos, Icons } from '@/assets';
-
-const AUTH_PROVIDERS = [
-  {
-    id: 'kakao',
-    text: '카카오 로그인',
-    bgColor: 'bg-kakao-bg',
-    textColor: 'text-kakao-text',
-    Icon: AuthLogos.Kakao,
-    to: 'http://localhost:8080/api/auth/oauth2/authorize/kakao',
-  },
-  {
-    id: 'google',
-    text: '구글 로그인',
-    bgColor: 'bg-fill-normal',
-    textColor: 'text-label-normal/54',
-    Icon: AuthLogos.Google,
-    to: 'http://localhost:8080/api/auth/oauth2/authorize/google',
-  },
-] as const;
+import { Icons } from '@/assets';
 
 const LoginPage = () => {
   return (
@@ -39,9 +20,7 @@ const LoginPage = () => {
           </h1>
         </div>
         <div className="absolute right-0 bottom-23 left-0 flex flex-col gap-3 md:static">
-          {AUTH_PROVIDERS.map((provider) => (
-            <LoginButton key={provider.id} {...provider} />
-          ))}
+          <LoginContainer />
         </div>
       </div>
     </main>

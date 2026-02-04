@@ -1,8 +1,8 @@
 import { Link, useLocation } from '@tanstack/react-router';
+import clsx from 'clsx';
 
 import { Icons } from '@/assets';
 import ProfileImage from '@/assets/images/profile.png';
-import { cn } from '@/lib/utils';
 
 const LandingHeader = () => {
   const { hash, pathname } = useLocation();
@@ -31,7 +31,7 @@ const LandingHeader = () => {
               key={item.id}
               to="/"
               hash={item.id}
-              className={cn(
+              className={clsx(
                 'transition-all duration-300',
                 currentId !== item.id && 'text-gray-400',
               )}

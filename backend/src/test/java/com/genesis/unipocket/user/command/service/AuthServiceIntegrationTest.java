@@ -8,6 +8,7 @@ import com.genesis.unipocket.global.auth.TokenBlacklistService;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @DisplayName("AuthService 통합 테스트")
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test-it")
+@Tag("integration")
 class AuthServiceIntegrationTest {
 
 	@Autowired private AuthService authService;

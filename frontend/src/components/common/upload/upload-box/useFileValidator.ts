@@ -18,7 +18,6 @@ export const uploadPolicy = {
     maxTotalSize: 50 * 1024 * 1024,
   },
   landingImage: {
-    message: 'jpg, jpeg, png (최대 3개, 총 20MB 이하)',
     accept: 'image/jpeg,image/png,image/jpg',
     multiple: true,
     maxCount: 3,

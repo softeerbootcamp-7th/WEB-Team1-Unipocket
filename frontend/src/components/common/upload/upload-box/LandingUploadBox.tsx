@@ -59,7 +59,7 @@ const LandingUploadBox = () => {
           클릭하거나 드래그해서 이미지를 업로드해주세요
         </h2>
         <p className="headline1-medium text-label-alternative">
-          {policy.message}
+          jpg, jpeg, png (최대 3개, 총 20MB 이하)
         </p>
       </div>
     </label>

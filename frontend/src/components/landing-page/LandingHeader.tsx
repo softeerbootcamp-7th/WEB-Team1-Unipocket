@@ -69,7 +69,7 @@ const LandingHeader = () => {
   };
 
   return (
-    <nav className="bg-background-alternative border-fill-normal sticky top-0 z-10 flex items-center justify-between border-b px-8 py-3">
+    <nav className="border-fill-normal sticky top-0 z-10 hidden items-center justify-between border-b px-8 py-3 md:flex">
       {/* 로고 영역 */}
       <Link to="/" hash="home">
         <Icons.LogoText className="h-8 w-25" />
@@ -77,30 +77,32 @@ const LandingHeader = () => {
 
       {/* 메뉴 영역: map으로 반복 처리 */}
       {!isLoginPath && (
-        <div className="body1-normal-bold flex gap-10">
-          {navItems.map((item) => (
-            <Link
-              key={item.id}
-              to="/"
-              hash={item.id}
-              className={clsx(
-                'transition-all duration-300',
-                activeSection !== item.id && 'text-gray-400',
-              )}
-              onClick={() => handleTabClick(item.id)}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      )}
+        <>
+          <div className="body2-normal-bold flex gap-10">
+            {navItems.map((item) => (
+              <Link
+                key={item.id}
+                to="/"
+                hash={item.id}
+                className={clsx(
+                  'transition-all duration-300',
+                  activeSection !== item.id && 'text-gray-400',
+                )}
+                onClick={() => handleTabClick(item.id)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
 
-      {/* 프로필 영역 */}
-      <img
-        src={ProfileImage}
-        alt="프로필"
-        className="h-8 w-8 rounded-full object-cover"
-      />
+          {/* 프로필 영역 */}
+          <img
+            src={ProfileImage}
+            alt="프로필"
+            className="h-8 w-8 rounded-full object-cover"
+          />
+        </>
+      )}
     </nav>
   );
 };

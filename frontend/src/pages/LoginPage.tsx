@@ -16,7 +16,7 @@ const AUTH_PROVIDERS = [
     id: 'google',
     text: '구글 로그인',
     bgColor: 'bg-fill-normal',
-    textColor: 'text-black/54',
+    textColor: 'text-label-normal/54',
     Icon: AuthLogos.Google,
     to: 'http://localhost:8080/api/auth/oauth2/authorize/google',
   },

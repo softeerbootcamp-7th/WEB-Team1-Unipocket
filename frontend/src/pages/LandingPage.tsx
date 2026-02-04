@@ -42,7 +42,7 @@ const HomeSection = () => {
       <div className="title1-bold flex flex-col lg:block">
         <div className="mb-4 flex flex-col items-center md:items-start">
           <h1 className="text-primary-normal text-center md:text-start">
-            교환학생<span className="text-black">의</span>
+            교환학생<span className="text-label-normal">의</span>
           </h1>
           <h1 className="text-center md:text-start">모든 카드 지출을</h1>
           <div className="flex items-center gap-2">

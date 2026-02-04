@@ -3,8 +3,9 @@ import { useMatches } from '@tanstack/react-router';
 import clsx from 'clsx';
 
 import Control from '@/components/common/Control';
+import LocaleConfirmModal from '@/components/common/modal/LocaleConfirmModal';
 
-import { countryCode } from '@/data/countryCode';
+import { type CountryCode, countryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 interface CountryItemProps {
@@ -55,12 +56,36 @@ type LocaleSelectMode = 'BASE' | 'LOCAL'; // 기준 통화, 현지 통화
 
 interface LocaleSelectModalProps {
   mode: LocaleSelectMode;
+  onSelect?: (code: string) => void;
+  selectedCode?: string;
 }
 
-const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
+const LocaleSelectModal = ({
+  mode,
+  onSelect,
+  selectedCode: propSelectedCode,
+}: LocaleSelectModalProps) => {
   const matches = useMatches();
   const isInitPath = matches.some((match) => match.routeId === '/_app/init');
-  const [selectedCode, setSelectedCode] = useState<string>('');
+  const [selectedCode, setSelectedCode] = useState<string>(
+    propSelectedCode || '',
+  );
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const handleSelect = (code: string) => {
+    setSelectedCode(code);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    onSelect?.(selectedCode);
+    setIsConfirmOpen(false);
+  };
+
+  const handleCancel = () => {
+    setSelectedCode('');
+    setIsConfirmOpen(false);
+  };
 
   const getTextContent = () => {
     if (mode === 'BASE') {
@@ -108,13 +133,22 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
                 country={data.countryName}
                 currency={`${data.currencySign} ${data.currencyName}`}
                 checked={selectedCode === code}
-                onChange={setSelectedCode}
+                onChange={handleSelect}
                 isLast={index === countryCode.length - 1}
               />
             );
           })}
         </div>
       </div>
+      {isConfirmOpen && selectedCode && (
+        <LocaleConfirmModal
+          isOpen={isConfirmOpen}
+          type={mode === 'BASE' ? 'currency' : 'country'}
+          code={selectedCode as CountryCode}
+          onClose={handleCancel}
+          onAction={handleConfirm}
+        />
+      )}
     </div>
   );
 };

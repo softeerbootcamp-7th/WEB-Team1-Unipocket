@@ -8,7 +8,21 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:validate}
 
+<<<<<<< fix-be/#234/profile
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+=======
+logging:
+  file:
+    name: ${LOG_PATH}/application.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: ${LOG_PATH}/archived/%d{yyyy-MM-dd}/application.%d{yyyy-MM-dd}.%i.log.gz
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 1GB
+  level:
+    root: ${LOG_LEVEL}
+>>>>>>> backend

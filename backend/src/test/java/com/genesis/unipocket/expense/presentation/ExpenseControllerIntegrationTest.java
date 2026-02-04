@@ -8,6 +8,7 @@ import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.expense.persistence.entity.expense.Expense;
 import com.genesis.unipocket.expense.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ class ExpenseControllerIntegrationTest {
 			"occurredAt": "2026-02-04T12:30:00",
 			"localAmount": 10000.0,
 			"localCurrency": "KRW",
-			"standardAmount": 1000.0,
+			"standardAmount": 1000.123,
 			"standardCurrency": "JPY",
 			"memo": "아메리카노"
 			}
@@ -73,5 +74,6 @@ class ExpenseControllerIntegrationTest {
 		assertThat(saved.getStandardCurrency()).isEqualTo(CurrencyCode.JPY);
 
 		assertThat(saved.getAccountBookId()).isEqualTo(accountBookId);
+		assertThat(saved.getStandardAmount()).isEqualTo(BigDecimal.valueOf(1000.123));
 	}
 }

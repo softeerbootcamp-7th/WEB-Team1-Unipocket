@@ -38,7 +38,7 @@ const UploadBox = ({ type }: UploadBoxProps) => {
 
   return (
     <label
-      className={`flex cursor-pointer flex-col items-center justify-center gap-5 border-2 border-dashed py-10 transition-colors ${
+      className={`bg-background-normal flex cursor-pointer flex-col items-center justify-center gap-5 border-2 border-dashed py-10 transition-colors ${
         isDragging
           ? 'border-blue-400 bg-blue-50'
           : 'hover:bg-background-alternative border-transparent'

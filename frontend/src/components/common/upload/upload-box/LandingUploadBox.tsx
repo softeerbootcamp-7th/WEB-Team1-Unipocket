@@ -34,7 +34,7 @@ const LandingUploadBox = () => {
 
   return (
     <label
-      className={`py-auto flex h-55 cursor-pointer items-center justify-center gap-4 border-2 border-dashed transition-colors ${
+      className={`bg-background-normal py-auto flex h-55 cursor-pointer items-center justify-center gap-4 border-2 border-dashed transition-colors ${
         isDragging
           ? 'border-blue-400 bg-blue-50'
           : 'hover:bg-background-alternative border-transparent'

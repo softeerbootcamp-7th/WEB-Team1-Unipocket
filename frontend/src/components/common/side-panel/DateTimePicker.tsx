@@ -4,6 +4,7 @@ import { clsx } from 'clsx';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import Icon from '@/components/common/Icon';
 
+import CalendarMonthPopover from '../calendar/CalendarMonthPopover';
 import { dayNames, isSameDay } from '../calendar/date.utils';
 
 const hourOptions = Array.from({ length: 24 }).map((_, i) => ({
@@ -98,9 +99,10 @@ export default function DateTimePicker() {
           height={20}
           onClick={handlePrevMonth}
         />
-        <span className="text-label-normal headline2-bold">
-          {year}년 {month + 1}월
-        </span>
+        <CalendarMonthPopover
+          date={currentMonth}
+          onDateChange={setCurrentMonth}
+        />
         <Icon
           iconName="ChevronForward"
           color="text-label-normal"

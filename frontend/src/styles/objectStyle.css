@@ -47,7 +47,7 @@
   border-radius: var(--radius-modal-2);
 }
 
-@utility shadow-popover {
+@utility shadow-backdrop {
   box-shadow: 0 0 0 1000vh rgba(0, 0, 0, 0.4);
 }
 
@@ -55,6 +55,13 @@
   box-shadow: -12px 0 40px 0 rgba(0, 0, 0, 0.05);
 }
 
+@utility shadow-popover {
+  box-shadow:
+    0 2px 8px 0 rgba(0, 0, 0, 0.12),
+    0 1px 4px 0 rgba(0, 0, 0, 0.08),
+    0 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+  
 @utility shadow-card {
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
 }

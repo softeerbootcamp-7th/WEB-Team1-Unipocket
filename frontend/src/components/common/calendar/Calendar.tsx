@@ -68,6 +68,7 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
         startDate={startDate}
         endDate={endDate}
         onDateClick={handleDateClick}
+        onDisplayDateChange={setDisplayMonth}
       />
 
       <button

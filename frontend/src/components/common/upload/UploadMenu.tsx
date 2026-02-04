@@ -44,7 +44,7 @@ const UploadPopover = () => {
     <PopoverContent
       align="end"
       sideOffset={12}
-      className="rounded-modal-20 border-line-normal-alternative shadow-popover flex w-fit flex-col items-center justify-center gap-2 border bg-white px-5 py-3.5"
+      className="rounded-modal-20 border-line-normal-alternative shadow-backdrop flex w-fit flex-col items-center justify-center gap-2 border bg-white px-5 py-3.5"
     >
       <UploadMenuItem
         Icon={Icons.Phone}

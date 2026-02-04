@@ -13,7 +13,7 @@ const Header = () => {
   const matches = useMatches();
   const isInitPath = matches.some((match) => match.routeId === '/_app/init');
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [time, setTime] = useState(getLocalTime());
+  const [time, setTime] = useState(getLocalTime('KR'));
 
   // @TODO: 추후 options API 연동
   const options = [
@@ -22,20 +22,18 @@ const Header = () => {
     { id: 3, name: '독일 교환학생' },
   ];
 
-  const showDropdown = !isInitPath;
-
   // 1분마다 한국 시간 갱신
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(getLocalTime());
+      setTime(getLocalTime('KR'));
     }, 60_000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="border-line-solid-normal bg-background-alternative sticky top-0 z-10 flex justify-between border-b px-8 py-3">
+    <div className="border-line-solid-normal sticky top-0 z-10 flex justify-between border-b px-8 py-3">
       <div className="flex items-center">
-        {showDropdown && (
+        {!isInitPath && (
           <Dropdown
             selected={selectedId}
             onSelect={setSelectedId}

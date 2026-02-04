@@ -1,0 +1,55 @@
+@theme {
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes marquee-reverse {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes ripple {
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  @keyframes scale-up {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.03);
+    }
+  }
+
+  --animate-float: float 2s ease-in-out infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 30s linear infinite;
+  --animate-ripple: ripple 2s ease-in-out infinite;
+  --animate-grow: scale-up 0.3s ease-in-out forwards;
+}

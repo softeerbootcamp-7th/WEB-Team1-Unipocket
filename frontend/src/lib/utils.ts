@@ -1,19 +1,28 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { dayNames } from '../components/common/calendar/date.utils';
+import { dayNames } from '@/components/common/calendar/date.utils';
+
+import { COUNTRY_TIME_REGION, TIME_REGION_CONFIG } from '@/constants/time';
+import type { CountryCode } from '@/data/countryCode';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 // 현재 로컬 시간을 '오전 09:05' 형식으로 반환하는 유틸 함수
-export const getLocalTime = () => {
-  return new Intl.DateTimeFormat('ko-KR', {
+export const getLocalTime = (country: CountryCode) => {
+  const region =
+    COUNTRY_TIME_REGION[country] ?? 'DEFAULT';
+
+  const { locale, timeZone, hour12 } =
+    TIME_REGION_CONFIG[region];
+
+  return new Intl.DateTimeFormat(locale, {
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Seoul', // 현재는 한국 시간만을 기준으로 사용
+    hour12,
+    timeZone,
   }).format(new Date());
 };
 

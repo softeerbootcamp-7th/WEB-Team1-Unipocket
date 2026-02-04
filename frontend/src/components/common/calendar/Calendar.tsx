@@ -10,9 +10,7 @@ export interface DateRange {
   endDate: Date | null;
 }
 
-interface CalendarProps {
-  startDate: Date | null;
-  endDate: Date | null;
+interface CalendarProps extends DateRange {
   onChange: (startDate: Date | null, endDate: Date | null) => void;
 }
 

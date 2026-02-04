@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Button, { type ButtonProps } from '../Button';
@@ -41,6 +41,7 @@ const Modal = ({
 }: ModalProps) => {
   // 모달의 확인 버튼 활성화 여부 (기본값 true: 단순 알림 모달 등을 위해)
   const [isActionReady, setActionReady] = useState(true);
+  const contextValue = useMemo(() => ({ setActionReady }), []);
 
   const { text: confirmText, variant: confirmVariant } =
     BUTTON_CONFIG[actionType];
@@ -54,7 +55,7 @@ const Modal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <ModalContext.Provider value={{ setActionReady }}>
+        <ModalContext.Provider value={contextValue}>
           {/* Backdrop */}
           <motion.div
             className="bg-dimmer-strong fixed inset-0 z-50 flex items-center justify-center"

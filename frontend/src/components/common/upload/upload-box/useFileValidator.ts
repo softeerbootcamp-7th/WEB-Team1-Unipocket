@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 interface UploadPolicy {
-  message: string;
+  message?: string;
   accept: string;
   multiple: boolean;
   maxCount: number;

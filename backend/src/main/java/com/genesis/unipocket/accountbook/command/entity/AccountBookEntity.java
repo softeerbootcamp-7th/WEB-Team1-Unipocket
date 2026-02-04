@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.entity;
+package com.genesis.unipocket.accountbook.command.entity;
 
 import com.genesis.unipocket.global.base.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;

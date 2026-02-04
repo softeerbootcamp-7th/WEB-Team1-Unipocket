@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.dto.request;
+package com.genesis.unipocket.accountbook.command.dto.request;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -8,7 +8,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 public record CreateAccountBookReq(
 		@NotNull(message = CODE) CountryCode localCountryCode,
-		@NotNull(message = CODE) CountryCode baseCountryCode,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate startDate,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate endDate) {
 

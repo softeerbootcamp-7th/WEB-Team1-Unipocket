@@ -1,7 +1,7 @@
-package com.genesis.unipocket.accountbook.service;
+package com.genesis.unipocket.accountbook.command.service;
 
-import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.dto.request.CreateAccountBookReq;
+import com.genesis.unipocket.accountbook.command.dto.common.AccountBookDto;
+import com.genesis.unipocket.accountbook.command.dto.request.CreateAccountBookReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

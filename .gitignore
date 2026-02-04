@@ -41,4 +41,4 @@ out/
 **/*.DS_Store
 
 ### Local-only config ###
-src/main/resources/application-local.yml
+backend/src/main/resources/application-local.yml

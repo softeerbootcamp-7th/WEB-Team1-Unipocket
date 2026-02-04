@@ -1,7 +1,7 @@
-package com.genesis.unipocket.accountbook.dto.response;
+package com.genesis.unipocket.accountbook.command.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
+import com.genesis.unipocket.accountbook.command.dto.common.AccountBookDto;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 

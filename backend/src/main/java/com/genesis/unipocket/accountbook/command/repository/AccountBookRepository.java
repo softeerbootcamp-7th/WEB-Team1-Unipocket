@@ -1,6 +1,6 @@
-package com.genesis.unipocket.accountbook.repository;
+package com.genesis.unipocket.accountbook.command.repository;
 
-import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.entity.AccountBookEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

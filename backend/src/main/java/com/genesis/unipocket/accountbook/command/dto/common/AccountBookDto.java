@@ -1,6 +1,6 @@
-package com.genesis.unipocket.accountbook.dto.common;
+package com.genesis.unipocket.accountbook.command.dto.common;
 
-import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.entity.AccountBookEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 

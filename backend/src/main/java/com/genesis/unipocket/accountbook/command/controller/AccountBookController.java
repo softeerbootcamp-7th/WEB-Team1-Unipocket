@@ -1,8 +1,8 @@
-package com.genesis.unipocket.accountbook.controller;
+package com.genesis.unipocket.accountbook.command.controller;
 
-import com.genesis.unipocket.accountbook.dto.request.CreateAccountBookReq;
-import com.genesis.unipocket.accountbook.dto.response.CreateAccountBookRes;
-import com.genesis.unipocket.accountbook.service.AccountBookUseCase;
+import com.genesis.unipocket.accountbook.command.dto.request.CreateAccountBookReq;
+import com.genesis.unipocket.accountbook.command.dto.response.CreateAccountBookRes;
+import com.genesis.unipocket.accountbook.command.service.AccountBookUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

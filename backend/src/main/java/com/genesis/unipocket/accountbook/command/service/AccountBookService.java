@@ -1,10 +1,11 @@
-package com.genesis.unipocket.accountbook.service;
+package com.genesis.unipocket.accountbook.command.service;
 
-import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.dto.request.CreateAccountBookReq;
-import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.repository.AccountBookRepository;
-import com.genesis.unipocket.accountbook.service.validator.AccountBookValidator;
+import com.genesis.unipocket.accountbook.command.dto.common.AccountBookDto;
+import com.genesis.unipocket.accountbook.command.dto.request.CreateAccountBookReq;
+import com.genesis.unipocket.accountbook.command.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.repository.AccountBookRepository;
+import com.genesis.unipocket.accountbook.command.service.validator.AccountBookValidator;
+import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,20 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountBookService {
 
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("(\\d+)$");
-	private static final String BASE_NAME_SUFFIX = "의 가계부";
+	private static final String DEFAULT_NAME_SUFFIX = "의 가계부";
+	private static final CountryCode DEFAULT_BASE_COUNTRY_CODE = CountryCode.KR;
+
 	private final AccountBookRepository repository;
 	private final AccountBookValidator validator;
 
 	@Transactional
 	public AccountBookDto create(long userId, String username, CreateAccountBookReq req) {
-		String uniqueTitle = getUniqueTitle(userId, username + BASE_NAME_SUFFIX);
+		String uniqueTitle = getUniqueTitle(userId, username + DEFAULT_NAME_SUFFIX);
 
 		AccountBookEntity newEntity =
 				AccountBookEntity.create(
 						userId,
 						uniqueTitle,
 						req.localCountryCode(),
-						req.baseCountryCode(),
+						DEFAULT_BASE_COUNTRY_CODE,
 						req.startDate(),
 						req.endDate());
 

@@ -161,18 +161,14 @@ const DemoSection = () => {
       <h2 className="title1-medium mb-4 text-center">
         지출 내역을 올려보고 기능을 체험해보세요!
       </h2>
-      <h2 className="mb-20 text-center text-2xl font-medium text-gray-400">
+      <h2 className="mb-2 text-center text-2xl font-medium text-gray-400">
         영수증, 카드 지출 내역 이미지, CSV 파일을 업로드하고
         <br /> 어떻게 정리해주는지 알 수 있습니다.
       </h2>
-      <h3 className="mb-2 text-center text-sm text-gray-400">
+      <h3 className="mb-20 text-center text-sm text-gray-400">
         CSV 파일 업로드는 로그인 후 이용 가능합니다.
       </h3>
-      <div className="mb-7 flex justify-center gap-2.5">
-        <Button variant="solid" size="lg">
-          영수증 / 은행 앱 사진 업로드
-        </Button>
-      </div>
+
       <div className="bg-background-normal shadow-card flex flex-col gap-12 rounded-3xl p-3 pb-7">
         <UploadBox />
         <div className="px-4.25">

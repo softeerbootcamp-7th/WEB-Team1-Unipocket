@@ -125,7 +125,7 @@ const MarqueeRow = ({
 
   return (
     <div className="group flex">
-      {/* 두 개의 트랙을 연속 배치하여 무한 스크롤 효과 구현 */}
+      {/* 두 개의 트랙을 연속 배치하여 무한 롤링 효과 구현 */}
       {renderTrack(0)}
       {renderTrack(1)}
     </div>
@@ -133,7 +133,7 @@ const MarqueeRow = ({
 };
 
 const InfiniteCurrency = () => {
-  const [activeCode, setActiveCode] = useState<string | null>(null);
+  const [activeCode, setActiveCode] = useState('JPY');
 
   return (
     <div className="flex w-full flex-col gap-3">

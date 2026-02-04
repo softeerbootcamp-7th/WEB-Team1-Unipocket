@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 
 import Calendar, {
@@ -8,7 +8,7 @@ import Calendar, {
 import { formatDateWithDay } from '@/lib/utils';
 
 import Modal, { type ModalProps } from './Modal';
-import { useModalContext } from './useModalContext';
+import { ModalContext } from './useModalContext';
 
 interface DatePickItemProps {
   label: string;
@@ -49,13 +49,13 @@ export const SelectDateContent = ({
   onChange,
   onValidChange,
 }: SelectDateContentProps) => {
-  const { setActionReady } = useModalContext();
+  const context = useContext(ModalContext);
 
   useEffect(() => {
     const isValid = !!startDate && !!endDate;
-    setActionReady(isValid);
+    context?.setActionReady(isValid);
     onValidChange?.(isValid);
-  }, [startDate, endDate, setActionReady, onValidChange]);
+  }, [startDate, endDate, context, onValidChange]);
 
   return (
     <div className="flex flex-col gap-8">

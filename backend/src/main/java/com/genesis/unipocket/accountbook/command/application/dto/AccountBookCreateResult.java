@@ -9,5 +9,6 @@ public record AccountBookCreateResult(
 		String title,
 		CountryCode localCountryCode,
 		CountryCode baseCountryCode,
+		Integer budget,
 		LocalDateTime startDate,
 		LocalDateTime endDate) {}

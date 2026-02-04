@@ -4,14 +4,11 @@ on:
     branches:
       - develop
       - main
-      - backend
-      - feat-be/**
-      - story/**
     paths:
-      - "backend/src/**"
+      - "backend/**"
   workflow_dispatch:
 jobs:
-  unit-test:
+  integration-test:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -45,8 +42,11 @@ jobs:
       # 5) 단위 테스트
       - name: Run unit tests
         run: |
+          cat << 'EOF' >> $GITHUB_ENV
+          ${{ secrets.ENV_FILE }}
+          EOF
           cd backend
-          ./gradlew --no-daemon test
+          ./gradlew --no-daemon integrationTest
 
       # 빌드 실패 시 로그 업로드
       - name: Upload Build Logs on failure

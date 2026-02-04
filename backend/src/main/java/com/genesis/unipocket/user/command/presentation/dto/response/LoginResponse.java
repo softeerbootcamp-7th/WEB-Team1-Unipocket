@@ -22,6 +22,11 @@ public class LoginResponse {
 	private String accessToken;
 
 	/**
+	 * Refresh Token (JWT)
+	 */
+	private String refreshToken;
+
+	/**
 	 * 사용자 ID
 	 */
 	private UUID userId;
@@ -39,9 +44,11 @@ public class LoginResponse {
 	/**
 	 * 정적 팩토리 메서드
 	 */
-	public static LoginResponse of(String accessToken, UUID userId, Long expiresIn) {
+	public static LoginResponse of(
+			String accessToken, String refreshToken, UUID userId, Long expiresIn) {
 		return LoginResponse.builder()
 				.accessToken(accessToken)
+				.refreshToken(refreshToken)
 				.userId(userId)
 				.expiresIn(expiresIn)
 				.tokenType("Bearer")

@@ -5,11 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.genesis.unipocket.TestcontainersConfiguration;
+import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.persistence.entity.expense.Expense;
 import com.genesis.unipocket.expense.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test-it")
 @Import(TestcontainersConfiguration.class)
 @Transactional
+@Tag("integration")
 class ExpenseControllerIntegrationTest {
 
 	@Autowired private MockMvc mockMvc;
@@ -47,7 +50,7 @@ class ExpenseControllerIntegrationTest {
 				"""
 			{
 			"merchantName": "스타벅스",
-			"category": null,
+			"category": 1,
 			"paymentMethod": "CARD",
 			"occurredAt": "2026-02-04T12:30:00",
 			"localAmount": 10000.0,
@@ -60,7 +63,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when
 		mockMvc.perform(
-						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+						post("/api/account-books/{accountBookId}/expenses/manual", accountBookId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isCreated());
@@ -72,6 +75,7 @@ class ExpenseControllerIntegrationTest {
 		assertThat(saved.getMerchantName()).isEqualTo("스타벅스");
 		assertThat(saved.getLocalCurrency()).isEqualTo(CurrencyCode.KRW);
 		assertThat(saved.getStandardCurrency()).isEqualTo(CurrencyCode.JPY);
+		assertThat(saved.getCategory()).isEqualTo(Category.RESIDENCE);
 
 		assertThat(saved.getAccountBookId()).isEqualTo(accountBookId);
 		assertThat(saved.getStandardAmount()).isEqualTo(BigDecimal.valueOf(1000.123));

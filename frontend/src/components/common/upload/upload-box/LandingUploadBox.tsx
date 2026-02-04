@@ -1,8 +1,9 @@
 import { useCallback, useRef } from 'react';
 
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+
 import { Icons } from '@/assets';
 
-import { useDragAndDrop } from './useDragAndDrop';
 import { uploadPolicy, useFileValidator } from './useFileValidator';
 
 const LandingUploadBox = () => {

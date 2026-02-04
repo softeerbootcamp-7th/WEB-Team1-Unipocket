@@ -19,7 +19,7 @@ import { LandingImages } from '@/assets';
 
 const LandingPage = () => {
   return (
-    <main className="bg-cool-neutral-99 -mt-14.25">
+    <main className="-mt-14.25">
       <HomeSection />
       <FeatureSection />
       <DemoSection />
@@ -161,13 +161,10 @@ const DemoSection = () => {
       <h2 className="title1-medium mb-4 text-center">
         지출 내역을 올려보고 기능을 체험해보세요!
       </h2>
-      <h2 className="mb-2 text-center text-2xl font-medium text-gray-400">
-        영수증, 카드 지출 내역 이미지, CSV 파일을 업로드하고
-        <br /> 어떻게 정리해주는지 알 수 있습니다.
+      <h2 className="mb-20 text-center text-2xl font-medium text-gray-400">
+        영수증 및 모바일 결제 화면 캡처본을 업로드하면
+        <br /> 자동으로 내역이 정리됩니다.
       </h2>
-      <h3 className="mb-20 text-center text-sm text-gray-400">
-        CSV 파일 업로드는 로그인 후 이용 가능합니다.
-      </h3>
 
       <div className="bg-background-normal shadow-card flex flex-col gap-12 rounded-3xl p-3 pb-7">
         <UploadBox />
@@ -190,6 +187,7 @@ const DemoSection = () => {
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
                       height={480}
+                      enableGroupSelection={false}
                       groupBy={(row: Expense) =>
                         new Date(row.date).toLocaleDateString('ko-KR', {
                           year: 'numeric',
@@ -214,6 +212,7 @@ const DemoSection = () => {
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
                       height={480}
+                      enableGroupSelection={false}
                       groupBy={(row: Expense) =>
                         new Date(row.date).toLocaleDateString('ko-KR', {
                           year: 'numeric',

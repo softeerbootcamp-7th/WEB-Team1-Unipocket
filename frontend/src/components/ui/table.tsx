@@ -23,7 +23,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
     <thead
       data-slot="table-header"
       className={cn(
-        '[&_tr]:border-line-solid-neutral caption1-medium bg-white',
+        '[&_tr]:border-line-solid-neutral caption1-medium bg-background-normal',
         className,
       )}
       {...props}
@@ -62,7 +62,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     <tr
       data-slot="table-row"
       className={cn(
-        'data-[state=selected]:bg-primary-normal/8 data-[state=error]:bg-status-negative/8 border-b bg-white transition-colors hover:bg-white',
+        'data-[state=selected]:bg-primary-normal/8 data-[state=error]:bg-status-negative/8 bg-background-normal hover:bg-background-alternative border-b transition-colors',
         className,
       )}
       {...props}

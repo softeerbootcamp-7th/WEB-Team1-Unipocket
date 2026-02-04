@@ -19,17 +19,10 @@ jobs:
 
     steps:
       # 1) 소스 체크아웃
-      - name: Checkout branch HEAD
+      - name: Checkout (PR merge commit)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
-          persist-credentials: true
-
-      # 1-2) race condition 대비용 pull
-      - name: Ensure latest commit
-        run: |
-          git pull --ff-only origin "${{ github.head_ref }}"
 
       # 2) JDK 설치 + Gradle 캐싱
       - name: Set up JDK 17

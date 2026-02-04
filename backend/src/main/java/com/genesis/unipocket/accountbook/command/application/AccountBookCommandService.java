@@ -27,18 +27,13 @@ public class AccountBookCommandService {
 	private final AccountBookApplicationConverter converter;
 
 	@Transactional
-	public AccountBookCreateResult create(AccountBookCreateCommand params) {
+	public AccountBookCreateResult create(AccountBookCreateCommand command) {
 		String uniqueTitle =
-				getUniqueTitle(params.userId(), params.username() + DEFAULT_NAME_SUFFIX);
+				getUniqueTitle(command.userId(), command.username() + DEFAULT_NAME_SUFFIX);
 
 		AccountBookEntity newEntity =
 				AccountBookEntity.create(
-						params.userId(),
-						uniqueTitle,
-						params.localCountryCode(),
-						DEFAULT_BASE_COUNTRY_CODE,
-						params.startDate(),
-						params.endDate());
+						converter.toArgs(command, DEFAULT_BASE_COUNTRY_CODE, uniqueTitle));
 
 		validator.validate(newEntity);
 

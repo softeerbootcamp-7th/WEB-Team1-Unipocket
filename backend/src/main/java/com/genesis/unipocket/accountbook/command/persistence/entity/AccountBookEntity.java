@@ -1,5 +1,6 @@
 package com.genesis.unipocket.accountbook.command.persistence.entity;
 
+import com.genesis.unipocket.accountbook.command.persistence.dto.AccountBookCreateArgs;
 import com.genesis.unipocket.global.base.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.Column;
@@ -54,21 +55,15 @@ public class AccountBookEntity extends BaseEntity {
 	@Column(name = "end_date", nullable = false, columnDefinition = "DATE")
 	private LocalDate endDate;
 
-	public static AccountBookEntity create(
-			String userId,
-			String title,
-			CountryCode localCountryCode,
-			CountryCode baseCountryCode,
-			LocalDate startDate,
-			LocalDate endDate) {
+	public static AccountBookEntity create(AccountBookCreateArgs args) {
 
 		return AccountBookEntity.builder()
-				.userId(userId)
-				.localCountryCode(localCountryCode)
-				.baseCountryCode(baseCountryCode)
-				.title(title)
-				.startDate(startDate)
-				.endDate(endDate)
+				.userId(args.userId())
+				.localCountryCode(args.localCountryCode())
+				.baseCountryCode(args.baseCountryCode())
+				.title(args.title())
+				.startDate(args.startDate())
+				.endDate(args.endDate())
 				.build();
 	}
 

@@ -39,12 +39,13 @@ jobs:
           cd backend
           ./gradlew --no-daemon spotlessCheck
 
-      # 5) 단위 테스트
-      - name: Run unit tests
+      # 5) 통합 테스트
+      - name: Run integration tests
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_OAUTH_ID: ${{ secrets.GOOGLE_OAUTH_ID }}
+          GOOGLE_OAUTH_SECRET: ${{ secrets.GOOGLE_OAUTH_SECRET }}
         run: |
-          cat << 'EOF' >> $GITHUB_ENV
-          ${{ secrets.ENV_FILE }}
-          EOF
           cd backend
           ./gradlew --no-daemon integrationTest
 

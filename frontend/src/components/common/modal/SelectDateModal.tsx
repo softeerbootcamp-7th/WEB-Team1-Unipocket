@@ -38,20 +38,24 @@ const DatePickItem = ({ label, date, isActive }: DatePickItemProps) => {
   );
 };
 
-interface SelectDateContentProps extends DateRange {
+export interface SelectDateContentProps extends DateRange {
   onChange: (startDate: Date | null, endDate: Date | null) => void;
+  onValidChange?: (isValid: boolean) => void;
 }
 
-const SelectDateContent = ({
+export const SelectDateContent = ({
   startDate,
   endDate,
   onChange,
+  onValidChange,
 }: SelectDateContentProps) => {
   const { setActionReady } = useModalContext();
 
   useEffect(() => {
-    setActionReady(!!startDate && !!endDate);
-  }, [startDate, endDate, setActionReady]);
+    const isValid = !!startDate && !!endDate;
+    setActionReady(isValid);
+    onValidChange?.(isValid);
+  }, [startDate, endDate, setActionReady, onValidChange]);
 
   return (
     <div className="flex flex-col gap-8">

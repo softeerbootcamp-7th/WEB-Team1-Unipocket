@@ -133,7 +133,7 @@ const MarqueeRow = ({
 };
 
 const InfiniteCurrency = () => {
-  const [activeCode, setActiveCode] = useState('JPY');
+  const [activeCode, setActiveCode] = useState('AUD');
 
   return (
     <div className="flex w-full flex-col gap-3">

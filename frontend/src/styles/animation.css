@@ -14,13 +14,13 @@
       transform: translateX(0);
     }
     to {
-      transform: translateX(-50%);
+      transform: translateX(-100%);
     }
   }
 
   @keyframes marquee-reverse {
     from {
-      transform: translateX(-50%);
+      transform: translateX(-100%);
     }
     to {
       transform: translateX(0);
@@ -48,8 +48,8 @@
   }
 
   --animate-float: float 2s ease-in-out infinite;
-  --animate-marquee: marquee 120s linear infinite;
-  --animate-marquee-reverse: marquee-reverse 120s linear infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 30s linear infinite;
   --animate-ripple: ripple 2s ease-in-out infinite;
   --animate-grow: scale-up 0.3s ease-in-out forwards;
 }

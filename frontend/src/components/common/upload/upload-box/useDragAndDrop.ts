@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react';
 
-export function useDragAndDrop(
-  onDropFiles: (files: FileList) => void,
-) {
+export function useDragAndDrop(onDropFiles: (files: FileList) => void) {
   const [isDragging, setIsDragging] = useState(false);
 
   // 드래그 영역에 들어왔을 때

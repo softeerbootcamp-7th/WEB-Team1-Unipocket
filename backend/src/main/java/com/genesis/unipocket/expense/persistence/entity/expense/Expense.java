@@ -5,7 +5,6 @@ import com.genesis.unipocket.expense.persistence.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.global.base.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;

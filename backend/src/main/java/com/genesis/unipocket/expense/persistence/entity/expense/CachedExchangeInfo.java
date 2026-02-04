@@ -2,11 +2,10 @@ package com.genesis.unipocket.expense.persistence.entity.expense;
 
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.Embeddable;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 /**
  * <b>노출용 기준화폐 & 환율 정보</b>

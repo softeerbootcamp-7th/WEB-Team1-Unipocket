@@ -3,11 +3,10 @@ package com.genesis.unipocket.expense.persistence.entity.expense;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 /**
  * <b>기준화폐 & 환율 정보 원본</b>
@@ -42,7 +41,10 @@ class OriginExchangeInfo {
 		if (localCurrency == null || billingCurrency == null) {
 			throw new IllegalArgumentException("currency must not be null");
 		}
-		if (localAmount == null || billingAmount == null || localAmount.signum() <= 0 || billingAmount.signum() <= 0) {
+		if (localAmount == null
+				|| billingAmount == null
+				|| localAmount.signum() <= 0
+				|| billingAmount.signum() <= 0) {
 			throw new IllegalArgumentException("amount must be positive");
 		}
 		if (localCurrency == billingCurrency && localAmount.compareTo(billingAmount) != 0) {

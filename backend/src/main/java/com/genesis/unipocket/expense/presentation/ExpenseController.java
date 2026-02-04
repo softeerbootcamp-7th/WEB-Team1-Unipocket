@@ -21,7 +21,7 @@ public class ExpenseController {
 	private final ExpenseOrchestrator orchestrator;
 	private final Long USER_ID_TEMP = 1L;
 
-	@PostMapping("/account-books/{accountBookId}/expenses/manual")
+	@PostMapping("/api/account-books/{accountBookId}/expenses/manual")
 	public ResponseEntity createExpenseManual(
 			@PathVariable Long accountBookId,
 			@RequestBody @Valid ExpenseManualCreateRequest request) {

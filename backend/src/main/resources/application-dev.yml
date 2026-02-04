@@ -8,12 +8,10 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:validate}
 
-<<<<<<< fix-be/#234/profile
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-=======
 logging:
   file:
     name: ${LOG_PATH}/application.log
@@ -25,4 +23,3 @@ logging:
       total-size-cap: 1GB
   level:
     root: ${LOG_LEVEL}
->>>>>>> backend

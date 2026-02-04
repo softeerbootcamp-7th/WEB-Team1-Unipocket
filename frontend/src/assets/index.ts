@@ -15,7 +15,15 @@ export const BankLogos = {
   TravelWallet: TravelWallet,
   Hana: HanaBank,
   Hyundai: HyundaiCard,
-};
+} as const;
+
+import Google from './authLogos/google.svg';
+import Kakao from './authLogos/kakao.svg';
+
+export const AuthLogos = {
+  Google,
+  Kakao,
+} as const;
 
 // 2. Cards
 import CardDefault from './cards/Default.svg';
@@ -42,11 +50,13 @@ import Edit from './Icons/edit.svg';
 import FileBox from './Icons/file-box.svg';
 import Home from './Icons/home.svg';
 import Loading from './Icons/loading.svg';
-import Logo from './Icons/Logo.svg';
+import Logo from './Icons/logo.svg';
+import LogoText from './Icons/logo-text.svg';
 import Phone from './Icons/phone.svg';
 import Refresh from './Icons/refresh.svg';
 import Swap from './Icons/swap.svg';
 import Travel from './Icons/travel.svg';
+import UploadFile from './Icons/upload-file.svg';
 
 export const Icons = {
   AlertCircle,
@@ -67,6 +77,22 @@ export const Icons = {
   FileBox,
   Edit,
   Swap,
+  LogoText,
+  UploadFile,
 } as const;
 
 export type IconName = keyof typeof Icons;
+
+import DemoReceipt1 from '@/assets/images/landing/demo-receipt.png';
+import FeaturePreview1 from '@/assets/images/landing/feature-1.png';
+import FeaturePreview3 from '@/assets/images/landing/feature-3.png';
+import FeaturePreview4 from '@/assets/images/landing/feature-4.png';
+import HomePreview from '@/assets/images/landing/home-preview.png';
+
+export const LandingImages = {
+  DemoReceipt1,
+  FeaturePreview1,
+  FeaturePreview3,
+  FeaturePreview4,
+  HomePreview,
+} as const;

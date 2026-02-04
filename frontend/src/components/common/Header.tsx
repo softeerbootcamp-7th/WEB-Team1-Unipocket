@@ -31,7 +31,7 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="border-line-solid-normal bg-background-alternative sticky top-0 z-10 flex justify-between border-b px-8 py-3">
+    <div className="border-line-solid-normal sticky top-0 z-10 flex justify-between border-b px-8 py-3">
       <div className="flex items-center">
         {!isInitPath && (
           <Dropdown

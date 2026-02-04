@@ -17,7 +17,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const buttonClass = clsx(
-    'w-fit flex items-center justify-center box-border transition-colors',
+    'w-fit flex items-center justify-center box-border transition-colors truncate',
 
     /* --- disabled --- */
     disabled && 'cursor-not-allowed text-label-assistive',

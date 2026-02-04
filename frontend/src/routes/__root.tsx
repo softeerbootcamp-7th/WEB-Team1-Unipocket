@@ -16,5 +16,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       />
     );
   },
-  component: Outlet,
+  component: Rootayout,
 });
+
+function Rootayout() {
+  return (
+    <main className="bg-background-alternative h-full">
+      <Outlet />
+    </main>
+  );
+}

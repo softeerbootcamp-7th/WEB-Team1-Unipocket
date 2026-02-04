@@ -1,0 +1,57 @@
+name: Backend CI
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - "backend/src/**"
+  workflow_dispatch:
+jobs:
+  unit-test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+
+    steps:
+      # 1) 소스 체크아웃
+      - name: Checkout (PR merge commit)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2) JDK 설치 + Gradle 캐싱
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+
+      # 3) Gradle Wrapper 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x backend/gradlew
+
+      # 4) Spotless Check
+      - name: Run Spotless check
+        run: |
+          cd backend
+          ./gradlew --no-daemon spotlessCheck
+
+      # 5) 단위 테스트
+      - name: Run unit tests
+        run: |
+          cat << 'EOF' >> $GITHUB_ENV
+          ${{ secrets.ENV_FILE }}
+          EOF
+          cd backend
+          ./gradlew --no-daemon integrationTest
+
+      # 빌드 실패 시 로그 업로드
+      - name: Upload Build Logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: backend/build/reports/

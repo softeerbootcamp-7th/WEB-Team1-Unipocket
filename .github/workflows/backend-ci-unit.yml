@@ -46,7 +46,7 @@ jobs:
       - name: Run unit tests
         run: |
           cd backend
-          ./gradlew --no-daemon test
+          ./gradlew --no-daemon unitTest
 
       # 빌드 실패 시 로그 업로드
       - name: Upload Build Logs on failure

@@ -43,10 +43,33 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 	testRuntimeOnly 'com.h2database:h2'
 	testRuntimeOnly 'com.h2database:h2'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+tasks.register("unitTest", Test) {
+	group = "verification"
+	description = "Runs unit tests (excluding integration tests)."
+
+	useJUnitPlatform {
+		excludeTags "integration"
+	}
+
+	// fork PR에서도 항상 돌아야 하므로 test 프로파일 고정(더미 설정/인메모리 DB 등)
+	systemProperty "spring.profiles.active", "test-unit"
+}
+
+tasks.register("integrationTest", Test) {
+	group = "verification"
+	description = "Runs integration tests (tagged with 'integration')."
+
+	useJUnitPlatform {
+		includeTags "integration"
+	}
+
+	// 내부 PR에서만 secrets/ENV_FILE로 값 주입하고, 그에 맞는 프로파일 사용
+	systemProperty "spring.profiles.active", "test-ci"
+	shouldRunAfter tasks.named("unitTest")
 }
 
 spotless {

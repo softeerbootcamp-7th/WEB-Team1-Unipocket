@@ -2,14 +2,18 @@ package com.genesis.unipocket.user.command.service;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.global.auth.JwtProvider;
 import com.genesis.unipocket.global.auth.TokenBlacklistService;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 @TestPropertySource(
 		properties = {"spring.data.redis.host=localhost", "spring.data.redis.port=6379"})
 @DisplayName("AuthService 통합 테스트")
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test-it")
+@Tag("integration")
 class AuthServiceIntegrationTest {
 
 	@Autowired private AuthService authService;

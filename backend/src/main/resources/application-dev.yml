@@ -8,6 +8,10 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:validate}
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 logging:
   file:
     name: ${LOG_PATH}/application.log

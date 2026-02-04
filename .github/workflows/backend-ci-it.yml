@@ -5,10 +5,10 @@ on:
       - develop
       - main
     paths:
-      - "backend/src/**"
+      - "backend/**"
   workflow_dispatch:
 jobs:
-  unit-test:
+  integration-test:
     runs-on: ubuntu-24.04
     permissions:
       contents: read

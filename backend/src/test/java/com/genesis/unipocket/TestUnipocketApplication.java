@@ -7,6 +7,7 @@ public class TestUnipocketApplication {
 	public static void main(String[] args) {
 		SpringApplication.from(UnipocketApplication::main)
 				.with(TestcontainersConfiguration.class)
+				.withAdditionalProfiles("test-it")
 				.run(args);
 	}
 }

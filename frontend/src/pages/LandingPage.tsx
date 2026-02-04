@@ -15,11 +15,7 @@ import { type Expense, getData } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
 
-import DemoReceipt1 from '@/assets/images/landing/demo-receipt.png';
-import FeaturePreview1 from '@/assets/images/landing/feature-1.png';
-import FeaturePreview3 from '@/assets/images/landing/feature-3.png';
-import FeaturePreview4 from '@/assets/images/landing/feature-4.png';
-import HomePreview from '@/assets/images/landing/home-preview.png';
+import { LandingImages } from '@/assets';
 
 const LandingPage = () => {
   return (
@@ -66,7 +62,11 @@ const HomeSection = () => {
           </Link>
         </div>
       </div>
-      <img src={HomePreview} alt="Landing Preview" className="w-200" />
+      <img
+        src={LandingImages.HomePreview}
+        alt="Landing Preview"
+        className="w-200"
+      />
     </section>
   );
 };
@@ -93,7 +93,7 @@ const FeatureSection = () => {
           }
         >
           <img
-            src={FeaturePreview1}
+            src={LandingImages.FeaturePreview1}
             alt="Preview 1"
             className="animate-float absolute right-12.25 bottom-10 w-40 object-contain lg:w-67.5"
           />
@@ -127,7 +127,7 @@ const FeatureSection = () => {
           }
         >
           <img
-            src={FeaturePreview3}
+            src={LandingImages.FeaturePreview3}
             alt="Preview 1"
             className="absolute -bottom-35.25 left-50 w-163.5 object-contain lg:h-104"
           />
@@ -144,7 +144,7 @@ const FeatureSection = () => {
           }
         >
           <img
-            src={FeaturePreview4}
+            src={LandingImages.FeaturePreview4}
             alt="Preview 1"
             className="animate-float absolute right-12.25 bottom-10 w-30 object-contain lg:w-47.5"
           />
@@ -181,7 +181,10 @@ const DemoSection = () => {
             <TabContent value="sample1">
               <div className="flex flex-col gap-4.5 lg:flex-row">
                 <div className="bg-background-alternative flex items-center justify-center rounded-2xl border border-gray-200 p-2.5">
-                  <img src={DemoReceipt1} className="h-120 rounded-lg" />
+                  <img
+                    src={LandingImages.DemoReceipt1}
+                    className="h-120 rounded-lg"
+                  />
                 </div>
                 <div className="shadow-card h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={columns} data={data}>
@@ -202,7 +205,10 @@ const DemoSection = () => {
             <TabContent value="sample2">
               <div className="flex flex-col gap-4.5 lg:flex-row">
                 <div className="bg-background-alternative flex items-center justify-center rounded-2xl border border-gray-200 p-2.5">
-                  <img src={DemoReceipt1} className="h-120 rounded-lg" />
+                  <img
+                    src={LandingImages.DemoReceipt1}
+                    className="h-120 rounded-lg"
+                  />
                 </div>
                 <div className="shadow-card h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={columns} data={data}>

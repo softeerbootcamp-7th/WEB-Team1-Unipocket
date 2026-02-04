@@ -14,7 +14,7 @@ const variantMap = {
   },
   pills: {
     active: 'bg-black text-white shadow-sm',
-    inactive: 'text-gray-500 hover:bg-gray-100',
+    inactive: 'text-label-alternative hover:bg-background-alternative',
   },
 };
 

@@ -86,7 +86,7 @@ const LandingHeader = () => {
                 hash={item.id}
                 className={clsx(
                   'transition-all duration-300',
-                  activeSection !== item.id && 'text-gray-400',
+                  activeSection !== item.id && 'text-label-alternative',
                 )}
                 onClick={() => handleTabClick(item.id)}
               >

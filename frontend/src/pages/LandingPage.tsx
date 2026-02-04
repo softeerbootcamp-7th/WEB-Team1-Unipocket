@@ -161,7 +161,7 @@ const DemoSection = () => {
       <h2 className="title1-medium mb-4 text-center">
         지출 내역을 올려보고 기능을 체험해보세요!
       </h2>
-      <h2 className="mb-20 text-center text-2xl font-medium text-gray-400">
+      <h2 className="text-label-alternative mb-20 text-center text-2xl font-medium">
         영수증 및 모바일 결제 화면 캡처본을 업로드하면
         <br /> 자동으로 내역이 정리됩니다.
       </h2>

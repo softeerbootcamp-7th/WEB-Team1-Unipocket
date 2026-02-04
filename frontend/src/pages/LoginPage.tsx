@@ -27,7 +27,7 @@ const LoginPage = () => {
       <div className="px-25 py-17.5 text-center">
         <div className="hidden flex-col gap-1 md:mb-25 md:flex">
           <h1 className="text-[32px] font-medium">로그인</h1>
-          <h2 className="text-gray-400">
+          <h2 className="text-label-alternative">
             소셜 로그인으로 간단하게 시작해보세요
           </h2>
         </div>

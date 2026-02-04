@@ -87,7 +87,10 @@ const DataTable = <TData,>({ groupBy, height }: DataTableProps<TData>) => {
             return (
               <React.Fragment key={date}>
                 {/* 날짜 그룹 헤더 행 */}
-                <TableRow className="pointer-events-auto sticky top-10 z-10 border-none [&>td]:pointer-events-auto">
+                <TableRow
+                  data-group-header
+                  className="sticky top-10 z-10 border-none bg-white"
+                >
                   <TableCell className="w-12.5 px-3 py-4">
                     {/* 3. 그룹 선택 체크박스 */}
                     <Checkbox

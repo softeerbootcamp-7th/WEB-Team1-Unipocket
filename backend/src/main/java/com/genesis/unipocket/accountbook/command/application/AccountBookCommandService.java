@@ -1,10 +1,11 @@
-package com.genesis.unipocket.accountbook.command.service;
+package com.genesis.unipocket.accountbook.command.application;
 
-import com.genesis.unipocket.accountbook.command.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.command.dto.request.CreateAccountBookReq;
-import com.genesis.unipocket.accountbook.command.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.repository.AccountBookRepository;
-import com.genesis.unipocket.accountbook.command.service.validator.AccountBookValidator;
+import com.genesis.unipocket.accountbook.command.application.converter.AccountBookApplicationConverter;
+import com.genesis.unipocket.accountbook.command.application.dto.AccountBookCreateCommand;
+import com.genesis.unipocket.accountbook.command.application.dto.AccountBookCreateResult;
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookRepository;
+import com.genesis.unipocket.accountbook.command.persistence.validator.AccountBookValidator;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class AccountBookService {
+public class AccountBookCommandService {
 
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("(\\d+)$");
 	private static final String DEFAULT_NAME_SUFFIX = "의 가계부";
@@ -23,28 +24,30 @@ public class AccountBookService {
 
 	private final AccountBookRepository repository;
 	private final AccountBookValidator validator;
+	private final AccountBookApplicationConverter converter;
 
 	@Transactional
-	public AccountBookDto create(long userId, String username, CreateAccountBookReq req) {
-		String uniqueTitle = getUniqueTitle(userId, username + DEFAULT_NAME_SUFFIX);
+	public AccountBookCreateResult create(AccountBookCreateCommand params) {
+		String uniqueTitle =
+				getUniqueTitle(params.userId(), params.username() + DEFAULT_NAME_SUFFIX);
 
 		AccountBookEntity newEntity =
 				AccountBookEntity.create(
-						userId,
+						params.userId(),
 						uniqueTitle,
-						req.localCountryCode(),
+						params.localCountryCode(),
 						DEFAULT_BASE_COUNTRY_CODE,
-						req.startDate(),
-						req.endDate());
+						params.startDate(),
+						params.endDate());
 
 		validator.validate(newEntity);
 
 		AccountBookEntity savedEntity = repository.save(newEntity);
 
-		return AccountBookDto.from(savedEntity);
+		return converter.toResult(savedEntity);
 	}
 
-	private String getUniqueTitle(long userId, String baseTitle) {
+	private String getUniqueTitle(String userId, String baseTitle) {
 		List<String> existingNames = repository.findNamesStartingWith(userId, baseTitle);
 
 		if (existingNames.isEmpty()) {

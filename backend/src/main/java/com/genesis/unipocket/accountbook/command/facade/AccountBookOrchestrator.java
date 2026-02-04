@@ -1,6 +1,6 @@
 package com.genesis.unipocket.accountbook.command.facade;
 
-import com.genesis.unipocket.accountbook.command.application.AccountBookService;
+import com.genesis.unipocket.accountbook.command.application.AccountBookCommandService;
 import com.genesis.unipocket.accountbook.command.facade.converter.AccountBookFacadeConverter;
 import com.genesis.unipocket.accountbook.command.presentation.dto.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.dto.response.AccountBookCreateResponse;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AccountBookOrchestrator {
-	private final AccountBookService accountBookService;
+	private final AccountBookCommandService accountBookCommandService;
 	private final AccountBookFacadeConverter converter;
 
 	public AccountBookCreateResponse createAccountBook(
@@ -20,7 +20,7 @@ public class AccountBookOrchestrator {
 		String username = "유저";
 
 		var params = converter.toCommand(userId, username, req);
-		var result = accountBookService.create(params);
+		var result = accountBookCommandService.create(params);
 
 		return converter.toRes(result);
 	}

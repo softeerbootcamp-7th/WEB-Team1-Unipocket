@@ -11,10 +11,9 @@ export type TimeRegion =
   | 'MIDDLE_EAST'
   | 'DEFAULT';
 
-export const COUNTRY_TIME_REGION =
-  timeData.countryTimeRegion as Partial<
-    Record<CountryCode, TimeRegion>
-  >;
+export const COUNTRY_TIME_REGION = timeData.countryTimeRegion as Partial<
+  Record<CountryCode, TimeRegion>
+>;
 
 export const TIME_REGION_CONFIG: Record<
   TimeRegion,

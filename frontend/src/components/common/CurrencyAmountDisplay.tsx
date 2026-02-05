@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 
 import type { CountryCode } from '@/data/countryCode';
-import { getCountryInfo } from '@/lib/country';
+import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 
 const SIZE_VARIANTS = {
   sm: {
@@ -39,17 +39,23 @@ const CurrencyAmountDisplay = ({
   );
   const fractionDigits = isZeroDecimal ? 0 : 2;
 
-  const formattedString = amount.toLocaleString('en-US', {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  });
+  const formattedString = formatCurrencyAmount(
+    amount,
+    countryCode,
+    fractionDigits,
+  );
 
   const [integerPart, decimalPart] = formattedString.split('.');
 
   const styles = SIZE_VARIANTS[size];
 
   return (
-    <div className={clsx('flex items-center', styles.containerGap)}>
+    <div
+      className={clsx(
+        'text-label-normal flex items-center',
+        styles.containerGap,
+      )}
+    >
       {/* 통화 기호 */}
       <span className={styles.symbol}>{countryInfo.currencySign}</span>
 

@@ -32,7 +32,7 @@ oauth2:
 # Application Configuration
 app:
   frontend:
-    url: ${FRONTEND_URL}
+    url: ${FRONTEND_URL:http://localhost:5173}
 
 # Logging
 logging:

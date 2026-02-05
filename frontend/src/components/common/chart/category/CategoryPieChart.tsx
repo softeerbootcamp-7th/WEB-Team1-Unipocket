@@ -1,3 +1,4 @@
+import type { CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import { CATEGORY_COLORS } from '../chartColor';
@@ -5,6 +6,7 @@ import { CATEGORY_COLORS } from '../chartColor';
 interface CategoryPieChartProps {
   data: {
     percentage: number;
+    categoryName: CategoryType;
     currency?: CurrencyType;
     color?: string;
   }[];

@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { clsx } from 'clsx';
 
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
@@ -11,10 +12,7 @@ const LandingUploadBox = () => {
   const validateFiles = useFileValidator(policy);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const {
-    isDragging,
-    bind,
-  } = useDragAndDrop(validateFiles);
+  const { isDragging, bind } = useDragAndDrop(validateFiles);
 
   // 클릭 업로드
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,11 +32,10 @@ const LandingUploadBox = () => {
 
   return (
     <label
-      className={`bg-background-alternative rounded-lg py-auto flex h-55 cursor-pointer items-center justify-center gap-4 border-2 border-dashed transition-colors ${
-        isDragging
-          ? 'border-blue-400 bg-blue-50'
-          : 'border-transparent'
-      } `}
+      className={clsx(
+        'bg-background-alternative py-auto flex h-55 cursor-pointer items-center justify-center gap-4 rounded-lg border-2 border-dashed transition-colors',
+        isDragging ? 'border-blue-400 bg-blue-50' : 'border-transparent',
+      )}
       {...bind}
       tabIndex={0}
       onKeyDown={handleKeyDown}

@@ -19,7 +19,8 @@ const InitPage = () => {
     startDate: null,
     endDate: null,
   });
-  const [isDateValid, setDateValid] = useState(false);
+
+  const isDateValid = !!dateRange.startDate && !!dateRange.endDate;
 
   const handleCountrySelect = (code: CountryCode) => {
     setSelectedCountry(code);
@@ -31,6 +32,7 @@ const InitPage = () => {
   };
 
   const handleDateConfirm = () => {
+    // TODO: API Call with country, startDate, endDate
     const formattedStartDate = dateRange.startDate
       ? formatDateToString(dateRange.startDate)
       : undefined;
@@ -38,7 +40,6 @@ const InitPage = () => {
       ? formatDateToString(dateRange.endDate)
       : undefined;
 
-    // TODO: API Call with country, startDate, endDate
     console.log('API Call:', {
       localCountryCode: selectedCountry,
       startDate: formattedStartDate,
@@ -49,12 +50,11 @@ const InitPage = () => {
   const handlePrevButton = () => {
     setSelectedCountry(undefined);
     setDateRange({ startDate: null, endDate: null });
-    setDateValid(false);
     setStep('select-country');
   };
 
   return (
-    <div className="bg-background-alternative mt-12 flex h-screen w-full justify-center">
+    <div className="mt-12 flex h-screen w-full justify-center">
       {step === 'select-country' && (
         <LocaleSelectModal
           mode="LOCAL"
@@ -69,7 +69,6 @@ const InitPage = () => {
             startDate={dateRange.startDate}
             endDate={dateRange.endDate}
             onChange={handleDateChange}
-            onValidChange={setDateValid}
           />
           <div className="flex w-full justify-between">
             <Button variant="outlined" size="lg" onClick={handlePrevButton}>

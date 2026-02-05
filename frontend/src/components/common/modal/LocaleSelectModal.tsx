@@ -5,6 +5,8 @@ import clsx from 'clsx';
 import Control from '@/components/common/Control';
 import LocaleConfirmModal from '@/components/common/modal/LocaleConfirmModal';
 
+import type { CurrencyType } from '@/types/currency';
+
 import { type CountryCode, countryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
@@ -52,10 +54,8 @@ const CountryItem = ({
   );
 };
 
-type LocaleSelectMode = 'BASE' | 'LOCAL'; // 기준 통화, 현지 통화
-
 interface LocaleSelectModalProps {
-  mode: LocaleSelectMode;
+  mode: CurrencyType;
   onSelect?: (code: CountryCode) => void;
   selectedCode: CountryCode | null;
 }

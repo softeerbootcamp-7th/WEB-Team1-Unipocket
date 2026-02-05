@@ -57,7 +57,7 @@ type LocaleSelectMode = 'BASE' | 'LOCAL'; // 기준 통화, 현지 통화
 interface LocaleSelectModalProps {
   mode: LocaleSelectMode;
   onSelect?: (code: CountryCode) => void;
-  selectedCode?: CountryCode;
+  selectedCode: CountryCode | null;
 }
 
 const LocaleSelectModal = ({
@@ -68,7 +68,7 @@ const LocaleSelectModal = ({
   const matches = useMatches();
   const isInitPath = matches.some((match) => match.routeId === '/_app/init');
   const [selectedCode, setSelectedCode] = useState<CountryCode | null>(
-    propSelectedCode || null,
+    propSelectedCode,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -85,7 +85,7 @@ const LocaleSelectModal = ({
   };
 
   const handleCancel = () => {
-    setSelectedCode(propSelectedCode || null);
+    setSelectedCode(propSelectedCode);
     setIsConfirmOpen(false);
   };
 

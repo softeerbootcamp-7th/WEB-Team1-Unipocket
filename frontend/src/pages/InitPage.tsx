@@ -8,13 +8,13 @@ import { SelectDateContent } from '@/components/common/modal/SelectDateModal';
 import { type CountryCode } from '@/data/countryCode';
 import { formatDateToString } from '@/lib/utils';
 
+type Step = 'select-country' | 'select-date';
+
 const InitPage = () => {
-  const [step, setStep] = useState<'select-country' | 'select-date'>(
-    'select-country',
+  const [step, setStep] = useState<Step>('select-country');
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode | null>(
+    null,
   );
-  const [selectedCountry, setSelectedCountry] = useState<
-    CountryCode | undefined
-  >();
   const [dateRange, setDateRange] = useState<DateRange>({
     startDate: null,
     endDate: null,
@@ -48,7 +48,7 @@ const InitPage = () => {
   };
 
   const handlePrevButton = () => {
-    setSelectedCountry(undefined);
+    setSelectedCountry(null);
     setDateRange({ startDate: null, endDate: null });
     setStep('select-country');
   };

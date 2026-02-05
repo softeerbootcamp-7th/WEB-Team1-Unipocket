@@ -1,6 +1,8 @@
 package com.genesis.unipocket.travel.domain;
 
 import com.genesis.unipocket.global.base.BaseEntity;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -42,9 +44,7 @@ public class Travel extends BaseEntity {
 
 	public void validateDateRange() {
 		if (startDate.isAfter(endDate)) {
-			// Need to define INVALID_DATE_RANGE in ErrorCode first or use generic invalid
-			// argument
-			throw new IllegalArgumentException("Travel end date must be after start date");
+			throw new BusinessException(ErrorCode.TRAVEL_INVALID_DATE_RANGE);
 		}
 	}
 

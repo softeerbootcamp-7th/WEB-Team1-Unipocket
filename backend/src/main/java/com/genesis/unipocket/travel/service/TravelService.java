@@ -1,14 +1,19 @@
 package com.genesis.unipocket.travel.service;
 
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.travel.domain.Travel;
 import com.genesis.unipocket.travel.domain.TravelWidget;
+import com.genesis.unipocket.travel.domain.WidgetType;
 import com.genesis.unipocket.travel.dto.TravelDetailResponse;
 import com.genesis.unipocket.travel.dto.TravelRequest;
 import com.genesis.unipocket.travel.dto.TravelResponse;
 import com.genesis.unipocket.travel.dto.WidgetDto;
 import com.genesis.unipocket.travel.repository.TravelRepository;
 import com.genesis.unipocket.travel.repository.TravelWidgetRepository;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -57,8 +62,7 @@ public class TravelService {
 		Travel travel =
 				travelRepository
 						.findById(travelId)
-						// TODO: Define TRAVEL_NOT_FOUND in ErrorCode
-						.orElseThrow(() -> new IllegalArgumentException("Travel not found"));
+						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
 
 		List<WidgetDto> widgets =
 				widgetRepository.findAllByTravelIdOrderByWidgetOrderAsc(travelId).stream()
@@ -76,7 +80,7 @@ public class TravelService {
 		Travel travel =
 				travelRepository
 						.findById(travelId)
-						.orElseThrow(() -> new IllegalArgumentException("Travel not found"));
+						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
 
 		travel.update(
 				request.travelPlaceName(),
@@ -93,14 +97,13 @@ public class TravelService {
 		Travel travel =
 				travelRepository
 						.findById(travelId)
-						.orElseThrow(() -> new IllegalArgumentException("Travel not found"));
+						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
 
 		// Cascade delete widgets? or manual delete?
 		// Assuming JPA Cascade or DB Cascade Not set yet.
 		// Ideally should delete widgets first.
 
-		// widgetRepository.deleteAllByTravelId(travelId); // Need to implement this in
-		// repo if needed
+		widgetRepository.deleteAllByTravelId(travelId);
 		travelRepository.delete(travel);
 	}
 
@@ -112,26 +115,44 @@ public class TravelService {
 		Travel travel =
 				travelRepository
 						.findById(travelId)
-						.orElseThrow(() -> new IllegalArgumentException("Travel not found"));
+						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
 
 		// Simple strategy: Delete all existing and re-create
 		// Optimization: Handle diffs if performance issue arises
 
 		List<TravelWidget> currentWidgets =
 				widgetRepository.findAllByTravelIdOrderByWidgetOrderAsc(travelId);
-		widgetRepository.deleteAll(currentWidgets);
 
-		List<TravelWidget> widgetsToSave =
-				newWidgets.stream()
-						.map(
-								dto ->
-										TravelWidget.builder()
-												.travel(travel)
-												.widgetType(dto.type())
-												.widgetOrder(dto.order())
-												.build())
-						.collect(Collectors.toList());
+		// 1. Map existing widgets by WidgetType for O(1) lookup
+		Map<WidgetType, TravelWidget> currentWidgetMap =
+				currentWidgets.stream()
+						.collect(Collectors.toMap(TravelWidget::getWidgetType, widget -> widget));
 
-		widgetRepository.saveAll(widgetsToSave);
+		List<TravelWidget> widgetsToDelete = new ArrayList<>();
+
+		// 2. Iterate through new widgets to identify updates and additions
+		for (WidgetDto dto : newWidgets) {
+			if (currentWidgetMap.containsKey(dto.type())) {
+				// UPDATE: If exists, update order only
+				TravelWidget existingWidget = currentWidgetMap.get(dto.type());
+				existingWidget.updateOrder(dto.order());
+				currentWidgetMap.remove(dto.type()); // Mark as processed
+			} else {
+				// INSERT: If not exists, create new
+				TravelWidget newWidget =
+						TravelWidget.builder()
+								.travel(travel)
+								.widgetType(dto.type())
+								.widgetOrder(dto.order())
+								.build();
+				widgetRepository.save(newWidget);
+			}
+		}
+
+		// 3. DELETE: Remaining widgets in map are those not present in new request
+		widgetsToDelete.addAll(currentWidgetMap.values());
+		if (!widgetsToDelete.isEmpty()) {
+			widgetRepository.deleteAll(widgetsToDelete);
+		}
 	}
 }

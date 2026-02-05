@@ -38,4 +38,8 @@ public class TravelWidget extends BaseEntity {
 
 	@Column(nullable = false)
 	private Integer widgetOrder;
+
+	public void updateOrder(Integer widgetOrder) {
+		this.widgetOrder = widgetOrder;
+	}
 }

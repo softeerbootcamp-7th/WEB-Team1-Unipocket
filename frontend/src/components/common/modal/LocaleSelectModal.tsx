@@ -3,8 +3,9 @@ import { useMatches } from '@tanstack/react-router';
 import clsx from 'clsx';
 
 import Control from '@/components/common/Control';
+import LocaleConfirmModal from '@/components/common/modal/LocaleConfirmModal';
 
-import { countryCode } from '@/data/countryCode';
+import { type CountryCode, countryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 interface CountryItemProps {
@@ -12,8 +13,8 @@ interface CountryItemProps {
   country: string;
   currency: string;
   checked: boolean;
-  value: string;
-  onChange: (value: string) => void;
+  value: CountryCode;
+  onChange: (value: CountryCode) => void;
   isLast: boolean;
 }
 
@@ -29,7 +30,7 @@ const CountryItem = ({
   return (
     <div
       className={clsx(
-        'border-line-normal-normal flex w-full cursor-pointer items-center justify-center gap-6 border-b py-5 pr-2.5 pl-2',
+        'border-line-normal-normal flex w-118 cursor-pointer items-center justify-center gap-6 border-b py-5 pr-2.5 pl-2',
         isLast && 'border-b-0',
       )}
       onClick={() => onChange(value)}
@@ -38,7 +39,7 @@ const CountryItem = ({
         name="currency-select"
         value={value}
         checked={checked}
-        onChange={onChange}
+        onChange={() => onChange(value)}
       />
       <div className="flex w-full justify-between">
         <div className="flex gap-4">
@@ -55,12 +56,38 @@ type LocaleSelectMode = 'BASE' | 'LOCAL'; // 기준 통화, 현지 통화
 
 interface LocaleSelectModalProps {
   mode: LocaleSelectMode;
+  onSelect?: (code: CountryCode) => void;
+  selectedCode: CountryCode | null;
 }
 
-const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
+const LocaleSelectModal = ({
+  mode,
+  onSelect,
+  selectedCode: propSelectedCode,
+}: LocaleSelectModalProps) => {
   const matches = useMatches();
   const isInitPath = matches.some((match) => match.routeId === '/_app/init');
-  const [selectedCode, setSelectedCode] = useState<string>('');
+  const [selectedCode, setSelectedCode] = useState<CountryCode | null>(
+    propSelectedCode,
+  );
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const handleSelect = (code: CountryCode) => {
+    setSelectedCode(code);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (selectedCode !== null) {
+      onSelect?.(selectedCode);
+    }
+    setIsConfirmOpen(false);
+  };
+
+  const handleCancel = () => {
+    setSelectedCode(propSelectedCode);
+    setIsConfirmOpen(false);
+  };
 
   const getTextContent = () => {
     if (mode === 'BASE') {
@@ -89,12 +116,12 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
       </div>
 
       {/* select section */}
-      <div className="flex flex-col gap-4.5">
+      <div className="flex h-full flex-col gap-4.5">
         <input
           type="text"
           className="bg-fill-normal rounded-modal-10 h-15 w-full"
         />
-        <div className="flex h-142.5 w-118 flex-col overflow-y-auto">
+        <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {countryCode.map((code, index) => {
             const data = getCountryInfo(code);
 
@@ -108,13 +135,22 @@ const LocaleSelectModal = ({ mode }: LocaleSelectModalProps) => {
                 country={data.countryName}
                 currency={`${data.currencySign} ${data.currencyName}`}
                 checked={selectedCode === code}
-                onChange={setSelectedCode}
+                onChange={handleSelect}
                 isLast={index === countryCode.length - 1}
               />
             );
           })}
         </div>
       </div>
+      {isConfirmOpen && selectedCode && (
+        <LocaleConfirmModal
+          isOpen={isConfirmOpen}
+          type={mode === 'BASE' ? 'currency' : 'country'}
+          code={selectedCode as CountryCode}
+          onClose={handleCancel}
+          onAction={handleConfirm}
+        />
+      )}
     </div>
   );
 };

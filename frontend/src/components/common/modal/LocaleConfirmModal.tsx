@@ -37,7 +37,7 @@ const LocaleConfirmModal = ({
       <div
         className={clsx(
           'text-label-neutral flex flex-col items-center justify-center gap-8',
-          isCountry ? 'w-80 py-12.25' : 'w-95 py-25',
+          isCountry ? 'w-82 py-12.25' : 'w-95 py-25',
         )}
       >
         <div className="flex flex-col items-center gap-4">
@@ -53,8 +53,8 @@ const LocaleConfirmModal = ({
         <div className="flex w-full flex-col items-center gap-2.5">
           {isCountry ? (
             <>
-              <p className="heading2-bold">
-                {countryName}(으)로 설정하시겠습니까?
+              <p className="heading2-bold text-center">
+                {countryName}(으)로 <br /> 설정하시겠습니까?
               </p>
               <p className="heading2-bold text-label-alternative">
                 {currencySign} {currencyName}
@@ -62,8 +62,8 @@ const LocaleConfirmModal = ({
             </>
           ) : (
             <>
-              <p className="heading2-bold">
-                기준 통화를 {currencyName}(으)로 변경하시겠습니까?
+              <p className="heading2-bold text-center">
+                기준 통화를 {currencyName}(으)로 <br /> 변경하시겠습니까?
               </p>
               <p className="text-label-alternative body1-normal-regular">
                 기존 KRW에서 {currencySign}(으)로 변경됩니다.

@@ -5,6 +5,10 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 import type { CategoryType } from '@/types/category';
 
 import { CATEGORY_COLORS } from '../chartColor';
+import {
+  CategoryListItemSkeleton,
+  CategoryPieChartSkeleton,
+} from './CategoryChartSkeleton';
 import CategoryListItem from './CategoryListItem';
 import CategoryPieChart from './CategoryPieChart';
 import { dummyData } from './dummy';
@@ -36,7 +40,20 @@ const totalAmount = (amount: string) => {
   return <div>{amount}</div>;
 };
 
-const CategoryChart = () => {
+const StatSectionSkeleton = () => {
+  return (
+    <>
+      <CategoryPieChartSkeleton />
+      <div className="flex flex-col justify-between">
+        {Array.from({ length: 7 }).map((_, idx) => (
+          <CategoryListItemSkeleton key={idx} />
+        ))}
+      </div>
+    </>
+  );
+};
+
+const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
     CURRENCY_OPTIONS[0].id,
   );
@@ -73,25 +90,31 @@ const CategoryChart = () => {
       </div>
       {/* stat section */}
       <div className="rounded-modal-8 bg-background-alternative flex justify-between px-8 py-4">
-        <CategoryPieChart
-          data={chartData}
-          totalAmount={totalAmount(formattedTotalAmount)}
-        />
-        <div className="flex flex-col justify-between">
-          {chartData.map(
-            (item, idx) =>
-              item.percentage > 0 && (
-                <CategoryListItem
-                  key={idx}
-                  currency={selectedCurrency === 1 ? 'BASE' : 'LOCAL'}
-                  categoryName={item.categoryName}
-                  percentage={item.percentage}
-                  amount={item.amount}
-                  color={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}
-                />
-              ),
-          )}
-        </div>
+        {isLoading ? (
+          <StatSectionSkeleton />
+        ) : (
+          <>
+            <CategoryPieChart
+              data={chartData}
+              totalAmount={totalAmount(formattedTotalAmount)}
+            />
+            <div className="flex flex-col justify-between">
+              {chartData.map(
+                (item, idx) =>
+                  item.percentage > 0 && (
+                    <CategoryListItem
+                      key={idx}
+                      currency={selectedCurrency === 1 ? 'BASE' : 'LOCAL'}
+                      categoryName={item.categoryName}
+                      percentage={item.percentage}
+                      amount={item.amount}
+                      color={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]}
+                    />
+                  ),
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

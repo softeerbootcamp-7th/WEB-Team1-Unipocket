@@ -6,7 +6,7 @@ function Table({
   className,
   height,
   ...props
-}: React.ComponentProps<'table'> & { height: number }) {
+}: React.ComponentProps<'table'> & { height?: number }) {
   return (
     <div
       data-slot="table-container"

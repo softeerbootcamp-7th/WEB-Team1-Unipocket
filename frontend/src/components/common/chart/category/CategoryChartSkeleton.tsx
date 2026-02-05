@@ -5,7 +5,10 @@ export const CategoryPieChartSkeleton = () => {
   return (
     <div>
       <CategoryPieChart
-        data={dummyData.items.map((item) => ({ percentage: item.percent }))}
+        data={dummyData.items.map((item) => ({
+          categoryName: item.categoryName,
+          percentage: item.percent,
+        }))}
         totalAmount={
           <div className="bg-fill-normal rounded-modal-4 h-5.5 w-32.5" />
         }

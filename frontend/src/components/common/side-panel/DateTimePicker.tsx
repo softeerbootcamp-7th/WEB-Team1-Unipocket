@@ -18,6 +18,9 @@ const minuteOptions = Array.from({ length: 60 }).map((_, i) => ({
   name: i.toString().padStart(2, '0'),
 }));
 
+const OUTSIDE_CLICK_IGNORE_SELECTOR =
+  '[data-radix-popper-content-wrapper], [role="dialog"], [data-value-container]';
+
 export default function DateTimePicker({
   onDateTimeSelect,
   onClose,
@@ -47,8 +50,7 @@ export default function DateTimePicker({
       onClose?.();
     },
     {
-      ignoreSelector:
-        '[data-radix-popper-content-wrapper], [role="dialog"], [data-value-container]',
+      ignoreSelector: OUTSIDE_CLICK_IGNORE_SELECTOR,
     },
   );
 

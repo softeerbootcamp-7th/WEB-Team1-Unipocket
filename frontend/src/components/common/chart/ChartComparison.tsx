@@ -64,7 +64,7 @@ const ChartComparison = () => {
         </p>
         <div className="flex flex-col gap-3">
           <span className="caption2-medium text-label-assistive">
-            기준 : 12월
+            기준 : {DUMMY_DATA.month}월
           </span>
           <div className="flex gap-3.5">
             <div className="bg-cool-neutral-95 h-8 w-21.25 rounded-xs" />

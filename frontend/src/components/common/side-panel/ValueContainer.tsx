@@ -28,12 +28,7 @@ const ValueContainer = ({ items }: ValueContainerProps) => {
   return (
     <div className="relative flex flex-col gap-2">
       {items.map(({ label, value, onClick }) => (
-        <ValueItem
-          key={label}
-          label={label}
-          value={value}
-          onClick={onClick}
-        />
+        <ValueItem key={label} label={label} value={value} onClick={onClick} />
       ))}
     </div>
   );

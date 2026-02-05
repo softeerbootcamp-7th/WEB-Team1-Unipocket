@@ -41,9 +41,15 @@ export default function DateTimePicker({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useOutsideClick(containerRef, () => {
-    onClose?.();
-  });
+  useOutsideClick(
+    containerRef,
+    () => {
+      onClose?.();
+    },
+    {
+      ignoreSelector: '[data-radix-popper-content-wrapper], [role="dialog"]',
+    },
+  );
 
   const updateDateTime = (newHour: number, newMinute: number) => {
     if (selectedDate) {

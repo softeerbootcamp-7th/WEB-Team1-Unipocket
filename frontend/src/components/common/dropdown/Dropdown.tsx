@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+
+import { useOutsideClick } from '@/hooks/useOutsideClick';
 
 import Filter from '../Filter';
 import OptionItem from './OptionItem';
@@ -22,6 +24,11 @@ const DropDown = ({
   size = 'sm',
 }: DropDownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(dropdownRef, () => {
+    setIsOpen(false);
+  });
 
   const selectedName = options?.find((opt) => opt.id === selected)?.name;
 
@@ -31,7 +38,7 @@ const DropDown = ({
   };
 
   return (
-    <div className="relative inline-block w-full">
+    <div ref={dropdownRef} className="relative inline-block w-full">
       <Filter isOpen={isOpen} onClick={() => setIsOpen((v) => !v)} size={size}>
         {/* @TODO: 추후 기본값 처리 방법 변경 (API 연동) */}
         {selectedName || options?.[0].name}

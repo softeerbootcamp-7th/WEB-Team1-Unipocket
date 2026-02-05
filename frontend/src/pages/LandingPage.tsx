@@ -9,7 +9,7 @@ import {
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import UploadBox from '@/components/common/upload/UploadBox';
+import LandingUploadBox from '@/components/common/upload/upload-box/LandingUploadBox';
 import { columns } from '@/components/landing-page/columns';
 import { type Expense, getData } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
@@ -167,7 +167,7 @@ const DemoSection = () => {
       </h2>
 
       <div className="bg-background-normal shadow-card flex flex-col gap-12 rounded-3xl p-3 pb-7">
-        <UploadBox />
+        <LandingUploadBox />
         <div className="px-4.25">
           <TabProvider variant="underline" defaultValue="sample1">
             <TabList>

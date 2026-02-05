@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 
 import Calendar, {
@@ -8,7 +8,7 @@ import Calendar, {
 import { formatDateWithDay } from '@/lib/utils';
 
 import Modal, { type ModalProps } from './Modal';
-import { useModalContext } from './useModalContext';
+import { ModalContext } from './useModalContext';
 
 interface DatePickItemProps {
   label: string;
@@ -38,30 +38,29 @@ const DatePickItem = ({ label, date, isActive }: DatePickItemProps) => {
   );
 };
 
-interface SelectDateContentProps extends DateRange {
+export interface SelectDateContentProps extends DateRange {
   onChange: (startDate: Date | null, endDate: Date | null) => void;
 }
 
-const SelectDateContent = ({
+export const SelectDateContent = ({
   startDate,
   endDate,
   onChange,
 }: SelectDateContentProps) => {
-  const { setActionReady } = useModalContext();
+  const context = useContext(ModalContext);
 
   useEffect(() => {
-    setActionReady(!!startDate && !!endDate);
-  }, [startDate, endDate, setActionReady]);
+    const isValid = !!startDate && !!endDate;
+    context?.setActionReady(isValid);
+  }, [startDate, endDate, context]);
 
   return (
     <div className="flex flex-col gap-8">
       {/* text section */}
       <div className="flex flex-col items-center gap-2.5">
-        <h2 className="text-label-normal headline1-bold">
-          카드 연동 기간 설정
-        </h2>
+        <h2 className="text-label-normal headline1-bold">가계부 기간 설정</h2>
         <span className="text-label-alternative body1-normal-medium text-center">
-          언제부터 카드 내역을 불러올까요? <br />
+          언제부터 기록할까요? <br />
           교환학생 지출을 기록할 기간을 선택해주세요
         </span>
       </div>
@@ -88,12 +87,19 @@ const SelectDateContent = ({
   );
 };
 
-interface SelectDateModalProps extends Omit<ModalProps, 'children'> {
+interface SelectDateModalProps extends Omit<
+  ModalProps,
+  'children' | 'onAction'
+> {
   initialDateRange?: DateRange;
+  onConfirm: (dateRange: DateRange) => void;
+  onAction?: () => void;
 }
 
 const SelectDateModal = ({
   initialDateRange,
+  onConfirm,
+  onAction,
   ...modalProps
 }: SelectDateModalProps) => {
   const [dateRange, setDateRange] = useState<DateRange>(
@@ -104,8 +110,13 @@ const SelectDateModal = ({
     setDateRange({ startDate, endDate });
   };
 
+  const handleConfirm = () => {
+    onConfirm(dateRange);
+    onAction?.();
+  };
+
   return (
-    <Modal {...modalProps}>
+    <Modal {...modalProps} onAction={handleConfirm}>
       <SelectDateContent
         startDate={dateRange.startDate}
         endDate={dateRange.endDate}

@@ -3,11 +3,10 @@ import { clsx } from 'clsx';
 
 import { useOutsideClick } from '@/hooks/useOutsideClick';
 
+import CalendarMonthPopover from '@/components/common/calendar/CalendarMonthPopover';
+import { dayNames, isSameDay } from '@/components/common/calendar/date.utils';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import Icon from '@/components/common/Icon';
-
-import CalendarMonthPopover from '../calendar/CalendarMonthPopover';
-import { dayNames, isSameDay } from '../calendar/date.utils';
 
 const hourOptions = Array.from({ length: 24 }).map((_, i) => ({
   id: i,

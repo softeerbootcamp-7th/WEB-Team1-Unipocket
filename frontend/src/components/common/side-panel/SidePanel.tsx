@@ -4,11 +4,10 @@ import Button from '@/components/common/Button';
 import Category from '@/components/common/Category';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
+import CurrencyConverter from '@/components/common/side-panel/CurrencyConverter';
+import DateTimePicker from '@/components/common/side-panel/DateTimePicker';
+import ValueContainer, { type ValueItemProps } from '@/components/common/side-panel/ValueContainer';
 import TextInput from '@/components/common/TextInput';
-
-import CurrencyConverter from './CurrencyConverter';
-import DateTimePicker from './DateTimePicker';
-import ValueContainer, { type ValueItemProps } from './ValueContainer';
 
 export type SidePanelInputMode = 'manual' | 'file' | 'image';
 

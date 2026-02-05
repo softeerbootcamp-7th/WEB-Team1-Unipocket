@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
-import { useOutsideClick } from '@/hooks/useOutsideClick';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 import CalendarMonthPopover from '@/components/common/calendar/CalendarMonthPopover';
 import { dayNames, isSameDay } from '@/components/common/calendar/date.utils';
@@ -44,7 +44,7 @@ export default function DateTimePicker({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useOutsideClick(
+  useClickOutside(
     containerRef,
     () => {
       onClose?.();

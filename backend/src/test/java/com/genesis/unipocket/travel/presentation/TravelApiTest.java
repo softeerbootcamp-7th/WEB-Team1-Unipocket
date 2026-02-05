@@ -56,17 +56,65 @@ class TravelApiTest {
 	}
 
 	@Test
-	@DisplayName("여행 폴더 생성 및 조회 테스트")
-	void createAndGetTravel() throws Exception {
-		// 1. Create Travel
-		TravelRequest request =
-				new TravelRequest(
-						accountBookId,
-						"Tokyo Trip",
-						LocalDate.of(2024, 5, 1),
-						LocalDate.of(2024, 5, 5),
-						"img_tokyo");
+	@DisplayName("여행 폴더 생성 테스트")
+	void createTravel() throws Exception {
+		TravelRequest request = createTravelRequest();
+		String jsonRequest = objectMapper.writeValueAsString(request);
 
+		mockMvc.perform(
+						post("/api/travels")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(jsonRequest))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	@DisplayName("여행 폴더 상세 조회 테스트")
+	void getTravelDetail() throws Exception {
+		Long travelId = createTestTravel();
+
+		mockMvc.perform(get("/api/travels/" + travelId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.travelId").value(travelId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
+				.andExpect(jsonPath("$.travelPlaceName").value("Tokyo Trip"));
+	}
+
+	@Test
+	@DisplayName("위젯 수정 및 조회 테스트")
+	void updateAndVerifyWidgets() throws Exception {
+		Long travelId = createTestTravel();
+
+		List<WidgetDto> widgets =
+				List.of(
+						new WidgetDto(WidgetType.SUMMARY_CARD, 1),
+						new WidgetDto(WidgetType.GRAPH_DAILY, 2));
+
+		// Update Widgets
+		mockMvc.perform(
+						put("/api/travels/" + travelId + "/widgets")
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(objectMapper.writeValueAsString(widgets)))
+				.andExpect(status().isOk());
+
+		// Verify Widgets
+		mockMvc.perform(get("/api/travels/" + travelId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.widgets[0].type").value("SUMMARY_CARD"))
+				.andExpect(jsonPath("$.widgets[1].type").value("GRAPH_DAILY"));
+	}
+
+	private TravelRequest createTravelRequest() {
+		return new TravelRequest(
+				accountBookId,
+				"Tokyo Trip",
+				LocalDate.of(2024, 5, 1),
+				LocalDate.of(2024, 5, 5),
+				"img_tokyo");
+	}
+
+	private Long createTestTravel() throws Exception {
+		TravelRequest request = createTravelRequest();
 		String jsonRequest = objectMapper.writeValueAsString(request);
 
 		String location =
@@ -74,37 +122,11 @@ class TravelApiTest {
 								post("/api/travels")
 										.contentType(MediaType.APPLICATION_JSON)
 										.content(jsonRequest))
-						.andExpect(status().isCreated())
 						.andReturn()
 						.getResponse()
 						.getHeader("Location");
 
 		String travelIdStr = location.substring(location.lastIndexOf("/") + 1);
-		Long travelId = Long.parseLong(travelIdStr);
-
-		// 2. Get Details
-		mockMvc.perform(get("/api/travels/" + travelId))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.travelId").value(travelId))
-				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
-				.andExpect(jsonPath("$.travelPlaceName").value("Tokyo Trip"));
-
-		// 3. Update Widgets
-		List<WidgetDto> widgets =
-				List.of(
-						new WidgetDto(WidgetType.SUMMARY_CARD, 1),
-						new WidgetDto(WidgetType.GRAPH_DAILY, 2));
-
-		mockMvc.perform(
-						put("/api/travels/" + travelId + "/widgets")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(widgets)))
-				.andExpect(status().isOk());
-
-		// 4. Verify Widgets in Detail
-		mockMvc.perform(get("/api/travels/" + travelId))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.widgets[0].type").value("SUMMARY_CARD"))
-				.andExpect(jsonPath("$.widgets[1].type").value("GRAPH_DAILY"));
+		return Long.parseLong(travelIdStr);
 	}
 }

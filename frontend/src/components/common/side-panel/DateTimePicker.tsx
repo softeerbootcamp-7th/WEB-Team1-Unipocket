@@ -47,7 +47,8 @@ export default function DateTimePicker({
       onClose?.();
     },
     {
-      ignoreSelector: '[data-radix-popper-content-wrapper], [role="dialog"]',
+      ignoreSelector:
+        '[data-radix-popper-content-wrapper], [role="dialog"], [data-value-container]',
     },
   );
 

@@ -12,7 +12,7 @@ export function useOutsideClick(
       const target = event.target as Node;
 
       if (ref.current && !ref.current.contains(target)) {
-        // Check if click is on an ignored element
+        // ignoreSelector에 해당하는 요소 클릭 시 콜백 실행하지 않음
         if (options?.ignoreSelector && target instanceof Element) {
           if (target.closest(options.ignoreSelector)) {
             return;

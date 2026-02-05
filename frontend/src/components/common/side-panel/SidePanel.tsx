@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import Button from '@/components/common/Button';
+import { formatDateTime } from '@/components/common/calendar/date.utils';
 import Category from '@/components/common/Category';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
@@ -60,17 +61,6 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
     ref.current.style.height = '0px';
     ref.current.style.height = `${ref.current.scrollHeight}px`;
   }, [title]);
-
-  const formatDateTime = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}.${month}.${day}. (${dayOfWeek}) ${hours}:${minutes}`;
-  };
 
   const handleDateTimeSelect = (selected: Date) => {
     setSelectedDateTime(selected);

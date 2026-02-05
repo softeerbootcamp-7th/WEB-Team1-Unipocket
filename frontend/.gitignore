@@ -28,4 +28,6 @@ dist-ssr
 
 
 # Env files
-.env
+.env.development
+.env.production
+bruno/*

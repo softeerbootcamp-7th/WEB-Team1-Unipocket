@@ -53,7 +53,7 @@ const InitPage = () => {
   };
 
   return (
-    <div className="mt-12 flex h-screen w-full justify-center">
+    <div className="box-border flex h-dvh w-full justify-center pt-12">
       {step === 'select-country' && (
         <LocaleSelectModal
           mode="LOCAL"
@@ -63,13 +63,13 @@ const InitPage = () => {
       )}
 
       {step === 'select-date' && (
-        <div className="bg-background-normal rounded-modal-20 flex h-screen w-fit flex-col items-center gap-5 px-10.5 py-10">
+        <div className="bg-background-normal rounded-modal-20 flex w-fit flex-col items-center justify-between px-10.5 py-10">
           <SelectDateContent
             startDate={dateRange.startDate}
             endDate={dateRange.endDate}
             onChange={handleDateChange}
           />
-          <div className="flex w-full justify-between">
+          <div className="mb-5 flex w-full items-center justify-between">
             <Button variant="outlined" size="lg" onClick={handlePrevButton}>
               이전
             </Button>

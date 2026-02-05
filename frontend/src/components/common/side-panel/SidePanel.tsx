@@ -27,13 +27,14 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
   const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
   //const isEditing = false; // @TODO: 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
 
   // @TODO: API 연동 시 실제 데이터로 대체
   const [valueItems, setValueItems] = useState<ValueItemProps[]>([
     {
       label: '일시',
-      value: '2025.12.02. (수) 13:26',
+      value: '비어 있음',
     },
     {
       label: '카테고리',
@@ -68,15 +69,15 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
     return `${year}.${month}.${day}. (${dayOfWeek}) ${hours}:${minutes}`;
   };
 
-  const handleDateTimeSelect = (selectedDate: Date) => {
+  const handleDateTimeSelect = (selected: Date) => {
+    setSelectedDateTime(selected);
     setValueItems((prev) =>
       prev.map((item) =>
         item.label === '일시'
-          ? { ...item, value: formatDateTime(selectedDate) }
+          ? { ...item, value: formatDateTime(selected) }
           : item,
       ),
     );
-    setIsDateTimePickerOpen(false);
   };
 
   return (
@@ -128,6 +129,7 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
           {isDateTimePickerOpen && (
             <div className="absolute top-8 right-0 z-50 mt-2">
               <DateTimePicker 
+                initialDateTime={selectedDateTime}
                 onDateTimeSelect={handleDateTimeSelect}
                 onClose={() => setIsDateTimePickerOpen(false)}
               />

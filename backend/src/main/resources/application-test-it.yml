@@ -8,7 +8,7 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: YOURSECRETISGENESISYOURSECRETISGENESIS
+  secret: ${JWT_SECRET:Genesis-Unipocket-Project-Secret-Key-2026}
   access-token-expiration: 1800000
   refresh-token-expiration: 864000000
 

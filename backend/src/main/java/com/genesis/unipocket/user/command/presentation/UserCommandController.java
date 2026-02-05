@@ -29,7 +29,7 @@ public class UserCommandController {
 	private final UserLoginFacade loginFacade;
 	private final CookieUtil cookieUtil;
 
-	@Value("${app.frontend.url}")
+	@Value("${app.frontend.url:http://localhost:5173}")
 	private String frontendUrl;
 
 	@Value("${jwt.access-token-expiration}")
@@ -55,8 +55,8 @@ public class UserCommandController {
 	@GetMapping("/oauth2/callback/{provider}")
 	public void callback(
 			@PathVariable("provider") String provider,
-			@RequestParam("code") String code,
-			@RequestParam(value = "state", required = false) String state,
+			@RequestParam String code,
+			@RequestParam String state,
 			HttpServletResponse response)
 			throws IOException {
 

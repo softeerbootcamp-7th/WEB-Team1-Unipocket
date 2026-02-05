@@ -104,7 +104,11 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
                   item.percentage > 0 && (
                     <CategoryListItem
                       key={item.categoryName}
-                      currency={selectedCurrency === 1 ? 'BASE' : 'LOCAL'}
+                      currency={
+                        selectedCurrency === CURRENCY_OPTIONS[0].id
+                          ? 'BASE'
+                          : 'LOCAL'
+                      }
                       categoryName={item.categoryName}
                       percentage={item.percentage}
                       amount={item.amount}

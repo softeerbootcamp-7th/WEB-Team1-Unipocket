@@ -42,32 +42,27 @@ export default function DateTimePicker({
     onClose?.();
   });
 
-  const handleHourSelect = (hourValue: number) => {
-    setHour(hourValue);
+  const updateDateTime = (newHour: number, newMinute: number) => {
     if (selectedDate) {
       const completeDateTime = new Date(
         selectedDate.getFullYear(),
         selectedDate.getMonth(),
         selectedDate.getDate(),
-        hourValue,
-        minute,
+        newHour,
+        newMinute,
       );
       onDateTimeSelect?.(completeDateTime);
     }
   };
 
+  const handleHourSelect = (hourValue: number) => {
+    setHour(hourValue);
+    updateDateTime(hourValue, minute);
+  };
+
   const handleMinuteSelect = (minuteValue: number) => {
     setMinute(minuteValue);
-    if (selectedDate) {
-      const completeDateTime = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate(),
-        hour,
-        minuteValue,
-      );
-      onDateTimeSelect?.(completeDateTime);
-    }
+    updateDateTime(hour, minuteValue);
   };
 
   const { year, month, dates } = useMemo(() => {

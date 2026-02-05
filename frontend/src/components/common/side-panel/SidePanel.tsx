@@ -30,7 +30,6 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
   //const isEditing = false; // @TODO: 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
 
-  // @TODO: API 연동 시 실제 데이터로 대체
   const [valueItems, setValueItems] = useState<ValueItemProps[]>([
     {
       label: '일시',

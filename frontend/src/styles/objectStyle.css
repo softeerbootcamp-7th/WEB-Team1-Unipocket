@@ -65,7 +65,3 @@
 @utility shadow-semantic-subtle {
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
 }
-
-@utility shadow-card {
-  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.08);
-}

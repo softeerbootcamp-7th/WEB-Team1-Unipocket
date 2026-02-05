@@ -166,7 +166,7 @@ const DemoSection = () => {
         <br /> 자동으로 내역이 정리됩니다.
       </h2>
 
-      <div className="bg-background-normal shadow-card flex flex-col gap-12 rounded-3xl p-3 pb-7">
+      <div className="bg-background-normal shadow-semantic-subtle flex flex-col gap-12 rounded-3xl p-3 pb-7">
         <LandingUploadBox />
         <div className="px-4.25">
           <TabProvider variant="underline" defaultValue="sample1">
@@ -183,7 +183,7 @@ const DemoSection = () => {
                     className="h-120 rounded-lg"
                   />
                 </div>
-                <div className="shadow-card h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
+                <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
                       height={480}
@@ -208,7 +208,7 @@ const DemoSection = () => {
                     className="h-120 rounded-lg"
                   />
                 </div>
-                <div className="shadow-card h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
+                <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
                       height={480}

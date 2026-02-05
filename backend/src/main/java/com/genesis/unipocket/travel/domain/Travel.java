@@ -1,7 +1,6 @@
 package com.genesis.unipocket.travel.domain;
 
 import com.genesis.unipocket.global.base.BaseEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,39 +20,40 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "travel")
 public class Travel extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "travel_id")
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "travel_id")
+	private Long id;
 
-    @Column(nullable = false)
-    private Long accountBookId;
+	@Column(nullable = false)
+	private Long accountBookId;
 
-    @Column(name = "image_key")
-    private String imageKey;
+	@Column(name = "image_key")
+	private String imageKey;
 
-    @Column(nullable = false)
-    private LocalDate startDate;
+	@Column(nullable = false)
+	private LocalDate startDate;
 
-    @Column(nullable = false)
-    private LocalDate endDate;
+	@Column(nullable = false)
+	private LocalDate endDate;
 
-    @Column(nullable = false)
-    private String travelPlaceName;
+	@Column(nullable = false)
+	private String travelPlaceName;
 
-    public void validateDateRange() {
-        if (startDate.isAfter(endDate)) {
-            // Need to define INVALID_DATE_RANGE in ErrorCode first or use generic invalid
-            // argument
-            throw new IllegalArgumentException("Travel end date must be after start date");
-        }
-    }
+	public void validateDateRange() {
+		if (startDate.isAfter(endDate)) {
+			// Need to define INVALID_DATE_RANGE in ErrorCode first or use generic invalid
+			// argument
+			throw new IllegalArgumentException("Travel end date must be after start date");
+		}
+	}
 
-    public void update(String travelPlaceName, LocalDate startDate, LocalDate endDate, String imageKey) {
-        this.travelPlaceName = travelPlaceName;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.imageKey = imageKey;
-        validateDateRange();
-    }
+	public void update(
+			String travelPlaceName, LocalDate startDate, LocalDate endDate, String imageKey) {
+		this.travelPlaceName = travelPlaceName;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.imageKey = imageKey;
+		validateDateRange();
+	}
 }

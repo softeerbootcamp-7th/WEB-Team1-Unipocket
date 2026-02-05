@@ -24,18 +24,18 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "travel_widget")
 public class TravelWidget extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "travel_id", nullable = false)
-    private Travel travel;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "travel_id", nullable = false)
+	private Travel travel;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private WidgetType widgetType;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private WidgetType widgetType;
 
-    @Column(nullable = false)
-    private Integer widgetOrder;
+	@Column(nullable = false)
+	private Integer widgetOrder;
 }

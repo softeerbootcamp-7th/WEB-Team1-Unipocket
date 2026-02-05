@@ -4,20 +4,20 @@ import com.genesis.unipocket.travel.domain.Travel;
 import java.time.LocalDate;
 
 public record TravelResponse(
-        Long travelId,
-        Long accountBookId,
-        String travelPlaceName,
-        LocalDate startDate,
-        LocalDate endDate,
-        String imageKey) {
+		Long travelId,
+		Long accountBookId,
+		String travelPlaceName,
+		LocalDate startDate,
+		LocalDate endDate,
+		String imageKey) {
 
-    public static TravelResponse from(Travel travel) {
-        return new TravelResponse(
-                travel.getId(),
-                travel.getAccountBookId(),
-                travel.getTravelPlaceName(),
-                travel.getStartDate(),
-                travel.getEndDate(),
-                travel.getImageKey());
-    }
+	public static TravelResponse from(Travel travel) {
+		return new TravelResponse(
+				travel.getId(),
+				travel.getAccountBookId(),
+				travel.getTravelPlaceName(),
+				travel.getStartDate(),
+				travel.getEndDate(),
+				travel.getImageKey());
+	}
 }

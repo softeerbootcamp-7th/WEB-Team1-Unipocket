@@ -121,7 +121,7 @@ const LocaleSelectModal = ({
           type="text"
           className="bg-fill-normal rounded-modal-10 h-15 w-full"
         />
-        <div className="flex w-118 flex-1 flex-col overflow-y-auto">
+        <div className="flex w-118 flex-1 flex-col overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {countryCode.map((code, index) => {
             const data = getCountryInfo(code);
 

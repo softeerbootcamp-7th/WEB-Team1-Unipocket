@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+
+import { createAccountBook } from '@/api/account-books/api';
 
 import Button from '@/components/common/Button';
 import { type DateRange } from '@/components/common/calendar/Calendar';
@@ -11,6 +14,7 @@ import { formatDateToString } from '@/lib/utils';
 type Step = 'select-country' | 'select-date';
 
 const InitPage = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('select-country');
   const [selectedCountry, setSelectedCountry] = useState<CountryCode | null>(
     null,
@@ -31,19 +35,24 @@ const InitPage = () => {
     setDateRange({ startDate: start, endDate: end });
   };
 
-  const handleDateConfirm = () => {
-    // TODO: API Call with country, startDate, endDate
+  const handleDateConfirm = async () => {
     if (!selectedCountry || !dateRange.startDate || !dateRange.endDate) {
       return;
     }
     const formattedStartDate = formatDateToString(dateRange.startDate);
     const formattedEndDate = formatDateToString(dateRange.endDate);
 
-    console.log('API Call:', {
-      localCountryCode: selectedCountry,
-      startDate: formattedStartDate,
-      endDate: formattedEndDate,
-    });
+    try {
+      const response = await createAccountBook({
+        localCountryCode: selectedCountry,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+      });
+      console.log('Created:', response);
+      navigate({ to: '/home' });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handlePrevButton = () => {

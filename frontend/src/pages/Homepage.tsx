@@ -37,7 +37,7 @@ const Homepage = () => {
         Widget area
       </div>
       <div className="bg-background-normal relative rounded-2xl px-2 py-4 shadow">
-        <Icons.ChevronBack className="text-label-alternative translate absolute left-1/2 z-50 size-12 rotate-90" />
+        <Icons.ChevronBack className="text-label-alternative absolute left-1/2 z-50 size-12 -translate-x-1/2 rotate-90" />
         <DataTableProvider columns={columns} data={data}>
           <DataTable
             groupBy={(row: Expense) =>

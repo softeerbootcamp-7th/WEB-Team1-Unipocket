@@ -34,8 +34,9 @@ const CurrencyBadge = ({
       <span
         className={clsx(
           isMd ? 'figure-label2-medium' : 'figure-label2-small-medium',
-          color ? `text-[${color}]` : 'text-label-neutral',
+          !color && 'text-label-neutral',
         )}
+        style={color ? { color } : undefined}
       >
         {countryInfo.currencyName}
       </span>

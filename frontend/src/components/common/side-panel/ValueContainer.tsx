@@ -14,12 +14,12 @@ const ValueItem = ({ label, value, onClick }: ValueItemProps) => {
   return (
     <div className="flex h-8 items-center">
       <p className="label1-normal-bold text-label-alternative w-25">{label}</p>
-      <p
+      <div
         className="label1-normal-medium text-label-normal w-63 cursor-pointer px-1 hover:opacity-70"
         onClick={onClick}
       >
         {value}
-      </p>
+      </div>
     </div>
   );
 };

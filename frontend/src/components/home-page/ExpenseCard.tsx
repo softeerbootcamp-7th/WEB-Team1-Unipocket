@@ -25,7 +25,7 @@ const ExpenseCard = ({
         <span className="body2-normal-medium">{label}</span>
         <Icons.Information className="size-4" />
       </div>
-      <div className="flex gap-3">
+      <div className="flex items-end gap-3">
         <CurrencyAmountDisplay
           countryCode={baseCountryCode}
           amount={baseCountryAmount}

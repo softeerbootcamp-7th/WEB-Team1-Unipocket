@@ -7,8 +7,4 @@ import java.time.LocalDate;
  * 모든 필드는 Optional입니다. (null일 경우 수정하지 않음)
  */
 public record TravelUpdateRequest(
-        String travelPlaceName,
-        LocalDate startDate,
-        LocalDate endDate,
-        String imageKey) {
-}
+		String travelPlaceName, LocalDate startDate, LocalDate endDate, String imageKey) {}

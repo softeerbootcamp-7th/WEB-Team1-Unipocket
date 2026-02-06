@@ -7,10 +7,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.accountbook.command.persistence.dto.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.infrastructure.aws.S3Service;
 import com.genesis.unipocket.travel.domain.WidgetType;
 import com.genesis.unipocket.travel.dto.TravelRequest;
 import com.genesis.unipocket.travel.dto.WidgetDto;
@@ -18,27 +20,29 @@ import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("local") // Use H2
+@SpringBootTest
+@ActiveProfiles("test-it")
+@Import(TestcontainersConfiguration.class)
 @Transactional
+@Tag("integration")
 class TravelApiTest {
 
 	@Autowired private MockMvc mockMvc;
 	@Autowired private ObjectMapper objectMapper;
 	@Autowired private AccountBookRepository accountBookRepository;
-
-	@org.springframework.boot.test.mock.mockito.MockBean
-	private com.genesis.unipocket.global.infrastructure.aws.S3Service s3Service;
+    @Autowired private S3Service s3Service;
 
 	private Long accountBookId;
 

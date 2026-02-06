@@ -2,8 +2,7 @@
 ###      수정 사항을 Git에 포함시키지 마세요.      ###
 spring:
   profiles:
-    include: common
-    active: dev
+    active: local
   cloud:
     aws:
       region:

@@ -1,12 +1,11 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
-import { HTTP_STATUS } from '@/apis/constants';
-import { ApiError } from '@/apis/error';
-
 import Header from '@/components/common/Header';
 import Menu from '@/components/common/menu/Menu';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { HTTP_STATUS } from '@/api/config/constants';
+import { ApiError } from '@/api/config/error';
 import { userQueryOptions } from '@/lib/auth';
 
 export const Route = createFileRoute('/_app')({

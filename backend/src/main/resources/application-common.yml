@@ -3,7 +3,7 @@ application:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:Genesis-Unipocket-Project-Secret-Key-2026}
   access-token-expiration: 1800000 # 30분 (밀리초)
   refresh-token-expiration: 864000000 # 10일 (밀리초)
 
@@ -13,7 +13,7 @@ oauth2:
     - type: GOOGLE
       client-id: ${GOOGLE_OAUTH_ID}
       client-secret: ${GOOGLE_OAUTH_SECRET}
-      redirect-uri: ${OAUTH_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/google}
+      redirect-uri: ${OAUTH_REDIRECT_URI:http://localhost:5173/api/auth/oauth2/callback/google}
       authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
       token-uri: https://oauth2.googleapis.com/token
       user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
@@ -23,7 +23,7 @@ oauth2:
 
     - type: KAKAO
       client-id: ${KAKAO_CLIENT_ID:your-kakao-client-id}
-      redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/kakao}
+      redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:5173/api/auth/oauth2/callback/kakao}
       authorization-uri: https://kauth.kakao.com/oauth/authorize
       token-uri: https://kauth.kakao.com/oauth/token
       user-info-uri: https://kapi.kakao.com/v2/user/me
@@ -32,7 +32,7 @@ oauth2:
 # Application Configuration
 app:
   frontend:
-    url: ${FRONTEND_URL:http://localhost:3000}
+    url: ${FRONTEND_URL:http://localhost:5173}
 
 # Logging
 logging:

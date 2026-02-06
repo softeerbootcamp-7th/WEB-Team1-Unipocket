@@ -1,7 +1,6 @@
 import { clsx } from 'clsx';
 
-import { API_BASE_URL } from '@/apis/constants';
-
+import { API_BASE_URL } from '@/api/config/constants';
 import { AuthLogos } from '@/assets';
 
 const AUTH_PROVIDERS = [

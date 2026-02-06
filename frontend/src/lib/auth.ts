@@ -1,6 +1,6 @@
 import { QueryClient, queryOptions } from '@tanstack/react-query';
 
-import { customFetch } from '@/apis/client';
+import { customFetch } from '@/api/config/client';
 
 type User = {
   userId: string;

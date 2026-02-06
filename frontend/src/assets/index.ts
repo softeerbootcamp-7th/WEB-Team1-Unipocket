@@ -49,6 +49,7 @@ import CloseCircle from './Icons/close-circle.svg';
 import Edit from './Icons/edit.svg';
 import FileBox from './Icons/file-box.svg';
 import Home from './Icons/home.svg';
+import Information from './Icons/information.svg';
 import Loading from './Icons/loading.svg';
 import Logo from './Icons/logo.svg';
 import LogoText from './Icons/logo-text.svg';
@@ -79,6 +80,7 @@ export const Icons = {
   Swap,
   LogoText,
   UploadFile,
+  Information,
 } as const;
 
 export type IconName = keyof typeof Icons;

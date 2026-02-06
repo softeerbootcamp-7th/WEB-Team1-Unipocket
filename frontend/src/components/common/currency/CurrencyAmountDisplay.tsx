@@ -6,6 +6,12 @@ import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 const SIZE_VARIANTS = {
   sm: {
     containerGap: 'gap-0.5',
+    symbol: 'figure-caption1-medium text-label-alternative',
+    integer: 'figure-body2-14-semibold',
+    decimal: 'figure-caption1-medium -mt-0.5',
+  },
+  md: {
+    containerGap: 'gap-0.5',
     symbol: 'figure-label2-medium text-label-alternative',
     integer: 'figure-body2-15-medium',
     decimal: 'figure-caption2-medium -mt-0.5',
@@ -21,13 +27,15 @@ const SIZE_VARIANTS = {
 interface CurrencyAmountDisplayProps {
   countryCode: CountryCode;
   amount: number;
-  size?: 'sm' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
+  color?: string;
 }
 
 const CurrencyAmountDisplay = ({
   countryCode,
   amount,
-  size = 'sm',
+  size = 'md',
+  color,
 }: CurrencyAmountDisplayProps) => {
   const countryInfo = getCountryInfo(countryCode);
 
@@ -52,19 +60,30 @@ const CurrencyAmountDisplay = ({
   return (
     <div
       className={clsx(
-        'text-label-normal flex items-center',
+        !color && 'text-label-normal',
+        'flex items-center',
         styles.containerGap,
       )}
+      style={color ? { color } : undefined}
     >
       {/* 통화 기호 */}
-      <span className={styles.symbol}>{countryInfo.currencySign}</span>
+      <span className={styles.symbol} style={color ? { color } : undefined}>
+        {countryInfo.currencySign}
+      </span>
 
       {/* 숫자 영역 (정수 + 소수) */}
-      <div className="flex items-start">
+      <div className="flex items-center">
         <span className={styles.integer}>{integerPart}</span>
 
         {decimalPart && (
-          <span className={clsx('text-label-alternative', styles.decimal)}>
+          <span
+            className={clsx(
+              !color && 'text-label-alternative',
+              color && 'opacity-80',
+              styles.decimal,
+            )}
+            style={color ? { color } : undefined}
+          >
             .{decimalPart}
           </span>
         )}

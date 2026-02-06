@@ -1,8 +1,8 @@
+import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
+import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
+
 import { Icons } from '@/assets';
 import type { CountryCode } from '@/data/countryCode';
-
-import CurrencyAmountDisplay from '../common/CurrencyAmountDisplay';
-import CurrencyBadge from '../common/CurrencyBadge';
 
 interface ExpenseCardProps {
   label: string;

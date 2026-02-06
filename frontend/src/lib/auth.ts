@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
 
-import { customFetch } from '@/apis/client';
+import { customFetch } from '@/api/config/client';
 
 type User = {
   id: string;

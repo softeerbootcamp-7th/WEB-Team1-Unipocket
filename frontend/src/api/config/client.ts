@@ -1,11 +1,10 @@
 import {
-  BASE_URL,
   DEFAULT_TIMEOUT,
   ERROR_NAMES,
   getDefaultErrorMessage,
   HTTP_STATUS,
-} from './constants';
-import { ApiError } from './error';
+} from '@/api/config/constants';
+import { ApiError } from '@/api/config/error';
 
 export const customFetch = async (
   endpoint: string,
@@ -18,7 +17,7 @@ export const customFetch = async (
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
 
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`api/${endpoint}`, {
       ...restOptions,
       signal: controller.signal,
       headers: {

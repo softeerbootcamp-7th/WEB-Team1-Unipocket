@@ -33,23 +33,28 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class TravelApiTest {
 
-	@Autowired private MockMvc mockMvc;
-	@Autowired private ObjectMapper objectMapper;
-	@Autowired private AccountBookRepository accountBookRepository;
+	@Autowired
+	private MockMvc mockMvc;
+	@Autowired
+	private ObjectMapper objectMapper;
+	@Autowired
+	private AccountBookRepository accountBookRepository;
+
+	@org.springframework.boot.test.mock.mockito.MockBean
+	private com.genesis.unipocket.global.infrastructure.aws.S3Service s3Service;
 
 	private Long accountBookId;
 
 	@BeforeEach
 	void setUp() {
 		// Create an AccountBook to link with
-		AccountBookCreateArgs args =
-				new AccountBookCreateArgs(
-						"user1",
-						"My Trip Account",
-						CountryCode.KR,
-						CountryCode.KR,
-						LocalDate.of(2024, 1, 1),
-						LocalDate.of(2024, 12, 31));
+		AccountBookCreateArgs args = new AccountBookCreateArgs(
+				"user1",
+				"My Trip Account",
+				CountryCode.KR,
+				CountryCode.KR,
+				LocalDate.of(2024, 1, 1),
+				LocalDate.of(2024, 12, 31));
 		AccountBookEntity accountBook = AccountBookEntity.create(args);
 		accountBook = accountBookRepository.save(accountBook);
 		accountBookId = accountBook.getId();
@@ -62,9 +67,9 @@ class TravelApiTest {
 		String jsonRequest = objectMapper.writeValueAsString(request);
 
 		mockMvc.perform(
-						post("/api/travels")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(jsonRequest))
+				post("/api/travels")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(jsonRequest))
 				.andExpect(status().isCreated());
 	}
 
@@ -81,20 +86,41 @@ class TravelApiTest {
 	}
 
 	@Test
+	@DisplayName("여행 썸네일 부분 수정 테스트")
+	void patchTravelImage() throws Exception {
+		Long travelId = createTestTravel();
+
+		com.genesis.unipocket.travel.dto.TravelUpdateRequest request = new com.genesis.unipocket.travel.dto.TravelUpdateRequest(
+				null, null, null, "new_thumbnail_image_key");
+
+		mockMvc.perform(
+				org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+						"/api/travels/" + travelId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get("/api/travels/" + travelId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.imageKey").value("new_thumbnail_image_key"))
+				// Check other fields remain unchanged
+				.andExpect(jsonPath("$.travelPlaceName").value("Tokyo Trip"));
+	}
+
+	@Test
 	@DisplayName("위젯 수정 및 조회 테스트")
 	void updateAndVerifyWidgets() throws Exception {
 		Long travelId = createTestTravel();
 
-		List<WidgetDto> widgets =
-				List.of(
-						new WidgetDto(WidgetType.SUMMARY_CARD, 1),
-						new WidgetDto(WidgetType.GRAPH_DAILY, 2));
+		List<WidgetDto> widgets = List.of(
+				new WidgetDto(WidgetType.SUMMARY_CARD, 1),
+				new WidgetDto(WidgetType.GRAPH_DAILY, 2));
 
 		// Update Widgets
 		mockMvc.perform(
-						put("/api/travels/" + travelId + "/widgets")
-								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(widgets)))
+				put("/api/travels/" + travelId + "/widgets")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(widgets)))
 				.andExpect(status().isOk());
 
 		// Verify Widgets
@@ -117,14 +143,13 @@ class TravelApiTest {
 		TravelRequest request = createTravelRequest();
 		String jsonRequest = objectMapper.writeValueAsString(request);
 
-		String location =
-				mockMvc.perform(
-								post("/api/travels")
-										.contentType(MediaType.APPLICATION_JSON)
-										.content(jsonRequest))
-						.andReturn()
-						.getResponse()
-						.getHeader("Location");
+		String location = mockMvc.perform(
+				post("/api/travels")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(jsonRequest))
+				.andReturn()
+				.getResponse()
+				.getHeader("Location");
 
 		String travelIdStr = location.substring(location.lastIndexOf("/") + 1);
 		return Long.parseLong(travelIdStr);

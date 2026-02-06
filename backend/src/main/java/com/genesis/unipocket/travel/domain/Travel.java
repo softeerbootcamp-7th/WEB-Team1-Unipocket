@@ -22,38 +22,52 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "travel")
 public class Travel extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "travel_id")
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "travel_id")
+    private Long id;
 
-	@Column(nullable = false)
-	private Long accountBookId;
+    @Column(nullable = false)
+    private Long accountBookId;
 
-	@Column(name = "image_key")
-	private String imageKey;
+    @Column(name = "image_key")
+    private String imageKey;
 
-	@Column(nullable = false)
-	private LocalDate startDate;
+    @Column(nullable = false)
+    private LocalDate startDate;
 
-	@Column(nullable = false)
-	private LocalDate endDate;
+    @Column(nullable = false)
+    private LocalDate endDate;
 
-	@Column(nullable = false)
-	private String travelPlaceName;
+    @Column(nullable = false)
+    private String travelPlaceName;
 
-	public void validateDateRange() {
-		if (startDate.isAfter(endDate)) {
-			throw new BusinessException(ErrorCode.TRAVEL_INVALID_DATE_RANGE);
-		}
-	}
+    public void validateDateRange() {
+        if (startDate.isAfter(endDate)) {
+            throw new BusinessException(ErrorCode.TRAVEL_INVALID_DATE_RANGE);
+        }
+    }
 
-	public void update(
-			String travelPlaceName, LocalDate startDate, LocalDate endDate, String imageKey) {
-		this.travelPlaceName = travelPlaceName;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.imageKey = imageKey;
-		validateDateRange();
-	}
+    public void update(
+            String travelPlaceName, LocalDate startDate, LocalDate endDate, String imageKey) {
+        this.travelPlaceName = travelPlaceName;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.imageKey = imageKey;
+        validateDateRange();
+    }
+
+    public void updateImage(String imageKey) {
+        this.imageKey = imageKey;
+    }
+
+    public void updateName(String travelPlaceName) {
+        this.travelPlaceName = travelPlaceName;
+    }
+
+    public void updatePeriod(LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        validateDateRange();
+    }
 }

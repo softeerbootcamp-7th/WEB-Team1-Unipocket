@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react-swc';
+import { env } from 'process';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 
@@ -26,7 +27,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api.unipocket.co.kr',
+        target: env.VITE_API_BASE_URL,
         changeOrigin: true,
         secure: false,
       },

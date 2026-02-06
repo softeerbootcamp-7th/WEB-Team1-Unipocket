@@ -2,13 +2,4 @@
 ###      수정 사항을 Git에 포함시키지 마세요.      ###
 spring:
   profiles:
-    active: local
-  cloud:
-    aws:
-      region:
-        static: ${AWS_REGION:ap-northeast-2}
-      credentials:
-        access-key: ${AWS_ACCESS_KEY:dummy-access-key}
-        secret-key: ${AWS_SECRET_KEY:dummy-secret-key}
-      s3:
-        bucket: ${AWS_S3_BUCKET_NAME:dummy-bucket}
+    active: dev

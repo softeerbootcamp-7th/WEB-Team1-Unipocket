@@ -1,11 +1,12 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
+import { useClickOutside } from '@/hooks/useClickOutside';
+
+import CalendarMonthPopover from '@/components/common/calendar/CalendarMonthPopover';
+import { dayNames, isSameDay } from '@/components/common/calendar/date.utils';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import Icon from '@/components/common/Icon';
-
-import CalendarMonthPopover from '../calendar/CalendarMonthPopover';
-import { dayNames, isSameDay } from '../calendar/date.utils';
 
 const hourOptions = Array.from({ length: 24 }).map((_, i) => ({
   id: i,
@@ -17,12 +18,75 @@ const minuteOptions = Array.from({ length: 60 }).map((_, i) => ({
   name: i.toString().padStart(2, '0'),
 }));
 
-export default function DateTimePicker() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+const OUTSIDE_CLICK_IGNORE_SELECTOR =
+  '[data-radix-popper-content-wrapper], [role="dialog"], [data-value-container]';
 
-  const [hour, setHour] = useState(12);
-  const [minute, setMinute] = useState(0);
+interface DateTimePickerProps {
+  onDateTimeSelect: (date: Date) => void;
+  onClose?: () => void;
+  initialDateTime: Date | null;
+}
+
+const DateTimePicker = ({
+  onDateTimeSelect,
+  onClose,
+  initialDateTime,
+}: DateTimePickerProps) => {
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
+    const baseDate = initialDateTime ?? new Date();
+    return new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+  });
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    initialDateTime,
+  );
+
+  const [hour, setHour] = useState(
+    initialDateTime ? initialDateTime.getHours() : 0,
+  );
+
+  const [minute, setMinute] = useState(
+    initialDateTime ? initialDateTime.getMinutes() : 0,
+  );
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(
+    containerRef,
+    () => {
+      onClose?.();
+    },
+    {
+      ignoreSelector: OUTSIDE_CLICK_IGNORE_SELECTOR,
+    },
+  );
+
+  const createDateTime = (date: Date, hour: number, minute: number) => {
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      hour,
+      minute,
+    );
+  };
+
+  const updateDateTime = (newHour: number, newMinute: number) => {
+    if (selectedDate) {
+      const completeDateTime = createDateTime(selectedDate, newHour, newMinute);
+      onDateTimeSelect(completeDateTime);
+    }
+  };
+
+  const handleHourSelect = (hourValue: number) => {
+    setHour(hourValue);
+    updateDateTime(hourValue, minute);
+  };
+
+  const handleMinuteSelect = (minuteValue: number) => {
+    setMinute(minuteValue);
+    updateDateTime(hour, minuteValue);
+  };
 
   const { year, month, dates } = useMemo(() => {
     const year = currentMonth.getFullYear();
@@ -57,47 +121,35 @@ export default function DateTimePicker() {
     return { year, month, dates };
   }, [currentMonth]);
 
-  const handleDateClick = useCallback(
-    (date: Date) => {
-      setSelectedDate(date);
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
 
-      // 다른 달 날짜 클릭 시 달 이동
-      if (date.getMonth() !== month || date.getFullYear() !== year) {
-        setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
-      }
-    },
-    [month, year],
-  );
+    const completeDateTime = createDateTime(date, hour, minute);
+    onDateTimeSelect(completeDateTime);
 
-  const handlePrevMonth = useCallback(() => {
-    setCurrentMonth(new Date(year, month - 1));
-  }, [year, month]);
+    // 다른 달 날짜 클릭 시 달 이동
+    if (date.getMonth() !== month || date.getFullYear() !== year) {
+      setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+  };
 
-  const handleNextMonth = useCallback(() => {
-    setCurrentMonth(new Date(year, month + 1));
-  }, [year, month]);
-
-  const selectedDateTime = useMemo(() => {
-    if (!selectedDate) return null;
-
-    return new Date(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth(),
-      selectedDate.getDate(),
-      hour,
-      minute,
-    );
-  }, [selectedDate, hour, minute]);
+  const handleMonthChange = (direction: 'prev' | 'next') => {
+    const monthOffset = direction === 'prev' ? -1 : 1;
+    setCurrentMonth(new Date(year, month + monthOffset));
+  };
 
   return (
-    <div className="rounded-modal-10 border-line-normal-normal bg-background-normal w-65 space-y-4 border p-4">
+    <div
+      ref={containerRef}
+      className="rounded-modal-10 border-line-normal-normal bg-background-normal w-65 space-y-4 border p-4"
+    >
       <div className="flex items-center justify-between">
         <Icon
           iconName="ChevronBack"
           color="text-label-normal"
           width={20}
           height={20}
-          onClick={handlePrevMonth}
+          onClick={() => handleMonthChange('prev')}
         />
         <CalendarMonthPopover
           date={currentMonth}
@@ -108,7 +160,7 @@ export default function DateTimePicker() {
           color="text-label-normal"
           width={20}
           height={20}
-          onClick={handleNextMonth}
+          onClick={() => handleMonthChange('next')}
         />
       </div>
 
@@ -145,7 +197,7 @@ export default function DateTimePicker() {
         <div className="w-16">
           <DropDown
             selected={hour}
-            onSelect={setHour}
+            onSelect={handleHourSelect}
             options={hourOptions}
             size="md"
           />
@@ -154,18 +206,14 @@ export default function DateTimePicker() {
         <div className="w-16">
           <DropDown
             selected={minute}
-            onSelect={setMinute}
+            onSelect={handleMinuteSelect}
             options={minuteOptions}
             size="md"
           />
         </div>
       </div>
-
-      {selectedDateTime && (
-        <p className="label2-medium text-center text-gray-600">
-          선택됨: {selectedDateTime.toLocaleString('ko-KR')}
-        </p>
-      )}
     </div>
   );
-}
+};
+
+export default DateTimePicker;

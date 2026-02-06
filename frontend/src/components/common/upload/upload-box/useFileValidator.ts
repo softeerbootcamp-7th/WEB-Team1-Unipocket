@@ -6,7 +6,7 @@ type UploadPolicy = {
   multiple: boolean;
   maxCount: number;
   maxTotalSize: number;
-}
+};
 
 export const uploadPolicy = {
   image: {

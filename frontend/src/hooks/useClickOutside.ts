@@ -1,12 +1,24 @@
 import { useEffect } from 'react';
 
-export function useOutsideClick(
+export function useClickOutside(
   ref: React.RefObject<HTMLElement | null>,
   callback: () => void,
+  options?: {
+    ignoreSelector?: string;
+  },
 ) {
   useEffect(() => {
     function handleClick(event: MouseEvent | TouchEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      if (ref.current && !ref.current.contains(target)) {
+        // ignoreSelector에 해당하는 요소 클릭 시 콜백 실행하지 않음
+        if (options?.ignoreSelector && target instanceof Element) {
+          if (target.closest(options.ignoreSelector)) {
+            return;
+          }
+        }
+
         callback();
       }
     }
@@ -18,5 +30,5 @@ export function useOutsideClick(
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('touchstart', handleClick);
     };
-  }, [ref, callback]);
+  }, [ref, callback, options?.ignoreSelector]);
 }

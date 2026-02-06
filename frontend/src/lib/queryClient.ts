@@ -5,7 +5,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 
-import { ApiError } from '@/apis/error';
+import { ApiError } from '@/api/config/error';
 
 // 공통 에러 처리 함수
 const handleGlobalError = (error: DefaultError) => {

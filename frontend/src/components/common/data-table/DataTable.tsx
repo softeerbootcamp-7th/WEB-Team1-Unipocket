@@ -16,7 +16,7 @@ import { useDataTable } from './context';
 interface DataTableProps<TData> {
   groupBy?: (row: TData) => string;
   enableGroupSelection?: boolean;
-  height: number;
+  height?: number;
 }
 
 const DataTable = <TData,>({

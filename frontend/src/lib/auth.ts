@@ -10,6 +10,33 @@ type User = {
   socialProvider: string;
 };
 
+// 쿠키에서 특정 이름의 값을 가져오는 함수
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+  return null;
+};
+
+// 쿠키의 만료시간을 확인하여 토큰이 유효한지 체크
+const isTokenValid = (cookieName: string): boolean => {
+  // 쿠키가 존재하는지 확인
+  const token = getCookie(cookieName);
+  if (!token) {
+    return false;
+  }
+
+  // 브라우저가 자동으로 만료된 쿠키를 삭제하므로
+  // 쿠키가 존재한다면 유효한 것으로 간주
+  return true;
+};
+
+const isAccessTokenValid = (): boolean => {
+  return isTokenValid('access_token');
+};
+
 const fetchUser = async (): Promise<User> => {
   const data = await customFetch<User>({ endpoint: '/users/me' });
   console.log(data.nickname);
@@ -29,5 +56,11 @@ const checkAuth = async (queryClient: QueryClient) => {
   return user;
 };
 
-export { checkAuth, fetchUser, userQueryOptions };
+export {
+  checkAuth,
+  fetchUser,
+  getCookie,
+  isAccessTokenValid,
+  userQueryOptions,
+};
 export type { User };

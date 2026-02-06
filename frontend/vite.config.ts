@@ -91,7 +91,7 @@ export default defineConfig(({ mode }) => {
 
             // reissueFailCount < 3 면
             // home에서 처음 401, 다시 재발급 시도 때 또 401, 로그인 페이지에서 또 401 → 로그인 페이지에서 수동으로 로그인 시도해야 함
-            if (reissueFailCount < 2) {
+            if (reissueFailCount < 9) {
               reissueFailCount++;
               res.statusCode = 401;
               res.end(
@@ -121,7 +121,7 @@ export default defineConfig(({ mode }) => {
         },
 
         '/api': {
-          target: apiBaseUrl,
+          target: 'https://api.unipocket.co.kr',
           changeOrigin: true,
           secure: false,
         },

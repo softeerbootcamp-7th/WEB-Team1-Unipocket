@@ -1,39 +1,54 @@
+import { clsx } from 'clsx';
+
 import type { CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
+import type { CountryCode } from '@/data/countryCode';
+
+import CurrencyAmountDisplay from '../../currency/CurrencyAmountDisplay';
+import CurrencyBadge from '../../currency/CurrencyBadge';
+
 interface CategoryListItemProps {
-  currency: CurrencyType;
+  currencyType: CurrencyType;
+  countryCode: CountryCode;
   categoryName: CategoryType;
   percentage: number;
-  amount: string;
+  amount: number;
   color: string;
 }
 
 const CategoryListItem = ({
-  currency,
+  currencyType,
+  countryCode,
   categoryName,
   percentage,
   amount,
   color,
 }: CategoryListItemProps) => {
   return (
-    <div className="flex h-6 w-52 items-center gap-2.5">
+    <div className="flex h-6 w-full items-center gap-4">
       <div className="h-3.5 w-3.5" style={{ backgroundColor: color }} />
       <div className="flex items-center gap-2.5">
-        <span className="label1-normal-medium text-label-normal">
+        <span className="label1-normal-medium text-label-normal min-w-9">
           {categoryName}
         </span>
-        <span className="figure-body2-14-semibold text-label-alternative">
+        <span className="figure-body2-14-semibold text-label-alternative min-w-7.5 text-end">
           {percentage}%
         </span>
       </div>
-      <div className="flex flex-1 items-center justify-end gap-1">
-        {currency === 'LOCAL' && (
-          <div className="bg-fill-normal rounded-modal-4 h-3 w-6" />
-        )}
-        <span className="figure-body2-14-semibold text-label-normal">
-          {amount}
-        </span>
+      <div className="flex min-w-25 flex-1 items-center justify-start gap-1">
+        <div className={clsx(currencyType === 'BASE' && 'opacity-0')}>
+          <CurrencyBadge countryCode={countryCode} />
+        </div>
+
+        <div className="max-w-25 truncate">
+          <CurrencyAmountDisplay
+            countryCode={countryCode}
+            amount={amount}
+            size="sm"
+            color="var(--color-label-neutral)"
+          />
+        </div>
       </div>
     </div>
   );

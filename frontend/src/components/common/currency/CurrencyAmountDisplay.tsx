@@ -6,6 +6,12 @@ import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 const SIZE_VARIANTS = {
   sm: {
     containerGap: 'gap-0.5',
+    symbol: 'figure-caption1-medium text-label-alternative',
+    integer: 'figure-body2-14-semibold',
+    decimal: 'figure-caption1-medium -mt-0.5',
+  },
+  md: {
+    containerGap: 'gap-0.5',
     symbol: 'figure-label2-medium text-label-alternative',
     integer: 'figure-body2-15-medium',
     decimal: 'figure-caption2-medium -mt-0.5',
@@ -21,14 +27,14 @@ const SIZE_VARIANTS = {
 interface CurrencyAmountDisplayProps {
   countryCode: CountryCode;
   amount: number;
-  size?: 'sm' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
   color?: string;
 }
 
 const CurrencyAmountDisplay = ({
   countryCode,
   amount,
-  size = 'sm',
+  size = 'md',
   color,
 }: CurrencyAmountDisplayProps) => {
   const countryInfo = getCountryInfo(countryCode);

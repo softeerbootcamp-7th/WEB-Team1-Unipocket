@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
 import DropDown from '@/components/common/dropdown/Dropdown';
@@ -39,12 +39,16 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   );
   const [selectedPeriod, setSelectedPeriod] = useState(PERIOD_OPTIONS[0].id);
 
-  // 실제 데이터 렌더링용 (API 응답 구조에 맞춤)
-  const categoryStats = mockData.items.map((item) => ({
-    percentage: item.percent,
-    categoryName: item.categoryName,
-    amount: item.amount,
-  }));
+  // 렌더링용 데이터. API 연동 시 변경 필요
+  const visibleStats = useMemo(() => {
+    return mockData.items
+      .map((item) => ({
+        percentage: item.percent,
+        categoryName: item.categoryName,
+        amount: item.amount,
+      }))
+      .filter((item) => item.percentage > 0);
+  }, []);
 
   const totalAmount = (
     <CurrencyAmountDisplay
@@ -73,9 +77,9 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
 
       {/* stat section */}
       <ChartContent isLoading={isLoading} skeleton={<StatSectionSkeleton />}>
-        <CategoryPieChart data={categoryStats} totalAmount={totalAmount} />
+        <CategoryPieChart data={visibleStats} totalAmount={totalAmount} />
         <div className="flex flex-col items-start justify-center gap-1">
-          {categoryStats.map((item, idx) => (
+          {visibleStats.map((item, idx) => (
             <CategoryListItem
               key={item.categoryName}
               currencyType={

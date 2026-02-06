@@ -1,11 +1,11 @@
 import CategoryPieChart from './CategoryPieChart';
-import { dummyData } from './dummy';
+import { mockData } from './mock';
 
 export const CategoryPieChartSkeleton = () => {
   return (
     <div>
       <CategoryPieChart
-        data={dummyData.items.map((item) => ({
+        data={mockData.items.map((item) => ({
           categoryName: item.categoryName,
           percentage: item.percent,
         }))}

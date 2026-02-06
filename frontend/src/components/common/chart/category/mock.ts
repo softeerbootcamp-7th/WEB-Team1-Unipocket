@@ -1,6 +1,6 @@
 import type { CategoryStatisticsResponse } from './CategoryChart';
 
-export const dummyData: CategoryStatisticsResponse = {
+export const mockData: CategoryStatisticsResponse = {
   totalAmount: 10031,
   countryCode: 'US',
   items: [

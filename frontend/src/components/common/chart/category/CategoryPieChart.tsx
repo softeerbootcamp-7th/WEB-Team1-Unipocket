@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import type { CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
-import { CATEGORY_COLORS } from '../chartColor';
+import { CATEGORY_COLORS } from '../chartType';
 
 interface CategoryPieChartProps {
   data: {

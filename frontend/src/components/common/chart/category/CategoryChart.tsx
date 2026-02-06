@@ -11,12 +11,7 @@ import {
 } from './CategoryChartSkeleton';
 import CategoryListItem from './CategoryListItem';
 import CategoryPieChart from './CategoryPieChart';
-import { dummyData } from './dummy';
-
-const CURRENCY_OPTIONS: { id: number; name: string; type: CurrencyType }[] = [
-  { id: 1, name: '기준 통화', type: 'BASE' },
-  { id: 2, name: '현지 통화', type: 'LOCAL' },
-];
+import { mockData } from './mock';
 
 const PERIOD_OPTIONS = [
   { id: 1, name: '전체' },
@@ -60,7 +55,7 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   const [selectedPeriod, setSelectedPeriod] = useState(PERIOD_OPTIONS[0].id);
 
   // 실제 데이터 렌더링용 (API 응답 구조에 맞춤)
-  const chartData = dummyData.items.map((item) => ({
+  const categoryStats = mockData.items.map((item) => ({
     percentage: item.percent,
     categoryName: item.categoryName,
     amount: item.amount.toLocaleString(),

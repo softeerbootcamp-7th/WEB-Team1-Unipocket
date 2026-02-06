@@ -26,7 +26,7 @@ export default function DateTimePicker({
   onClose,
   initialDateTime,
 }: {
-  onDateTimeSelect?: (date: Date) => void;
+  onDateTimeSelect: (date: Date) => void;
   onClose?: () => void;
   initialDateTime?: Date | null;
 }) {
@@ -67,7 +67,7 @@ export default function DateTimePicker({
   const updateDateTime = (newHour: number, newMinute: number) => {
     if (selectedDate) {
       const completeDateTime = createDateTime(selectedDate, newHour, newMinute);
-      onDateTimeSelect?.(completeDateTime);
+      onDateTimeSelect(completeDateTime);
     }
   };
 
@@ -118,7 +118,7 @@ export default function DateTimePicker({
     setSelectedDate(date);
 
     const completeDateTime = createDateTime(date, hour, minute);
-    onDateTimeSelect?.(completeDateTime);
+    onDateTimeSelect(completeDateTime);
 
     // 다른 달 날짜 클릭 시 달 이동
     if (date.getMonth() !== month || date.getFullYear() !== year) {
@@ -126,12 +126,9 @@ export default function DateTimePicker({
     }
   };
 
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(year, month - 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(year, month + 1));
+  const handleMonthChange = (direction: 'prev' | 'next') => {
+    const monthOffset = direction === 'prev' ? -1 : 1;
+    setCurrentMonth(new Date(year, month + monthOffset));
   };
 
   return (
@@ -145,7 +142,7 @@ export default function DateTimePicker({
           color="text-label-normal"
           width={20}
           height={20}
-          onClick={handlePrevMonth}
+          onClick={() => handleMonthChange('prev')}
         />
         <CalendarMonthPopover
           date={currentMonth}
@@ -156,7 +153,7 @@ export default function DateTimePicker({
           color="text-label-normal"
           width={20}
           height={20}
-          onClick={handleNextMonth}
+          onClick={() => handleMonthChange('next')}
         />
       </div>
 

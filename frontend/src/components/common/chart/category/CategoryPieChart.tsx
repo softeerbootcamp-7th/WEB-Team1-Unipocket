@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
 
+import { useAutoFitScale } from '@/hooks/useAutoFitScale';
+
 import type { CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
-import { CATEGORY_COLORS } from '../chartType';
+import { CATEGORY_CHART_COLORS } from '../chartType';
 
 interface CategoryPieChartProps {
   data: {
@@ -21,7 +23,7 @@ const CategoryPieChart = ({
   data,
   totalAmount,
   size = 192,
-  colors = CATEGORY_COLORS,
+  colors = CATEGORY_CHART_COLORS,
 }: CategoryPieChartProps) => {
   const center = size / 2;
   const strokeWidth = 10;
@@ -29,6 +31,12 @@ const CategoryPieChart = ({
   const circumference = 2 * Math.PI * radius;
   const gap = 4;
   const TOTAL_DURATION = 0.8;
+
+  const MAX_WIDTH = 130; // w-32.5 (130px)
+  const { ref: contentRef, scale } = useAutoFitScale<HTMLDivElement>(
+    MAX_WIDTH,
+    [totalAmount],
+  );
 
   const chartData = data.reduce<
     ((typeof data)[number] & { color: string; startPercentage: number })[]
@@ -99,7 +107,16 @@ const CategoryPieChart = ({
         animate={{ opacity: 1 }}
         transition={{ duration: TOTAL_DURATION }}
       >
-        <div>{totalAmount}</div>
+        <div
+          ref={contentRef}
+          className="whitespace-nowrap"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'center',
+          }}
+        >
+          {totalAmount}
+        </div>
       </motion.div>
     </div>
   );

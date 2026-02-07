@@ -106,9 +106,18 @@ public class AccountBookServiceTest {
 						req.startDate(),
 						req.endDate());
 
-		given(repository.save(any(AccountBookEntity.class))).willReturn(AccountBookEntity.create(new AccountBookCreateArgs(userId, expectedTitle, CountryCode.US, CountryCode.KR, LocalDate.now(), LocalDate.now()))); // Mocking return is flexible here since we verify logic
+		given(repository.save(any(AccountBookEntity.class)))
+				.willReturn(
+						AccountBookEntity.create(
+								new AccountBookCreateArgs(
+										userId,
+										expectedTitle,
+										CountryCode.US,
+										CountryCode.KR,
+										LocalDate.now(),
+										LocalDate.now()))); // Mocking return is flexible here since
+		// we verify logic
 		given(converter.toDto(any(AccountBookEntity.class))).willReturn(expectedDto);
-
 
 		// when
 		AccountBookDto result = accountBookService.create(userId, username, req);
@@ -140,14 +149,22 @@ public class AccountBookServiceTest {
 								CountryCode.KR,
 								LocalDate.of(2023, 1, 1),
 								LocalDate.of(2023, 12, 31)));
-		
+
 		// Reflection or setter needed if ID is not set in create. Assuming Mocking or simple obj.
 		// Since Entity create usually doesn't set ID. But repository mock returns it.
 		// Here we just use the entity object.
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
-		
-		AccountBookDto expectedDto = new AccountBookDto(accountBookId, req.title(), req.localCountryCode(), req.baseCountryCode(), req.budget(), req.startDate(), req.endDate());
+
+		AccountBookDto expectedDto =
+				new AccountBookDto(
+						accountBookId,
+						req.title(),
+						req.localCountryCode(),
+						req.baseCountryCode(),
+						req.budget(),
+						req.startDate(),
+						req.endDate());
 		given(converter.toDto(entity)).willReturn(expectedDto);
 
 		// when
@@ -252,8 +269,16 @@ public class AccountBookServiceTest {
 								CountryCode.KR,
 								LocalDate.now(),
 								LocalDate.now()));
-		
-		AccountBookDto expectedDto = new AccountBookDto(accountBookId, "Title", CountryCode.US, CountryCode.KR, 0L, LocalDate.now(), LocalDate.now());
+
+		AccountBookDto expectedDto =
+				new AccountBookDto(
+						accountBookId,
+						"Title",
+						CountryCode.US,
+						CountryCode.KR,
+						0L,
+						LocalDate.now(),
+						LocalDate.now());
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
 		given(converter.toDto(entity)).willReturn(expectedDto);
@@ -287,9 +312,18 @@ public class AccountBookServiceTest {
 								CountryCode.KR,
 								LocalDate.now(),
 								LocalDate.now()));
-		
+
 		given(repository.findAllByUserId(userId)).willReturn(List.of(entity1, entity2));
-		given(converter.toDto(any(AccountBookEntity.class))).willReturn(new AccountBookDto(1L, "Title1", CountryCode.US, CountryCode.KR, 0L, LocalDate.now(), LocalDate.now()));
+		given(converter.toDto(any(AccountBookEntity.class)))
+				.willReturn(
+						new AccountBookDto(
+								1L,
+								"Title1",
+								CountryCode.US,
+								CountryCode.KR,
+								0L,
+								LocalDate.now(),
+								LocalDate.now()));
 
 		// when
 		List<AccountBookDto> result = accountBookService.getAccountBooks(userId);

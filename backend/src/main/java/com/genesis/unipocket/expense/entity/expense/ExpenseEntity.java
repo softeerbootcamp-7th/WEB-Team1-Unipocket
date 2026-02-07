@@ -18,7 +18,23 @@ import lombok.*;
 @Entity
 @Getter
 @Builder
-@Table(name = "expenses")
+@Table(
+		name = "expenses",
+		indexes = {
+			// 필수: 가계부별 조회 (FK)
+			@Index(name = "idx_expenses_account_book_id", columnList = "accountBookId"),
+
+			// 필수: 가계부 + 날짜 복합 인덱스 (목록 조회 최적화)
+			@Index(
+					name = "idx_expenses_account_book_occurred",
+					columnList = "accountBookId, occurredAt DESC"),
+
+			// 선택: 카테고리 필터링
+			@Index(name = "idx_expenses_category", columnList = "category"),
+
+			// 선택: 여행별 조회
+			@Index(name = "idx_expenses_travel_id", columnList = "travelId")
+		})
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExpenseEntity extends BaseEntity {

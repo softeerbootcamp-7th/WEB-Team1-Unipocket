@@ -93,7 +93,21 @@ public enum ErrorCode {
 	// Travel Errors
 	TRAVEL_INVALID_DATE_RANGE(
 			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_DATE_RANGE", "여행 종료 날짜는 시작 날짜보다 이후여야 합니다."),
-	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다.");
+	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다."),
+
+	// Expense Errors
+	EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "404_EXPENSE_NOT_FOUND", "지출 내역을 찾을 수 없습니다."),
+	EXPENSE_UNAUTHORIZED_ACCESS(
+			HttpStatus.FORBIDDEN, "403_EXPENSE_UNAUTHORIZED_ACCESS", "해당 지출 내역에 접근할 권한이 없습니다."),
+	EXPENSE_INVALID_CURRENCY(
+			HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_CURRENCY", "유효하지 않은 통화 코드입니다."),
+	EXPENSE_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_AMOUNT", "금액은 0보다 커야 합니다."),
+	EXCHANGE_RATE_API_ERROR(
+			HttpStatus.SERVICE_UNAVAILABLE,
+			"503_EXCHANGE_RATE_API_ERROR",
+			"환율 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요."),
+	EXCHANGE_RATE_NOT_FOUND(
+			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다.");
 
 	public static class CodeLiterals {
 		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =

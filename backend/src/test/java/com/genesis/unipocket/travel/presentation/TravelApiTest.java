@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.TestcontainersConfiguration;
-import com.genesis.unipocket.accountbook.command.persistence.dto.AccountBookCreateArgs;
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookRepository;
+import com.genesis.unipocket.accountbook.entity.AccountBookCreateArgs;
+import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.repository.AccountBookRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service;
 import com.genesis.unipocket.travel.domain.WidgetType;

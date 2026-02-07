@@ -17,3 +17,13 @@ jwt:
   secret: test-secret-key-must-be-at-least-32-characters-long-for-hs256-algorithm
   access-token-expiration: 1800000
   refresh-token-expiration: 864000000
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    credentials:
+      access-key: dummy-access-key
+      secret-key: dummy-secret-key
+    s3:
+      bucket: dummy-bucket

@@ -5,3 +5,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:ap-northeast-2}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY:dummy-access-key}
+        secret-key: ${AWS_SECRET_KEY:dummy-secret-key}
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME:dummy-bucket}

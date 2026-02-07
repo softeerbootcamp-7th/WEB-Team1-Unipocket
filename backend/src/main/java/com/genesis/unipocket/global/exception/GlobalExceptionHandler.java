@@ -37,13 +37,19 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * &#064;Valid  검증 실패 시 발생 (400)
+	 * &#064;Valid 검증 실패 시 발생 (400)
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<CustomErrorResponse> handleMethodArgumentNotValid(
 			MethodArgumentNotValidException e) {
 
-		return createErrorResponse(ErrorCode.INVALID_INPUT_VALUE);
+		String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+		if (message == null) {
+			message = ErrorCode.INVALID_INPUT_VALUE.getMessage();
+		}
+
+		return ResponseEntity.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+				.body(new CustomErrorResponse(ErrorCode.INVALID_INPUT_VALUE.getCode(), message));
 	}
 
 	/**

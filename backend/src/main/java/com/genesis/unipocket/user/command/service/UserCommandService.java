@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>
  * 사용자 생성, 수정, 삭제 등의 Command 작업을 처리합니다.
  * </p>
+ *
  * @author 김동균
  * @since 2026-01-30
  */
@@ -32,7 +33,7 @@ public class UserCommandService {
 	/**
 	 * OAuth 로그인 또는 회원가입 처리
 	 *
-	 * @param userInfo OAuth 사용자 정보
+	 * @param userInfo     OAuth 사용자 정보
 	 * @param providerType OAuth Provider 타입
 	 * @return 로그인 응답 (JWT 토큰)
 	 */
@@ -54,7 +55,7 @@ public class UserCommandService {
 	/**
 	 * 새로운 사용자 생성
 	 *
-	 * @param userInfo OAuth 사용자 정보
+	 * @param userInfo     OAuth 사용자 정보
 	 * @param providerType OAuth Provider 타입
 	 * @return 생성된 소셜 인증 정보
 	 */
@@ -84,5 +85,49 @@ public class UserCommandService {
 						.build();
 
 		return socialAuthRepository.save(socialAuth);
+	}
+
+	/**
+	 * 사용자 상세 정보 조회
+	 *
+	 * @param userId 사용자 ID
+	 * @return 사용자 상세 정보
+	 */
+	public com.genesis.unipocket.user.command.presentation.dto.response.UserResponse getUserInfo(
+			java.util.UUID userId) {
+		UserEntity user =
+				userRepository
+						.findById(userId)
+						.orElseThrow(
+								() ->
+										new com.genesis.unipocket.global.exception
+												.BusinessException(
+												com.genesis.unipocket.global.exception.ErrorCode
+														.USER_NOT_FOUND));
+
+		return com.genesis.unipocket.user.command.presentation.dto.response.UserResponse.from(user);
+	}
+
+	/**
+	 * 회원 탈퇴
+	 *
+	 * @param userId 사용자 ID
+	 */
+	@Transactional
+	public void withdrawUser(java.util.UUID userId) {
+		UserEntity user =
+				userRepository
+						.findById(userId)
+						.orElseThrow(
+								() ->
+										new com.genesis.unipocket.global.exception
+												.BusinessException(
+												com.genesis.unipocket.global.exception.ErrorCode
+														.USER_NOT_FOUND));
+
+		// 연관된 소셜 인증 정보 삭제
+		socialAuthRepository.deleteByUser(user);
+		// 사용자 삭제
+		userRepository.delete(user);
 	}
 }

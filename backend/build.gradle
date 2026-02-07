@@ -50,6 +50,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:mysql'
+	testImplementation 'com.redis:testcontainers-redis:2.2.2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// JWT Related Dependencies
@@ -86,7 +87,7 @@ tasks.register("integrationTest", Test) {
 	}
 
 	// 내부 PR에서만 secrets/ENV_FILE로 값 주입하고, 그에 맞는 프로파일 사용
-	systemProperty "spring.profiles.active", "test-ci"
+	systemProperty "spring.profiles.active", "test-it"
 	environment "AWS_ACCESS_KEY", "dummy-access-key"
 	environment "AWS_SECRET_KEY", "dummy-secret-key"
 	environment "AWS_S3_BUCKET_NAME", "dummy-bucket"

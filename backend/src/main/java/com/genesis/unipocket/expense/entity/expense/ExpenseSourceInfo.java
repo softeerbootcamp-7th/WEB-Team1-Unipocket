@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.persistence.entity.expense;
+package com.genesis.unipocket.expense.entity.expense;
 
 import com.genesis.unipocket.expense.common.enums.ExpenseSource;
 import jakarta.persistence.Column;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class ExpenseSourceInfo {
+public class ExpenseSourceInfo {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "source_type", nullable = false, length = 32)

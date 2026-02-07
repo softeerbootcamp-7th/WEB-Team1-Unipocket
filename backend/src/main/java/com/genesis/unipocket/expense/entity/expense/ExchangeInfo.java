@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.persistence.entity.expense;
+package com.genesis.unipocket.expense.entity.expense;
 
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.Column;
@@ -19,21 +19,21 @@ import lombok.NoArgsConstructor;
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class OriginExchangeInfo {
+public class ExchangeInfo {
 
 	@Column(nullable = false)
 	private CurrencyCode localCurrencyCode;
 
 	@Column(nullable = false)
-	private CurrencyCode billingCurrencyCode;
+	private CurrencyCode baseCurrencyCode;
 
 	@Column(nullable = false)
 	private BigDecimal localCurrencyAmount;
 
 	@Column(nullable = false)
-	private BigDecimal billingCurrencyAmount;
+	private BigDecimal baseCurrencyAmount;
 
-	public static OriginExchangeInfo of(
+	public static ExchangeInfo of(
 			CurrencyCode localCurrency,
 			CurrencyCode billingCurrency,
 			BigDecimal localAmount,
@@ -51,11 +51,11 @@ class OriginExchangeInfo {
 			throw new IllegalArgumentException("same currency must have same amount");
 		}
 
-		OriginExchangeInfo info = new OriginExchangeInfo();
+		ExchangeInfo info = new ExchangeInfo();
 		info.localCurrencyCode = localCurrency;
-		info.billingCurrencyCode = billingCurrency;
+		info.baseCurrencyCode = billingCurrency;
 		info.localCurrencyAmount = localAmount;
-		info.billingCurrencyAmount = billingAmount;
+		info.baseCurrencyAmount = billingAmount;
 		return info;
 	}
 }

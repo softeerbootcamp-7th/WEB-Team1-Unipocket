@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.persistence.entity.expense;
+package com.genesis.unipocket.expense.entity.expense;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class Merchant {
+public class Merchant {
 
 	@Column(nullable = false, length = 40)
 	private String merchantName; // 거래내역 명(원본)

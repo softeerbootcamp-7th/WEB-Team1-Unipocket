@@ -1,6 +1,5 @@
-package com.genesis.unipocket.accountbook.command.persistence.entity;
+package com.genesis.unipocket.accountbook.entity;
 
-import com.genesis.unipocket.accountbook.command.persistence.dto.AccountBookCreateArgs;
 import com.genesis.unipocket.global.base.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.Column;
@@ -47,7 +46,7 @@ public class AccountBookEntity extends BaseEntity {
 	private String title;
 
 	@Column(nullable = true)
-	private Integer budget;
+	private Long budget;
 
 	@Column(name = "start_date", nullable = false, columnDefinition = "DATE")
 	private LocalDate startDate;
@@ -77,7 +76,12 @@ public class AccountBookEntity extends BaseEntity {
 		this.endDate = endDate;
 	}
 
-	public void updateBudget(int budget) {
+	public void updateCountryCodes(CountryCode localCountryCode, CountryCode baseCountryCode) {
+		this.localCountryCode = localCountryCode;
+		this.baseCountryCode = baseCountryCode;
+	}
+
+	public void updateBudget(Long budget) {
 		this.budget = budget;
 	}
 

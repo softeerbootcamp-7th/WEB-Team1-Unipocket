@@ -1,14 +1,13 @@
-package com.genesis.unipocket.accountbook.command.application.dto;
+package com.genesis.unipocket.accountbook.dto.common;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 
-public record AccountBookCreateResult(
-		Long accountBookId,
-		String userId,
+public record AccountBookDto(
+		Long id,
 		String title,
 		CountryCode localCountryCode,
 		CountryCode baseCountryCode,
-		Integer budget,
+		Long budget,
 		LocalDate startDate,
 		LocalDate endDate) {}

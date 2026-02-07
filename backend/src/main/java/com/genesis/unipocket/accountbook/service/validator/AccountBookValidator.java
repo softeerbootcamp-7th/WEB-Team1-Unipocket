@@ -1,6 +1,6 @@
-package com.genesis.unipocket.accountbook.command.persistence.validator;
+package com.genesis.unipocket.accountbook.service.validator;
 
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -34,7 +34,7 @@ public class AccountBookValidator {
 		}
 	}
 
-	private void validateBudget(Integer budget) {
+	private void validateBudget(Long budget) {
 		if (budget != null && budget < 0) {
 			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_INVALID_BUDGET);
 		}

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "유저 입력 기능")
+@Tag(name = "유저 기능")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor

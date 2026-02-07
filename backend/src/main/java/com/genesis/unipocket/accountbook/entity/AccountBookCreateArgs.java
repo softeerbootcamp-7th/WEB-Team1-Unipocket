@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.command.persistence.dto;
+package com.genesis.unipocket.accountbook.entity;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;

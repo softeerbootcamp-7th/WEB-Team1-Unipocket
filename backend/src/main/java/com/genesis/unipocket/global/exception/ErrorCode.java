@@ -61,9 +61,10 @@ public enum ErrorCode {
 	USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "U002", "이미 존재하는 사용자입니다."),
 
 	// ========== Token Errors (4000~4999) ==========
+	TOKEN_REQUIRED(HttpStatus.UNAUTHORIZED, "T000", "로그인이 필요합니다."),
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "T001", "토큰이 만료되었습니다."),
 	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "T002", "유효하지 않은 토큰입니다."),
-	TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "T003", "차단된 토큰입니다."),
+	TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "T003", "로그아웃된 토큰입니다."),
 	REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "T004", "리프레시 토큰이 필요합니다."),
 
 	// Account Book

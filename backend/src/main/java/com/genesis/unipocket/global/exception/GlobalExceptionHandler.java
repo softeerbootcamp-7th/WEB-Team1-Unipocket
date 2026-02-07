@@ -95,7 +95,8 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+	public ResponseEntity<?> handleHttpMessageNotReadableException(
+			HttpMessageNotReadableException e) {
 		return createErrorResponse(ErrorCode.HTTP_MESSAGE_NOT_READABLE);
 	}
 

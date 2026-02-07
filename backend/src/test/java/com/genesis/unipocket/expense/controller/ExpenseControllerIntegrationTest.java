@@ -87,7 +87,11 @@ class ExpenseControllerIntegrationTest {
 		// 지출 데이터가 이미 생성되어 있다고 가정 (실제로는 fixture 필요)
 
 		// when & then
-		mockMvc.perform(get("/api/account-books/{accountBookId}/expenses/{expenseId}", accountBookId, 1L))
+		mockMvc.perform(
+						get(
+								"/api/account-books/{accountBookId}/expenses/{expenseId}",
+								accountBookId,
+								1L))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.expenseId").exists())
 				.andExpect(jsonPath("$.merchantName").exists());
@@ -132,7 +136,10 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then
 		mockMvc.perform(
-						put("/api/account-books/{accountBookId}/expenses/{expenseId}", accountBookId, expenseId)
+						put(
+										"/api/account-books/{accountBookId}/expenses/{expenseId}",
+										accountBookId,
+										expenseId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(updateBody))
 				.andExpect(status().isOk())
@@ -148,7 +155,10 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then
 		mockMvc.perform(
-						delete("/api/account-books/{accountBookId}/expenses/{expenseId}", accountBookId, expenseId))
+						delete(
+								"/api/account-books/{accountBookId}/expenses/{expenseId}",
+								accountBookId,
+								expenseId))
 				.andExpect(status().isNoContent());
 	}
 

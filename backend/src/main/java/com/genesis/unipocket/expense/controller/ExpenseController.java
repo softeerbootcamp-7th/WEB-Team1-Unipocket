@@ -69,11 +69,9 @@ public class ExpenseController {
 	public ResponseEntity<ExpenseListResponse> getExpenses(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
-			@RequestParam(required = false)
-					@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
 					LocalDateTime startDate,
-			@RequestParam(required = false)
-					@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
 					LocalDateTime endDate,
 			@RequestParam(required = false) Category category,
 			@RequestParam(required = false) BigDecimal minAmount,
@@ -86,12 +84,20 @@ public class ExpenseController {
 
 		ExpenseSearchFilter filter =
 				new ExpenseSearchFilter(
-						startDate, endDate, category, minAmount, maxAmount, merchantName, travelId, null);
+						startDate,
+						endDate,
+						category,
+						minAmount,
+						maxAmount,
+						merchantName,
+						travelId,
+						null);
 
 		Sort sortObj = Sort.by(Arrays.asList(parseSortParams(sort)));
 		Pageable pageable = PageRequest.of(page, size, sortObj);
 
-		Page<ExpenseDto> dtoPage = expenseFacade.getExpenses(accountBookId, userId, filter, pageable);
+		Page<ExpenseDto> dtoPage =
+				expenseFacade.getExpenses(accountBookId, userId, filter, pageable);
 
 		List<ExpenseResponse> responses =
 				dtoPage.getContent().stream().map(ExpenseResponse::from).toList();

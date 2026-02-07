@@ -65,8 +65,7 @@ public enum ErrorCode {
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_EXPIRED", "토큰이 만료되었습니다."),
 	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "401_TOKEN_INVALID", "유효하지 않은 토큰입니다."),
 	TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "401_TOKEN_BLACKLISTED", "로그아웃된 토큰입니다."),
-	REFRESH_TOKEN_REQUIRED(
-			HttpStatus.BAD_REQUEST, "400_REFRESH_TOKEN_REQUIRED", "리프레시 토큰이 필요합니다."),
+	REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "400_REFRESH_TOKEN_REQUIRED", "리프레시 토큰이 필요합니다."),
 
 	// Account Book
 	ACCOUNT_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "404_ACCOUNT_BOOK_NOT_FOUND", "가계부를 찾을 수 없습니다."),

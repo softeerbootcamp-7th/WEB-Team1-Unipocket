@@ -87,7 +87,8 @@ class NaverExchangeRateServiceImplTest {
 
 		// then
 		assertThat(rate).isNotNull();
-		verify(valueOperations, times(1)).set(anyString(), anyString(), any(Duration.class)); // 캐시 저장 확인
+		verify(valueOperations, times(1))
+				.set(anyString(), anyString(), any(Duration.class)); // 캐시 저장 확인
 	}
 
 	@Test
@@ -100,7 +101,8 @@ class NaverExchangeRateServiceImplTest {
 		LocalDateTime dateTime = LocalDateTime.now();
 
 		// when & then
-		assertThatThrownBy(() -> exchangeRateService.convertAmount(invalidAmount, from, to, dateTime))
+		assertThatThrownBy(
+						() -> exchangeRateService.convertAmount(invalidAmount, from, to, dateTime))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.EXPENSE_INVALID_AMOUNT);
 	}

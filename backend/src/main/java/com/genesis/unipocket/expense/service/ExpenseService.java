@@ -45,7 +45,8 @@ public class ExpenseService {
 
 		ExpenseEntity expenseEntity =
 				ExpenseEntity.manual(
-						converter.toManualArgs(request, accountBookId, baseCurrencyCode, baseCurrencyAmount));
+						converter.toManualArgs(
+								request, accountBookId, baseCurrencyCode, baseCurrencyAmount));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
 

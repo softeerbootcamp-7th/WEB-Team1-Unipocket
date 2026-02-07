@@ -153,6 +153,9 @@ public class ExpenseEntity extends BaseEntity {
 		// ExchangeInfo는 immutable이므로 전체 교체
 		this.exchangeInfo =
 				ExchangeInfo.of(
-						localCurrencyCode, baseCurrencyCode, localCurrencyAmount, baseCurrencyAmount);
+						localCurrencyCode,
+						baseCurrencyCode,
+						localCurrencyAmount,
+						baseCurrencyAmount);
 	}
 }

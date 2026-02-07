@@ -13,8 +13,8 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <b>사용자 Command Controller</b>
@@ -28,9 +28,6 @@ public class UserCommandController {
 	private final OAuthAuthorizeFacade authorizeFacade;
 	private final UserLoginFacade loginFacade;
 	private final CookieUtil cookieUtil;
-
-	@Value("${app.frontend.url:http://localhost:3000}")
-	private String frontendUrl;
 
 	@Value("${jwt.access-token-expiration}")
 	private long accessTokenExpirationMs;
@@ -50,22 +47,21 @@ public class UserCommandController {
 	}
 
 	/**
-	 * OAuth 콜백 처리: 로그인 완료 후 프론트엔드로 리다이렉트
+	 * OAuth 콜백 처리: 로그인 완료 후 JSON 응답 반환 (SPA 방식)
 	 */
 	@GetMapping("/oauth2/callback/{provider}")
-	public void callback(
+	public ResponseEntity<LoginResponse> callback(
 			@PathVariable("provider") String provider,
 			@RequestParam("code") String code,
 			@RequestParam(value = "state", required = false) String state,
-			HttpServletResponse response)
-			throws IOException {
+			HttpServletResponse response) {
 
 		log.info("OAuth callback received for provider: {}", provider);
 		ProviderType providerType = getProviderType(provider);
 
 		LoginResponse loginResponse = loginFacade.login(providerType, code, state);
 
-		// Access Token 쿠키 저장
+		// Access Token 쿠키 저장 (보안 강화 및 프론트 편의성)
 		cookieUtil.addCookie(
 				response,
 				"access_token",
@@ -76,8 +72,7 @@ public class UserCommandController {
 		cookieUtil.addCookie(
 				response, "refresh_token", loginResponse.getRefreshToken(), 10 * 24 * 60 * 60);
 
-		String redirectUrl = createRedirectUrl();
-		response.sendRedirect(redirectUrl);
+		return ResponseEntity.ok(loginResponse);
 	}
 
 	/**
@@ -90,12 +85,5 @@ public class UserCommandController {
 			log.error("Invalid OAuth provider: {}", provider);
 			throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
 		}
-	}
-
-	/**
-	 * 프론트엔드 리다이렉트 URL 생성 유틸리티
-	 */
-	private String createRedirectUrl() {
-		return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
 	}
 }

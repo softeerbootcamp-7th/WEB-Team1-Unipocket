@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * <b>소셜 인증 Repository</b>
+ *
  * @author 김동균
  * @since 2026-01-30
  */
@@ -18,10 +19,12 @@ public interface SocialAuthRepository extends JpaRepository<SocialAuthEntity, Lo
 	 * Entity 필드: private ProviderType provider;
 	 */
 	Optional<SocialAuthEntity> findByProviderAndProviderId(
-			ProviderType provider, //  필드명: provider
+			ProviderType provider, // 필드명: provider
 			String providerId);
 
 	boolean existsByProviderAndProviderId(
-			ProviderType provider, //  필드명: provider
+			ProviderType provider, // 필드명: provider
 			String providerId);
+
+	void deleteByUser(com.genesis.unipocket.user.command.persistence.entity.UserEntity user);
 }

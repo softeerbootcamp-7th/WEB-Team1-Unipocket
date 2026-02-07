@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.dto.converter;
+package com.genesis.unipocket.accountbook.converter;
 
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookDetailResponse;

@@ -7,7 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.dto.converter.AccountBookDtoConverter;
+import com.genesis.unipocket.accountbook.converter.AccountBookDtoConverter;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.entity.AccountBookCreateArgs;

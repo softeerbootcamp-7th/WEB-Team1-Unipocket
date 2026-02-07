@@ -4,6 +4,7 @@ import com.genesis.unipocket.global.common.dto.CustomErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -91,6 +92,11 @@ public class GlobalExceptionHandler {
 
 		logException(ErrorCode.INTERNAL_SERVER_ERROR, req, e);
 		return createErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+		return createErrorResponse(ErrorCode.HTTP_MESSAGE_NOT_READABLE);
 	}
 
 	private void logException(ErrorCode errorCode, HttpServletRequest req, Exception e) {

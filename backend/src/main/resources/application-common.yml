@@ -1,6 +1,17 @@
 application:
   name: unipocket
 
+spring:
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:ap-northeast-2}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY:dummy-access-key}
+        secret-key: ${AWS_SECRET_KEY:dummy-secret-key}
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME:dummy-bucket}
+
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:dummy-jwt-secret-must-be-very-long-for-hs256-security}
@@ -8,12 +19,15 @@ jwt:
   refresh-token-expiration: 864000000 # 10일 (밀리초)
 
 # OAuth2 Configuration
+# redirect-uri는 Google/Kakao Console에 등록된 값과 정확히 일치해야 함
+# 로컬: http://localhost:5173/api/auth/oauth2/callback/{provider} (Vite Proxy 경유)
+# 프로덕션: https://unipocket.co.kr/api/auth/oauth2/callback/{provider} (Proxy 서버 경유)
 oauth2:
   providers:
     - type: GOOGLE
       client-id: ${GOOGLE_OAUTH_ID}
       client-secret: ${GOOGLE_OAUTH_SECRET}
-      redirect-uri: ${OAUTH_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/google}
+      redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:5173/api/auth/oauth2/callback/google}
       authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
       token-uri: https://oauth2.googleapis.com/token
       user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
@@ -23,7 +37,7 @@ oauth2:
 
     - type: KAKAO
       client-id: ${KAKAO_CLIENT_ID:your-kakao-client-id}
-      redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/auth/oauth2/callback/kakao}
+      redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:5173/api/auth/oauth2/callback/kakao}
       authorization-uri: https://kauth.kakao.com/oauth/authorize
       token-uri: https://kauth.kakao.com/oauth/token
       user-info-uri: https://kapi.kakao.com/v2/user/me
@@ -32,7 +46,12 @@ oauth2:
 # Application Configuration
 app:
   frontend:
-    url: ${FRONTEND_URL:http://localhost:3000}
+    url: ${FRONTEND_URL:http://localhost:5173}
+  cookie:
+    # 프로덕션: .unipocket.co.kr / 로컬: 비워둠 (null)
+    domain: ${COOKIE_DOMAIN:#{null}}
+    # 프로덕션 (HTTPS): true / 로컬 (HTTP): false
+    secure: ${COOKIE_SECURE:false}
 
 # Logging
 logging:

@@ -2,6 +2,7 @@ package com.genesis.unipocket.expense.presentation;
 
 import com.genesis.unipocket.expense.facade.ExpenseOrchestrator;
 import com.genesis.unipocket.expense.presentation.dto.ExpenseManualCreateRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
  * @author codingbaraGo
  * @since 2026-02-03
  */
+@Tag(name = "지출내역 기능")
 @RestController
 @AllArgsConstructor
 public class ExpenseController {

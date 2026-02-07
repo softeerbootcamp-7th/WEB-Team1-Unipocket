@@ -3,6 +3,7 @@ package com.genesis.unipocket.accountbook.command.presentation;
 import com.genesis.unipocket.accountbook.command.facade.AccountBookOrchestrator;
 import com.genesis.unipocket.accountbook.command.presentation.dto.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.dto.response.AccountBookCreateResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "가계부 기능")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/account-books")

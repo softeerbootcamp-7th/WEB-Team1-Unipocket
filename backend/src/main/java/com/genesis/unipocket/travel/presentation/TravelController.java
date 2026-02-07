@@ -5,6 +5,7 @@ import com.genesis.unipocket.travel.dto.TravelRequest;
 import com.genesis.unipocket.travel.dto.TravelResponse;
 import com.genesis.unipocket.travel.dto.WidgetDto;
 import com.genesis.unipocket.travel.service.TravelService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "여행 폴더 기능")
 @RestController
 @RequestMapping("/api/travels")
 @RequiredArgsConstructor

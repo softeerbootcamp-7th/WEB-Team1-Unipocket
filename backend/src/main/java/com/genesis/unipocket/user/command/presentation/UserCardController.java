@@ -4,6 +4,7 @@ import com.genesis.unipocket.global.auth.annotation.LoginUser;
 import com.genesis.unipocket.user.command.presentation.dto.request.UserCardRequest;
 import com.genesis.unipocket.user.command.presentation.dto.response.UserCardResponse;
 import com.genesis.unipocket.user.command.service.UserCardService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "유저 카드 기능")
 @RestController
 @RequestMapping("/api/users/cards")
 @RequiredArgsConstructor

@@ -76,3 +76,10 @@ logging:
       total-size-cap: 1GB
   level:
     root: ${LOG_LEVEL}
+
+# Swagger / OpenAPI
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

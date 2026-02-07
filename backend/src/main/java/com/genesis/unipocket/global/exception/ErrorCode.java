@@ -68,9 +68,14 @@ public enum ErrorCode {
 	REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "T004", "리프레시 토큰이 필요합니다."),
 
 	// Account Book
+	ACCOUNT_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "404_ACCOUNT_BOOK_NOT_FOUND", "가계부를 찾을 수 없습니다."),
 	ACCOUNT_BOOK_CREATE_VALIDATION_FAILED(
 			HttpStatus.BAD_REQUEST,
 			CodeLiterals.ACCOUNT_BOOK_CREATE_VALIDATION_FAILED,
+			"입력값이 올바르지 않습니다."),
+	ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED(
+			HttpStatus.BAD_REQUEST,
+			CodeLiterals.ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED,
 			"입력값이 올바르지 않습니다."),
 	ACCOUNT_BOOK_INVALID_DATE_RANGE(
 			HttpStatus.BAD_REQUEST,
@@ -93,6 +98,8 @@ public enum ErrorCode {
 	public static class CodeLiterals {
 		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =
 				"400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED";
+		public static final String ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED =
+				"400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED";
 	}
 
 	private final HttpStatus status;

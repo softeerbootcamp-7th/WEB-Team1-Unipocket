@@ -64,6 +64,9 @@ dependencies {
 	// AWS S3
 	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+
+	// Swagger / OpenAPI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 }
 
 tasks.register("unitTest", Test) {

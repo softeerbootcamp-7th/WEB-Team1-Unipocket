@@ -1,18 +1,30 @@
 package com.genesis.unipocket.user.command.presentation;
 
+import com.genesis.unipocket.global.config.OAuth2Properties;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.CookieUtil;
+import com.genesis.unipocket.user.command.facade.OAuthAuthorizeFacade;
+import com.genesis.unipocket.user.command.facade.UserLoginFacade;
 import com.genesis.unipocket.user.command.presentation.dto.request.LogoutRequest;
 import com.genesis.unipocket.user.command.presentation.dto.request.ReissueRequest;
+import com.genesis.unipocket.user.command.presentation.dto.response.AuthorizeResponse;
 import com.genesis.unipocket.user.command.presentation.dto.response.LoginResponse;
 import com.genesis.unipocket.user.command.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * <b>인증 컨트롤러</b>
@@ -20,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 토큰 재발급, 로그아웃 등 인증 세션 관리 기능을 담당합니다.
  * </p>
  */
+@Tag(name = "인증 기능")
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -28,9 +41,14 @@ public class AuthController {
 
 	private final AuthService authService;
 	private final CookieUtil cookieUtil;
+	private final OAuthAuthorizeFacade authorizeFacade;
+	private final UserLoginFacade loginFacade;
 
 	@Value("${jwt.access-token-expiration}")
 	private long accessTokenExpirationMs;
+
+	@Value("${app.frontend.url}")
+	private String frontendUrl;
 
 	/**
 	 * 토큰 재발급 (Refresh Token Rotation)
@@ -75,9 +93,73 @@ public class AuthController {
 	}
 
 	/**
+	 * OAuth 인증 시작: 소셜 로그인 페이지로 리다이렉트
+	 */
+	@GetMapping("/oauth2/authorize/{provider}")
+	public void authorize(@PathVariable("provider") String provider, HttpServletResponse response)
+			throws IOException {
+
+		log.info("OAuth authorize request for provider: {}", provider);
+		OAuth2Properties.ProviderType providerType = getProviderType(provider);
+
+		AuthorizeResponse authResponse = authorizeFacade.authorize(providerType);
+		response.sendRedirect(authResponse.getAuthorizationUrl());
+	}
+
+	/**
+	 * OAuth 콜백 처리: 로그인 완료 후 JSON 응답 반환 (SPA 방식)
+	 */
+	@GetMapping("/oauth2/callback/{provider}")
+	public void callback(
+			@PathVariable("provider") String provider,
+			@RequestParam("code") String code,
+			@RequestParam(value = "state", required = false) String state,
+			HttpServletResponse response)
+			throws IOException {
+
+		log.info("OAuth callback received for provider: {}", provider);
+		OAuth2Properties.ProviderType providerType = getProviderType(provider);
+
+		LoginResponse loginResponse = loginFacade.login(providerType, code, state);
+
+		// Access Token 쿠키 저장
+		cookieUtil.addCookie(
+				response,
+				"access_token",
+				loginResponse.getAccessToken(),
+				loginResponse.getExpiresIn().intValue());
+
+		// Refresh Token 쿠키 저장 (10일)
+		cookieUtil.addCookie(
+				response, "refresh_token", loginResponse.getRefreshToken(), 10 * 24 * 60 * 60);
+
+		String redirectUrl = createRedirectUrl();
+		response.sendRedirect(redirectUrl);
+	}
+
+	/**
 	 * Access Token 만료 시간 (초) 계산
 	 */
 	private long accessTokenExpiresIn() {
 		return accessTokenExpirationMs / 1000;
+	}
+
+	/**
+	 * 프론트엔드 리다이렉트 URL 생성 유틸리티
+	 */
+	private String createRedirectUrl() {
+		return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
+	}
+
+	/**
+	 * Provider 문자열을 Enum으로 변환하고 유효성 검증
+	 */
+	private OAuth2Properties.ProviderType getProviderType(String provider) {
+		try {
+			return OAuth2Properties.ProviderType.valueOf(provider.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			log.error("Invalid OAuth provider: {}", provider);
+			throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
+		}
 	}
 }

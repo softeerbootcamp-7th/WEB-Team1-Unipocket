@@ -1,17 +1,70 @@
+# =============================================================================
+# Production/Dev Environment Configuration
+# 모든 민감 정보는 환경변수로 주입 (기본값 없음 → 누락 시 즉시 에러)
+# =============================================================================
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
-    url: ${DB_URL}
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate}
-
+      ddl-auto: ${JPA_DDL_AUTO}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME}
+
+# JWT Configuration (기본값 없음)
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 1800000
+  refresh-token-expiration: 864000000
+
+# OAuth2 Configuration (기본값 없음)
+oauth2:
+  providers:
+    - type: GOOGLE
+      client-id: ${GOOGLE_OAUTH_ID}
+      client-secret: ${GOOGLE_OAUTH_SECRET}
+      redirect-uri: ${GOOGLE_REDIRECT_URI}
+      authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+      token-uri: https://oauth2.googleapis.com/token
+      user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+      jwks-uri: https://www.googleapis.com/oauth2/v3/certs
+      issuer: https://accounts.google.com
+      scope: openid profile email
+    - type: KAKAO
+      client-id: ${KAKAO_CLIENT_ID}
+      redirect-uri: ${KAKAO_REDIRECT_URI}
+      authorization-uri: https://kauth.kakao.com/oauth/authorize
+      token-uri: https://kauth.kakao.com/oauth/token
+      user-info-uri: https://kapi.kakao.com/v2/user/me
+      scope: profile_nickname,profile_image,account_email
+
+# Application Configuration (기본값 없음)
+app:
+  frontend:
+    url: ${FRONTEND_URL}
+  cookie:
+    domain: ${COOKIE_DOMAIN}
+    secure: true
+
+# Logging
 logging:
   file:
     name: ${LOG_PATH}/application.log

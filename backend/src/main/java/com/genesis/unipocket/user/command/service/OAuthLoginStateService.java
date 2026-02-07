@@ -3,15 +3,16 @@ package com.genesis.unipocket.user.command.service;
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.exception.oauth.OAuthException;
-import com.genesis.unipocket.user.command.persistence.entity.OAuthLoginStateEntity;
-import com.genesis.unipocket.user.command.persistence.repository.OAuthLoginStateRepository;
-import java.time.LocalDateTime;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <b>OAuth 로그인 State Service</b>
+ *
+ * <p>Redis를 사용하여 OAuth state를 임시 저장합니다. State는 10분 후 자동 만료됩니다.
+ *
  * @author 김동균
  * @since 2026-01-30
  */
@@ -19,41 +20,24 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OAuthLoginStateService {
 
-	private final OAuthLoginStateRepository loginStateRepository;
+	private static final String KEY_PREFIX = "oauth:state:";
+	private static final Duration TTL = Duration.ofMinutes(10);
 
-	@Transactional
+	private final StringRedisTemplate redisTemplate;
+
 	public void saveLoginState(String state, ProviderType providerType) {
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(10);
-
-		OAuthLoginStateEntity entity =
-				OAuthLoginStateEntity.builder()
-						.state(state)
-						.providerType(providerType)
-						.expiresAt(expiresAt)
-						.build();
-
-		loginStateRepository.save(entity);
+		redisTemplate.opsForValue().set(KEY_PREFIX + state, providerType.name(), TTL);
 	}
 
-	@Transactional
 	public void validateState(String state, ProviderType providerType) {
-		OAuthLoginStateEntity loginState =
-				loginStateRepository
-						.findByState(state)
-						.orElseThrow(() -> new OAuthException(ErrorCode.INVALID_OAUTH_STATE));
+		String value = redisTemplate.opsForValue().getAndDelete(KEY_PREFIX + state);
 
-		if (loginState.isExpired()) {
-			throw new OAuthException(ErrorCode.OAUTH_STATE_EXPIRED);
-		}
-
-		if (loginState.getIsUsed()) {
+		if (value == null) {
 			throw new OAuthException(ErrorCode.INVALID_OAUTH_STATE);
 		}
 
-		if (!loginState.getProviderType().equals(providerType)) {
+		if (!value.equals(providerType.name())) {
 			throw new OAuthException(ErrorCode.INVALID_OAUTH_STATE);
 		}
-
-		loginState.markAsUsed();
 	}
 }

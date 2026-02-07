@@ -3,3 +3,6 @@
 spring:
   profiles:
     active: dev
+
+application:
+  name: unipocket

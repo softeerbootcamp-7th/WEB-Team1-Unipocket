@@ -3,7 +3,7 @@ application:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:Genesis-Unipocket-Project-Secret-Key-2026}
+  secret: ${JWT_SECRET:dummy-jwt-secret-must-be-very-long-for-hs256-security}
   access-token-expiration: 1800000 # 30분 (밀리초)
   refresh-token-expiration: 864000000 # 10일 (밀리초)
 

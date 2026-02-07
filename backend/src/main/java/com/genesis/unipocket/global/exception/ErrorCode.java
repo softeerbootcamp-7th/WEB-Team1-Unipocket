@@ -82,7 +82,12 @@ public enum ErrorCode {
 	ACCOUNT_BOOK_INVALID_BUDGET(
 			HttpStatus.BAD_REQUEST, "400_ACCOUNT_BOOK_INVALID_BUDGET", "예산은 0 이상이어야 합니다."),
 	ACCOUNT_BOOK_UNAUTHORIZED_ACCESS(
-			HttpStatus.FORBIDDEN, "403_ACCOUNT_BOOK_UNAUTHORIZED_ACCESS", "해당 가계부에 접근할 권한이 없습니다.");
+			HttpStatus.FORBIDDEN, "403_ACCOUNT_BOOK_UNAUTHORIZED_ACCESS", "해당 가계부에 접근할 권한이 없습니다."),
+
+	// Travel Errors
+	TRAVEL_INVALID_DATE_RANGE(
+			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_DATE_RANGE", "여행 종료 날짜는 시작 날짜보다 이후여야 합니다."),
+	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다.");
 
 	public static class CodeLiterals {
 		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =

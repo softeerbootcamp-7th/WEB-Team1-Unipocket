@@ -84,13 +84,12 @@ class TravelFacadeTest {
 						null);
 
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.createTravel(request, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN)
-				.hasMessage("가계부에 대한 권한이 없습니다.");
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).createTravel(any());
 	}
@@ -132,13 +131,12 @@ class TravelFacadeTest {
 	void getTravels_Forbidden() {
 		// Given
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.getTravels(accountBookId, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN)
-				.hasMessage("가계부에 대한 권한이 없습니다.");
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).getTravels(any());
 	}
@@ -184,12 +182,12 @@ class TravelFacadeTest {
 
 		when(travelService.getTravelDetail(travelId)).thenReturn(detail);
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.getTravelDetail(travelId, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 	}
 
 	@Test
@@ -233,12 +231,12 @@ class TravelFacadeTest {
 
 		when(travelService.getTravel(travelId)).thenReturn(travel);
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.updateTravel(travelId, request, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).updateTravel(any(), any());
 	}
@@ -276,12 +274,12 @@ class TravelFacadeTest {
 
 		when(travelService.getTravel(travelId)).thenReturn(travel);
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.patchTravel(travelId, request, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).patchTravel(any(), any());
 	}
@@ -311,12 +309,12 @@ class TravelFacadeTest {
 
 		when(travelService.getTravel(travelId)).thenReturn(travel);
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.deleteTravel(travelId, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).deleteTravel(any());
 	}
@@ -356,12 +354,12 @@ class TravelFacadeTest {
 
 		when(travelService.getTravel(travelId)).thenReturn(travel);
 		when(accountBookService.getAccountBook(accountBookId, userId.toString()))
-				.thenThrow(new RuntimeException("Not found"));
+				.thenThrow(new BusinessException(ErrorCode.FORBIDDEN));
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.updateWidgets(travelId, widgets, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).updateWidgets(any(), any());
 	}

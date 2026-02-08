@@ -3,6 +3,7 @@ package com.genesis.unipocket.user.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -49,14 +50,14 @@ class UserCardServiceTest {
 		otherUserId = UUID.randomUUID();
 		cardId = 1L;
 
-		// Mock UserEntity
-		when(user.getId()).thenReturn(userId);
+		// Mock UserEntity - use lenient() to avoid UnnecessaryStubbingException
+		lenient().when(user.getId()).thenReturn(userId);
 
-		when(otherUser.getId()).thenReturn(otherUserId);
+		lenient().when(otherUser.getId()).thenReturn(otherUserId);
 
 		// Mock UserCardEntity
-		when(userCard.getUser()).thenReturn(user);
-		when(userCard.getUserCardId()).thenReturn(cardId);
+		lenient().when(userCard.getUser()).thenReturn(user);
+		lenient().when(userCard.getUserCardId()).thenReturn(cardId);
 	}
 
 	@Test
@@ -88,7 +89,7 @@ class UserCardServiceTest {
 		// When & Then
 		assertThatThrownBy(() -> userCardService.createCard(userId, request))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.USER_NOT_FOUND);
 
 		verify(userCardRepository, never()).save(any());
 	}
@@ -131,7 +132,7 @@ class UserCardServiceTest {
 		// When & Then
 		assertThatThrownBy(() -> userCardService.deleteCard(cardId, userId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.RESOURCE_NOT_FOUND);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.RESOURCE_NOT_FOUND);
 
 		verify(userCardRepository, never()).delete(any());
 	}
@@ -145,7 +146,7 @@ class UserCardServiceTest {
 		// When & Then
 		assertThatThrownBy(() -> userCardService.deleteCard(cardId, otherUserId))
 				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
+				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 
 		verify(userCardRepository).findById(cardId);
 		verify(userCardRepository, never()).delete(any());

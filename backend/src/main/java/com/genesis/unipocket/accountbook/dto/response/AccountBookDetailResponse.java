@@ -16,8 +16,7 @@ public record AccountBookDetailResponse(
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate startDate,
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate endDate) {
 
-	public static AccountBookDetailResponse of(
-			AccountBookDto dto, List<?> tempExpenseBatchIds) {
+	public static AccountBookDetailResponse of(AccountBookDto dto, List<?> tempExpenseBatchIds) {
 		return new AccountBookDetailResponse(
 				dto.id(),
 				dto.title(),

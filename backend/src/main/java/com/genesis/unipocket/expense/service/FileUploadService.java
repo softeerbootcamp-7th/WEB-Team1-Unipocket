@@ -59,15 +59,10 @@ public class FileUploadService {
 	 */
 	@Transactional
 	public java.util.List<FileUploadResponse> createBatchPresignedUrls(
-			Long accountBookId,
-			java.util.List<
-							BatchPresignedUrlRequest
-									.FileInfo>
-					files) {
+			Long accountBookId, java.util.List<BatchPresignedUrlRequest.FileInfo> files) {
 		java.util.List<FileUploadResponse> responses = new java.util.ArrayList<>();
 
-		for (BatchPresignedUrlRequest.FileInfo fileInfo :
-				files) {
+		for (BatchPresignedUrlRequest.FileInfo fileInfo : files) {
 			FileUploadResponse response =
 					createPresignedUrl(accountBookId, fileInfo.fileName(), fileInfo.fileType());
 			responses.add(response);

@@ -4,7 +4,7 @@ import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookResponse;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookSummaryResponse;
-import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.persistence.entity.AccountBookEntity;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -2,6 +2,7 @@ package com.genesis.unipocket.global.auth;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.genesis.unipocket.auth.service.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import java.util.Date;

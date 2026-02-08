@@ -1,0 +1,9 @@
+package com.genesis.unipocket.travel.persistence.entity;
+
+public enum WidgetType {
+	NONE,
+	SUMMARY_CARD,
+	GRAPH_DAILY,
+	GRAPH_CATEGORY,
+	GRAPH_PAYMENT_METHOD
+}

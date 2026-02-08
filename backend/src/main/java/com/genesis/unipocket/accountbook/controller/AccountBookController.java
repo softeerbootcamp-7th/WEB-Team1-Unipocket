@@ -6,7 +6,7 @@ import com.genesis.unipocket.accountbook.dto.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookResponse;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookSummaryResponse;
 import com.genesis.unipocket.accountbook.facade.AccountBookFacade;
-import com.genesis.unipocket.global.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.annotation.LoginUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;

@@ -1,10 +1,10 @@
 package com.genesis.unipocket.expense.facade;
 
-import com.genesis.unipocket.expense.application.TemporaryExpenseService;
+import com.genesis.unipocket.expense.dto.request.TemporaryExpenseResponse;
+import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.expense.facade.converter.TemporaryExpenseFacadeConverter;
 import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.presentation.dto.TemporaryExpenseResponse;
-import com.genesis.unipocket.expense.presentation.dto.TemporaryExpenseUpdateRequest;
+import com.genesis.unipocket.expense.service.TemporaryExpenseService;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class ExpenseSourceInfo {
+public class ExpenseSourceInfo {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "source_type", nullable = false, length = 32)

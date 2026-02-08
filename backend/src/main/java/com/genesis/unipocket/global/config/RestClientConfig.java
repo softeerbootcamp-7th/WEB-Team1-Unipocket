@@ -8,8 +8,9 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 /**
- * RestClient 설정
+ * RestClient 및 RestTemplate 설정
  * OAuth2 Provider (Google, Kakao)와 HTTP 통신을 위한 RestClient Bean 생성
+ * 환율 API 등 외부 API 통신을 위한 RestTemplate Bean 생성
  */
 @Configuration
 public class RestClientConfig {

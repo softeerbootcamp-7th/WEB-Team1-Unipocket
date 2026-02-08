@@ -56,16 +56,16 @@ public enum ErrorCode {
 			HttpStatus.BAD_REQUEST, "400_INVALID_OAUTH_STATE", "OAuth State 값이 유효하지 않습니다."),
 	OAUTH_STATE_EXPIRED(HttpStatus.BAD_REQUEST, "400_OAUTH_STATE_EXPIRED", "OAuth State가 만료되었습니다."),
 
-	// ========== User Errors (3000~3999) ==========
-	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "사용자를 찾을 수 없습니다."),
-	USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "U002", "이미 존재하는 사용자입니다."),
+	// ========== User Errors ==========
+	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "404_USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
+	USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "409_USER_ALREADY_EXISTS", "이미 존재하는 사용자입니다."),
 
-	// ========== Token Errors (4000~4999) ==========
-	TOKEN_REQUIRED(HttpStatus.UNAUTHORIZED, "T000", "로그인이 필요합니다."),
-	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "T001", "토큰이 만료되었습니다."),
-	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "T002", "유효하지 않은 토큰입니다."),
-	TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "T003", "로그아웃된 토큰입니다."),
-	REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "T004", "리프레시 토큰이 필요합니다."),
+	// ========== Token Errors ==========
+	TOKEN_REQUIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_REQUIRED", "로그인이 필요합니다."),
+	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_EXPIRED", "토큰이 만료되었습니다."),
+	TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "401_TOKEN_INVALID", "유효하지 않은 토큰입니다."),
+	TOKEN_BLACKLISTED(HttpStatus.UNAUTHORIZED, "401_TOKEN_BLACKLISTED", "로그아웃된 토큰입니다."),
+	REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "400_REFRESH_TOKEN_REQUIRED", "리프레시 토큰이 필요합니다."),
 
 	// Account Book
 	ACCOUNT_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND, "404_ACCOUNT_BOOK_NOT_FOUND", "가계부를 찾을 수 없습니다."),
@@ -93,7 +93,21 @@ public enum ErrorCode {
 	// Travel Errors
 	TRAVEL_INVALID_DATE_RANGE(
 			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_DATE_RANGE", "여행 종료 날짜는 시작 날짜보다 이후여야 합니다."),
-	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다.");
+	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다."),
+
+	// Expense Errors
+	EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "404_EXPENSE_NOT_FOUND", "지출 내역을 찾을 수 없습니다."),
+	EXPENSE_UNAUTHORIZED_ACCESS(
+			HttpStatus.FORBIDDEN, "403_EXPENSE_UNAUTHORIZED_ACCESS", "해당 지출 내역에 접근할 권한이 없습니다."),
+	EXPENSE_INVALID_CURRENCY(
+			HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_CURRENCY", "유효하지 않은 통화 코드입니다."),
+	EXPENSE_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_AMOUNT", "금액은 0보다 커야 합니다."),
+	EXCHANGE_RATE_API_ERROR(
+			HttpStatus.SERVICE_UNAVAILABLE,
+			"503_EXCHANGE_RATE_API_ERROR",
+			"환율 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요."),
+	EXCHANGE_RATE_NOT_FOUND(
+			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다.");
 
 	public static class CodeLiterals {
 		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =

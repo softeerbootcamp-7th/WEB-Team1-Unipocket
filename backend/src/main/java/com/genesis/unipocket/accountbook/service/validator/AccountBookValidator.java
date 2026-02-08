@@ -1,6 +1,6 @@
 package com.genesis.unipocket.accountbook.service.validator;
 
-import com.genesis.unipocket.accountbook.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;

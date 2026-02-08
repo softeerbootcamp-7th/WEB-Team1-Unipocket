@@ -1,7 +1,7 @@
 package com.genesis.unipocket.global.config;
 
+import com.genesis.unipocket.auth.exception.oauth.OAuthException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.global.exception.oauth.OAuthException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;

@@ -23,7 +23,8 @@ public record ExpenseManualCreateArgs(
 		CurrencyCode localCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
-		String memo) {
+		String memo,
+		Long travelId) {
 
 	public static ExpenseManualCreateArgs of(
 			ExpenseManualCreateRequest req,
@@ -40,6 +41,7 @@ public record ExpenseManualCreateArgs(
 				req.localCurrencyCode(),
 				baseCurrencyAmount,
 				baseCurrencyCode,
-				req.memo());
+				req.memo(),
+				req.travelId());
 	}
 }

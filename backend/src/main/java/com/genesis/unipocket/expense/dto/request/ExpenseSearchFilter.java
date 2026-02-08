@@ -1,7 +1,6 @@
 package com.genesis.unipocket.expense.dto.request;
 
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -19,5 +18,4 @@ public record ExpenseSearchFilter(
 		BigDecimal minAmount,
 		BigDecimal maxAmount,
 		String merchantName,
-		Long travelId,
-		CurrencyCode currencyCode) {}
+		Long travelId) {}

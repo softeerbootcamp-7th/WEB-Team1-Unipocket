@@ -145,7 +145,6 @@ public class ExpenseService {
 				&& filter.minAmount() == null
 				&& filter.maxAmount() == null
 				&& filter.merchantName() == null
-				&& filter.travelId() == null
-				&& filter.currencyCode() == null;
+				&& filter.travelId() == null;
 	}
 }

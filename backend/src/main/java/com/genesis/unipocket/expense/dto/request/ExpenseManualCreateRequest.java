@@ -20,4 +20,5 @@ public record ExpenseManualCreateRequest(
 		@NotNull LocalDateTime occurredAt,
 		@NotNull BigDecimal localCurrencyAmount,
 		@NotNull CurrencyCode localCurrencyCode,
-		String memo) {}
+		String memo,
+		Long travelId) {}

@@ -82,6 +82,7 @@ public class ExpenseEntity extends BaseEntity {
 				.memo(params.memo())
 				.paymentMethod(params.paymentMethod())
 				.category(params.category())
+				.travelId(params.travelId())
 				.expenseSourceInfo(ExpenseSourceInfo.ofManual())
 				.exchangeInfo(
 						ExchangeInfo.of(

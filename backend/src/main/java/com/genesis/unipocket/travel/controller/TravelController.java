@@ -34,23 +34,20 @@ public class TravelController {
 
 	@PostMapping
 	public ResponseEntity<Void> createTravel(
-			@LoginUser UUID userId,
-			@RequestBody @Valid TravelRequest request) {
+			@LoginUser UUID userId, @RequestBody @Valid TravelRequest request) {
 		Long travelId = travelFacade.createTravel(request, userId);
 		return ResponseEntity.created(URI.create("/api/travels/" + travelId)).build();
 	}
 
 	@GetMapping
 	public ResponseEntity<List<TravelResponse>> getTravels(
-			@RequestParam Long accountBookId,
-			@LoginUser UUID userId) {
+			@RequestParam Long accountBookId, @LoginUser UUID userId) {
 		return ResponseEntity.ok(travelFacade.getTravels(accountBookId, userId));
 	}
 
 	@GetMapping("/{travelId}")
 	public ResponseEntity<TravelDetailResponse> getTravelDetail(
-			@PathVariable Long travelId,
-			@LoginUser UUID userId) {
+			@PathVariable Long travelId, @LoginUser UUID userId) {
 		return ResponseEntity.ok(travelFacade.getTravelDetail(travelId, userId));
 	}
 
@@ -73,9 +70,7 @@ public class TravelController {
 	}
 
 	@DeleteMapping("/{travelId}")
-	public ResponseEntity<Void> deleteTravel(
-			@PathVariable Long travelId,
-			@LoginUser UUID userId) {
+	public ResponseEntity<Void> deleteTravel(@PathVariable Long travelId, @LoginUser UUID userId) {
 		travelFacade.deleteTravel(travelId, userId);
 		return ResponseEntity.noContent().build();
 	}

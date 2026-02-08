@@ -2,6 +2,8 @@
 # Production/Dev Environment Configuration
 # 모든 민감 정보는 환경변수로 주입 (기본값 없음 → 누락 시 즉시 에러)
 # =============================================================================
+server:
+  forward-headers-strategy: native
 
 spring:
   datasource:

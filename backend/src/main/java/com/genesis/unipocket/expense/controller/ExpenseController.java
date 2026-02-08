@@ -3,7 +3,6 @@ package com.genesis.unipocket.expense.controller;
 import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.dto.common.ExpenseDto;
-import com.genesis.unipocket.expense.dto.converter.ExpenseManualConverter;
 import com.genesis.unipocket.expense.dto.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.dto.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.dto.request.ExpenseUpdateRequest;
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class ExpenseController {
 
-	private final ExpenseManualConverter expenseManualConverter;
 	private final ExpenseFacade expenseFacade;
 
 	@PostMapping("/api/account-books/{accountBookId}/expenses/manual")
@@ -48,9 +46,8 @@ public class ExpenseController {
 			@PathVariable Long accountBookId,
 			@RequestBody @Valid ExpenseManualCreateRequest request) {
 
-		var response =
-				expenseManualConverter.toResponse(
-						expenseFacade.createExpenseManual(request, accountBookId, userId));
+		ExpenseDto dto = expenseFacade.createExpenseManual(request, accountBookId, userId);
+		ExpenseManualCreateResponse response = ExpenseManualCreateResponse.from(dto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 

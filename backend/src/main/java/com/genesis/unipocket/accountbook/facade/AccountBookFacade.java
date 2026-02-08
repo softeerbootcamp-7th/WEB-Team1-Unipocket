@@ -1,7 +1,6 @@
 package com.genesis.unipocket.accountbook.facade;
 
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.dto.converter.AccountBookDtoConverter;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookDetailResponse;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 public class AccountBookFacade {
 
 	private final AccountBookService accountBookService;
-	private final AccountBookDtoConverter converter;
 	private final UserService userService;
 
 	public AccountBookResponse createAccountBook(UUID userId, AccountBookCreateRequest req) {
@@ -30,7 +28,7 @@ public class AccountBookFacade {
 
 		AccountBookDto dto = accountBookService.create(userIdStr, userResponse.name(), req);
 
-		return converter.toResponse(dto);
+		return AccountBookResponse.from(dto);
 	}
 
 	public AccountBookResponse updateAccountBook(
@@ -40,7 +38,7 @@ public class AccountBookFacade {
 
 		AccountBookDto dto = accountBookService.update(accountBookId, userIdStr, req);
 
-		return converter.toResponse(dto);
+		return AccountBookResponse.from(dto);
 	}
 
 	public void deleteAccountBook(UUID userId, Long accountBookId) {
@@ -55,7 +53,7 @@ public class AccountBookFacade {
 
 		// TODO: 임시 지출 내역 리스트 받아오기
 
-		return converter.toDetailResponse(dto, List.of());
+		return AccountBookDetailResponse.of(dto, List.of());
 	}
 
 	public List<AccountBookSummaryResponse> getAccountBooks(UUID userId) {
@@ -64,7 +62,7 @@ public class AccountBookFacade {
 		// TODO: 유저 정보 받아와서 메인 가계부인지 확인하기
 
 		return accountBookService.getAccountBooks(userId.toString()).stream()
-				.map((accountBookDto) -> converter.toSummaryResponse(accountBookDto, 1L))
+				.map((accountBookDto) -> AccountBookSummaryResponse.of(accountBookDto, 1L))
 				.toList();
 	}
 }

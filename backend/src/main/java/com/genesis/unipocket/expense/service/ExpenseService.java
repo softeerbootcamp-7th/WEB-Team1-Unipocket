@@ -1,10 +1,10 @@
 package com.genesis.unipocket.expense.service;
 
 import com.genesis.unipocket.expense.dto.common.ExpenseDto;
-import com.genesis.unipocket.expense.dto.converter.ExpenseManualConverter;
 import com.genesis.unipocket.expense.dto.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.dto.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.dto.request.ExpenseUpdateRequest;
+import com.genesis.unipocket.expense.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.persistence.entity.expense.ExpenseEntity;
 import com.genesis.unipocket.expense.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ExpenseService {
 	private final ExpenseRepository expenseRepository;
-	private final ExpenseManualConverter converter;
 	private final ExchangeRateService exchangeRateService;
 
 	@Transactional
@@ -45,17 +44,17 @@ public class ExpenseService {
 
 		ExpenseEntity expenseEntity =
 				ExpenseEntity.manual(
-						converter.toManualArgs(
+						ExpenseManualCreateArgs.of(
 								request, accountBookId, baseCurrencyCode, baseCurrencyAmount));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
 
-		return converter.toDto(savedEntity);
+		return ExpenseDto.from(savedEntity);
 	}
 
 	public ExpenseDto getExpense(Long expenseId, Long accountBookId) {
 		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
-		return converter.toDto(entity);
+		return ExpenseDto.from(entity);
 	}
 
 	public Page<ExpenseDto> getExpenses(
@@ -78,7 +77,7 @@ public class ExpenseService {
 							pageable);
 		}
 
-		return entities.map(converter::toDto);
+		return entities.map(ExpenseDto::from);
 	}
 
 	@Transactional
@@ -117,7 +116,7 @@ public class ExpenseService {
 					baseCurrencyAmount);
 		}
 
-		return converter.toDto(entity);
+		return ExpenseDto.from(entity);
 	}
 
 	@Transactional

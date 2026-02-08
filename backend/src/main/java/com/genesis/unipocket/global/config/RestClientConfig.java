@@ -22,6 +22,13 @@ public class RestClientConfig {
 		return RestClient.builder().requestFactory(clientHttpRequestFactory()).build();
 	}
 
+	@Bean
+	public org.springframework.web.client.RestTemplate restTemplate() {
+		org.springframework.web.client.RestTemplate restTemplate =
+				new org.springframework.web.client.RestTemplate(clientHttpRequestFactory());
+		return restTemplate;
+	}
+
 	/**
 	 * HTTP 요청 팩토리 설정
 	 * - 연결 타임아웃: 5초

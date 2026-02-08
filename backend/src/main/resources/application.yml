@@ -1,8 +1,4 @@
 ###  이 파일의 수정은 로컬에서만 이루어져야 합니다.  ###
 ###      수정 사항을 Git에 포함시키지 마세요.      ###
-spring:
-  profiles:
-    active: local
-
 application:
   name: unipocket

@@ -54,7 +54,9 @@ const Filter = ({
 
   return (
     <button className={FilterClass} disabled={disabled} onClick={onClick}>
-      <span className="max-w-25 overflow-hidden px-0.5">{children}</span>
+      <span className="max-w-25 overflow-hidden px-0.5 whitespace-nowrap">
+        {children}
+      </span>
       {active ? (
         <Icons.Close className="h-3.5 w-3.5" />
       ) : (

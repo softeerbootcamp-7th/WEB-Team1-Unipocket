@@ -1,37 +1,19 @@
 import { useMemo, useState } from 'react';
 
-import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
 import DropDown from '@/components/common/dropdown/Dropdown';
 
-import type { CategoryType } from '@/types/category';
-
-import type { CountryCode } from '@/data/countryCode';
-
-import ChartContainer from '../ChartContainer';
-import ChartContent from '../ChartContent';
-import ChartHeader from '../ChartHeader';
-import { CATEGORY_CHART_COLORS, CURRENCY_OPTIONS } from '../chartType';
-import StatSectionSkeleton from './CategoryChartSkeleton';
-import CategoryListItem from './CategoryListItem';
-import CategoryPieChart from './CategoryPieChart';
+import { CURRENCY_OPTIONS } from '../chartType';
+import ChartContainer from '../layout/ChartContainer';
+import ChartContent from '../layout/ChartContent';
+import ChartHeader from '../layout/ChartHeader';
+import CategoryChartSkeleton from './CategoryChartSkeleton';
+import CategoryChartView from './CategoryChartView';
 import { mockData } from './mock';
 
 const PERIOD_OPTIONS = [
   { id: 1, name: '전체' },
   { id: 2, name: '월별' },
 ];
-
-type CategoryStatisticsItem = {
-  categoryName: CategoryType;
-  amount: number;
-  percent: number;
-};
-
-export type CategoryStatisticsResponse = {
-  totalAmount: number;
-  countryCode: CountryCode;
-  items: CategoryStatisticsItem[];
-};
 
 const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
@@ -49,14 +31,6 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
       }))
       .filter((item) => item.percentage > 0);
   }, []);
-
-  const totalAmount = (
-    <CurrencyAmountDisplay
-      countryCode={mockData.countryCode}
-      amount={mockData.totalAmount}
-      size="lg"
-    />
-  );
 
   return (
     <ChartContainer className="w-139">
@@ -76,24 +50,16 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
       </ChartHeader>
 
       {/* stat section */}
-      <ChartContent isLoading={isLoading} skeleton={<StatSectionSkeleton />}>
-        <CategoryPieChart data={visibleStats} totalAmount={totalAmount} />
-        <div className="flex flex-col items-start justify-center gap-1">
-          {visibleStats.map((item, idx) => (
-            <CategoryListItem
-              key={item.categoryName}
-              currencyType={
-                CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)
-                  ?.type || 'BASE'
-              }
-              countryCode={mockData.countryCode}
-              categoryName={item.categoryName}
-              percentage={item.percentage}
-              amount={item.amount}
-              color={CATEGORY_CHART_COLORS[idx % CATEGORY_CHART_COLORS.length]}
-            />
-          ))}
-        </div>
+      <ChartContent isLoading={isLoading} skeleton={<CategoryChartSkeleton />}>
+        <CategoryChartView
+          data={visibleStats}
+          totalAmount={mockData.totalAmount}
+          currencyType={
+            CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type ||
+            'BASE'
+          }
+          countryCode={mockData.countryCode}
+        />
       </ChartContent>
     </ChartContainer>
   );

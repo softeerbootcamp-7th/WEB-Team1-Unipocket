@@ -8,7 +8,7 @@ import type { CountryCode } from '@/data/countryCode';
 import CurrencyAmountDisplay from '../../currency/CurrencyAmountDisplay';
 import CurrencyBadge from '../../currency/CurrencyBadge';
 
-interface CategoryListItemProps {
+interface CategoryLegendItemProps {
   currencyType: CurrencyType;
   countryCode: CountryCode;
   categoryName: CategoryType;
@@ -17,14 +17,14 @@ interface CategoryListItemProps {
   color: string;
 }
 
-const CategoryListItem = ({
+const CategoryLegendItem = ({
   currencyType,
   countryCode,
   categoryName,
   percentage,
   amount,
   color,
-}: CategoryListItemProps) => {
+}: CategoryLegendItemProps) => {
   return (
     <div className="flex h-6 w-full items-center gap-4">
       <div className="h-3.5 w-3.5" style={{ backgroundColor: color }} />
@@ -54,4 +54,4 @@ const CategoryListItem = ({
   );
 };
 
-export default CategoryListItem;
+export default CategoryLegendItem;

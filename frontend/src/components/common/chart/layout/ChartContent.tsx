@@ -20,7 +20,6 @@ const ChartContent = ({
         className,
       )}
     >
-      {/* 로딩 중이고 스켈레톤이 전달되었다면 스켈레톤 렌더링, 아니면 본문 렌더링 */}
       {isLoading && skeleton ? skeleton : children}
     </div>
   );

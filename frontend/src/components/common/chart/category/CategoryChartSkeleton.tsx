@@ -1,24 +1,7 @@
-import CategoryPieChart from './CategoryPieChart';
+import PieChart from '../charts/PieChart';
 import { mockData } from './mock';
 
-export const CategoryPieChartSkeleton = () => {
-  return (
-    <div>
-      <CategoryPieChart
-        data={mockData.items.map((item) => ({
-          categoryName: item.categoryName,
-          percentage: item.percent,
-        }))}
-        totalAmount={
-          <div className="bg-fill-normal rounded-modal-4 h-5.5 w-32.5 animate-pulse" />
-        }
-        colors={['var(--color-fill-strong)']}
-      />
-    </div>
-  );
-};
-
-export const CategoryListItemSkeleton = () => {
+const CategoryLegendItemSkeleton = () => {
   return (
     <div className="flex h-6 w-52 items-center gap-2.5">
       <div className="bg-fill-strong size-3.5 animate-pulse" />
@@ -33,17 +16,26 @@ export const CategoryListItemSkeleton = () => {
   );
 };
 
-const StatSectionSkeleton = () => {
+const CategoryChartSkeleton = () => {
   return (
     <>
-      <CategoryPieChartSkeleton />
+      <div>
+        <PieChart
+          data={mockData.items.map((item) => ({
+            percentage: item.percent,
+            color: 'var(--color-fill-strong)',
+          }))}
+        >
+          <div className="bg-fill-normal rounded-modal-4 h-5.5 w-32.5 animate-pulse" />
+        </PieChart>
+      </div>
       <div className="flex flex-col justify-between">
         {Array.from({ length: 7 }).map((_, idx) => (
-          <CategoryListItemSkeleton key={idx} />
+          <CategoryLegendItemSkeleton key={idx} />
         ))}
       </div>
     </>
   );
 };
 
-export default StatSectionSkeleton;
+export default CategoryChartSkeleton;

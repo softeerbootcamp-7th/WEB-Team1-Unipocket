@@ -1,4 +1,19 @@
-import type { CategoryStatisticsResponse } from './CategoryChart';
+import type { CategoryType } from '@/types/category';
+
+import type { CountryCode } from '@/data/countryCode';
+
+type CategoryStatisticsItem = {
+  categoryName: CategoryType;
+  amount: number;
+  percent: number;
+};
+
+// 해당 타입은 API 연동 시 경로 이동 예정
+export type CategoryStatisticsResponse = {
+  totalAmount: number;
+  countryCode: CountryCode;
+  items: CategoryStatisticsItem[];
+};
 
 export const mockData: CategoryStatisticsResponse = {
   totalAmount: 10031,

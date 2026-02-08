@@ -399,11 +399,7 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	private Long createTestExpenseWithDetails(
-			String merchantName,
-			String category,
-			String occurredAt,
-			Double amount,
-			Long travelId)
+			String merchantName, String category, String occurredAt, Double amount, Long travelId)
 			throws Exception {
 		String travelIdJson = travelId != null ? String.valueOf(travelId) : "null";
 		String body =

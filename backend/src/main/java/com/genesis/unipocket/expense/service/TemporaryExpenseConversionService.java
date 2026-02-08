@@ -75,7 +75,8 @@ public class TemporaryExpenseConversionService {
 						temp.getBaseCountryCode() != null
 								? temp.getBaseCountryCode()
 								: com.genesis.unipocket.global.common.enums.CurrencyCode.KRW,
-						temp.getMemo());
+						temp.getMemo(),
+						null);
 
 		// 5. Expense 생성 (manual 메서드 사용)
 		ExpenseEntity expense = ExpenseEntity.manual(args);

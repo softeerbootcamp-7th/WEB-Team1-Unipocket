@@ -54,14 +54,19 @@ public class UserCardService {
 	}
 
 	/**
-	 * 카드 삭제
+	 * 카드 삭제 (소유권 검증 포함)
 	 */
 	@Transactional
-	public void deleteCard(Long cardId) {
+	public void deleteCard(Long cardId, UUID userId) {
 		UserCardEntity userCard =
 				userCardRepository
 						.findById(cardId)
 						.orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND));
+
+		// 소유권 검증: 카드의 소유자가 요청한 사용자와 일치하는지 확인
+		if (!userCard.getUser().getId().equals(userId)) {
+			throw new BusinessException(ErrorCode.FORBIDDEN);
+		}
 
 		userCardRepository.delete(userCard);
 	}

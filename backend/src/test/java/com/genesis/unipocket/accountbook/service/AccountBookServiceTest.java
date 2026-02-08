@@ -7,7 +7,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.dto.converter.AccountBookDtoConverter;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.persistence.entity.AccountBookCreateArgs;
@@ -35,7 +34,6 @@ public class AccountBookServiceTest {
 
 	@Mock private AccountBookRepository repository;
 	@Mock private AccountBookValidator validator;
-	@Mock private AccountBookDtoConverter converter;
 
 	@InjectMocks private AccountBookService accountBookService;
 
@@ -51,34 +49,31 @@ public class AccountBookServiceTest {
 						CountryCode.US, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
 
 		String expectedTitle = username + "의 가계부1";
-		AccountBookCreateArgs args =
-				new AccountBookCreateArgs(
-						userId,
-						expectedTitle,
-						req.localCountryCode(),
-						CountryCode.KR,
-						req.startDate(),
-						req.endDate());
-		AccountBookEntity savedEntity = AccountBookEntity.create(args);
-		AccountBookDto expectedDto =
-				new AccountBookDto(
-						1L,
-						expectedTitle,
-						req.localCountryCode(),
-						CountryCode.KR,
-						0L,
-						req.startDate(),
-						req.endDate());
 
 		given(repository.findNamesStartingWith(any(), any())).willReturn(Collections.emptyList());
-		given(repository.save(any(AccountBookEntity.class))).willReturn(savedEntity);
-		given(converter.toDto(any(AccountBookEntity.class))).willReturn(expectedDto);
+		given(repository.save(any(AccountBookEntity.class)))
+				.willAnswer(
+						invocation -> {
+							AccountBookEntity entity = invocation.getArgument(0);
+							// Simulate ID assignment by repository
+							try {
+								java.lang.reflect.Field idField =
+										AccountBookEntity.class.getDeclaredField("id");
+								idField.setAccessible(true);
+								idField.set(entity, 1L);
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+							return entity;
+						});
 
 		// when
 		AccountBookDto result = accountBookService.create(userId, username, req);
 
 		// then
-		assertThat(result).isEqualTo(expectedDto);
+		assertThat(result.id()).isEqualTo(1L);
+		assertThat(result.title()).isEqualTo(expectedTitle);
+		assertThat(result.localCountryCode()).isEqualTo(req.localCountryCode());
 		verify(validator).validate(any(AccountBookEntity.class));
 		verify(repository).save(any(AccountBookEntity.class));
 	}
@@ -96,28 +91,22 @@ public class AccountBookServiceTest {
 				.willReturn(List.of(baseTitle + "1", baseTitle + "2"));
 
 		String expectedTitle = baseTitle + "3";
-		AccountBookDto expectedDto =
-				new AccountBookDto(
-						1L,
-						expectedTitle,
-						req.localCountryCode(),
-						CountryCode.KR,
-						0L,
-						req.startDate(),
-						req.endDate());
 
 		given(repository.save(any(AccountBookEntity.class)))
-				.willReturn(
-						AccountBookEntity.create(
-								new AccountBookCreateArgs(
-										userId,
-										expectedTitle,
-										CountryCode.US,
-										CountryCode.KR,
-										LocalDate.now(),
-										LocalDate.now()))); // Mocking return is flexible here since
-		// we verify logic
-		given(converter.toDto(any(AccountBookEntity.class))).willReturn(expectedDto);
+				.willAnswer(
+						invocation -> {
+							AccountBookEntity entity = invocation.getArgument(0);
+							// Simulate ID assignment by repository
+							try {
+								java.lang.reflect.Field idField =
+										AccountBookEntity.class.getDeclaredField("id");
+								idField.setAccessible(true);
+								idField.set(entity, 1L);
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+							return entity;
+						});
 
 		// when
 		AccountBookDto result = accountBookService.create(userId, username, req);
@@ -128,7 +117,7 @@ public class AccountBookServiceTest {
 
 	@Test
 	@DisplayName("가계부 수정 - 성공")
-	void update_Success() {
+	void update_Success() throws Exception {
 		// given
 		Long accountBookId = 1L;
 		AccountBookUpdateRequest req =
@@ -150,22 +139,12 @@ public class AccountBookServiceTest {
 								LocalDate.of(2023, 1, 1),
 								LocalDate.of(2023, 12, 31)));
 
-		// Reflection or setter needed if ID is not set in create. Assuming Mocking or simple obj.
-		// Since Entity create usually doesn't set ID. But repository mock returns it.
-		// Here we just use the entity object.
+		// Set ID using reflection
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity, accountBookId);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
-
-		AccountBookDto expectedDto =
-				new AccountBookDto(
-						accountBookId,
-						req.title(),
-						req.localCountryCode(),
-						req.baseCountryCode(),
-						req.budget(),
-						req.startDate(),
-						req.endDate());
-		given(converter.toDto(entity)).willReturn(expectedDto);
 
 		// when
 		AccountBookDto result = accountBookService.update(accountBookId, userId, req);
@@ -257,7 +236,7 @@ public class AccountBookServiceTest {
 
 	@Test
 	@DisplayName("가계부 조회 - 성공")
-	void getAccountBook_Success() {
+	void getAccountBook_Success() throws Exception {
 		// given
 		Long accountBookId = 1L;
 		AccountBookEntity entity =
@@ -270,29 +249,24 @@ public class AccountBookServiceTest {
 								LocalDate.now(),
 								LocalDate.now()));
 
-		AccountBookDto expectedDto =
-				new AccountBookDto(
-						accountBookId,
-						"Title",
-						CountryCode.US,
-						CountryCode.KR,
-						0L,
-						LocalDate.now(),
-						LocalDate.now());
+		// Set ID using reflection
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity, accountBookId);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
-		given(converter.toDto(entity)).willReturn(expectedDto);
 
 		// when
 		AccountBookDto result = accountBookService.getAccountBook(accountBookId, userId);
 
 		// then
-		assertThat(result).isEqualTo(expectedDto);
+		assertThat(result.id()).isEqualTo(accountBookId);
+		assertThat(result.title()).isEqualTo("Title");
 	}
 
 	@Test
 	@DisplayName("내 가계부 목록 조회 - 성공")
-	void getAccountBooks_Success() {
+	void getAccountBooks_Success() throws Exception {
 		// given
 		AccountBookEntity entity1 =
 				AccountBookEntity.create(
@@ -313,17 +287,13 @@ public class AccountBookServiceTest {
 								LocalDate.now(),
 								LocalDate.now()));
 
+		// Set IDs using reflection
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity1, 1L);
+		idField.set(entity2, 2L);
+
 		given(repository.findAllByUserId(userId)).willReturn(List.of(entity1, entity2));
-		given(converter.toDto(any(AccountBookEntity.class)))
-				.willReturn(
-						new AccountBookDto(
-								1L,
-								"Title1",
-								CountryCode.US,
-								CountryCode.KR,
-								0L,
-								LocalDate.now(),
-								LocalDate.now()));
 
 		// when
 		List<AccountBookDto> result = accountBookService.getAccountBooks(userId);
@@ -334,7 +304,7 @@ public class AccountBookServiceTest {
 
 	@Test
 	@DisplayName("가계부 수정 - 예산(budget)을 null로 업데이트")
-	void update_WithNullBudget_Success() {
+	void update_WithNullBudget_Success() throws Exception {
 		// given
 		Long accountBookId = 1L;
 		AccountBookUpdateRequest req =
@@ -355,23 +325,13 @@ public class AccountBookServiceTest {
 								CountryCode.KR,
 								LocalDate.of(2023, 1, 1),
 								LocalDate.of(2023, 12, 31)));
-		// Set an initial budget to check if it's correctly updated to null
-		// entity.updateBudget(5000L);
+
+		// Set ID using reflection
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity, accountBookId);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
-
-		// Mock the DTO conversion
-		// After the fix, entity.getBudget() should be null
-		AccountBookDto expectedDto =
-				new AccountBookDto(
-						accountBookId,
-						req.title(),
-						req.localCountryCode(),
-						req.baseCountryCode(),
-						null,
-						req.startDate(),
-						req.endDate());
-		given(converter.toDto(any(AccountBookEntity.class))).willReturn(expectedDto);
 
 		// when
 		AccountBookDto result = accountBookService.update(accountBookId, userId, req);

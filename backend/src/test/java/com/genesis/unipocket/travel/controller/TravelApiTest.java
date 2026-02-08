@@ -13,6 +13,7 @@ import com.genesis.unipocket.accountbook.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.persistence.repository.AccountBookRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service;
+import com.genesis.unipocket.support.JwtTestHelper;
 import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
@@ -44,6 +45,7 @@ class TravelApiTest {
 	@Autowired private ObjectMapper objectMapper;
 	@Autowired private AccountBookRepository accountBookRepository;
 	@Autowired private S3Service s3Service;
+	@Autowired private JwtTestHelper jwtTestHelper;
 
 	private Long accountBookId;
 
@@ -52,7 +54,7 @@ class TravelApiTest {
 		// Create an AccountBook to link with
 		AccountBookCreateArgs args =
 				new AccountBookCreateArgs(
-						"user1",
+						JwtTestHelper.USER_ID_STR,
 						"My Trip Account",
 						CountryCode.KR,
 						CountryCode.KR,
@@ -71,6 +73,7 @@ class TravelApiTest {
 
 		mockMvc.perform(
 						post("/api/travels")
+								.with(jwtTestHelper.withJwtAuth())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(jsonRequest))
 				.andExpect(status().isCreated());
@@ -81,7 +84,7 @@ class TravelApiTest {
 	void getTravelDetail() throws Exception {
 		Long travelId = createTestTravel();
 
-		mockMvc.perform(get("/api/travels/" + travelId))
+		mockMvc.perform(get("/api/travels/" + travelId).with(jwtTestHelper.withJwtAuth()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.travelId").value(travelId))
 				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
@@ -99,11 +102,12 @@ class TravelApiTest {
 		mockMvc.perform(
 						org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
 										"/api/travels/" + travelId)
+								.with(jwtTestHelper.withJwtAuth())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk());
 
-		mockMvc.perform(get("/api/travels/" + travelId))
+		mockMvc.perform(get("/api/travels/" + travelId).with(jwtTestHelper.withJwtAuth()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.imageKey").value("new_thumbnail_image_key"))
 				// Check other fields remain unchanged
@@ -123,12 +127,13 @@ class TravelApiTest {
 		// Update Widgets
 		mockMvc.perform(
 						put("/api/travels/" + travelId + "/widgets")
+								.with(jwtTestHelper.withJwtAuth())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(widgets)))
 				.andExpect(status().isOk());
 
 		// Verify Widgets
-		mockMvc.perform(get("/api/travels/" + travelId))
+		mockMvc.perform(get("/api/travels/" + travelId).with(jwtTestHelper.withJwtAuth()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.widgets[0].type").value("SUMMARY_CARD"))
 				.andExpect(jsonPath("$.widgets[1].type").value("GRAPH_DAILY"));
@@ -150,6 +155,7 @@ class TravelApiTest {
 		String location =
 				mockMvc.perform(
 								post("/api/travels")
+										.with(jwtTestHelper.withJwtAuth())
 										.contentType(MediaType.APPLICATION_JSON)
 										.content(jsonRequest))
 						.andReturn()

@@ -1,9 +1,7 @@
 package com.genesis.unipocket.expense.controller;
 
 import com.genesis.unipocket.auth.annotation.LoginUser;
-import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.dto.common.ExpenseDto;
-import com.genesis.unipocket.expense.dto.converter.ExpenseManualConverter;
 import com.genesis.unipocket.expense.dto.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.dto.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.dto.request.ExpenseUpdateRequest;
@@ -13,17 +11,14 @@ import com.genesis.unipocket.expense.dto.response.ExpenseResponse;
 import com.genesis.unipocket.expense.facade.ExpenseFacade;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +34,6 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class ExpenseController {
 
-	private final ExpenseManualConverter expenseManualConverter;
 	private final ExpenseFacade expenseFacade;
 
 	@PostMapping("/api/account-books/{accountBookId}/expenses/manual")
@@ -48,9 +42,8 @@ public class ExpenseController {
 			@PathVariable Long accountBookId,
 			@RequestBody @Valid ExpenseManualCreateRequest request) {
 
-		var response =
-				expenseManualConverter.toResponse(
-						expenseFacade.createExpenseManual(request, accountBookId, userId));
+		ExpenseDto dto = expenseFacade.createExpenseManual(request, accountBookId, userId);
+		ExpenseManualCreateResponse response = ExpenseManualCreateResponse.from(dto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
@@ -69,32 +62,9 @@ public class ExpenseController {
 	public ResponseEntity<ExpenseListResponse> getExpenses(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-					LocalDateTime startDate,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-					LocalDateTime endDate,
-			@RequestParam(required = false) Category category,
-			@RequestParam(required = false) BigDecimal minAmount,
-			@RequestParam(required = false) BigDecimal maxAmount,
-			@RequestParam(required = false) String merchantName,
-			@RequestParam(required = false) Long travelId,
-			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(defaultValue = "occurredAt,desc") String[] sort) {
-
-		ExpenseSearchFilter filter =
-				new ExpenseSearchFilter(
-						startDate,
-						endDate,
-						category,
-						minAmount,
-						maxAmount,
-						merchantName,
-						travelId,
-						null);
-
-		Sort sortObj = Sort.by(Arrays.asList(parseSortParams(sort)));
-		Pageable pageable = PageRequest.of(page, size, sortObj);
+			ExpenseSearchFilter filter,
+			@PageableDefault(sort = "occurredAt", direction = Sort.Direction.DESC)
+					Pageable pageable) {
 
 		Page<ExpenseDto> dtoPage =
 				expenseFacade.getExpenses(accountBookId, userId, filter, pageable);
@@ -103,7 +73,11 @@ public class ExpenseController {
 				dtoPage.getContent().stream().map(ExpenseResponse::from).toList();
 
 		ExpenseListResponse response =
-				ExpenseListResponse.of(responses, dtoPage.getTotalElements(), page, size);
+				ExpenseListResponse.of(
+						responses,
+						dtoPage.getTotalElements(),
+						pageable.getPageNumber(),
+						pageable.getPageSize());
 
 		return ResponseEntity.ok(response);
 	}

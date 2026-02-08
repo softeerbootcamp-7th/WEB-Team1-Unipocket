@@ -1,7 +1,6 @@
 package com.genesis.unipocket.accountbook.service;
 
 import com.genesis.unipocket.accountbook.dto.common.AccountBookDto;
-import com.genesis.unipocket.accountbook.dto.converter.AccountBookDtoConverter;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.dto.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.persistence.entity.AccountBookCreateArgs;
@@ -28,7 +27,6 @@ public class AccountBookService {
 
 	private final AccountBookRepository repository;
 	private final AccountBookValidator validator;
-	private final AccountBookDtoConverter converter;
 
 	@Transactional
 	public AccountBookDto create(String userId, String username, AccountBookCreateRequest req) {
@@ -48,7 +46,7 @@ public class AccountBookService {
 		validator.validate(newEntity);
 		AccountBookEntity savedEntity = repository.save(newEntity);
 
-		return converter.toDto(savedEntity);
+		return AccountBookDto.from(savedEntity);
 	}
 
 	@Transactional
@@ -63,7 +61,7 @@ public class AccountBookService {
 
 		validator.validate(entity);
 
-		return converter.toDto(entity);
+		return AccountBookDto.from(entity);
 	}
 
 	@Transactional
@@ -76,12 +74,12 @@ public class AccountBookService {
 	@Transactional(readOnly = true)
 	public AccountBookDto getAccountBook(Long accountBookId, String userId) {
 		AccountBookEntity entity = findAndVerifyOwnership(accountBookId, userId);
-		return converter.toDto(entity);
+		return AccountBookDto.from(entity);
 	}
 
 	@Transactional(readOnly = true)
 	public List<AccountBookDto> getAccountBooks(String userId) {
-		return repository.findAllByUserId(userId).stream().map(converter::toDto).toList();
+		return repository.findAllByUserId(userId).stream().map(AccountBookDto::from).toList();
 	}
 
 	private AccountBookEntity findAndVerifyOwnership(Long accountBookId, String userId) {

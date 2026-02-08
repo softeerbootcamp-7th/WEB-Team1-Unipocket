@@ -40,8 +40,8 @@ public class UserCardController {
 	}
 
 	@DeleteMapping("/{cardId}")
-	public ResponseEntity<Void> deleteCard(@PathVariable Long cardId) {
-		userCardService.deleteCard(cardId);
+	public ResponseEntity<Void> deleteCard(@PathVariable Long cardId, @LoginUser UUID userId) {
+		userCardService.deleteCard(cardId, userId);
 		return ResponseEntity.noContent().build();
 	}
 }

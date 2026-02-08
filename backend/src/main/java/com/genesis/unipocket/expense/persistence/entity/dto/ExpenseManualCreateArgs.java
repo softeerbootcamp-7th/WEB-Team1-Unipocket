@@ -1,6 +1,7 @@
 package com.genesis.unipocket.expense.persistence.entity.dto;
 
 import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.expense.dto.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,4 +23,25 @@ public record ExpenseManualCreateArgs(
 		CurrencyCode localCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
-		String memo) {}
+		String memo,
+		Long travelId) {
+
+	public static ExpenseManualCreateArgs of(
+			ExpenseManualCreateRequest req,
+			Long accountBookId,
+			CurrencyCode baseCurrencyCode,
+			BigDecimal baseCurrencyAmount) {
+		return new ExpenseManualCreateArgs(
+				accountBookId,
+				req.merchantName(),
+				req.category(),
+				req.paymentMethod(),
+				req.occurredAt(),
+				req.localCurrencyAmount(),
+				req.localCurrencyCode(),
+				baseCurrencyAmount,
+				baseCurrencyCode,
+				req.memo(),
+				req.travelId());
+	}
+}

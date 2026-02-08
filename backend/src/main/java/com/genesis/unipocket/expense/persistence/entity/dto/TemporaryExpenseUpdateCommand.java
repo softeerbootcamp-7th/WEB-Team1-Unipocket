@@ -1,6 +1,7 @@
 package com.genesis.unipocket.expense.persistence.entity.dto;
 
 import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,4 +24,22 @@ public record TemporaryExpenseUpdateCommand(
 		String paymentsMethod,
 		String memo,
 		LocalDateTime occurredAt,
-		String cardLastFourDigits) {}
+		String cardLastFourDigits) {
+
+	/**
+	 * Request DTO → Command
+	 */
+	public static TemporaryExpenseUpdateCommand from(TemporaryExpenseUpdateRequest request) {
+		return new TemporaryExpenseUpdateCommand(
+				request.merchantName(),
+				request.category(),
+				request.localCountryCode(),
+				request.localCurrencyAmount(),
+				request.baseCountryCode(),
+				request.baseCurrencyAmount(),
+				request.paymentsMethod(),
+				request.memo(),
+				request.occurredAt(),
+				request.cardLastFourDigits());
+	}
+}

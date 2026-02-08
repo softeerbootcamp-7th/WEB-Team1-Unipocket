@@ -32,17 +32,29 @@ public record ExpenseDto(
 				entity.getAccountBookId(),
 				entity.getTravelId(),
 				entity.getCategory(),
-				entity.getExchangeInfo().getBaseCurrencyCode(),
-				entity.getExchangeInfo().getBaseCurrencyAmount(),
-				entity.getExchangeInfo().getLocalCurrencyCode(),
-				entity.getExchangeInfo().getLocalCurrencyAmount(),
+				entity.getExchangeInfo() != null
+						? entity.getExchangeInfo().getBaseCurrencyCode()
+						: null,
+				entity.getExchangeInfo() != null
+						? entity.getExchangeInfo().getBaseCurrencyAmount()
+						: null,
+				entity.getExchangeInfo() != null
+						? entity.getExchangeInfo().getLocalCurrencyCode()
+						: null,
+				entity.getExchangeInfo() != null
+						? entity.getExchangeInfo().getLocalCurrencyAmount()
+						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant().getMerchantName(),
-				entity.getMerchant().getDisplayMerchantName(),
+				entity.getMerchant() != null ? entity.getMerchant().getMerchantName() : null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getPaymentMethod(),
-				entity.getExpenseSourceInfo().getExpenseSource(),
-				entity.getExpenseSourceInfo().getFileLink(),
+				entity.getExpenseSourceInfo() != null
+						? entity.getExpenseSourceInfo().getExpenseSource()
+						: null,
+				entity.getExpenseSourceInfo() != null
+						? entity.getExpenseSourceInfo().getFileLink()
+						: null,
 				entity.getMemo(),
 				entity.getCardNumber());
 	}

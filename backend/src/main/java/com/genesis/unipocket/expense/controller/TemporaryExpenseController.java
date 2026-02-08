@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.controller;
 
+import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseListResponse;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
@@ -12,6 +13,7 @@ import com.genesis.unipocket.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,6 @@ public class TemporaryExpenseController {
 	private final com.genesis.unipocket.expense.infrastructure.ParsingProgressPublisher
 			progressPublisher;
 	private final TemporaryExpenseConversionService conversionService;
-	private final Long USER_ID_TEMP = 1L;
 
 	/**
 	 * 단일 임시지출내역 변환
@@ -225,10 +226,8 @@ public class TemporaryExpenseController {
 	@GetMapping("/api/account-books/{accountBookId}/temporary-expenses")
 	public ResponseEntity<ApiResponse<TemporaryExpenseListResponse>> getTemporaryExpenses(
 			@PathVariable Long accountBookId,
-			@RequestParam(required = false) TemporaryExpense.TemporaryExpenseStatus status) {
-		Long userId = USER_ID_TEMP;
-		// TODO: User 객체, 혹은 User ID를 받아올 수 있는 필터 구현
-
+			@RequestParam(required = false) TemporaryExpense.TemporaryExpenseStatus status,
+			@LoginUser UUID userId) {
 		List<TemporaryExpenseResponse> items =
 				orchestrator.getTemporaryExpenses(accountBookId, status, userId);
 		TemporaryExpenseListResponse response = new TemporaryExpenseListResponse(items);
@@ -241,9 +240,7 @@ public class TemporaryExpenseController {
 	 */
 	@GetMapping("/api/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<ApiResponse<TemporaryExpenseResponse>> getTemporaryExpense(
-			@PathVariable Long tempExpenseId) {
-		Long userId = USER_ID_TEMP;
-
+			@PathVariable Long tempExpenseId, @LoginUser UUID userId) {
 		TemporaryExpenseResponse response = orchestrator.getTemporaryExpense(tempExpenseId, userId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
@@ -254,9 +251,8 @@ public class TemporaryExpenseController {
 	@PutMapping("/api/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<ApiResponse<TemporaryExpenseResponse>> updateTemporaryExpense(
 			@PathVariable Long tempExpenseId,
-			@RequestBody @Valid TemporaryExpenseUpdateRequest request) {
-		Long userId = USER_ID_TEMP;
-
+			@RequestBody @Valid TemporaryExpenseUpdateRequest request,
+			@LoginUser UUID userId) {
 		TemporaryExpenseResponse response =
 				orchestrator.updateTemporaryExpense(tempExpenseId, request, userId);
 		return ResponseEntity.ok(ApiResponse.success(response));
@@ -266,9 +262,8 @@ public class TemporaryExpenseController {
 	 * 임시지출내역 삭제
 	 */
 	@DeleteMapping("/api/temporary-expenses/{tempExpenseId}")
-	public ResponseEntity<Void> deleteTemporaryExpense(@PathVariable Long tempExpenseId) {
-		Long userId = USER_ID_TEMP;
-
+	public ResponseEntity<Void> deleteTemporaryExpense(
+			@PathVariable Long tempExpenseId, @LoginUser UUID userId) {
 		orchestrator.deleteTemporaryExpense(tempExpenseId, userId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}

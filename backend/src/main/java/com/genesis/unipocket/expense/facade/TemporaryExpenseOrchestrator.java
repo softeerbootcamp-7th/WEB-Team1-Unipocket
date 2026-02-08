@@ -1,11 +1,16 @@
 package com.genesis.unipocket.expense.facade;
 
+import com.genesis.unipocket.accountbook.service.AccountBookService;
+import com.genesis.unipocket.auth.ForbiddenException;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.expense.facade.converter.TemporaryExpenseFacadeConverter;
 import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense;
+import com.genesis.unipocket.expense.persistence.repository.FileRepository;
+import com.genesis.unipocket.expense.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.expense.service.TemporaryExpenseService;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +28,9 @@ public class TemporaryExpenseOrchestrator {
 
 	private final TemporaryExpenseService temporaryExpenseService;
 	private final TemporaryExpenseFacadeConverter converter;
+	private final FileRepository fileRepository;
+	private final TempExpenseMetaRepository tempExpenseMetaRepository;
+	private final AccountBookService accountBookService;
 
 	/**
 	 * 가계부 ID로 임시지출내역 목록 조회 (상태 필터 선택)
@@ -33,8 +41,9 @@ public class TemporaryExpenseOrchestrator {
 	 * @return 임시지출내역 목록
 	 */
 	public List<TemporaryExpenseResponse> getTemporaryExpenses(
-			Long accountBookId, TemporaryExpense.TemporaryExpenseStatus status, Long userId) {
-		// TODO: userId - accountBookId 소유권 검증
+			Long accountBookId, TemporaryExpense.TemporaryExpenseStatus status, UUID userId) {
+		// Validate ownership
+		validateOwnership(accountBookId, userId);
 
 		List<TemporaryExpense> entities;
 		if (status != null) {
@@ -48,19 +57,24 @@ public class TemporaryExpenseOrchestrator {
 	/**
 	 * 임시지출내역 단건 조회
 	 */
-	public TemporaryExpenseResponse getTemporaryExpense(Long tempExpenseId, Long userId) {
-		// TODO: userId - tempExpenseId 소유권 검증 (accountBookId 경유)
+	public TemporaryExpenseResponse getTemporaryExpense(Long tempExpenseId, UUID userId) {
+		// Validate ownership by checking accountBookId
+		TemporaryExpense tempExpense = temporaryExpenseService.findById(tempExpenseId);
+		Long accountBookId = getAccountBookIdFromTempExpense(tempExpense);
+		validateOwnership(accountBookId, userId);
 
-		TemporaryExpense entity = temporaryExpenseService.findById(tempExpenseId);
-		return converter.toResponse(entity);
+		return converter.toResponse(tempExpense);
 	}
 
 	/**
 	 * 임시지출내역 수정
 	 */
 	public TemporaryExpenseResponse updateTemporaryExpense(
-			Long tempExpenseId, TemporaryExpenseUpdateRequest request, Long userId) {
-		// TODO: userId - tempExpenseId 소유권 검증
+			Long tempExpenseId, TemporaryExpenseUpdateRequest request, UUID userId) {
+		// Validate ownership
+		TemporaryExpense tempExpense = temporaryExpenseService.findById(tempExpenseId);
+		Long accountBookId = getAccountBookIdFromTempExpense(tempExpense);
+		validateOwnership(accountBookId, userId);
 
 		TemporaryExpense updated =
 				temporaryExpenseService.updateTemporaryExpense(
@@ -71,9 +85,39 @@ public class TemporaryExpenseOrchestrator {
 	/**
 	 * 임시지출내역 삭제
 	 */
-	public void deleteTemporaryExpense(Long tempExpenseId, Long userId) {
-		// TODO: userId - tempExpenseId 소유권 검증
+	public void deleteTemporaryExpense(Long tempExpenseId, UUID userId) {
+		// Validate ownership
+		TemporaryExpense tempExpense = temporaryExpenseService.findById(tempExpenseId);
+		Long accountBookId = getAccountBookIdFromTempExpense(tempExpense);
+		validateOwnership(accountBookId, userId);
 
 		temporaryExpenseService.deleteTemporaryExpense(tempExpenseId);
+	}
+
+	/**
+	 * Helper method to get accountBookId from temporary expense
+	 */
+	private Long getAccountBookIdFromTempExpense(TemporaryExpense tempExpense) {
+		// Get accountBookId via file → meta
+		com.genesis.unipocket.expense.persistence.entity.expense.File file =
+				fileRepository
+						.findById(tempExpense.getFileId())
+						.orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+		com.genesis.unipocket.expense.persistence.entity.expense.TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(file.getTempExpenseMetaId())
+						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		return meta.getAccountBookId();
+	}
+
+	/**
+	 * Validate that the user owns the account book
+	 */
+	private void validateOwnership(Long accountBookId, UUID userId) {
+		try {
+			accountBookService.getAccountBook(accountBookId, userId.toString());
+		} catch (Exception e) {
+			throw new ForbiddenException("가계부에 대한 권한이 없습니다.");
+		}
 	}
 }

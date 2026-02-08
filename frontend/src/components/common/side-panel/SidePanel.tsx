@@ -25,12 +25,12 @@ const uploadTitleMap: Record<Exclude<SidePanelInputMode, 'manual'>, string> = {
   image: '사진',
 };
 
-// @TODO: API 연동 시 file / image 모드에서 파일 데이터 props로 받기
 interface SidePanelProps {
   mode?: SidePanelInputMode;
   file?: File; // file / image 전용
 }
 
+// @TODO: 상태 관리 리팩터링(useReducer), 유효성 검사 추가
 const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMounted, setIsMounted] = useState(true);
@@ -47,12 +47,12 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
 
     return {
       merchantName,
-      categoryCode: 1, // TODO: Category 선택값으로 교체
+      categoryCode: 1,
       paymentMethod: '하나 비바 X',
       occurredAt: selectedDateTime.toISOString(),
-      localAmount: 12, // TODO: CurrencyConverter 값 연결
+      localAmount: 12,
       localCurrency: 'USD',
-      standardAmount: 17568, // TODO: 환율 적용
+      standardAmount: 17568,
       standardCurrency: 'KRW',
       memo,
     };
@@ -81,12 +81,12 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
     },
   ]);
 
-  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const merchantNameRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
-    if (!titleRef.current) return;
-    titleRef.current.style.height = '0px';
-    titleRef.current.style.height = `${titleRef.current.scrollHeight}px`;
+    if (!merchantNameRef.current) return;
+    merchantNameRef.current.style.height = '0px';
+    merchantNameRef.current.style.height = `${merchantNameRef.current.scrollHeight}px`;
   }, [merchantName]);
 
   const handleDateTimeSelect = (selected: Date) => {
@@ -159,7 +159,7 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
       </div>
       <div className="flex flex-col gap-10 px-5">
         <textarea
-          ref={titleRef}
+          ref={merchantNameRef}
           className="heading1-bold text-label-strong placeholder:text-label-assistive resize-none overflow-hidden border-0 bg-transparent leading-tight outline-0"
           value={merchantName}
           placeholder="거래처를 입력해 주세요."

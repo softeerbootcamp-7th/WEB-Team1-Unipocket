@@ -6,8 +6,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
@@ -54,6 +57,28 @@ public class S3Service {
 		URL url = presignedRequest.url();
 
 		return new PresignedUrlResponse(url.toString(), fileName);
+	}
+
+	/**
+	 * Presigned URL 생성 (다운로드/읽기용)
+	 *
+	 * @param s3Key      S3 객체 키
+	 * @param expiration 만료 시간
+	 * @return Presigned GET URL
+	 */
+	public String getPresignedGetUrl(String s3Key, Duration expiration) {
+		GetObjectRequest getObjectRequest =
+				GetObjectRequest.builder().bucket(bucketName).key(s3Key).build();
+
+		GetObjectPresignRequest presignRequest =
+				GetObjectPresignRequest.builder()
+						.signatureDuration(expiration)
+						.getObjectRequest(getObjectRequest)
+						.build();
+
+		PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+
+		return presignedRequest.url().toString();
 	}
 
 	public record PresignedUrlResponse(String presignedUrl, String imageKey) {}

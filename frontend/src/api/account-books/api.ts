@@ -8,8 +8,11 @@ import { ENDPOINTS } from '@/api/config/endpoint';
 export const createAccountBook = (
   data: CreateAccountBookRequest,
 ): Promise<AccountBookResponse> => {
-  return customFetch(ENDPOINTS.ACCOUNT_BOOKS, {
-    method: 'POST',
-    body: JSON.stringify(data),
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS,
+    options: {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
   });
 };

@@ -1,5 +1,6 @@
 package com.genesis.unipocket.travel.controller;
 
+import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,45 +33,59 @@ public class TravelController {
 	private final TravelService travelService;
 
 	@PostMapping
-	public ResponseEntity<Void> createTravel(@RequestBody @Valid TravelRequest request) {
-		Long travelId = travelService.createTravel(request);
+	public ResponseEntity<Void> createTravel(
+			@LoginUser UUID userId,
+			@RequestBody @Valid TravelRequest request) {
+		Long travelId = travelService.createTravel(request, userId);
 		return ResponseEntity.created(URI.create("/api/travels/" + travelId)).build();
 	}
 
 	@GetMapping
-	public ResponseEntity<List<TravelResponse>> getTravels(@RequestParam Long accountBookId) {
-		return ResponseEntity.ok(travelService.getTravels(accountBookId));
+	public ResponseEntity<List<TravelResponse>> getTravels(
+			@RequestParam Long accountBookId,
+			@LoginUser UUID userId) {
+		return ResponseEntity.ok(travelService.getTravels(accountBookId, userId));
 	}
 
 	@GetMapping("/{travelId}")
-	public ResponseEntity<TravelDetailResponse> getTravelDetail(@PathVariable Long travelId) {
-		return ResponseEntity.ok(travelService.getTravelDetail(travelId));
+	public ResponseEntity<TravelDetailResponse> getTravelDetail(
+			@PathVariable Long travelId,
+			@LoginUser UUID userId) {
+		return ResponseEntity.ok(travelService.getTravelDetail(travelId, userId));
 	}
 
 	@PutMapping("/{travelId}")
 	public ResponseEntity<Void> updateTravel(
-			@PathVariable Long travelId, @RequestBody @Valid TravelRequest request) {
-		travelService.updateTravel(travelId, request);
+			@PathVariable Long travelId,
+			@RequestBody @Valid TravelRequest request,
+			@LoginUser UUID userId) {
+		travelService.updateTravel(travelId, request, userId);
 		return ResponseEntity.ok().build();
 	}
 
 	@org.springframework.web.bind.annotation.PatchMapping("/{travelId}")
 	public ResponseEntity<Void> patchTravel(
-			@PathVariable Long travelId, @RequestBody TravelUpdateRequest request) {
-		travelService.patchTravel(travelId, request);
+			@PathVariable Long travelId,
+			@RequestBody TravelUpdateRequest request,
+			@LoginUser UUID userId) {
+		travelService.patchTravel(travelId, request, userId);
 		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/{travelId}")
-	public ResponseEntity<Void> deleteTravel(@PathVariable Long travelId) {
-		travelService.deleteTravel(travelId);
+	public ResponseEntity<Void> deleteTravel(
+			@PathVariable Long travelId,
+			@LoginUser UUID userId) {
+		travelService.deleteTravel(travelId, userId);
 		return ResponseEntity.noContent().build();
 	}
 
 	@PutMapping("/{travelId}/widgets")
 	public ResponseEntity<Void> updateWidgets(
-			@PathVariable Long travelId, @RequestBody @Valid List<WidgetDto> widgets) {
-		travelService.updateWidgets(travelId, widgets);
+			@PathVariable Long travelId,
+			@RequestBody @Valid List<WidgetDto> widgets,
+			@LoginUser UUID userId) {
+		travelService.updateWidgets(travelId, widgets, userId);
 		return ResponseEntity.ok().build();
 	}
 }

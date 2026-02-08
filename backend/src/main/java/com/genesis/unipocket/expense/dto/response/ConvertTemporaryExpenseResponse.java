@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.dto.response;
 
 import java.time.LocalDateTime;
 

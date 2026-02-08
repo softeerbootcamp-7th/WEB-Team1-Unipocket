@@ -1,7 +1,7 @@
 package com.genesis.unipocket.expense.facade;
 
 import com.genesis.unipocket.accountbook.service.AccountBookService;
-import com.genesis.unipocket.expense.dto.request.TemporaryExpenseResponse;
+import com.genesis.unipocket.expense.dto.response.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.expense.persistence.entity.dto.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.expense.persistence.entity.expense.File;

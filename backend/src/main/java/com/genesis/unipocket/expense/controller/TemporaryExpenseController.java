@@ -1,9 +1,18 @@
 package com.genesis.unipocket.expense.controller;
 
 import com.genesis.unipocket.auth.annotation.LoginUser;
-import com.genesis.unipocket.expense.dto.request.TemporaryExpenseListResponse;
-import com.genesis.unipocket.expense.dto.request.TemporaryExpenseResponse;
+import com.genesis.unipocket.expense.dto.response.TemporaryExpenseListResponse;
+import com.genesis.unipocket.expense.dto.response.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
+import com.genesis.unipocket.expense.dto.request.BatchConvertRequest;
+import com.genesis.unipocket.expense.dto.response.BatchConvertResponse;
+import com.genesis.unipocket.expense.dto.request.BatchParseRequest;
+import com.genesis.unipocket.expense.dto.response.BatchParseResponse;
+import com.genesis.unipocket.expense.dto.request.BatchPresignedUrlRequest;
+import com.genesis.unipocket.expense.dto.response.BatchPresignedUrlResponse;
+import com.genesis.unipocket.expense.dto.response.ConvertTemporaryExpenseResponse;
+import com.genesis.unipocket.expense.dto.response.ParseFileResponse;
+import com.genesis.unipocket.expense.dto.response.PresignedUrlResponse;
 import com.genesis.unipocket.expense.facade.TemporaryExpenseOrchestrator;
 import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense;
 import com.genesis.unipocket.expense.service.FileUploadService;
@@ -43,14 +52,13 @@ public class TemporaryExpenseController {
 	@PostMapping("/api/temporary-expenses/{tempExpenseId}/convert")
 	public ResponseEntity<
 					ApiResponse<
-							com.genesis.unipocket.expense.dto.request
-									.ConvertTemporaryExpenseResponse>>
+							ConvertTemporaryExpenseResponse>>
 			convertToExpense(@PathVariable Long tempExpenseId) {
 		com.genesis.unipocket.expense.persistence.entity.expense.ExpenseEntity expense =
 				conversionService.convertToExpense(tempExpenseId);
 
-		com.genesis.unipocket.expense.dto.request.ConvertTemporaryExpenseResponse response =
-				new com.genesis.unipocket.expense.dto.request.ConvertTemporaryExpenseResponse(
+		ConvertTemporaryExpenseResponse response =
+				new ConvertTemporaryExpenseResponse(
 						expense.getExpenseId(), java.time.LocalDateTime.now());
 
 		return ResponseEntity.ok(ApiResponse.success(response));
@@ -61,29 +69,28 @@ public class TemporaryExpenseController {
 	 */
 	@PostMapping("/api/temporary-expenses/convert-batch")
 	public ResponseEntity<
-					ApiResponse<com.genesis.unipocket.expense.dto.request.BatchConvertResponse>>
+					ApiResponse<BatchConvertResponse>>
 			convertBatch(
-					@RequestBody @Valid com.genesis.unipocket.expense.dto.request.BatchConvertRequest request) {
+					@RequestBody @Valid BatchConvertRequest request) {
 		TemporaryExpenseConversionService.BatchConversionResult result =
 				conversionService.convertBatch(request.tempExpenseIds());
 
 		java.util.List<
-						com.genesis.unipocket.expense.dto.request.BatchConvertResponse
+						BatchConvertResponse
 								.ConversionResult>
 				responseResults =
 						result.results().stream()
 								.map(
 										r ->
-												new com.genesis.unipocket.expense.dto.request
-														.BatchConvertResponse.ConversionResult(
+												new BatchConvertResponse.ConversionResult(
 														r.tempExpenseId(),
 														r.expenseId(),
 														r.status(),
 														r.reason()))
 								.toList();
 
-		com.genesis.unipocket.expense.dto.request.BatchConvertResponse response =
-				new com.genesis.unipocket.expense.dto.request.BatchConvertResponse(
+		BatchConvertResponse response =
+				new BatchConvertResponse(
 						result.totalRequested(),
 						result.successCount(),
 						result.failedCount(),
@@ -98,26 +105,26 @@ public class TemporaryExpenseController {
 	@PostMapping("/api/temporary-expenses/upload/presigned-urls")
 	public ResponseEntity<
 					ApiResponse<
-							com.genesis.unipocket.expense.dto.request.BatchPresignedUrlResponse>>
+							BatchPresignedUrlResponse>>
 			createBatchPresignedUrls(
-					@RequestBody @Valid com.genesis.unipocket.expense.dto.request.BatchPresignedUrlRequest
+					@RequestBody @Valid BatchPresignedUrlRequest
 									request) {
 		java.util.List<FileUploadService.FileUploadResponse> results =
 				fileUploadService.createBatchPresignedUrls(
 						request.accountBookId(), request.files());
 
 		java.util.List<
-						com.genesis.unipocket.expense.dto.request.BatchPresignedUrlResponse
+						BatchPresignedUrlResponse
 								.FileUploadInfo>
 				files = new java.util.ArrayList<>();
 		for (FileUploadService.FileUploadResponse r : results) {
 			files.add(
-					new com.genesis.unipocket.expense.dto.request.BatchPresignedUrlResponse
+					new BatchPresignedUrlResponse
 							.FileUploadInfo(r.fileId(), r.presignedUrl(), r.s3Key()));
 		}
 
-		com.genesis.unipocket.expense.dto.request.BatchPresignedUrlResponse response =
-				new com.genesis.unipocket.expense.dto.request.BatchPresignedUrlResponse(files);
+		BatchPresignedUrlResponse response =
+				new BatchPresignedUrlResponse(files);
 
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
@@ -126,16 +133,16 @@ public class TemporaryExpenseController {
 	 * 비동기 파싱 시작
 	 */
 	@PostMapping("/api/temporary-expenses/parse-async")
-	public ResponseEntity<ApiResponse<com.genesis.unipocket.expense.dto.request.BatchParseResponse>>
+	public ResponseEntity<ApiResponse<BatchParseResponse>>
 			parseAsync(
-					@RequestBody @Valid com.genesis.unipocket.expense.dto.request.BatchParseRequest request) {
+					@RequestBody @Valid BatchParseRequest request) {
 		String taskId = java.util.UUID.randomUUID().toString();
 
 		// 비동기 파싱 시작
 		parsingService.parseBatchFilesAsync(request.fileIds(), taskId);
 
-		com.genesis.unipocket.expense.dto.request.BatchParseResponse response =
-				new com.genesis.unipocket.expense.dto.request.BatchParseResponse(
+		BatchParseResponse response =
+				new BatchParseResponse(
 						taskId,
 						request.fileIds().size(),
 						"/api/temporary-expenses/parse-status/" + taskId);
@@ -168,15 +175,15 @@ public class TemporaryExpenseController {
 	 */
 	@PostMapping("/api/temporary-expenses/upload/presigned-url")
 	public ResponseEntity<
-					ApiResponse<com.genesis.unipocket.expense.dto.request.PresignedUrlResponse>>
+					ApiResponse<PresignedUrlResponse>>
 			createPresignedUrl(
 					@RequestBody @Valid com.genesis.unipocket.expense.dto.request.PresignedUrlRequest request) {
 		FileUploadService.FileUploadResponse result =
 				fileUploadService.createPresignedUrl(
 						request.accountBookId(), request.fileName(), request.fileType());
 
-		com.genesis.unipocket.expense.dto.request.PresignedUrlResponse response =
-				new com.genesis.unipocket.expense.dto.request.PresignedUrlResponse(
+		PresignedUrlResponse response =
+				new PresignedUrlResponse(
 						result.fileId(), result.presignedUrl(), result.s3Key(), result.expiresIn());
 
 		return ResponseEntity.ok(ApiResponse.success(response));
@@ -186,26 +193,26 @@ public class TemporaryExpenseController {
 	 * 파일 파싱 실행
 	 */
 	@PostMapping("/api/temporary-expenses/parse")
-	public ResponseEntity<ApiResponse<com.genesis.unipocket.expense.dto.request.ParseFileResponse>>
+	public ResponseEntity<ApiResponse<ParseFileResponse>>
 			parseFile(
 					@RequestBody @Valid com.genesis.unipocket.expense.dto.request.ParseFileRequest request) {
 		TemporaryExpenseParsingService.ParsingResult result =
 				parsingService.parseFile(request.fileId());
 
 		// Response 생성
-		List<com.genesis.unipocket.expense.dto.request.ParseFileResponse.ParsedItemSummary> items =
+		List<ParseFileResponse.ParsedItemSummary> items =
 				new java.util.ArrayList<>();
 		for (TemporaryExpense expense : result.expenses()) {
 			items.add(
-					new com.genesis.unipocket.expense.dto.request.ParseFileResponse
+					new ParseFileResponse
 							.ParsedItemSummary(
 							expense.getTempExpenseId(),
 							expense.getMerchantName(),
 							expense.getStatus() != null ? expense.getStatus().name() : null));
 		}
 
-		com.genesis.unipocket.expense.dto.request.ParseFileResponse response =
-				new com.genesis.unipocket.expense.dto.request.ParseFileResponse(
+		ParseFileResponse response =
+				new ParseFileResponse(
 						result.metaId(),
 						result.totalCount(),
 						result.normalCount(),

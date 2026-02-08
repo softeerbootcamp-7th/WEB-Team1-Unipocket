@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.dto.response;
 
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense;

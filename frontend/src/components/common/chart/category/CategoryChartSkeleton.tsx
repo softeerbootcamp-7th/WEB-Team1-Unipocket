@@ -17,6 +17,7 @@ const CategoryLegendItemSkeleton = () => {
 };
 
 const CategoryChartSkeleton = () => {
+  const CATEGORY_COUNT = 7;
   return (
     <>
       <div>
@@ -30,7 +31,7 @@ const CategoryChartSkeleton = () => {
         </PieChart>
       </div>
       <div className="flex flex-col justify-between">
-        {Array.from({ length: 7 }).map((_, idx) => (
+        {Array.from({ length: CATEGORY_COUNT }).map((_, idx) => (
           <CategoryLegendItemSkeleton key={idx} />
         ))}
       </div>

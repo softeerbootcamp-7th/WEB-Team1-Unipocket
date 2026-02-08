@@ -13,10 +13,10 @@ import com.genesis.unipocket.accountbook.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.persistence.repository.AccountBookRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service;
+import com.genesis.unipocket.travel.dto.common.WidgetDto;
+import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
 import com.genesis.unipocket.travel.persistence.entity.WidgetType;
-import com.genesis.unipocket.travel.dto.request.TravelRequest;
-import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,8 +94,7 @@ class TravelApiTest {
 		Long travelId = createTestTravel();
 
 		TravelUpdateRequest request =
-				new TravelUpdateRequest(
-						null, null, null, "new_thumbnail_image_key");
+				new TravelUpdateRequest(null, null, null, "new_thumbnail_image_key");
 
 		mockMvc.perform(
 						org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(

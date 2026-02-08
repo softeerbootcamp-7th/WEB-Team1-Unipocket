@@ -2,8 +2,8 @@ package com.genesis.unipocket.user.controller;
 
 import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.user.dto.request.UserCardRequest;
-import com.genesis.unipocket.user.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.dto.response.UserCardResponse;
+import com.genesis.unipocket.user.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.service.UserCardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,13 +35,8 @@ public class UserCardController {
 	}
 
 	@GetMapping("/companies")
-	public ResponseEntity<
-					List<CardCompany>>
-			getCardCompanies() {
-		return ResponseEntity.ok(
-				List.of(
-						CardCompany
-								.values()));
+	public ResponseEntity<List<CardCompany>> getCardCompanies() {
+		return ResponseEntity.ok(List.of(CardCompany.values()));
 	}
 
 	@DeleteMapping("/{cardId}")

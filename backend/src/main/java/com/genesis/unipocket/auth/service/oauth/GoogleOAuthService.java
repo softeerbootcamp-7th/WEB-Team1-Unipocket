@@ -1,7 +1,7 @@
 package com.genesis.unipocket.auth.service.oauth;
 
-import com.genesis.unipocket.global.config.OAuth2Properties.OidcProviderConfig;
 import com.genesis.unipocket.auth.exception.oauth.OAuthCommunicationException;
+import com.genesis.unipocket.global.config.OAuth2Properties.OidcProviderConfig;
 import com.genesis.unipocket.user.dto.common.oauth.GoogleUserInfo;
 import com.genesis.unipocket.user.dto.common.oauth.OAuthTokenResponse;
 import com.genesis.unipocket.user.dto.common.oauth.OAuthUserInfo;

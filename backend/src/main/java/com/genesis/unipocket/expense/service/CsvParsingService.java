@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.persistence.entity;
+package com.genesis.unipocket.expense.service;
 
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.ParsedExpenseItem;
 import java.io.BufferedReader;

@@ -2,14 +2,14 @@ package com.genesis.unipocket.travel.service;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.travel.dto.common.WidgetDto;
+import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
+import com.genesis.unipocket.travel.dto.response.TravelDetailResponse;
+import com.genesis.unipocket.travel.dto.response.TravelResponse;
 import com.genesis.unipocket.travel.persistence.entity.Travel;
 import com.genesis.unipocket.travel.persistence.entity.TravelWidget;
 import com.genesis.unipocket.travel.persistence.entity.WidgetType;
-import com.genesis.unipocket.travel.dto.response.TravelDetailResponse;
-import com.genesis.unipocket.travel.dto.request.TravelRequest;
-import com.genesis.unipocket.travel.dto.response.TravelResponse;
-import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import com.genesis.unipocket.travel.persistence.repository.TravelRepository;
 import com.genesis.unipocket.travel.persistence.repository.TravelWidgetRepository;
 import java.util.ArrayList;
@@ -112,8 +112,7 @@ public class TravelService {
 	 * 여행 정보 부분 수정 (Patch)
 	 */
 	@Transactional
-	public void patchTravel(
-			Long travelId, TravelUpdateRequest request) {
+	public void patchTravel(Long travelId, TravelUpdateRequest request) {
 		Travel travel =
 				travelRepository
 						.findById(travelId)

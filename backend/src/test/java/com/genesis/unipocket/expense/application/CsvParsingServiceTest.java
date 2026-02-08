@@ -2,7 +2,7 @@ package com.genesis.unipocket.expense.application;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.genesis.unipocket.expense.persistence.entity.CsvParsingService;
+import com.genesis.unipocket.expense.service.CsvParsingService;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.ParsedExpenseItem;
 import java.math.BigDecimal;
 import java.util.List;

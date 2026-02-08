@@ -1,13 +1,13 @@
 package com.genesis.unipocket.auth.facade;
 
-import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
-import com.genesis.unipocket.user.dto.response.LoginResponse;
 import com.genesis.unipocket.auth.service.OAuthLoginStateService;
-import com.genesis.unipocket.user.service.UserService;
 import com.genesis.unipocket.auth.service.oauth.OAuthProviderFactory;
 import com.genesis.unipocket.auth.service.oauth.OAuthProviderService;
+import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.user.dto.common.oauth.OAuthTokenResponse;
 import com.genesis.unipocket.user.dto.common.oauth.OAuthUserInfo;
+import com.genesis.unipocket.user.dto.response.LoginResponse;
+import com.genesis.unipocket.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,14 +1,14 @@
 package com.genesis.unipocket.user.service;
 
+import com.genesis.unipocket.auth.persistence.entity.SocialAuthEntity;
+import com.genesis.unipocket.auth.persistence.repository.SocialAuthRepository;
 import com.genesis.unipocket.auth.service.TokenService;
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
-import com.genesis.unipocket.auth.persistence.entity.SocialAuthEntity;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
-import com.genesis.unipocket.auth.persistence.repository.SocialAuthRepository;
-import com.genesis.unipocket.user.persistence.repository.UserRepository;
-import com.genesis.unipocket.user.dto.response.LoginResponse;
 import com.genesis.unipocket.user.dto.common.oauth.OAuthUserInfo;
+import com.genesis.unipocket.user.dto.response.LoginResponse;
 import com.genesis.unipocket.user.dto.response.UserResponse;
+import com.genesis.unipocket.user.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.persistence.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -95,8 +95,7 @@ public class UserService {
 	 * @param userId 사용자 ID
 	 * @return 사용자 상세 정보
 	 */
-	public UserResponse getUserInfo(
-			java.util.UUID userId) {
+	public UserResponse getUserInfo(java.util.UUID userId) {
 		UserEntity user =
 				userRepository
 						.findById(userId)

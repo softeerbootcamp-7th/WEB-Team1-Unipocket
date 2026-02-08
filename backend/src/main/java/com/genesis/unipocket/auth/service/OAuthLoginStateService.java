@@ -1,8 +1,8 @@
 package com.genesis.unipocket.auth.service;
 
+import com.genesis.unipocket.auth.exception.oauth.OAuthException;
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.auth.exception.oauth.OAuthException;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

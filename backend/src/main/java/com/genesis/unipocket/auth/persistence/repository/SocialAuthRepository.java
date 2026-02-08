@@ -1,10 +1,9 @@
 package com.genesis.unipocket.auth.persistence.repository;
 
-import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.auth.persistence.entity.SocialAuthEntity;
-import java.util.Optional;
-
+import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.user.persistence.entity.UserEntity;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

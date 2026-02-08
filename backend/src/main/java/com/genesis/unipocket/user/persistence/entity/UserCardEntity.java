@@ -37,10 +37,7 @@ public class UserCardEntity {
 
 	@Builder
 	public UserCardEntity(
-			UserEntity user,
-			String nickName,
-			String cardNumber,
-			CardCompany cardCompany) {
+			UserEntity user, String nickName, String cardNumber, CardCompany cardCompany) {
 		this.user = user;
 		this.nickName = nickName;
 		this.cardNumber = cardNumber;

@@ -3,9 +3,9 @@ package com.genesis.unipocket.user.service;
 import static org.assertj.core.api.Assertions.*;
 
 import com.genesis.unipocket.TestcontainersConfiguration;
+import com.genesis.unipocket.auth.service.AuthService;
 import com.genesis.unipocket.auth.service.JwtProvider;
 import com.genesis.unipocket.auth.service.TokenBlacklistService;
-import com.genesis.unipocket.auth.service.AuthService;
 import com.genesis.unipocket.user.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.persistence.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;

@@ -1,7 +1,6 @@
 package com.genesis.unipocket.travel.dto.common;
 
 import com.genesis.unipocket.travel.persistence.entity.Travel;
-
 import java.time.LocalDate;
 import java.util.List;
 

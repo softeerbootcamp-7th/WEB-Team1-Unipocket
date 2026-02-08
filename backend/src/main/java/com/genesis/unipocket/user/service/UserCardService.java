@@ -2,12 +2,12 @@ package com.genesis.unipocket.user.service;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.user.dto.request.UserCardRequest;
+import com.genesis.unipocket.user.dto.response.UserCardResponse;
 import com.genesis.unipocket.user.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.persistence.repository.UserCardRepository;
 import com.genesis.unipocket.user.persistence.repository.UserRepository;
-import com.genesis.unipocket.user.dto.request.UserCardRequest;
-import com.genesis.unipocket.user.dto.response.UserCardResponse;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;

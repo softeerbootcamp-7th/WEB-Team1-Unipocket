@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.persistence.entity;
+package com.genesis.unipocket.expense.service;
 
 import com.genesis.unipocket.expense.persistence.entity.expense.File;
 import com.genesis.unipocket.expense.persistence.entity.expense.File.FileType;
@@ -65,8 +65,8 @@ public class FileUploadService {
 					files) {
 		java.util.List<FileUploadResponse> responses = new java.util.ArrayList<>();
 
-		for (com.genesis.unipocket.expense.dto.request.BatchPresignedUrlRequest.FileInfo
-				fileInfo : files) {
+		for (com.genesis.unipocket.expense.dto.request.BatchPresignedUrlRequest.FileInfo fileInfo :
+				files) {
 			FileUploadResponse response =
 					createPresignedUrl(accountBookId, fileInfo.fileName(), fileInfo.fileType());
 			responses.add(response);

@@ -1,10 +1,10 @@
 package com.genesis.unipocket.travel.controller;
 
+import com.genesis.unipocket.travel.dto.common.WidgetDto;
+import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
 import com.genesis.unipocket.travel.dto.response.TravelDetailResponse;
-import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.response.TravelResponse;
-import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import com.genesis.unipocket.travel.service.TravelService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -55,8 +55,7 @@ public class TravelController {
 
 	@org.springframework.web.bind.annotation.PatchMapping("/{travelId}")
 	public ResponseEntity<Void> patchTravel(
-			@PathVariable Long travelId,
-			@RequestBody TravelUpdateRequest request) {
+			@PathVariable Long travelId, @RequestBody TravelUpdateRequest request) {
 		travelService.patchTravel(travelId, request);
 		return ResponseEntity.ok().build();
 	}

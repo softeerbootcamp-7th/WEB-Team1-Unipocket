@@ -1,10 +1,10 @@
 package com.genesis.unipocket.auth.facade;
 
-import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
-import com.genesis.unipocket.user.dto.response.AuthorizeResponse;
 import com.genesis.unipocket.auth.service.OAuthLoginStateService;
 import com.genesis.unipocket.auth.service.oauth.OAuthProviderFactory;
 import com.genesis.unipocket.auth.service.oauth.OAuthProviderService;
+import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
+import com.genesis.unipocket.user.dto.response.AuthorizeResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

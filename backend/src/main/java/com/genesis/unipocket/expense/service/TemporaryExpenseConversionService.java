@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.persistence.entity;
+package com.genesis.unipocket.expense.service;
 
 import com.genesis.unipocket.expense.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.persistence.entity.expense.*;

@@ -1,13 +1,104 @@
 import { useEffect, useState } from 'react';
-import { useMatches } from '@tanstack/react-router';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { Link, useMatches, useNavigate } from '@tanstack/react-router';
+import { clsx } from 'clsx';
 
 import Dropdown from '@/components/common/dropdown/Dropdown';
 
+import { logout } from '@/api/auth/api';
+import { getUser } from '@/api/user/api';
 import { Icons } from '@/assets';
 import ProfileImage from '@/assets/images/profile.png';
+import { AUTH_PROVIDERS } from '@/constants/authProviders';
 import { getLocalTime } from '@/lib/utils';
 
+import {
+  Popover,
+  PopoverClose,
+  PopoverContent,
+  PopoverTrigger,
+} from '../ui/popover';
 import Button from './Button';
+import Divider from './Divider';
+
+const ProfilePopover = () => {
+  const navigate = useNavigate();
+  const { data } = useSuspenseQuery({
+    queryKey: ['getUser'],
+    queryFn: getUser,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    throwOnError: true, // 에러를 에러 바운더리로 전파
+    onSuccess: () => {
+      navigate({ to: '/login' });
+    },
+  });
+
+  const isKakaoEmail = data.email?.includes('kakao');
+  const authProvider = AUTH_PROVIDERS.find(
+    (p) => p.id === (isKakaoEmail ? 'kakao' : 'google'),
+  )!;
+  const AuthIcon = authProvider.Icon;
+
+  const handleLogout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    logoutMutation.mutate();
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <img
+          src={data.profileImgUrl ?? ProfileImage}
+          alt="프로필 이미지"
+          className="h-8 w-8 cursor-pointer rounded-full object-cover"
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="mt-2"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="bg-background-normal shadow-popover rounded-modal-18 flex flex-col gap-5 p-8">
+          <div className="flex flex-col gap-2">
+            <span className="body2-normal-bold">{data.name}</span>
+            <div className="flex gap-2.5">
+              <AuthIcon
+                className={clsx(
+                  'flex size-4 items-center justify-center rounded p-[3px]',
+                  authProvider.bgColor,
+                )}
+              />
+              <span className="label1-normal-medium text-label-alternative">
+                {data.email}
+              </span>
+            </div>
+          </div>
+          <Divider style={'thin'} />
+          <PopoverClose asChild>
+            <Link
+              to={'/setting'}
+              className="body2-normal-medium text-label-alternative"
+            >
+              설정
+            </Link>
+          </PopoverClose>
+          <PopoverClose asChild>
+            <button
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+              className="body2-normal-medium text-label-alternative cursor-pointer text-left"
+            >
+              로그아웃
+            </button>
+          </PopoverClose>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const Header = () => {
   const matches = useMatches();
@@ -49,11 +140,7 @@ const Header = () => {
           </div>
         )}
         <Button onClick={() => {}}>모바일</Button>
-        <img
-          src={ProfileImage}
-          alt="프로필 이미지"
-          className="h-8 w-8 cursor-pointer rounded-full object-cover"
-        />
+        <ProfilePopover />
       </div>
     </div>
   );

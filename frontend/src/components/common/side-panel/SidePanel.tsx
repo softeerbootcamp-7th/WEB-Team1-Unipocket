@@ -13,6 +13,11 @@ import ValueContainer, {
 } from '@/components/common/side-panel/ValueContainer';
 import TextInput from '@/components/common/TextInput';
 
+import { createManualExpense } from '@/api/account-books/api';
+import { type CreateManualExpenseRequest } from '@/api/account-books/type';
+
+const ACCOUNT_BOOK_ID = 1;
+
 export type SidePanelInputMode = 'manual' | 'file' | 'image';
 
 const uploadTitleMap: Record<Exclude<SidePanelInputMode, 'manual'>, string> = {
@@ -34,6 +39,24 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
   const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
   //const isEditing = false; // @TODO: 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
+
+  const buildCreateManualExpenseRequest = (): CreateManualExpenseRequest => {
+    if (!selectedDateTime) {
+      throw new Error('occurredAt is required');
+    }
+
+    return {
+      merchantName: title,
+      categoryCode: 1, // TODO: Category 선택값으로 교체
+      paymentMethod: '하나 비바 X',
+      occurredAt: selectedDateTime.toISOString(),
+      localAmount: 12, // TODO: CurrencyConverter 값 연결
+      localCurrency: 'USD',
+      standardAmount: 17568, // TODO: 환율 적용
+      standardCurrency: 'KRW',
+      memo,
+    };
+  };
 
   // @TODO: '일시' 제외 항목들에는 context menu 추가 예정
   const [valueItems, setValueItems] = useState<ValueItemProps[]>([
@@ -77,6 +100,18 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
     );
   };
 
+  const handleSave = async () => {
+    if (mode !== 'manual') return;
+
+    try {
+      const payload = buildCreateManualExpenseRequest();
+      await createManualExpense(ACCOUNT_BOOK_ID, payload);
+      console.log('Manual expense created successfully');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const closePanel = () => {
     setIsOpen(false);
     setTimeout(() => {
@@ -115,7 +150,9 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
               </>
             )}
           </div>*/}
-          <Button variant="solid">저장</Button>
+          <Button variant="solid" onClick={handleSave}>
+            저장
+          </Button>
           <Button>삭제</Button>
         </div>
       </div>

@@ -13,14 +13,32 @@ interface customFetchParams {
   isRetry?: boolean; // 재시도 여부 플래그 -> 401 재발급 시도 무한 루프 방지용
 }
 
-// 401 발생 시 토큰 재발급 요청을 처리하는 함수
-const refreshAccessToken = async () => {
-  // customFetch를 사용하되 isRetry=true로 설정하여 계속 401이 응답으로 오면 무한 루프 방지
-  await customFetch({
-    endpoint: '/auth/reissue',
-    options: { method: 'POST' },
-    isRetry: true,
-  });
+// 1. 재발급 요청의 Promise를 저장할 변수 (싱글톤 패턴처럼 동작)
+let refreshPromise: Promise<void> | null = null;
+
+// 2. 401 발생 시 토큰 재발급 요청을 처리하는 함수
+const refreshAccessToken = async (): Promise<void> => {
+  // 이미 재발급이 진행 중이라면, 해당 Promise를 반환하여 기다리게 함
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  // 재발급이 진행 중이 아니라면 새로운 요청 시작 및 Promise 저장
+  refreshPromise = (async () => {
+    try {
+      await customFetch({
+        endpoint: '/auth/reissue',
+        options: { method: 'POST' },
+        isRetry: true, // customFetch를 사용하되 isRetry=true로 설정하여 계속 401이 응답으로 오면 무한 루프 방지
+      });
+    } finally {
+      // 성공하든 실패하든 요청이 끝나면 변수를 초기화하여
+      // 다음 401 발생 시 다시 재발급을 시도할 수 있게 함
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 };
 
 export const customFetch = async <T>({
@@ -90,6 +108,8 @@ export const customFetch = async <T>({
       });
     }
 
+    // 3. 정상 응답 처리 (200~299)
+    if (response.status === HTTP_STATUS.NO_CONTENT) return undefined as T;
     return await response.json();
   } catch (error) {
     clearTimeout(timeoutId); // 에러 발생 시에도 타이머 해제 필수

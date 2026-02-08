@@ -19,7 +19,7 @@ const LoginPage = () => {
             교환학생 지출의 모든 것, 통합 가계부 유니포켓
           </h1>
         </div>
-        <div className="absolute right-0 bottom-23 left-0 flex flex-col gap-3 md:static">
+        <div className="absolute right-20 bottom-23 left-20 flex flex-col gap-3 md:static md:w-81.25">
           <LoginContainer />
         </div>
       </div>

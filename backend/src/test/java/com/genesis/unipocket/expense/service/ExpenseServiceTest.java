@@ -5,10 +5,12 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.dto.common.ExpenseDto;
-import com.genesis.unipocket.expense.dto.converter.ExpenseManualConverter;
+import com.genesis.unipocket.expense.common.enums.ExpenseSource;
 import com.genesis.unipocket.expense.dto.request.ExpenseUpdateRequest;
+import com.genesis.unipocket.expense.persistence.entity.expense.ExchangeInfo;
 import com.genesis.unipocket.expense.persistence.entity.expense.ExpenseEntity;
+import com.genesis.unipocket.expense.persistence.entity.expense.ExpenseSourceInfo;
+import com.genesis.unipocket.expense.persistence.entity.expense.Merchant;
 import com.genesis.unipocket.expense.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -34,7 +36,6 @@ class ExpenseServiceTest {
 
 	@Mock private ExpenseRepository expenseRepository;
 	@Mock private ExchangeRateService exchangeRateService;
-	@Mock private ExpenseManualConverter converter;
 
 	@InjectMocks private ExpenseService expenseService;
 
@@ -82,6 +83,36 @@ class ExpenseServiceTest {
 		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
 		when(expenseEntity.getLocalCurrency()).thenReturn(CurrencyCode.KRW);
 		when(expenseEntity.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
+		when(expenseEntity.getExpenseId()).thenReturn(expenseId);
+
+		// Mock ExchangeInfo for ExpenseDto.from()
+		ExchangeInfo exchangeInfo = mock(ExchangeInfo.class);
+		when(exchangeInfo.getBaseCurrencyCode()).thenReturn(CurrencyCode.KRW);
+		when(exchangeInfo.getBaseCurrencyAmount()).thenReturn(BigDecimal.valueOf(10000));
+		when(exchangeInfo.getLocalCurrencyCode()).thenReturn(CurrencyCode.JPY);
+		when(exchangeInfo.getLocalCurrencyAmount()).thenReturn(BigDecimal.valueOf(1500));
+		when(expenseEntity.getExchangeInfo()).thenReturn(exchangeInfo);
+
+		// Mock Merchant for ExpenseDto.from()
+		Merchant merchant = mock(Merchant.class);
+		when(merchant.getMerchantName()).thenReturn("스타벅스");
+		when(merchant.getDisplayMerchantName()).thenReturn("스타벅스");
+		when(expenseEntity.getMerchant()).thenReturn(merchant);
+
+		// Mock ExpenseSourceInfo for ExpenseDto.from()
+		ExpenseSourceInfo sourceInfo = mock(ExpenseSourceInfo.class);
+		when(sourceInfo.getExpenseSource()).thenReturn(ExpenseSource.MANUAL);
+		when(sourceInfo.getFileLink()).thenReturn(null);
+		when(expenseEntity.getExpenseSourceInfo()).thenReturn(sourceInfo);
+
+		// Mock other required methods
+		when(expenseEntity.getOccurredAt()).thenReturn(LocalDateTime.now());
+		when(expenseEntity.getCategory()).thenReturn(Category.FOOD);
+		when(expenseEntity.getTravelId()).thenReturn(null);
+		when(expenseEntity.getApprovalNumber()).thenReturn(null);
+		when(expenseEntity.getPaymentMethod()).thenReturn("CARD");
+		when(expenseEntity.getMemo()).thenReturn("메모");
+		when(expenseEntity.getCardNumber()).thenReturn(null);
 
 		ExpenseUpdateRequest request =
 				new ExpenseUpdateRequest(
@@ -97,7 +128,6 @@ class ExpenseServiceTest {
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.convertAmount(any(), any(), any(), any()))
 				.thenReturn(BigDecimal.valueOf(15000));
-		when(converter.toDto(any())).thenReturn(mock(ExpenseDto.class));
 
 		// when
 		expenseService.updateExpense(expenseId, accountBookId, request, CurrencyCode.KRW);
@@ -120,6 +150,36 @@ class ExpenseServiceTest {
 		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
 		when(expenseEntity.getLocalCurrency()).thenReturn(CurrencyCode.KRW);
 		when(expenseEntity.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
+		when(expenseEntity.getExpenseId()).thenReturn(expenseId);
+
+		// Mock ExchangeInfo for ExpenseDto.from()
+		ExchangeInfo exchangeInfo = mock(ExchangeInfo.class);
+		when(exchangeInfo.getBaseCurrencyCode()).thenReturn(CurrencyCode.KRW);
+		when(exchangeInfo.getBaseCurrencyAmount()).thenReturn(BigDecimal.valueOf(15000));
+		when(exchangeInfo.getLocalCurrencyCode()).thenReturn(CurrencyCode.KRW);
+		when(exchangeInfo.getLocalCurrencyAmount()).thenReturn(BigDecimal.valueOf(15000));
+		when(expenseEntity.getExchangeInfo()).thenReturn(exchangeInfo);
+
+		// Mock Merchant for ExpenseDto.from()
+		Merchant merchant = mock(Merchant.class);
+		when(merchant.getMerchantName()).thenReturn("스타벅스");
+		when(merchant.getDisplayMerchantName()).thenReturn("스타벅스");
+		when(expenseEntity.getMerchant()).thenReturn(merchant);
+
+		// Mock ExpenseSourceInfo for ExpenseDto.from()
+		ExpenseSourceInfo sourceInfo = mock(ExpenseSourceInfo.class);
+		when(sourceInfo.getExpenseSource()).thenReturn(ExpenseSource.MANUAL);
+		when(sourceInfo.getFileLink()).thenReturn(null);
+		when(expenseEntity.getExpenseSourceInfo()).thenReturn(sourceInfo);
+
+		// Mock other required methods
+		when(expenseEntity.getOccurredAt()).thenReturn(LocalDateTime.now());
+		when(expenseEntity.getCategory()).thenReturn(Category.FOOD);
+		when(expenseEntity.getTravelId()).thenReturn(null);
+		when(expenseEntity.getApprovalNumber()).thenReturn(null);
+		when(expenseEntity.getPaymentMethod()).thenReturn("CARD");
+		when(expenseEntity.getMemo()).thenReturn("메모");
+		when(expenseEntity.getCardNumber()).thenReturn(null);
 
 		ExpenseUpdateRequest request =
 				new ExpenseUpdateRequest(
@@ -135,7 +195,6 @@ class ExpenseServiceTest {
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.convertAmount(any(), any(), any(), any()))
 				.thenReturn(BigDecimal.valueOf(15000));
-		when(converter.toDto(any())).thenReturn(mock(ExpenseDto.class));
 
 		// when
 		expenseService.updateExpense(expenseId, accountBookId, request, CurrencyCode.KRW);

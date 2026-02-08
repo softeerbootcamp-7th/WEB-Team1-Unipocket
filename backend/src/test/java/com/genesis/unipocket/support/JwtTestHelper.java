@@ -12,6 +12,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @Component
 public class JwtTestHelper {
 
+	public static final String USER_ID_STR = "00000000-0000-0000-0000-000000000001";
+
 	private final JwtProvider jwtProvider;
 
 	public JwtTestHelper(JwtProvider jwtProvider) {
@@ -19,7 +21,7 @@ public class JwtTestHelper {
 	}
 
 	public RequestPostProcessor withJwtAuth() {
-		return withJwtAuth(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+		return withJwtAuth(UUID.fromString(USER_ID_STR));
 	}
 
 	public RequestPostProcessor withJwtAuth(UUID userId) {

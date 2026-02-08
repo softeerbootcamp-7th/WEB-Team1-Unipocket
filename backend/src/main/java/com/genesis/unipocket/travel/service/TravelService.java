@@ -57,13 +57,19 @@ public class TravelService {
 	}
 
 	/**
+	 * 여행 엔티티 조회 (권한 검증용)
+	 */
+	public Travel getTravel(Long travelId) {
+		return travelRepository
+				.findById(travelId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
+	}
+
+	/**
 	 * 여행 상세 조회 (위젯 포함)
 	 */
 	public TravelDetailResponse getTravelDetail(Long travelId) {
-		Travel travel =
-				travelRepository
-						.findById(travelId)
-						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
+		Travel travel = getTravel(travelId);
 
 		List<WidgetDto> widgets =
 				widgetRepository.findAllByTravelIdOrderByWidgetOrderAsc(travelId).stream()

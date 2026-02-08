@@ -6,7 +6,7 @@ import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
 import com.genesis.unipocket.travel.dto.response.TravelDetailResponse;
 import com.genesis.unipocket.travel.dto.response.TravelResponse;
-import com.genesis.unipocket.travel.service.TravelService;
+import com.genesis.unipocket.travel.facade.TravelFacade;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -30,13 +30,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TravelController {
 
-	private final TravelService travelService;
+	private final TravelFacade travelFacade;
 
 	@PostMapping
 	public ResponseEntity<Void> createTravel(
 			@LoginUser UUID userId,
 			@RequestBody @Valid TravelRequest request) {
-		Long travelId = travelService.createTravel(request, userId);
+		Long travelId = travelFacade.createTravel(request, userId);
 		return ResponseEntity.created(URI.create("/api/travels/" + travelId)).build();
 	}
 
@@ -44,14 +44,14 @@ public class TravelController {
 	public ResponseEntity<List<TravelResponse>> getTravels(
 			@RequestParam Long accountBookId,
 			@LoginUser UUID userId) {
-		return ResponseEntity.ok(travelService.getTravels(accountBookId, userId));
+		return ResponseEntity.ok(travelFacade.getTravels(accountBookId, userId));
 	}
 
 	@GetMapping("/{travelId}")
 	public ResponseEntity<TravelDetailResponse> getTravelDetail(
 			@PathVariable Long travelId,
 			@LoginUser UUID userId) {
-		return ResponseEntity.ok(travelService.getTravelDetail(travelId, userId));
+		return ResponseEntity.ok(travelFacade.getTravelDetail(travelId, userId));
 	}
 
 	@PutMapping("/{travelId}")
@@ -59,7 +59,7 @@ public class TravelController {
 			@PathVariable Long travelId,
 			@RequestBody @Valid TravelRequest request,
 			@LoginUser UUID userId) {
-		travelService.updateTravel(travelId, request, userId);
+		travelFacade.updateTravel(travelId, request, userId);
 		return ResponseEntity.ok().build();
 	}
 
@@ -68,7 +68,7 @@ public class TravelController {
 			@PathVariable Long travelId,
 			@RequestBody TravelUpdateRequest request,
 			@LoginUser UUID userId) {
-		travelService.patchTravel(travelId, request, userId);
+		travelFacade.patchTravel(travelId, request, userId);
 		return ResponseEntity.ok().build();
 	}
 
@@ -76,7 +76,7 @@ public class TravelController {
 	public ResponseEntity<Void> deleteTravel(
 			@PathVariable Long travelId,
 			@LoginUser UUID userId) {
-		travelService.deleteTravel(travelId, userId);
+		travelFacade.deleteTravel(travelId, userId);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -85,7 +85,7 @@ public class TravelController {
 			@PathVariable Long travelId,
 			@RequestBody @Valid List<WidgetDto> widgets,
 			@LoginUser UUID userId) {
-		travelService.updateWidgets(travelId, widgets, userId);
+		travelFacade.updateWidgets(travelId, widgets, userId);
 		return ResponseEntity.ok().build();
 	}
 }

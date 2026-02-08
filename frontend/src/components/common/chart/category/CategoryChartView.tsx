@@ -39,7 +39,7 @@ const CategoryChartView = ({
   );
   const { ref: contentRef, scale } = useAutoFitScale<HTMLDivElement>(
     MAX_WIDTH,
-    [totalAmountNode],
+    [countryCode, totalAmount],
   );
 
   const pieChartData = data.map((item, index) => ({

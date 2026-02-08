@@ -1,7 +1,6 @@
 package com.genesis.unipocket.expense.facade;
 
 import com.genesis.unipocket.accountbook.service.AccountBookService;
-import com.genesis.unipocket.auth.ForbiddenException;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.expense.facade.converter.TemporaryExpenseFacadeConverter;
@@ -9,6 +8,8 @@ import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense
 import com.genesis.unipocket.expense.persistence.repository.FileRepository;
 import com.genesis.unipocket.expense.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.expense.service.TemporaryExpenseService;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -117,7 +118,7 @@ public class TemporaryExpenseOrchestrator {
 		try {
 			accountBookService.getAccountBook(accountBookId, userId.toString());
 		} catch (Exception e) {
-			throw new ForbiddenException("가계부에 대한 권한이 없습니다.");
+			throw new BusinessException(ErrorCode.FORBIDDEN);
 		}
 	}
 }

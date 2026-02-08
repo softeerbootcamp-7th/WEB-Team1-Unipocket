@@ -1,6 +1,8 @@
 package com.genesis.unipocket.auth;
 
 import com.genesis.unipocket.accountbook.service.AccountBookService;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,8 +28,8 @@ public class AccountBookAccessValidator {
 	 * 가계부 접근 권한 검증
 	 *
 	 * @param accountBookId 가계부 ID
-	 * @throws UnauthorizedException    인증되지 않은 사용자
-	 * @throws ForbiddenException       접근 권한이 없는 경우
+	 * @throws BusinessException (ErrorCode.UNAUTHORIZED) 인증되지 않은 사용자
+	 * @throws BusinessException (ErrorCode.FORBIDDEN) 접근 권한이 없는 경우
 	 * @throws IllegalArgumentException 가계부를 찾을 수 없는 경우
 	 */
 	public void validateAccess(Long accountBookId) {
@@ -40,19 +42,16 @@ public class AccountBookAccessValidator {
 			accountBookService.getAccountBook(accountBookId, currentUserId);
 			log.debug(
 					"Access granted for user {} to account book {}", currentUserId, accountBookId);
-		} catch (com.genesis.unipocket.global.exception.BusinessException e) {
+		} catch (BusinessException e) {
 			// BusinessException을 적절한 예외로 변환
-			if (e.getCode()
-					== com.genesis.unipocket.global.exception.ErrorCode.ACCOUNT_BOOK_NOT_FOUND) {
+			if (e.getCode() == ErrorCode.ACCOUNT_BOOK_NOT_FOUND) {
 				throw new IllegalArgumentException("가계부를 찾을 수 없습니다.");
-			} else if (e.getCode()
-					== com.genesis.unipocket.global.exception.ErrorCode
-							.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS) {
+			} else if (e.getCode() == ErrorCode.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS) {
 				log.warn(
 						"User {} attempted to access account book {} without permission",
 						currentUserId,
 						accountBookId);
-				throw new ForbiddenException("해당 가계부에 접근 권한이 없습니다.");
+				throw new BusinessException(ErrorCode.FORBIDDEN);
 			}
 			throw e;
 		}

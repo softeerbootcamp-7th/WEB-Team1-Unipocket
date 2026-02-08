@@ -3,6 +3,7 @@ package com.genesis.unipocket.global.controller;
 import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service.PresignedUrlResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "이미지 업로드 기능")
 @RestController
 @RequestMapping("/api/images")
 @RequiredArgsConstructor

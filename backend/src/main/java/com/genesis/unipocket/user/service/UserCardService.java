@@ -1,6 +1,5 @@
 package com.genesis.unipocket.user.service;
 
-import com.genesis.unipocket.auth.ForbiddenException;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.dto.request.UserCardRequest;
@@ -66,7 +65,7 @@ public class UserCardService {
 
 		// 소유권 검증: 카드의 소유자가 요청한 사용자와 일치하는지 확인
 		if (!userCard.getUser().getId().equals(userId)) {
-			throw new ForbiddenException("해당 카드에 대한 권한이 없습니다.");
+			throw new BusinessException(ErrorCode.FORBIDDEN);
 		}
 
 		userCardRepository.delete(userCard);

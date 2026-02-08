@@ -27,7 +27,7 @@ public class AuthenticationContext {
 	 * 현재 인증된 사용자 ID 조회
 	 *
 	 * @return 사용자 UUID
-	 * @throws UnauthorizedException 인증되지 않은 경우
+	 * @throws com.genesis.unipocket.global.exception.BusinessException (ErrorCode.UNAUTHORIZED) 인증되지 않은 경우
 	 */
 	public UUID getCurrentUserId() {
 		// TODO: Spring Security Context에서 실제 사용자 조회

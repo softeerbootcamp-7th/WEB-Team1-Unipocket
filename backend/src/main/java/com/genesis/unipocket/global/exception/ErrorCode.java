@@ -37,6 +37,10 @@ public enum ErrorCode {
 	UNSUPPORTED_MEDIA_TYPE(
 			HttpStatus.UNSUPPORTED_MEDIA_TYPE, "415_UNSUPPORTED_MEDIA_TYPE", "지원하지 않는 미디어 타입입니다."),
 
+	// 인증/인가 에러
+	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "401_UNAUTHORIZED", "인증이 필요합니다."),
+	FORBIDDEN(HttpStatus.FORBIDDEN, "403_FORBIDDEN", "접근 권한이 없습니다."),
+
 	// OAuth 에러
 	INVALID_OAUTH_PROVIDER(
 			HttpStatus.BAD_REQUEST, "400_INVALID_OAUTH_PROVIDER", "지원하지 않는 OAuth Provider입니다."),

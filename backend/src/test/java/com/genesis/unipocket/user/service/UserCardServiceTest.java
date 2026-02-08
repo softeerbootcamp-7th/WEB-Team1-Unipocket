@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.genesis.unipocket.auth.ForbiddenException;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.dto.request.UserCardRequest;
@@ -145,8 +144,8 @@ class UserCardServiceTest {
 
 		// When & Then
 		assertThatThrownBy(() -> userCardService.deleteCard(cardId, otherUserId))
-				.isInstanceOf(ForbiddenException.class)
-				.hasMessage("해당 카드에 대한 권한이 없습니다.");
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
 
 		verify(userCardRepository).findById(cardId);
 		verify(userCardRepository, never()).delete(any());

@@ -1,7 +1,8 @@
 package com.genesis.unipocket.travel.facade;
 
 import com.genesis.unipocket.accountbook.service.AccountBookService;
-import com.genesis.unipocket.auth.ForbiddenException;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
@@ -105,7 +106,7 @@ public class TravelFacade {
 		try {
 			accountBookService.getAccountBook(accountBookId, userId.toString());
 		} catch (Exception e) {
-			throw new ForbiddenException("가계부에 대한 권한이 없습니다.");
+			throw new BusinessException(ErrorCode.FORBIDDEN);
 		}
 	}
 }

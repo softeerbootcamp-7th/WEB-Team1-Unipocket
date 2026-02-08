@@ -5,7 +5,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.accountbook.service.AccountBookService;
-import com.genesis.unipocket.auth.ForbiddenException;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.travel.dto.common.WidgetDto;
 import com.genesis.unipocket.travel.dto.request.TravelRequest;
 import com.genesis.unipocket.travel.dto.request.TravelUpdateRequest;
@@ -87,7 +88,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.createTravel(request, userId))
-				.isInstanceOf(ForbiddenException.class)
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN)
 				.hasMessage("가계부에 대한 권한이 없습니다.");
 
 		verify(travelService, never()).createTravel(any());
@@ -134,7 +136,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.getTravels(accountBookId, userId))
-				.isInstanceOf(ForbiddenException.class)
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN)
 				.hasMessage("가계부에 대한 권한이 없습니다.");
 
 		verify(travelService, never()).getTravels(any());
@@ -185,7 +188,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.getTravelDetail(travelId, userId))
-				.isInstanceOf(ForbiddenException.class);
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
 	}
 
 	@Test
@@ -233,7 +237,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.updateTravel(travelId, request, userId))
-				.isInstanceOf(ForbiddenException.class);
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).updateTravel(any(), any());
 	}
@@ -275,7 +280,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.patchTravel(travelId, request, userId))
-				.isInstanceOf(ForbiddenException.class);
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).patchTravel(any(), any());
 	}
@@ -309,7 +315,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.deleteTravel(travelId, userId))
-				.isInstanceOf(ForbiddenException.class);
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).deleteTravel(any());
 	}
@@ -353,7 +360,8 @@ class TravelFacadeTest {
 
 		// When & Then
 		assertThatThrownBy(() -> travelFacade.updateWidgets(travelId, widgets, userId))
-				.isInstanceOf(ForbiddenException.class);
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("errorCode", ErrorCode.FORBIDDEN);
 
 		verify(travelService, never()).updateWidgets(any(), any());
 	}

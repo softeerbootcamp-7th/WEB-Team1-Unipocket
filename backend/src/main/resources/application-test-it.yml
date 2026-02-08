@@ -57,3 +57,10 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+# Gemini API
+gemini:
+  api:
+    key: test-gemini-api-key
+    model: gemini-1.5-flash
+    endpoint: https://generativelanguage.googleapis.com/v1beta

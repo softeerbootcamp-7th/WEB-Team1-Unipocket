@@ -3,6 +3,12 @@ import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 import { cn } from '@/lib/utils';
 
 const SIZE_VARIANTS = {
+  xs: {
+    containerGap: 'gap-0.5',
+    symbol: 'caption1-medium text-label-alternative',
+    integer: 'caption1-medium text-label-alternative',
+    decimal: 'caption1-medium text-label-alternative -mt-0.5',
+  },
   sm: {
     containerGap: 'gap-0.5',
     symbol: 'figure-caption1-medium text-label-alternative',
@@ -17,7 +23,7 @@ const SIZE_VARIANTS = {
   },
   lg: {
     containerGap: 'gap-1',
-    symbol: 'title3-semibold',
+    symbol: 'title3-semibold text-label-neutral',
     integer: 'title3-semibold',
     decimal: 'text-md font-medium',
   },
@@ -26,8 +32,8 @@ const SIZE_VARIANTS = {
 interface CurrencyAmountDisplayProps {
   countryCode: CountryCode;
   amount: number;
-  size?: 'sm' | 'md' | 'lg';
   className?: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 const CurrencyAmountDisplay = ({

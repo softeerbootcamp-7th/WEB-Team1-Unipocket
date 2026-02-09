@@ -6,7 +6,6 @@ import { type CurrencyType } from '@/types/currency';
 import countryData from '@/data/countryData.json';
 
 import { mockData } from './mock';
-
 interface ComparisonChartViewProps {
   selectedId: number;
 }
@@ -48,7 +47,7 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
       )}
       {isEqual && (
         <p className="body1-normal-bold text-label-neutral">
-          <span className="text-primary-normal">평균</span>과 일치해요!
+          <span className="text-primary-strong">평균</span>과 일치해요!
         </p>
       )}
 
@@ -58,7 +57,7 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
         </span>
         <div className="flex h-8.5 gap-3.5">
           <div
-            className={`bg-cool-neutral-95 h-8 ${averageBarWidth} items-center rounded-xs`}
+            className={`bg-cool-neutral-95 h-8 ${averageBarWidth} items-center rounded-xs animate-expand-width origin-left`}
           />
           <div className="flex flex-col gap-1.5">
             <span className="text-cool-neutral-80 caption2-medium">
@@ -82,7 +81,7 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
         </div>
         <div className="flex h-8.5 gap-3.5">
           <div
-            className={`bg-primary-normal h-8 ${meBarWidth} items-center rounded-xs`}
+            className={`bg-primary-normal h-8 ${meBarWidth} items-center rounded-xs animate-expand-width origin-left`}
           />
           <div className="flex flex-col gap-1.5">
             <span className="text-primary-normal caption2-medium">나</span>

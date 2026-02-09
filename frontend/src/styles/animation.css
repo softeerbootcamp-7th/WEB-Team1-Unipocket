@@ -47,9 +47,19 @@
     }
   }
 
+  @keyframes expand-width {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
   --animate-float: float 2s ease-in-out infinite;
   --animate-marquee: marquee 30s linear infinite;
   --animate-marquee-reverse: marquee-reverse 30s linear infinite;
   --animate-ripple: ripple 2s ease-in-out infinite;
   --animate-grow: scale-up 0.3s ease-in-out forwards;
+  --animate-expand-width: expand-width 0.6s ease-out forwards;
 }

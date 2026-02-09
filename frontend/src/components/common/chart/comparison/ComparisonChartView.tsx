@@ -46,7 +46,7 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
                 countryCode={data.countryCode}
                 amount={data.me}
                 size="sm"
-                className="text-primary-strong"
+                className="text-primary-normal"
               />
           </div>
         </div>

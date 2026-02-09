@@ -77,6 +77,7 @@ const CurrencyAmountDisplay = ({
             className={cn('text-label-alternative',
               className && 'opacity-80',
               styles.decimal,
+              className
             )}
           >
             .{decimalPart}

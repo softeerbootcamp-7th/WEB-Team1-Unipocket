@@ -13,10 +13,12 @@ const ExpenseLegendItem = ({
 }: ExpenseLegendItemProps) => {
   return (
     <div className="flex w-40 items-center justify-between">
-      <div className="caption2-medium text-label-neutral flex items-center gap-1.75">
+      <div className="text-label-neutral flex items-center gap-1.75">
         <div className="h-3.5 w-3.5" style={{ backgroundColor: color }} />
-        {currencySignAndName && <span>{currencySignAndName}</span>}
-        <span className="max-w-15 truncate">{label}</span>
+        {currencySignAndName && (
+          <span className="caption2-medium">{currencySignAndName}</span>
+        )}
+        <span className="caption1-medium max-w-15 truncate">{label}</span>
       </div>
       <span className="figure-caption1-medium text-label-alternative">
         {percent}%

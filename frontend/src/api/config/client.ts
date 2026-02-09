@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router';
+
 import {
   API_BASE_URL,
   DEFAULT_TIMEOUT,
@@ -119,6 +121,25 @@ export const customFetch = async <T>({
       throw new ApiError({
         message: '요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.',
         status: HTTP_STATUS.REQUEST_TIMEOUT,
+      });
+    }
+
+    if (
+      error instanceof ApiError &&
+      error.status === HTTP_STATUS.UNAUTHORIZED
+    ) {
+      const currentPath = window.location.pathname;
+      const publicPaths = ['/login', '/'];
+
+      // public 경로에서는 에러만 throw (무한 루프 방지)
+      if (publicPaths.some((path) => currentPath.startsWith(path))) {
+        // 이미 재발급 시도 후에도 401 에러가 발생한 경우
+        return undefined as T;
+      }
+
+      // 인증이 필요한 페이지에서만 리다이렉트
+      throw redirect({
+        to: '/login',
       });
     }
 

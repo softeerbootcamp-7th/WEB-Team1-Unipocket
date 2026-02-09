@@ -2,17 +2,18 @@ import clsx from 'clsx';
 
 import type { CountryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
+import { cn } from '@/lib/utils';
 
 interface CurrencyBadgeProps {
   countryCode: CountryCode;
-  color?: string;
   size?: 'sm' | 'md';
+  className?: string;
 }
 
 const CurrencyBadge = ({
   countryCode,
-  color,
   size = 'md',
+  className,
 }: CurrencyBadgeProps) => {
   const countryInfo = getCountryInfo(countryCode);
 
@@ -32,11 +33,11 @@ const CurrencyBadge = ({
         />
       </div>
       <span
-        className={clsx(
+        className={cn(
+          'text-label-neutral',
           isMd ? 'figure-label2-medium' : 'figure-label2-small-medium',
-          !color && 'text-label-neutral',
+          className,
         )}
-        style={color ? { color } : undefined}
       >
         {countryInfo.currencyName}
       </span>

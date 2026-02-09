@@ -16,7 +16,8 @@ const ChartContent = ({
 }: ChartContentProps) => {
   return (
     <div
-      className={cn('rounded-modal-8 bg-background-alternative flex justify-between p-5',
+      className={cn(
+        'rounded-modal-8 bg-background-alternative flex justify-between p-5',
         className,
       )}
     >

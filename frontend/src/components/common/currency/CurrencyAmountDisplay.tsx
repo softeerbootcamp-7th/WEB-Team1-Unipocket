@@ -58,7 +58,8 @@ const CurrencyAmountDisplay = ({
 
   return (
     <div
-      className={cn('text-label-normal flex items-center',
+      className={cn(
+        'text-label-normal flex items-center',
         styles.containerGap,
         className,
       )}
@@ -74,10 +75,11 @@ const CurrencyAmountDisplay = ({
 
         {decimalPart && (
           <span
-            className={cn('text-label-alternative',
+            className={cn(
+              'text-label-alternative',
               className && 'opacity-80',
               styles.decimal,
-              className
+              className,
             )}
           >
             .{decimalPart}

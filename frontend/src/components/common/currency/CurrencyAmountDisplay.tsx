@@ -1,7 +1,6 @@
-import clsx from 'clsx';
-
 import type { CountryCode } from '@/data/countryCode';
 import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
+import { cn } from '@/lib/utils';
 
 const SIZE_VARIANTS = {
   sm: {
@@ -28,14 +27,14 @@ interface CurrencyAmountDisplayProps {
   countryCode: CountryCode;
   amount: number;
   size?: 'sm' | 'md' | 'lg';
-  color?: string;
+  className?: string;
 }
 
 const CurrencyAmountDisplay = ({
   countryCode,
   amount,
   size = 'md',
-  color,
+  className,
 }: CurrencyAmountDisplayProps) => {
   const countryInfo = getCountryInfo(countryCode);
 
@@ -59,15 +58,13 @@ const CurrencyAmountDisplay = ({
 
   return (
     <div
-      className={clsx(
-        !color && 'text-label-normal',
-        'flex items-center',
+      className={cn('text-label-normal flex items-center',
         styles.containerGap,
+        className,
       )}
-      style={color ? { color } : undefined}
     >
       {/* 통화 기호 */}
-      <span className={styles.symbol} style={color ? { color } : undefined}>
+      <span className={cn(styles.symbol, className)}>
         {countryInfo.currencySign}
       </span>
 
@@ -77,12 +74,10 @@ const CurrencyAmountDisplay = ({
 
         {decimalPart && (
           <span
-            className={clsx(
-              !color && 'text-label-alternative',
-              color && 'opacity-80',
+            className={cn('text-label-alternative',
+              className && 'opacity-80',
               styles.decimal,
             )}
-            style={color ? { color } : undefined}
           >
             .{decimalPart}
           </span>

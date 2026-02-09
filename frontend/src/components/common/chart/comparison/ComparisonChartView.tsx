@@ -1,11 +1,9 @@
-import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
-import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
-
 import { type CurrencyType } from '@/types/currency';
 
 import countryData from '@/data/countryData.json';
 import { formatCurrencyAmount } from '@/lib/country';
 
+import ComparisonCard from './ComparisonCard';
 import { mockData } from './mock';
 interface ComparisonChartViewProps {
   selectedId: number;
@@ -57,52 +55,26 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
         <span className="caption2-medium text-label-assistive">
           기준 : {mockData.month}월
         </span>
-        <div className="flex h-8.5 gap-3.5">
-          <div
-            className={`bg-cool-neutral-95 h-8 ${averageBarWidth} items-center rounded-xs animate-expand-width origin-left`}
-          />
-          <div className="flex flex-col gap-1.5">
-            <span className="text-cool-neutral-80 caption2-medium">
-              미국 교환학생 평균
-            </span>
-            <div className="flex items-center gap-1.75">
-              {isLocal && (
-                <CurrencyBadge
-                  countryCode={data.countryCode}
-                  className="text-cool-neutral-70"
-                />
-              )}
-              <CurrencyAmountDisplay
-                countryCode={data.countryCode}
-                amount={data.average}
-                size="sm"
-                className="text-cool-neutral-70"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex h-8.5 gap-3.5">
-          <div
-            className={`bg-primary-normal h-8 ${meBarWidth} items-center rounded-xs animate-expand-width origin-left`}
-          />
-          <div className="flex flex-col gap-1.5">
-            <span className="text-primary-normal caption2-medium">나</span>
-            <div className="flex items-center gap-1.75">
-              {isLocal && (
-                <CurrencyBadge
-                  countryCode={data.countryCode}
-                  className="text-primary-normal"
-                />
-              )}
-              <CurrencyAmountDisplay
-                countryCode={data.countryCode}
-                amount={data.me}
-                size="sm"
-                className="text-primary-normal"
-              />
-            </div>
-          </div>
-        </div>
+        <ComparisonCard
+          barWidth={averageBarWidth}
+          barColor="bg-cool-neutral-95"
+          label="미국 교환학생 평균"
+          amount={data.average}
+          countryCode={data.countryCode}
+          isLocal={isLocal}
+          textColor="text-cool-neutral-80"
+          amountTextColor="text-cool-neutral-70"
+        />
+        <ComparisonCard
+          barWidth={meBarWidth}
+          barColor="bg-primary-normal"
+          label="나"
+          amount={data.me}
+          countryCode={data.countryCode}
+          isLocal={isLocal}
+          textColor="text-primary-normal"
+          amountTextColor="text-primary-normal"
+        />
       </div>
     </>
   );

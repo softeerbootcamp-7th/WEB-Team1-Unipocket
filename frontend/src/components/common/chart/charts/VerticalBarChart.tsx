@@ -41,6 +41,7 @@ interface VerticalBarChartProps {
   gap?: number;
   className?: string;
   colors?: string[];
+  animate?: boolean;
 }
 
 const VerticalBarChart = ({
@@ -50,6 +51,7 @@ const VerticalBarChart = ({
   gap = 0,
   className,
   colors = EXPENSE_CHART_COLORS,
+  animate = true,
 }: VerticalBarChartProps) => {
   const clipId = useId();
   const totalPercent = data.reduce((sum, item) => sum + item.percent, 0);
@@ -87,12 +89,15 @@ const VerticalBarChart = ({
             <motion.rect
               x={0}
               width={width}
-              initial={{ y: height, height: 0 }} // 시작: 바닥에서 높이 0
+              initial={
+                animate ? { y: height, height: 0 } : { y: 0, height: height }
+              } // 시작: 바닥에서 높이 0
               animate={{ y: 0, height: height }} // 끝: 전체를 덮음
-              transition={{
-                duration: TOTAL_ANIMATION_DURATION,
-                ease: 'easeOut',
-              }}
+              transition={
+                animate
+                  ? { duration: TOTAL_ANIMATION_DURATION, ease: 'easeOut' }
+                  : { duration: 0 } // 애니메이션 시간 0
+              }
             />
           </clipPath>
         </defs>

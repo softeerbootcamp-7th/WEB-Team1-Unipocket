@@ -26,6 +26,7 @@ const CategoryChartSkeleton = () => {
             percentage: item.percent,
             color: 'var(--color-fill-strong)',
           }))}
+          animate={false}
         >
           <div className="bg-fill-normal rounded-modal-4 h-5.5 w-32.5 animate-pulse" />
         </PieChart>

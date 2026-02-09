@@ -11,9 +11,15 @@ interface PieChartProps {
   data: PieChartSegment[];
   size?: number;
   children?: React.ReactNode;
+  animate?: boolean;
 }
 
-const PieChart = ({ data, size = 192, children }: PieChartProps) => {
+const PieChart = ({
+  data,
+  size = 192,
+  children,
+  animate = true,
+}: PieChartProps) => {
   const strokeWidth = 10;
   const gap = 4;
   const center = size / 2;
@@ -69,15 +75,19 @@ const PieChart = ({ data, size = 192, children }: PieChartProps) => {
               strokeDashoffset={0}
               transform={`rotate(${rotation} ${center} ${center})`}
               strokeLinecap="butt"
-              initial={{ strokeDasharray: `0 ${circumference}` }}
+              initial={
+                animate
+                  ? { strokeDasharray: `0 ${circumference}` }
+                  : {
+                      strokeDasharray: `${drawLength} ${circumference - drawLength}`,
+                    }
+              }
               animate={{
                 strokeDasharray: `${drawLength} ${circumference - drawLength}`,
               }}
-              transition={{
-                duration,
-                ease: 'linear',
-                delay,
-              }}
+              transition={
+                animate ? { duration, ease: 'linear', delay } : { duration: 0 }
+              }
             />
           );
         })}

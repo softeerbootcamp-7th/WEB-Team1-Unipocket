@@ -35,6 +35,7 @@ const ExpenseChartSkeleton = () => {
         data={mockDataForCurrency}
         gap={2}
         colors={[EXPENSE_SUSPENSE_COLOR[0]]}
+        animate={false}
       />
       <div className="flex flex-col items-start justify-center gap-2.5">
         {Array.from({ length: EXPENSE_LEGEND_COUNT }).map((_, idx) => (

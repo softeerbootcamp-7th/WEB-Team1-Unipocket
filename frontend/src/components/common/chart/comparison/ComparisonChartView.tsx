@@ -4,6 +4,7 @@ import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
 import { type CurrencyType } from '@/types/currency';
 
 import countryData from '@/data/countryData.json';
+import { formatCurrencyAmount } from '@/lib/country';
 
 import { mockData } from './mock';
 interface ComparisonChartViewProps {
@@ -26,6 +27,7 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
   const isEqual = data.me === data.average;
 
   const unit = countryData[data.countryCode].currencyUnitKor;
+  const formattedDiff = formatCurrencyAmount(diff, data.countryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]
@@ -39,7 +41,7 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
         <p className="body1-normal-bold text-label-neutral">
           나랑 같은 국가의 교환학생보다 <br />
           <span className="text-primary-strong">
-            {diff}
+            {formattedDiff}
             {unit} {isLess ? '덜' : '더'}
           </span>{' '}
           썼어요

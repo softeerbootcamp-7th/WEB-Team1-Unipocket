@@ -4,27 +4,36 @@ interface VerticalGridProps {
 }
 
 const VerticalGrid = ({ steps, maxValue = 150 }: VerticalGridProps) => {
-  const stepValues = Array.from({ length: steps }, (_, i) => (maxValue / (steps - 1)) * i);
+  const values = Array.from(
+    { length: steps + 1 },
+    (_, i) => (maxValue / steps) * i,
+  );
 
   return (
-    <div className="pointer-events-none absolute inset-0 left-14.75 flex h-full flex-col gap-4">
-      <div className="relative flex flex-1">
-        {stepValues.map((_, i) => (
+    <div className="pointer-events-none absolute inset-0 left-14.75 flex h-full flex-col gap-4 pr-5">
+      <div className="relative flex-1">
+        {values.map((_, i) => (
           <div
             key={i}
-            className="border-line-normal-normal relative flex-1 border-l border-dashed"
+            className="border-line-normal-normal absolute top-0 h-full border-l border-dashed"
+            style={{
+              left: `${(i / steps) * 100}%`,
+            }}
           />
         ))}
       </div>
-      <div className="flex">
-        {stepValues.map((value, i) => (
+
+      <div className="relative">
+        {values.map((value, i) => (
           <div
             key={i}
-            className="relative flex-1 text-center text-xs text-label-assistive"
+            className="text-label-assistive absolute text-xs"
+            style={{
+              left: `${(i / steps) * 100}%`,
+              transform: 'translateX(-50%)',
+            }}
           >
-            <span className="block -translate-x-1/2 transform">
-              {Math.round(value).toLocaleString()}
-            </span>
+            {Math.round(value).toLocaleString()}
           </div>
         ))}
       </div>

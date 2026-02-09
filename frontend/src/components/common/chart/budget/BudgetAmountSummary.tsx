@@ -40,7 +40,7 @@ const BudgetAmountSummary = ({
           <CurrencyAmountDisplay
             countryCode={localCode}
             amount={usedBudget}
-            color="var(--color-label-neutral)"
+            className="text-label-neutral"
           />
         </div>
       </div>

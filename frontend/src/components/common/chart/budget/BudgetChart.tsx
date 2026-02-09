@@ -8,6 +8,7 @@ import BudgetChartSkeleton from './BudgetChartSkeleton';
 import BudgetChartView from './BudgetChartView';
 
 const BudgetChart = ({ isLoading = false }: { isLoading?: boolean }) => {
+  // 렌더링용 데이터. API 연동 시 변경 필요
   const { totalBudget, usedBudget } = mockData;
 
   return (

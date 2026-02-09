@@ -46,7 +46,7 @@ const CategoryLegendItem = ({
             countryCode={countryCode}
             amount={amount}
             size="sm"
-            color="var(--color-label-neutral)"
+            className="text-label-neutral"
           />
         </div>
       </div>

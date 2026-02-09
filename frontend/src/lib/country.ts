@@ -9,6 +9,7 @@ export interface CountryInfo {
   currencySign: string;
   currencyName: string;
   currencyNameKor: string;
+  currencyUnitKor: string;
 }
 
 export const getCountryInfo = (code: CountryCode): CountryInfo | null => {

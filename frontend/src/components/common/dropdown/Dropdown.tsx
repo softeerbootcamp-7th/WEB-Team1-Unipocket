@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { clsx } from 'clsx';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -15,13 +16,23 @@ interface DropDownProps {
   onSelect: (id: number) => void;
   options?: Option[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
+  align?: 'left' | 'right' | 'center';
+  itemWidth?: string;
 }
+
+const ALIGN_CLASS = {
+  left: 'left-0',
+  right: 'right-0',
+  center: 'left-1/2 -translate-x-1/2',
+} as const;
 
 const DropDown = ({
   selected,
   onSelect,
   options,
   size = 'sm',
+  align = 'left',
+  itemWidth = 'w-40',
 }: DropDownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -40,12 +51,17 @@ const DropDown = ({
   return (
     <div ref={dropdownRef} className="relative inline-block w-full">
       <Filter isOpen={isOpen} onClick={() => setIsOpen((v) => !v)} size={size}>
-        {/* @TODO: 추후 기본값 처리 방법 변경 (API 연동) */}
         {selectedName || options?.[0].name}
       </Filter>
 
       {isOpen && (
-        <ul className="scrollbar rounded-modal-10 border-line-solid-normal bg-background-normal absolute top-full left-0 z-50 mt-1.5 max-h-60 w-50 overflow-hidden overflow-y-auto border p-1 shadow-lg">
+        <ul
+          className={clsx(
+            'scrollbar rounded-modal-10 border-line-solid-normal bg-background-normal absolute top-full z-50 mt-1.5 max-h-60 overflow-hidden overflow-y-auto border p-1 shadow-lg',
+            ALIGN_CLASS[align],
+            itemWidth,
+          )}
+        >
           {options?.map((option) => (
             <OptionItem
               key={option.id}

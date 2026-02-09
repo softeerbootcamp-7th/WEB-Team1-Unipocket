@@ -4,405 +4,463 @@
     "countryName": "대한민국",
     "currencySign": "₩",
     "currencyName": "KRW",
-    "currencyNameKor": "원"
+    "currencyNameKor": "원",
+    "currencyUnitKor": "원"
   },
   "ZA": {
     "imageUrl": "/assets/flags/ZA.svg",
     "countryName": "남아프리카 공화국",
     "currencySign": "R",
     "currencyName": "ZAR",
-    "currencyNameKor": "랜드"
+    "currencyNameKor": "랜드",
+    "currencyUnitKor": "랜드"
   },
   "NP": {
     "imageUrl": "/assets/flags/NP.svg",
     "countryName": "네팔",
     "currencySign": "₨",
     "currencyName": "NPR",
-    "currencyNameKor": "네팔 루피"
+    "currencyNameKor": "네팔 루피",
+    "currencyUnitKor": "루피"
   },
   "NO": {
     "imageUrl": "/assets/flags/NO.svg",
     "countryName": "노르웨이",
     "currencySign": "kr",
     "currencyName": "NOK",
-    "currencyNameKor": "노르웨이 크로네"
+    "currencyNameKor": "노르웨이 크로네",
+    "currencyUnitKor": "크로네"
   },
   "NZ": {
     "imageUrl": "/assets/flags/NZ.svg",
     "countryName": "뉴질랜드",
     "currencySign": "$",
     "currencyName": "NZD",
-    "currencyNameKor": "뉴질랜드 달러"
+    "currencyNameKor": "뉴질랜드 달러",
+    "currencyUnitKor": "달러"
   },
   "TW": {
     "imageUrl": "/assets/flags/TW.svg",
     "countryName": "대만",
     "currencySign": "NT$",
     "currencyName": "TWD",
-    "currencyNameKor": "신 대만 달러"
+    "currencyNameKor": "신 대만 달러",
+    "currencyUnitKor": "달러"
   },
   "DK": {
     "imageUrl": "/assets/flags/DK.svg",
     "countryName": "덴마크",
     "currencySign": "kr",
     "currencyName": "DKK",
-    "currencyNameKor": "덴마크 크로네"
+    "currencyNameKor": "덴마크 크로네",
+    "currencyUnitKor": "크로네"
   },
   "RU": {
     "imageUrl": "/assets/flags/RU.svg",
     "countryName": "러시아",
     "currencySign": "₽",
     "currencyName": "RUB",
-    "currencyNameKor": "루블"
+    "currencyNameKor": "루블",
+    "currencyUnitKor": "루블"
   },
   "MO": {
     "imageUrl": "/assets/flags/MO.svg",
     "countryName": "마카오",
     "currencySign": "P",
     "currencyName": "MOP",
-    "currencyNameKor": "파타카"
+    "currencyNameKor": "파타카",
+    "currencyUnitKor": "파타카"
   },
   "MY": {
     "imageUrl": "/assets/flags/MY.svg",
     "countryName": "말레이시아",
     "currencySign": "RM",
     "currencyName": "MYR",
-    "currencyNameKor": "링깃"
+    "currencyNameKor": "링깃",
+    "currencyUnitKor": "링깃"
   },
   "MX": {
     "imageUrl": "/assets/flags/MX.svg",
     "countryName": "멕시코",
     "currencySign": "$",
     "currencyName": "MXN",
-    "currencyNameKor": "멕시코 페소"
+    "currencyNameKor": "멕시코 페소",
+    "currencyUnitKor": "페소"
   },
   "MN": {
     "imageUrl": "/assets/flags/MN.svg",
     "countryName": "몽골",
     "currencySign": "₮",
     "currencyName": "MNT",
-    "currencyNameKor": "투그릭"
+    "currencyNameKor": "투그릭",
+    "currencyUnitKor": "투그릭"
   },
   "US": {
     "imageUrl": "/assets/flags/US.svg",
     "countryName": "미국",
     "currencySign": "$",
     "currencyName": "USD",
-    "currencyNameKor": "미국 달러"
+    "currencyNameKor": "미국 달러",
+    "currencyUnitKor": "달러"
   },
   "BH": {
     "imageUrl": "/assets/flags/BH.svg",
     "countryName": "바레인",
     "currencySign": ".د.ب",
     "currencyName": "BHD",
-    "currencyNameKor": "바레인 디나르"
+    "currencyNameKor": "바레인 디나르",
+    "currencyUnitKor": "디나르"
   },
   "BD": {
     "imageUrl": "/assets/flags/BD.svg",
     "countryName": "방글라데시",
     "currencySign": "৳",
     "currencyName": "BDT",
-    "currencyNameKor": "타카"
+    "currencyNameKor": "타카",
+    "currencyUnitKor": "타카"
   },
   "VN": {
     "imageUrl": "/assets/flags/VN.svg",
     "countryName": "베트남",
     "currencySign": "₫",
     "currencyName": "VND",
-    "currencyNameKor": "동"
+    "currencyNameKor": "동",
+    "currencyUnitKor": "동"
   },
   "BR": {
     "imageUrl": "/assets/flags/BR.svg",
     "countryName": "브라질",
     "currencySign": "R$",
     "currencyName": "BRL",
-    "currencyNameKor": "헤알"
+    "currencyNameKor": "헤알",
+    "currencyUnitKor": "헤알"
   },
   "BN": {
     "imageUrl": "/assets/flags/BN.svg",
     "countryName": "브루나이",
     "currencySign": "$",
     "currencyName": "BND",
-    "currencyNameKor": "브루나이 달러"
+    "currencyNameKor": "브루나이 달러",
+    "currencyUnitKor": "달러"
   },
   "SA": {
     "imageUrl": "/assets/flags/SA.svg",
     "countryName": "사우디아라비아",
     "currencySign": "﷼",
     "currencyName": "SAR",
-    "currencyNameKor": "사우디아라비아 리얄"
+    "currencyNameKor": "사우디아라비아 리얄",
+    "currencyUnitKor": "리얄"
   },
   "SE": {
     "imageUrl": "/assets/flags/SE.svg",
     "countryName": "스웨덴",
     "currencySign": "kr",
     "currencyName": "SEK",
-    "currencyNameKor": "스웨덴 크로나"
+    "currencyNameKor": "스웨덴 크로나",
+    "currencyUnitKor": "크로나"
   },
   "CH": {
     "imageUrl": "/assets/flags/CH.svg",
     "countryName": "스위스",
     "currencySign": "CHF",
     "currencyName": "CHF",
-    "currencyNameKor": "스위스 프랑"
+    "currencyNameKor": "스위스 프랑",
+    "currencyUnitKor": "프랑"
   },
   "SG": {
     "imageUrl": "/assets/flags/SG.svg",
     "countryName": "싱가포르",
     "currencySign": "$",
     "currencyName": "SGD",
-    "currencyNameKor": "싱가포르 달러"
+    "currencyNameKor": "싱가포르 달러",
+    "currencyUnitKor": "달러"
   },
   "AE": {
     "imageUrl": "/assets/flags/AE.svg",
     "countryName": "아랍에미리트",
     "currencySign": "د.إ",
     "currencyName": "AED",
-    "currencyNameKor": "아랍에미리트 디르함"
+    "currencyNameKor": "아랍에미리트 디르함",
+    "currencyUnitKor": "디르함"
   },
   "GB": {
     "imageUrl": "/assets/flags/GB.svg",
     "countryName": "영국",
     "currencySign": "£",
     "currencyName": "GBP",
-    "currencyNameKor": "영국 파운드"
+    "currencyNameKor": "영국 파운드",
+    "currencyUnitKor": "파운드"
   },
   "OM": {
     "imageUrl": "/assets/flags/OM.svg",
     "countryName": "오만",
     "currencySign": "﷼",
     "currencyName": "OMR",
-    "currencyNameKor": "오만 리알"
+    "currencyNameKor": "오만 리알",
+    "currencyUnitKor": "리알"
   },
   "JO": {
     "imageUrl": "/assets/flags/JO.svg",
     "countryName": "요르단",
     "currencySign": "د.ا",
     "currencyName": "JOD",
-    "currencyNameKor": "요르단 디나르"
+    "currencyNameKor": "요르단 디나르",
+    "currencyUnitKor": "디나르"
   },
   "DE": {
     "imageUrl": "/assets/flags/DE.svg",
     "countryName": "독일",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "FR": {
     "imageUrl": "/assets/flags/FR.svg",
     "countryName": "프랑스",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "IT": {
     "imageUrl": "/assets/flags/IT.svg",
     "countryName": "이탈리아",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "ES": {
     "imageUrl": "/assets/flags/ES.svg",
     "countryName": "스페인",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "NL": {
     "imageUrl": "/assets/flags/NL.svg",
     "countryName": "네덜란드",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "BE": {
     "imageUrl": "/assets/flags/BE.svg",
     "countryName": "벨기에",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "AT": {
     "imageUrl": "/assets/flags/AT.svg",
     "countryName": "오스트리아",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "IE": {
     "imageUrl": "/assets/flags/IE.svg",
     "countryName": "아일랜드",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "PT": {
     "imageUrl": "/assets/flags/PT.svg",
     "countryName": "포르투갈",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "FI": {
     "imageUrl": "/assets/flags/FI.svg",
     "countryName": "핀란드",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "GR": {
     "imageUrl": "/assets/flags/GR.svg",
     "countryName": "그리스",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "LU": {
     "imageUrl": "/assets/flags/LU.svg",
     "countryName": "룩셈부르크",
     "currencySign": "€",
     "currencyName": "EUR",
-    "currencyNameKor": "유로"
+    "currencyNameKor": "유로",
+    "currencyUnitKor": "유로"
   },
   "IL": {
     "imageUrl": "/assets/flags/IL.svg",
     "countryName": "이스라엘",
     "currencySign": "₪",
     "currencyName": "ILS",
-    "currencyNameKor": "신 셰켈"
+    "currencyNameKor": "신 셰켈",
+    "currencyUnitKor": "셰켈"
   },
   "EG": {
     "imageUrl": "/assets/flags/EG.svg",
     "countryName": "이집트",
     "currencySign": "£",
     "currencyName": "EGP",
-    "currencyNameKor": "이집트 파운드"
+    "currencyNameKor": "이집트 파운드",
+    "currencyUnitKor": "파운드"
   },
   "IN": {
     "imageUrl": "/assets/flags/IN.svg",
     "countryName": "인도",
     "currencySign": "₹",
     "currencyName": "INR",
-    "currencyNameKor": "인도 루피"
+    "currencyNameKor": "인도 루피",
+    "currencyUnitKor": "루피"
   },
   "ID": {
     "imageUrl": "/assets/flags/ID.svg",
     "countryName": "인도네시아",
     "currencySign": "Rp",
     "currencyName": "IDR",
-    "currencyNameKor": "루피아"
+    "currencyNameKor": "루피아",
+    "currencyUnitKor": "루피아"
   },
   "JP": {
     "imageUrl": "/assets/flags/JP.svg",
     "countryName": "일본",
     "currencySign": "¥",
     "currencyName": "JPY",
-    "currencyNameKor": "엔"
+    "currencyNameKor": "엔",
+    "currencyUnitKor": "엔"
   },
   "CN": {
     "imageUrl": "/assets/flags/CN.svg",
     "countryName": "중국",
     "currencySign": "¥",
     "currencyName": "CNY",
-    "currencyNameKor": "위안"
+    "currencyNameKor": "위안",
+    "currencyUnitKor": "위안"
   },
   "CZ": {
     "imageUrl": "/assets/flags/CZ.svg",
     "countryName": "체코",
     "currencySign": "Kč",
     "currencyName": "CZK",
-    "currencyNameKor": "코루나"
+    "currencyNameKor": "코루나",
+    "currencyUnitKor": "코루나"
   },
   "CL": {
     "imageUrl": "/assets/flags/CL.svg",
     "countryName": "칠레",
     "currencySign": "$",
     "currencyName": "CLP",
-    "currencyNameKor": "칠레 페소"
+    "currencyNameKor": "칠레 페소",
+    "currencyUnitKor": "페소"
   },
   "KZ": {
     "imageUrl": "/assets/flags/KZ.svg",
     "countryName": "카자흐스탄",
     "currencySign": "₸",
     "currencyName": "KZT",
-    "currencyNameKor": "텡게"
+    "currencyNameKor": "텡게",
+    "currencyUnitKor": "텡게"
   },
   "QA": {
     "imageUrl": "/assets/flags/QA.svg",
     "countryName": "카타르",
     "currencySign": "﷼",
     "currencyName": "QAR",
-    "currencyNameKor": "카타르 리얄"
+    "currencyNameKor": "카타르 리얄",
+    "currencyUnitKor": "리얄"
   },
   "CA": {
     "imageUrl": "/assets/flags/CA.svg",
     "countryName": "캐나다",
     "currencySign": "$",
     "currencyName": "CAD",
-    "currencyNameKor": "캐나다 달러"
+    "currencyNameKor": "캐나다 달러",
+    "currencyUnitKor": "달러"
   },
   "KW": {
     "imageUrl": "/assets/flags/KW.svg",
     "countryName": "쿠웨이트",
     "currencySign": "د.ك",
     "currencyName": "KWD",
-    "currencyNameKor": "쿠웨이트 디나르"
+    "currencyNameKor": "쿠웨이트 디나르",
+    "currencyUnitKor": "디나르"
   },
   "TH": {
     "imageUrl": "/assets/flags/TH.svg",
     "countryName": "태국",
     "currencySign": "฿",
     "currencyName": "THB",
-    "currencyNameKor": "밧"
+    "currencyNameKor": "밧",
+    "currencyUnitKor": "밧"
   },
   "TR": {
     "imageUrl": "/assets/flags/TR.svg",
     "countryName": "튀르키예",
     "currencySign": "₺",
     "currencyName": "TRY",
-    "currencyNameKor": "튀르키예 리라"
+    "currencyNameKor": "튀르키예 리라",
+    "currencyUnitKor": "리라"
   },
   "PK": {
     "imageUrl": "/assets/flags/PK.svg",
     "countryName": "파키스탄",
     "currencySign": "₨",
     "currencyName": "PKR",
-    "currencyNameKor": "파키스탄 루피"
+    "currencyNameKor": "파키스탄 루피",
+    "currencyUnitKor": "루피"
   },
   "PL": {
     "imageUrl": "/assets/flags/PL.svg",
     "countryName": "폴란드",
     "currencySign": "zł",
     "currencyName": "PLN",
-    "currencyNameKor": "즈워티"
+    "currencyNameKor": "즈워티",
+    "currencyUnitKor": "즈워티"
   },
   "PH": {
     "imageUrl": "/assets/flags/PH.svg",
     "countryName": "필리핀",
     "currencySign": "₱",
     "currencyName": "PHP",
-    "currencyNameKor": "필리핀 페소"
+    "currencyNameKor": "필리핀 페소",
+    "currencyUnitKor": "페소"
   },
   "HU": {
     "imageUrl": "/assets/flags/HU.svg",
     "countryName": "헝가리",
     "currencySign": "Ft",
     "currencyName": "HUF",
-    "currencyNameKor": "포린트"
+    "currencyNameKor": "포린트",
+    "currencyUnitKor": "포린트"
   },
   "AU": {
     "imageUrl": "/assets/flags/AU.svg",
     "countryName": "호주",
     "currencySign": "$",
     "currencyName": "AUD",
-    "currencyNameKor": "오스트레일리아 달러"
+    "currencyNameKor": "오스트레일리아 달러",
+    "currencyUnitKor": "달러"
   },
   "HK": {
     "imageUrl": "/assets/flags/HK.svg",
     "countryName": "홍콩",
     "currencySign": "$",
     "currencyName": "HKD",
-    "currencyNameKor": "홍콩 달러"
+    "currencyNameKor": "홍콩 달러",
+    "currencyUnitKor": "달러"
   }
 }

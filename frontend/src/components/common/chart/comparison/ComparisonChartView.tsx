@@ -1,7 +1,6 @@
 import { type CurrencyType } from '@/types/currency';
 
-import countryData from '@/data/countryData.json';
-import { formatCurrencyAmount } from '@/lib/country';
+import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 
 import ComparisonCard from './ComparisonCard';
 import { mockData } from './mock';
@@ -24,8 +23,9 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
   const isLess = data.me < data.average;
   const isEqual = data.me === data.average;
 
-  const unit = countryData[data.countryCode].currencyUnitKor;
-  const localCountryName = countryData[mockData.local.countryCode].countryName;
+  const unit = getCountryInfo(data.countryCode)?.currencyUnitKor || '';
+  const localCountryName =
+    getCountryInfo(mockData.local.countryCode)?.countryName || '';
   const formattedDiff = formatCurrencyAmount(diff, data.countryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual

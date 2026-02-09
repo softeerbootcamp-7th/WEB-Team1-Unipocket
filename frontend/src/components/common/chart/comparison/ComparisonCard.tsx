@@ -25,7 +25,6 @@ const VARIANT_STYLES = {
   },
 } as const;
 
-
 const ComparisonCard = ({
   variant,
   barWidth,
@@ -39,13 +38,16 @@ const ComparisonCard = ({
   return (
     <div className="flex h-8.5 gap-3.5">
       <div
-        className={`h-8 ${barWidth} items-center rounded-xs animate-expand-width origin-left ${styles.barColor}`}
+        className={`h-8 ${barWidth} animate-expand-width origin-left items-center rounded-xs ${styles.barColor}`}
       />
       <div className="flex flex-col gap-1.5">
         <span className={`caption2-medium ${styles.textColor}`}>{label}</span>
         <div className="flex items-center gap-1.75">
           {isLocal && (
-            <CurrencyBadge countryCode={countryCode} className={styles.amountTextColor} />
+            <CurrencyBadge
+              countryCode={countryCode}
+              className={styles.amountTextColor}
+            />
           )}
           <CurrencyAmountDisplay
             countryCode={countryCode}

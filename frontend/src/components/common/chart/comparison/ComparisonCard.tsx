@@ -4,42 +4,54 @@ import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
 import type { CountryCode } from '@/data/countryCode';
 
 interface ComparisonCardProps {
+  variant: 'me' | 'average';
   barWidth: string;
-  barColor: 'bg-cool-neutral-95' | 'bg-primary-normal';
   label: string;
   amount: number;
   countryCode: CountryCode;
   isLocal: boolean;
-  textColor: 'text-cool-neutral-80' | 'text-primary-normal';
-  amountTextColor: 'text-cool-neutral-70' | 'text-primary-normal';
 }
 
+const VARIANT_STYLES = {
+  me: {
+    barColor: 'bg-primary-normal',
+    textColor: 'text-primary-normal',
+    amountTextColor: 'text-primary-normal',
+  },
+  average: {
+    barColor: 'bg-cool-neutral-95',
+    textColor: 'text-cool-neutral-80',
+    amountTextColor: 'text-cool-neutral-70',
+  },
+} as const;
+
+
 const ComparisonCard = ({
+  variant,
   barWidth,
-  barColor,
   label,
   amount,
   countryCode,
   isLocal,
-  textColor,
-  amountTextColor,
 }: ComparisonCardProps) => {
+  const styles = VARIANT_STYLES[variant];
+
   return (
     <div className="flex h-8.5 gap-3.5">
       <div
-        className={`h-8 ${barWidth} items-center rounded-xs animate-expand-width origin-left ${barColor}`}
+        className={`h-8 ${barWidth} items-center rounded-xs animate-expand-width origin-left ${styles.barColor}`}
       />
       <div className="flex flex-col gap-1.5">
-        <span className={`caption2-medium ${textColor}`}>{label}</span>
+        <span className={`caption2-medium ${styles.textColor}`}>{label}</span>
         <div className="flex items-center gap-1.75">
           {isLocal && (
-            <CurrencyBadge countryCode={countryCode} className={amountTextColor} />
+            <CurrencyBadge countryCode={countryCode} className={styles.amountTextColor} />
           )}
           <CurrencyAmountDisplay
             countryCode={countryCode}
             amount={amount}
             size="sm"
-            className={amountTextColor}
+            className={styles.amountTextColor}
           />
         </div>
       </div>

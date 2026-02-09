@@ -57,24 +57,20 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
           기준 : {mockData.month}월
         </span>
         <ComparisonCard
+          variant="average"
           barWidth={averageBarWidth}
-          barColor="bg-cool-neutral-95"
           label={`${localCountryName} 교환학생 평균`}
           amount={data.average}
           countryCode={data.countryCode}
           isLocal={isLocal}
-          textColor="text-cool-neutral-80"
-          amountTextColor="text-cool-neutral-70"
         />
         <ComparisonCard
+          variant="me"
           barWidth={meBarWidth}
-          barColor="bg-primary-normal"
           label="나"
           amount={data.me}
           countryCode={data.countryCode}
           isLocal={isLocal}
-          textColor="text-primary-normal"
-          amountTextColor="text-primary-normal"
         />
       </div>
     </>

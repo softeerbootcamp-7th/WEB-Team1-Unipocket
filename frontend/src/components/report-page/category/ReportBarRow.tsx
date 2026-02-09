@@ -14,8 +14,8 @@ const ReportBarRow = ({ category, me, other }: ReportBarRowProps) => {
       </span>
 
       <div className="flex h-10 w-full flex-col justify-between">
-        <ReportBar value={me} variant="me" />
-        <ReportBar value={other} variant="other" />
+        <ReportBar value={me} variant="me" countryCode="KR" />
+        <ReportBar value={other} variant="other" countryCode="KR" />
       </div>
     </div>
   );

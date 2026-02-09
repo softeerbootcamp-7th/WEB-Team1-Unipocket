@@ -11,23 +11,11 @@ interface ComparisonChartViewProps {
   selectedId: number;
 }
 
-const messageMap = {
-  equal: {
-    text: '과',
-    subtext: '똑같이',
-  },
-  less: {
-    text: '보다',
-    subtext: '덜',
-  },
-  more: {
-    text: '보다',
-    subtext: '더',
-  },
+const barWidth = {
+  large: 'w-21.25',
+  small: 'w-17',
+  equal: 'w-19',
 } as const;
-
-const getMessage = (isEqual: boolean, isLess: boolean) =>
-  isEqual ? messageMap.equal : isLess ? messageMap.less : messageMap.more;
 
 const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
   const selectedCurrency: CurrencyType = selectedId === 1 ? 'BASE' : 'LOCAL';
@@ -39,24 +27,39 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
   const isEqual = data.me === data.average;
 
   const unit = countryData[data.countryCode].currencyUnitKor;
-  const message = getMessage(isEqual, isLess);
-  const diffText = diff !== 0 ? `${diff}${unit}` : '';
+
+  const [averageBarWidth, meBarWidth] = isEqual
+    ? [barWidth.equal, barWidth.equal]
+    : data.average > data.me
+      ? [barWidth.large, barWidth.small]
+      : [barWidth.small, barWidth.large];
 
   return (
     <>
-      <p className="body1-normal-bold text-label-neutral">
-        나랑 같은 국가의 교환학생{message.text} <br />
-        <span className="text-primary-strong">
-          {diffText} {message.subtext}
-        </span>
-        {' '}썼어요
-      </p>
+      {!isEqual && (
+        <p className="body1-normal-bold text-label-neutral">
+          나랑 같은 국가의 교환학생보다 <br />
+          <span className="text-primary-strong">
+            {diff}
+            {unit} {isLess ? '덜' : '더'}
+          </span>{' '}
+          썼어요
+        </p>
+      )}
+      {isEqual && (
+        <p className="body1-normal-bold text-label-neutral">
+          <span className="text-primary-normal">평균</span>과 일치해요!
+        </p>
+      )}
+
       <div className="flex h-26.5 flex-col gap-3">
         <span className="caption2-medium text-label-assistive">
           기준 : {mockData.month}월
         </span>
         <div className="flex h-8.5 gap-3.5">
-          <div className="bg-cool-neutral-95 h-8 w-21.25 items-center rounded-xs" />
+          <div
+            className={`bg-cool-neutral-95 h-8 ${averageBarWidth} items-center rounded-xs`}
+          />
           <div className="flex flex-col gap-1.5">
             <span className="text-cool-neutral-80 caption2-medium">
               미국 교환학생 평균
@@ -78,7 +81,9 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
           </div>
         </div>
         <div className="flex h-8.5 gap-3.5">
-          <div className="bg-primary-normal h-8 w-17 items-center rounded-xs" />
+          <div
+            className={`bg-primary-normal h-8 ${meBarWidth} items-center rounded-xs`}
+          />
           <div className="flex flex-col gap-1.5">
             <span className="text-primary-normal caption2-medium">나</span>
             <div className="flex items-center gap-1.75">

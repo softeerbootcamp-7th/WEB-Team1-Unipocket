@@ -4,9 +4,10 @@ import ChartContainer from '@/components/common/chart/layout/ChartContainer';
 import ChartContent from '@/components/common/chart/layout/ChartContent';
 import ChartHeader from '@/components/common/chart/layout/ChartHeader';
 
+import BudgetChartSkeleton from './BudgetChartSkeleton';
 import BudgetChartView from './BudgetChartView';
 
-const BudgetChart = () => {
+const BudgetChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   const { totalBudget, usedBudget } = mockData;
 
   return (
@@ -14,7 +15,11 @@ const BudgetChart = () => {
       <ChartHeader title="남은 예산">
         <Button size="xxs">설정</Button>
       </ChartHeader>
-      <ChartContent className="w-full p-5">
+      <ChartContent
+        className="w-full p-5"
+        isLoading={isLoading}
+        skeleton={<BudgetChartSkeleton />}
+      >
         <BudgetChartView totalBudget={totalBudget} usedBudget={usedBudget} />
       </ChartContent>
     </ChartContainer>

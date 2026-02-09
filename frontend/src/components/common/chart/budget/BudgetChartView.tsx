@@ -35,7 +35,7 @@ const BudgetChartView = ({ totalBudget, usedBudget }: BudgetChartViewProps) => {
       <div className="flex items-center justify-center">
         <SemiCircleChart value={displayPercentage} color={currentStatus.color}>
           {/* budget usage */}
-          <div className="text-label-neutral flex flex-col items-center justify-end pb-1">
+          <div className="text-label-neutral flex flex-col items-center justify-end gap-1.5 pb-1">
             <span className="figure-heading1-semibold">
               {displayPercentage}%
             </span>

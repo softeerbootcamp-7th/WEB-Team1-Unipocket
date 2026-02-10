@@ -1,4 +1,4 @@
-package com.genesis.unipocket.travel.persistence.entity;
+package com.genesis.unipocket.travel.common.enums;
 
 public enum WidgetType {
 	NONE,

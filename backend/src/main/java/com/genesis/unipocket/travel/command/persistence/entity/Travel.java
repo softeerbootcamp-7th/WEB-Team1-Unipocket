@@ -1,4 +1,4 @@
-package com.genesis.unipocket.travel.persistence.entity;
+package com.genesis.unipocket.travel.command.persistence.entity;
 
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.exception.BusinessException;

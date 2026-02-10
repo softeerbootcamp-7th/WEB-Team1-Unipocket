@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
 
-import { type CountryCode } from '@/data/countryCode';
-
 import ReportBarList from './ReportBarList';
 
 const LEGEND_COLOR = {
@@ -33,7 +31,6 @@ interface ReportBarGraphProps {
     mySpentAmount: string;
     averageSpentAmount: string;
   }[];
-  countryCode: CountryCode;
 }
 
 const transformCategoryData = (items: ReportBarGraphProps['items']) => {
@@ -44,11 +41,7 @@ const transformCategoryData = (items: ReportBarGraphProps['items']) => {
   }));
 };
 
-const ReportBarGraph = ({
-  maxLabel,
-  items,
-  countryCode,
-}: ReportBarGraphProps) => {
+const ReportBarGraph = ({ maxLabel, items }: ReportBarGraphProps) => {
   const data = useMemo(() => transformCategoryData(items), [items]);
 
   return (
@@ -57,11 +50,7 @@ const ReportBarGraph = ({
         <ReportBarLegend label="나" color="me" />
         <ReportBarLegend label="다른 학생" color="other" />
       </div>
-      <ReportBarList
-        items={data}
-        maxLabel={maxLabel}
-        countryCode={countryCode}
-      />
+      <ReportBarList items={data} maxLabel={maxLabel} />
     </div>
   );
 };

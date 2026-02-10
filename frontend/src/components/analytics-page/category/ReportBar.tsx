@@ -5,12 +5,11 @@ import { TOTAL_ANIMATION_DURATION } from '@/components/common/chart/chartType';
 import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
 
-import { type CountryCode } from '@/data/countryCode';
+import { useCategoryCountryCode } from './CountryCodeContext';
 
 interface ReportBarProps {
   value: number;
   variant: 'me' | 'other';
-  countryCode: CountryCode;
   maxValue: number;
 }
 
@@ -30,12 +29,8 @@ const VARIANT_STYLES = {
 // @TODO: 페이지에서 받아오도록 수정 필요 (필터 사용)
 const currency = 'LOCAL';
 
-const ReportBar = ({
-  value,
-  variant,
-  countryCode,
-  maxValue,
-}: ReportBarProps) => {
+const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
+  const countryCode = useCategoryCountryCode();
   const styles = VARIANT_STYLES[variant];
   const percentage = (value / maxValue) * 100;
   const [showAmount, setShowAmount] = useState(false);

@@ -1,3 +1,4 @@
+import CountryCodeProvider from '@/components/analytics-page/category/CountryCodeProvider';
 import ReportCategory from '@/components/analytics-page/category/ReportCategory';
 
 import { type CountryCode } from '@/data/countryCode';
@@ -10,7 +11,9 @@ const AnalyticsPage = () => {
 
   return (
     <div className="flex p-3">
-      <ReportCategory data={categoryData} countryCode={countryCode} />
+      <CountryCodeProvider value={countryCode}>
+        <ReportCategory data={categoryData} />
+      </CountryCodeProvider>
     </div>
   );
 };

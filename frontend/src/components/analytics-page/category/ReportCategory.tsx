@@ -1,13 +1,10 @@
 import { getCategoryName } from '@/types/category';
 
-import { type CountryCode } from '@/data/countryCode';
-
 import ReportContainer from '../layout/ReportContainer';
 import ReportContent from '../layout/ReportContent';
 import ReportBarGraph from './ReportBarGraph';
 
 interface ReportCategoryProps {
-  countryCode: CountryCode;
   data: {
     maxDiffCategoryIndex: number;
     isOverSpent: boolean;
@@ -20,7 +17,7 @@ interface ReportCategoryProps {
   };
 }
 
-const ReportCategory = ({ data, countryCode }: ReportCategoryProps) => {
+const ReportCategory = ({ data }: ReportCategoryProps) => {
   const category = getCategoryName(data.maxDiffCategoryIndex);
   const maxLabelValue = Number(data.maxLabel);
 
@@ -32,11 +29,7 @@ const ReportCategory = ({ data, countryCode }: ReportCategoryProps) => {
           <span className="text-primary-normal">{category}</span> 소비가 유독{' '}
           {data.isOverSpent ? '많아요' : '적어요'}
         </h3>
-        <ReportBarGraph
-          maxLabel={maxLabelValue}
-          items={data.items}
-          countryCode={countryCode}
-        />
+        <ReportBarGraph maxLabel={maxLabelValue} items={data.items} />
       </ReportContent>
     </ReportContainer>
   );

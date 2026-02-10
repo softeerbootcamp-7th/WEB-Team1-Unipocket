@@ -1,14 +1,12 @@
 package com.genesis.unipocket.user.command.facade;
 
-import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
 import com.genesis.unipocket.user.command.application.UserCommandService;
 import com.genesis.unipocket.user.command.application.command.CreateCardCommand;
 import com.genesis.unipocket.user.command.application.command.DeleteCardCommand;
 import com.genesis.unipocket.user.command.application.command.RegisterUserCommand;
 import com.genesis.unipocket.user.command.application.command.WithdrawUserCommand;
+import com.genesis.unipocket.user.command.application.result.LoginOrRegisterResult;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
-import com.genesis.unipocket.user.common.OAuthUserInfo;
-import com.genesis.unipocket.user.query.persistence.response.LoginResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,7 @@ public class UserCommandFacade {
 
 	private final UserCommandService userCommandService;
 
-	public LoginResponse loginOrRegister(OAuthUserInfo userInfo, ProviderType providerType) {
-		RegisterUserCommand command = RegisterUserCommand.of(userInfo, providerType);
+	public LoginOrRegisterResult loginOrRegister(RegisterUserCommand command) {
 		return userCommandService.loginOrRegister(command);
 	}
 

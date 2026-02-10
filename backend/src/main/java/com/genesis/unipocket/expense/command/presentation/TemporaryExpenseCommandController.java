@@ -1,6 +1,6 @@
 package com.genesis.unipocket.expense.command.presentation;
 
-import com.genesis.unipocket.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.expense.command.application.FileUploadService;
 import com.genesis.unipocket.expense.command.application.TemporaryExpenseConversionService;
 import com.genesis.unipocket.expense.command.application.TemporaryExpenseParsingService;

@@ -1,6 +1,6 @@
 package com.genesis.unipocket.expense.query.presentation;
 
-import com.genesis.unipocket.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.expense.common.dto.ExpenseDto;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResponse;

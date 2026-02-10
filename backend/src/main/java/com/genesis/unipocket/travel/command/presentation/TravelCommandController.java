@@ -1,6 +1,6 @@
 package com.genesis.unipocket.travel.command.presentation;
 
-import com.genesis.unipocket.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.travel.command.facade.TravelCommandFacade;
 import com.genesis.unipocket.travel.command.presentation.request.TravelRequest;
 import com.genesis.unipocket.travel.command.presentation.request.TravelUpdateRequest;

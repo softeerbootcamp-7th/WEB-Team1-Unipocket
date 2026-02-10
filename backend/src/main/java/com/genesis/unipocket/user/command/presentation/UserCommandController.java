@@ -1,6 +1,6 @@
 package com.genesis.unipocket.user.command.presentation;
 
-import com.genesis.unipocket.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;

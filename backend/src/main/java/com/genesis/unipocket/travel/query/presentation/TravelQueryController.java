@@ -1,6 +1,6 @@
 package com.genesis.unipocket.travel.query.presentation;
 
-import com.genesis.unipocket.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.travel.query.persistence.response.TravelDetailQueryResponse;
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
 import com.genesis.unipocket.travel.query.service.TravelQueryService;

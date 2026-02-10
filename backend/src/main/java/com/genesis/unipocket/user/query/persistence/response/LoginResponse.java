@@ -1,4 +1,4 @@
-package com.genesis.unipocket.user.dto.response;
+package com.genesis.unipocket.user.query.persistence.response;
 
 import java.util.UUID;
 import lombok.AllArgsConstructor;

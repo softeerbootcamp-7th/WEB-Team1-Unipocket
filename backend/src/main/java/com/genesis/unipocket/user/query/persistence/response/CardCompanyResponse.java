@@ -1,6 +1,6 @@
-package com.genesis.unipocket.user.dto.response;
+package com.genesis.unipocket.user.query.persistence.response;
 
-import com.genesis.unipocket.user.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 
 /**
  * <b>카드사 응답 DTO</b>

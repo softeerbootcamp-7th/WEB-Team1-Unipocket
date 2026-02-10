@@ -1,4 +1,4 @@
-package com.genesis.unipocket.user.dto.response;
+package com.genesis.unipocket.user.query.persistence.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

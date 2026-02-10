@@ -12,8 +12,13 @@ import com.genesis.unipocket.user.dto.request.ReissueRequest;
 import com.genesis.unipocket.user.dto.response.AuthorizeResponse;
 import com.genesis.unipocket.user.dto.response.LoginResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +54,9 @@ public class AuthController {
 
 	@Value("${app.frontend.url}")
 	private String frontendUrl;
+
+	@Value("${app.frontend.allowed-origins:}")
+	private String allowedOrigins;
 
 	/**
 	 * 토큰 재발급 (Refresh Token Rotation)
@@ -114,6 +122,7 @@ public class AuthController {
 			@PathVariable("provider") String provider,
 			@RequestParam("code") String code,
 			@RequestParam(value = "state", required = false) String state,
+			HttpServletRequest request,
 			HttpServletResponse response)
 			throws IOException {
 
@@ -133,7 +142,7 @@ public class AuthController {
 		cookieUtil.addCookie(
 				response, "refresh_token", loginResponse.getRefreshToken(), 10 * 24 * 60 * 60);
 
-		String redirectUrl = createRedirectUrl();
+		String redirectUrl = createRedirectUrl(request);
 		response.sendRedirect(redirectUrl);
 	}
 
@@ -147,8 +156,54 @@ public class AuthController {
 	/**
 	 * 프론트엔드 리다이렉트 URL 생성 유틸리티
 	 */
-	private String createRedirectUrl() {
-		return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
+	private String createRedirectUrl(HttpServletRequest request) {
+		String baseUrl = resolveRedirectBaseUrl(request);
+		return UriComponentsBuilder.fromUriString(baseUrl).path("/home").build().toUriString();
+	}
+
+	private String resolveRedirectBaseUrl(HttpServletRequest request) {
+		Set<String> allowed = parseAllowedOrigins();
+		String origin = request.getHeader("Origin");
+		if (origin != null && allowed.contains(origin)) {
+			return origin;
+		}
+
+		String referer = request.getHeader("Referer");
+		if (referer != null) {
+			String refererOrigin = extractOrigin(referer);
+			if (refererOrigin != null && allowed.contains(refererOrigin)) {
+				return refererOrigin;
+			}
+		}
+
+		return frontendUrl;
+	}
+
+	private Set<String> parseAllowedOrigins() {
+		if (allowedOrigins == null || allowedOrigins.isBlank()) {
+			return Set.of();
+		}
+		return new HashSet<>(
+				Arrays.stream(allowedOrigins.split(","))
+						.map(String::trim)
+						.filter(s -> !s.isEmpty())
+						.toList());
+	}
+
+	private String extractOrigin(String url) {
+		try {
+			URI uri = URI.create(url);
+			if (uri.getScheme() == null || uri.getHost() == null) {
+				return null;
+			}
+			int port = uri.getPort();
+			if (port == -1 || port == uri.toURL().getDefaultPort()) {
+				return uri.getScheme() + "://" + uri.getHost();
+			}
+			return uri.getScheme() + "://" + uri.getHost() + ":" + port;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/**

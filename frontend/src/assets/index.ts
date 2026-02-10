@@ -39,6 +39,7 @@ export const Cards = {
 // 3. Icons
 import AlertCircle from './Icons/alert-circle.svg';
 import Analytics from './Icons/analytics.svg';
+import Calendar from './Icons/calendar.svg';
 import Camera from './Icons/camera.svg';
 import CaretDown from './Icons/caret-down.svg';
 import CheckmarkCircle from './Icons/checkmark-circle.svg';
@@ -62,6 +63,7 @@ import UploadFile from './Icons/upload-file.svg';
 export const Icons = {
   AlertCircle,
   CloseCircle,
+  Calendar,
   ChevronBack,
   ChevronForward,
   CheckmarkCircle,

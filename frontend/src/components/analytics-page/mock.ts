@@ -8,3 +8,5 @@ export const mockData = [
   { category: '통신비', me: 379210, other: 302621 },
   { category: '학교', me: 379210, other: 302621 },
 ];
+
+export const mockMaxValue = 600000;

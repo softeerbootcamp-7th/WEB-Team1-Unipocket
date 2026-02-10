@@ -1,0 +1,35 @@
+package com.genesis.unipocket.expense.command.persistence.repository;
+
+import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+/**
+ * <b>파일 Repository</b>
+ *
+ * @author 김동균
+ * @since 2026-02-08
+ */
+@Repository
+public interface FileRepository extends JpaRepository<File, Long> {
+
+	/**
+	 * S3 Key 중복 체크
+	 */
+	boolean existsByS3Key(String s3Key);
+
+	/**
+	 * 일정 시간 경과했지만 파싱되지 않은 파일 조회
+	 */
+	@Query(
+			"SELECT f FROM File f "
+					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+					+ "LEFT JOIN TemporaryExpense te ON te.fileId = f.fileId "
+					+ "WHERE tm.createdAt < :cutoff "
+					+ "AND te.tempExpenseId IS NULL")
+	List<File> findStaleUnparsedFiles(@Param("cutoff") LocalDateTime cutoff);
+}

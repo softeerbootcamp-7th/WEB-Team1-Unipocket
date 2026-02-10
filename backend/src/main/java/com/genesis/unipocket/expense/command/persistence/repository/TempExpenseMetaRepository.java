@@ -1,0 +1,14 @@
+package com.genesis.unipocket.expense.command.persistence.repository;
+
+import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * <b>임시지출내역 메타데이터 Repository</b>
+ *
+ * @author 김동균
+ * @since 2026-02-08
+ */
+@Repository
+public interface TempExpenseMetaRepository extends JpaRepository<TempExpenseMeta, Long> {}

@@ -22,8 +22,8 @@ const VARIANT_STYLES = {
   },
   other: {
     bgColor: 'bg-cool-neutral-95',
-    textStyle: 'text-cool-neutral-80',
-    size: 'xs',
+    textStyle: 'text-cool-neutral-80 label2-medium',
+    size: 'sm',
   },
 } as const;
 

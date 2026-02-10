@@ -1,6 +1,6 @@
 package com.genesis.unipocket.auth.service;
 
-import com.genesis.unipocket.user.dto.response.LoginResponse;
+import com.genesis.unipocket.user.query.persistence.response.LoginResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

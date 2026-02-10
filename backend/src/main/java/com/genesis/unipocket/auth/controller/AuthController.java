@@ -3,25 +3,24 @@ package com.genesis.unipocket.auth.controller;
 import com.genesis.unipocket.auth.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.facade.UserLoginFacade;
 import com.genesis.unipocket.auth.service.AuthService;
-import com.genesis.unipocket.auth.service.JwtProvider;
-import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType; // Enum 직접 임포트
+import com.genesis.unipocket.global.config.OAuth2Properties;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.CookieUtil;
-import com.genesis.unipocket.user.dto.response.AuthorizeResponse;
-import com.genesis.unipocket.user.dto.response.LoginResponse;
-import io.swagger.v3.oas.annotations.Parameter;
+import com.genesis.unipocket.user.command.presentation.request.LogoutRequest;
+import com.genesis.unipocket.user.command.presentation.request.ReissueRequest;
+import com.genesis.unipocket.user.query.persistence.response.AuthorizeResponse;
+import com.genesis.unipocket.user.query.persistence.response.LoginResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,12 +29,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * <b>인증 컨트롤러</b>
  * <p>
- * 토큰 재발급, 로그아웃 및 OAuth2 인증 흐름을 관리합니다.
+ * 토큰 재발급, 로그아웃 등 인증 세션 관리 기능을 담당합니다.
  * </p>
- *
- * @author 김동균
- * 수정 이력
- * 2026-02-11 log.info 단계 변경, JwtProvider 사용하여 설정값 제대로 반영되도록 적용
  */
 @Tag(name = "인증 기능")
 @Slf4j
@@ -46,43 +41,53 @@ public class AuthController {
 
 	private final AuthService authService;
 	private final CookieUtil cookieUtil;
-	private final JwtProvider jwtProvider;
 	private final OAuthAuthorizeFacade authorizeFacade;
 	private final UserLoginFacade loginFacade;
 
+	@Value("${jwt.access-token-expiration}")
+	private long accessTokenExpirationMs;
+
 	@Value("${app.frontend.url}")
-	private String frontendDefaultUrl;
+	private String frontendUrl;
 
 	/**
 	 * 토큰 재발급 (Refresh Token Rotation)
 	 */
 	@PostMapping("/reissue")
-	public ResponseEntity<Void> reissue(
-			@Parameter(hidden = true) @CookieValue(value = "refresh_token") String refreshToken,
-			HttpServletResponse response) {
+	public LoginResponse reissue(
+			@RequestBody ReissueRequest request, HttpServletResponse response) {
+		log.info("토큰 재발급 요청");
 
-		log.debug("토큰 재발급 요청");
+		AuthService.TokenPair tokenPair = authService.reissue(request.getRefreshToken());
 
-		AuthService.TokenPair tokenPair = authService.reissue(refreshToken);
+		// Access Token 쿠키 갱신
+		cookieUtil.addCookie(
+				response,
+				"access_token",
+				tokenPair.accessToken(),
+				(int) (accessTokenExpirationMs / 1000));
 
-		updateAuthCookies(response, tokenPair.accessToken(), tokenPair.refreshToken());
+		// Refresh Token 쿠키 갱신
+		cookieUtil.addCookie(
+				response, "refresh_token", tokenPair.refreshToken(), 10 * 24 * 60 * 60);
 
-		return ResponseEntity.ok().build();
+		return LoginResponse.of(
+				tokenPair.accessToken(),
+				tokenPair.refreshToken(),
+				null, // userId는 재발급 시 불필요
+				accessTokenExpiresIn());
 	}
 
 	/**
-	 * 로그아웃 (토큰 블랙리스트 등록 및 쿠키 삭제)
+	 * 로그아웃 (토큰 블랙리스트 등록)
 	 */
 	@PostMapping("/logout")
-	public void logout(
-			@Parameter(hidden = true) @CookieValue(value = "access_token") String accessToken,
-			@Parameter(hidden = true) @CookieValue(value = "refresh_token") String refreshToken,
-			HttpServletResponse response) {
+	public void logout(@RequestBody LogoutRequest request, HttpServletResponse response) {
+		log.info("로그아웃 요청");
 
-		log.debug("로그아웃 요청");
+		authService.logout(request.getAccessToken(), request.getRefreshToken());
 
-		authService.logout(accessToken, refreshToken);
-
+		// 쿠키 삭제
 		cookieUtil.deleteCookie(response, "access_token");
 		cookieUtil.deleteCookie(response, "refresh_token");
 	}
@@ -91,80 +96,69 @@ public class AuthController {
 	 * OAuth 인증 시작: 소셜 로그인 페이지로 리다이렉트
 	 */
 	@GetMapping("/oauth2/authorize/{provider}")
-	public void authorize(@PathVariable String provider, HttpServletResponse response)
+	public void authorize(@PathVariable("provider") String provider, HttpServletResponse response)
 			throws IOException {
 
-		log.debug("OAuth authorize request for provider: {}", provider);
-
-		ProviderType providerType = validateAndGetProviderType(provider);
+		log.info("OAuth authorize request for provider: {}", provider);
+		OAuth2Properties.ProviderType providerType = getProviderType(provider);
 
 		AuthorizeResponse authResponse = authorizeFacade.authorize(providerType);
-
 		response.sendRedirect(authResponse.getAuthorizationUrl());
 	}
 
 	/**
-	 * OAuth 콜백 처리: 로그인 완료 후 프론트엔드 홈으로 리다이렉트
+	 * OAuth 콜백 처리: 로그인 완료 후 JSON 응답 반환 (SPA 방식)
 	 */
 	@GetMapping("/oauth2/callback/{provider}")
 	public void callback(
-			@PathVariable String provider,
+			@PathVariable("provider") String provider,
 			@RequestParam("code") String code,
 			@RequestParam(value = "state", required = false) String state,
 			HttpServletResponse response)
 			throws IOException {
 
-		log.debug("OAuth callback received for provider: {}", provider);
-		ProviderType providerType = validateAndGetProviderType(provider);
+		log.info("OAuth callback received for provider: {}", provider);
+		OAuth2Properties.ProviderType providerType = getProviderType(provider);
 
 		LoginResponse loginResponse = loginFacade.login(providerType, code, state);
 
-		updateAuthCookies(
-				response, loginResponse.getAccessToken(), loginResponse.getRefreshToken());
-
-		// 보안상 헤더에 의존하지 않고 설정된 프론트엔드 주소로 이동
-		response.sendRedirect(getFinalRedirectUrl());
-	}
-
-	/**
-	 * 공통 쿠키 업데이트 유틸리티
-	 */
-	private void updateAuthCookies(
-			HttpServletResponse response, String accessToken, String refreshToken) {
+		// Access Token 쿠키 저장
 		cookieUtil.addCookie(
 				response,
 				"access_token",
-				accessToken,
-				jwtProvider.getAccessTokenExpirationAsSeconds());
+				loginResponse.getAccessToken(),
+				loginResponse.getExpiresIn().intValue());
+
+		// Refresh Token 쿠키 저장 (10일)
 		cookieUtil.addCookie(
-				response,
-				"refresh_token",
-				refreshToken,
-				jwtProvider.getRefreshTokenExpirationAsSeconds());
+				response, "refresh_token", loginResponse.getRefreshToken(), 10 * 24 * 60 * 60);
+
+		String redirectUrl = createRedirectUrl();
+		response.sendRedirect(redirectUrl);
 	}
 
 	/**
-	 * 최종 리다이렉트 URL 생성 (설정된 frontendDefaultUrl 기반)
+	 * Access Token 만료 시간 (초) 계산
 	 */
-	private String getFinalRedirectUrl() {
-		return UriComponentsBuilder.fromUriString(frontendDefaultUrl)
-				.path("/home")
-				.build()
-				.toUriString();
+	private long accessTokenExpiresIn() {
+		return accessTokenExpirationMs / 1000;
 	}
 
 	/**
-	 * Provider 유효성 검증 및 Enum 변환 (엄격한 검증)
+	 * 프론트엔드 리다이렉트 URL 생성 유틸리티
 	 */
-	private ProviderType validateAndGetProviderType(String provider) {
-		if (provider == null || provider.isBlank()) {
-			throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
-		}
+	private String createRedirectUrl() {
+		return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
+	}
 
+	/**
+	 * Provider 문자열을 Enum으로 변환하고 유효성 검증
+	 */
+	private OAuth2Properties.ProviderType getProviderType(String provider) {
 		try {
-			return ProviderType.valueOf(provider.toUpperCase());
+			return OAuth2Properties.ProviderType.valueOf(provider.toUpperCase());
 		} catch (IllegalArgumentException e) {
-			log.error("지원하지 않는 OAuth 제공자: {}", provider);
+			log.error("Invalid OAuth provider: {}", provider);
 			throw new BusinessException(ErrorCode.INVALID_OAUTH_PROVIDER);
 		}
 	}

@@ -64,6 +64,11 @@ public enum ErrorCode {
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "404_USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
 	USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "409_USER_ALREADY_EXISTS", "이미 존재하는 사용자입니다."),
 
+	// ========== User Card Errors ==========
+	CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "404_CARD_NOT_FOUND", "카드를 찾을 수 없습니다."),
+	CARD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "400_CARD_LIMIT_EXCEEDED", "카드 등록 한도를 초과했습니다."),
+	CARD_NOT_OWNED(HttpStatus.FORBIDDEN, "403_CARD_NOT_OWNED", "본인의 카드가 아닙니다."),
+
 	// ========== Token Errors ==========
 	TOKEN_REQUIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_REQUIRED", "로그인이 필요합니다."),
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_EXPIRED", "토큰이 만료되었습니다."),

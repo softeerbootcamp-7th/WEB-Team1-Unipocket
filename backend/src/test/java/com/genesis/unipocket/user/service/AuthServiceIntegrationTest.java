@@ -6,8 +6,8 @@ import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.auth.service.AuthService;
 import com.genesis.unipocket.auth.service.JwtProvider;
 import com.genesis.unipocket.auth.service.TokenBlacklistService;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.persistence.repository.UserRepository;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class AuthServiceIntegrationTest {
 	@Autowired private AuthService authService;
 	@Autowired private JwtProvider jwtProvider;
 	@Autowired private TokenBlacklistService blacklistService;
-	@Autowired private UserRepository userRepository;
+	@Autowired private UserCommandRepository userRepository;
 
 	@Test
 	@DisplayName("전체 로그인 플로우 - 토큰 발급 및 검증")

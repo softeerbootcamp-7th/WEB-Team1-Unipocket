@@ -7,8 +7,8 @@ import com.genesis.unipocket.auth.service.AuthService;
 import com.genesis.unipocket.auth.service.JwtProvider;
 import com.genesis.unipocket.auth.service.TokenBlacklistService;
 import com.genesis.unipocket.global.exception.TokenException;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.persistence.repository.UserRepository;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +24,7 @@ class AuthServiceTest {
 
 	@Mock private JwtProvider jwtProvider;
 	@Mock private TokenBlacklistService blacklistService;
-	@Mock private UserRepository userRepository;
+	@Mock private UserCommandRepository userRepository;
 	@InjectMocks private AuthService authService;
 
 	@Test

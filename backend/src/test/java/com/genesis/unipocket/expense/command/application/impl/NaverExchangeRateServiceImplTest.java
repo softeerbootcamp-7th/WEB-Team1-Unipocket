@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.service.impl;
+package com.genesis.unipocket.expense.command.application.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

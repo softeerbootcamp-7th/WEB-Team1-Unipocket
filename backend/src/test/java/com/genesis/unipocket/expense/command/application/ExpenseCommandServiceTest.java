@@ -1,17 +1,17 @@
-package com.genesis.unipocket.expense.service;
+package com.genesis.unipocket.expense.command.application;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.common.enums.ExpenseSource;
-import com.genesis.unipocket.expense.dto.request.ExpenseUpdateRequest;
-import com.genesis.unipocket.expense.persistence.entity.expense.ExchangeInfo;
-import com.genesis.unipocket.expense.persistence.entity.expense.ExpenseEntity;
-import com.genesis.unipocket.expense.persistence.entity.expense.ExpenseSourceInfo;
-import com.genesis.unipocket.expense.persistence.entity.expense.Merchant;
-import com.genesis.unipocket.expense.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.ExchangeInfo;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseSourceInfo;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.Merchant;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -32,16 +32,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * @since 2026-02-07
  */
 @ExtendWith(MockitoExtension.class)
-class ExpenseServiceTest {
+class ExpenseCommandServiceTest {
 
 	@Mock private ExpenseRepository expenseRepository;
 	@Mock private ExchangeRateService exchangeRateService;
 
-	@InjectMocks private ExpenseService expenseService;
+	@InjectMocks private ExpenseCommandService expenseService;
 
 	@Test
-	@DisplayName("존재하지 않는 지출내역 조회 시 EXPENSE_NOT_FOUND 예외 발생")
-	void getExpense_notFound_throwsException() {
+	@DisplayName("존재하지 않는 지출내역 삭제 시 EXPENSE_NOT_FOUND 예외 발생")
+	void deleteExpense_notFound_throwsException() {
 		// given
 		Long expenseId = 1L;
 		Long accountBookId = 7L;
@@ -49,14 +49,14 @@ class ExpenseServiceTest {
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.empty());
 
 		// when & then
-		assertThatThrownBy(() -> expenseService.getExpense(expenseId, accountBookId))
+		assertThatThrownBy(() -> expenseService.deleteExpense(expenseId, accountBookId))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.EXPENSE_NOT_FOUND);
 	}
 
 	@Test
-	@DisplayName("다른 가계부의 지출내역 조회 시 EXPENSE_UNAUTHORIZED_ACCESS 예외 발생")
-	void getExpense_wrongAccountBook_throwsException() {
+	@DisplayName("다른 가계부의 지출내역 삭제 시 EXPENSE_UNAUTHORIZED_ACCESS 예외 발생")
+	void deleteExpense_wrongAccountBook_throwsException() {
 		// given
 		Long expenseId = 1L;
 		Long accountBookId = 7L;
@@ -67,7 +67,7 @@ class ExpenseServiceTest {
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 
 		// when & then
-		assertThatThrownBy(() -> expenseService.getExpense(expenseId, accountBookId))
+		assertThatThrownBy(() -> expenseService.deleteExpense(expenseId, accountBookId))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.EXPENSE_UNAUTHORIZED_ACCESS);
 	}
@@ -114,23 +114,26 @@ class ExpenseServiceTest {
 		when(expenseEntity.getMemo()).thenReturn("메모");
 		when(expenseEntity.getCardNumber()).thenReturn(null);
 
-		ExpenseUpdateRequest request =
-				new ExpenseUpdateRequest(
+		ExpenseUpdateCommand command =
+				new ExpenseUpdateCommand(
+						expenseId,
+						accountBookId,
 						"스타벅스",
 						Category.FOOD,
 						"CARD",
+						"메모",
 						LocalDateTime.now(),
 						BigDecimal.valueOf(1500),
-						CurrencyCode.JPY, // 통화 변경
-						"메모",
-						null);
+						CurrencyCode.JPY,
+						null,
+						CurrencyCode.KRW);
 
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.convertAmount(any(), any(), any(), any()))
 				.thenReturn(BigDecimal.valueOf(15000));
 
 		// when
-		expenseService.updateExpense(expenseId, accountBookId, request, CurrencyCode.KRW);
+		expenseService.updateExpense(command);
 
 		// then
 		verify(exchangeRateService, times(1))
@@ -181,23 +184,26 @@ class ExpenseServiceTest {
 		when(expenseEntity.getMemo()).thenReturn("메모");
 		when(expenseEntity.getCardNumber()).thenReturn(null);
 
-		ExpenseUpdateRequest request =
-				new ExpenseUpdateRequest(
+		ExpenseUpdateCommand command =
+				new ExpenseUpdateCommand(
+						expenseId,
+						accountBookId,
 						"스타벅스",
 						Category.FOOD,
 						"CARD",
-						LocalDateTime.now(),
-						BigDecimal.valueOf(15000), // 금액 변경
-						CurrencyCode.KRW, // 통화 동일
 						"메모",
-						null);
+						LocalDateTime.now(),
+						BigDecimal.valueOf(15000),
+						CurrencyCode.KRW,
+						null,
+						CurrencyCode.KRW);
 
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.convertAmount(any(), any(), any(), any()))
 				.thenReturn(BigDecimal.valueOf(15000));
 
 		// when
-		expenseService.updateExpense(expenseId, accountBookId, request, CurrencyCode.KRW);
+		expenseService.updateExpense(command);
 
 		// then
 		verify(exchangeRateService, times(1)).convertAmount(any(), any(), any(), any());

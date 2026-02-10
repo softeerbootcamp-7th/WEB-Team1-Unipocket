@@ -1,19 +1,18 @@
-package com.genesis.unipocket.expense.application;
+package com.genesis.unipocket.expense.command.application;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.persistence.entity.dto.TemporaryExpenseUpdateCommand;
-import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
-import com.genesis.unipocket.expense.persistence.repository.TemporaryExpenseRepository;
-import com.genesis.unipocket.expense.service.TemporaryExpenseService;
+import com.genesis.unipocket.expense.command.application.command.TemporaryExpenseUpdateCommand;
+import com.genesis.unipocket.expense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,15 +25,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * <b>TemporaryExpenseService 단위 테스트</b>
  *
- * @author 김동균
+ * @author bluefishsez
  * @since 2026-02-08
  */
 @ExtendWith(MockitoExtension.class)
-class TemporaryExpenseServiceTest {
+class TemporaryExpenseCommandServiceTest {
 
 	@Mock private TemporaryExpenseRepository repository;
 
-	@InjectMocks private TemporaryExpenseService service;
+	@InjectMocks private TemporaryExpenseCommandService service;
 
 	private TemporaryExpense testExpense;
 
@@ -54,40 +53,6 @@ class TemporaryExpenseServiceTest {
 						.occurredAt(LocalDateTime.now())
 						.status(TemporaryExpenseStatus.NORMAL)
 						.build();
-	}
-
-	@Test
-	@DisplayName("가계부 ID로 임시지출내역 조회 성공")
-	void findByAccountBookId_Success() {
-		// given
-		Long accountBookId = 1L;
-		when(repository.findByAccountBookId(accountBookId)).thenReturn(List.of(testExpense));
-
-		// when
-		List<TemporaryExpense> result = service.findByAccountBookId(accountBookId);
-
-		// then
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getMerchantName()).isEqualTo("스타벅스");
-		verify(repository).findByAccountBookId(accountBookId);
-	}
-
-	@Test
-	@DisplayName("가계부 ID + 상태로 임시지출내역 조회 성공")
-	void findByAccountBookIdAndStatus_Success() {
-		// given
-		Long accountBookId = 1L;
-		TemporaryExpenseStatus status = TemporaryExpenseStatus.NORMAL;
-		when(repository.findByAccountBookIdAndStatus(accountBookId, status))
-				.thenReturn(List.of(testExpense));
-
-		// when
-		List<TemporaryExpense> result = service.findByAccountBookIdAndStatus(accountBookId, status);
-
-		// then
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getStatus()).isEqualTo(TemporaryExpenseStatus.NORMAL);
-		verify(repository).findByAccountBookIdAndStatus(accountBookId, status);
 	}
 
 	@Test
@@ -142,12 +107,12 @@ class TemporaryExpenseServiceTest {
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
 		// when
-		TemporaryExpense result = service.updateTemporaryExpense(tempExpenseId, command);
+		TemporaryExpenseResult result = service.updateTemporaryExpense(tempExpenseId, command);
 
 		// then
-		assertThat(result.getMerchantName()).isEqualTo("이디야커피");
-		assertThat(result.getLocalCurrencyAmount()).isEqualTo(BigDecimal.valueOf(3000));
-		assertThat(result.getPaymentsMethod()).isEqualTo("CASH");
+		assertThat(result.merchantName()).isEqualTo("이디야커피");
+		assertThat(result.localCurrencyAmount()).isEqualTo(BigDecimal.valueOf(3000));
+		assertThat(result.paymentsMethod()).isEqualTo("CASH");
 		verify(repository).save(any(TemporaryExpense.class));
 	}
 

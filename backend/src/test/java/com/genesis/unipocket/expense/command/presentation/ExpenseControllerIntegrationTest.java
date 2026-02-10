@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.controller;
+package com.genesis.unipocket.expense.command.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -9,8 +9,8 @@ import com.genesis.unipocket.accountbook.persistence.entity.AccountBookCreateArg
 import com.genesis.unipocket.accountbook.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.persistence.repository.AccountBookRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.persistence.entity.expense.ExpenseEntity;
-import com.genesis.unipocket.expense.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.support.JwtTestHelper;

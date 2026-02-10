@@ -1,6 +1,6 @@
 package com.genesis.unipocket.user.query.presentation;
 
-import com.genesis.unipocket.auth.annotation.LoginUser;
+import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;

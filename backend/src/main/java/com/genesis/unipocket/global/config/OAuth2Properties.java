@@ -1,6 +1,6 @@
 package com.genesis.unipocket.global.config;
 
-import com.genesis.unipocket.auth.exception.oauth.OAuthException;
+import com.genesis.unipocket.auth.common.exception.oauth.OAuthException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.List;

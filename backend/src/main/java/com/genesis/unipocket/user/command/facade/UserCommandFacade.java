@@ -7,7 +7,7 @@ import com.genesis.unipocket.user.command.application.command.DeleteCardCommand;
 import com.genesis.unipocket.user.command.application.command.RegisterUserCommand;
 import com.genesis.unipocket.user.command.application.command.WithdrawUserCommand;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
-import com.genesis.unipocket.user.common.dto.oauth.OAuthUserInfo;
+import com.genesis.unipocket.user.common.OAuthUserInfo;
 import com.genesis.unipocket.user.query.persistence.response.LoginResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

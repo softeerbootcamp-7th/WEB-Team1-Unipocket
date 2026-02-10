@@ -1,6 +1,5 @@
 package com.genesis.unipocket.accountbook.command.facade.provide;
 
-import com.genesis.unipocket.accountbook.service.AccountBookService;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.expense.common.dto.AccountBookInfo;
 import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
@@ -21,21 +20,43 @@ public class AccountBookValidationProvider
 				AccountBookInfoFetchService,
 				UserAccountBookValidator {
 
-	private final AccountBookService accountBookService;
+	private final com.genesis.unipocket.accountbook.command.persistence.repository
+					.AccountBookCommandRepository
+			accountBookRepository;
 
 	@Override
 	public void validateOwnership(Long accountBookId, String userId) {
-		accountBookService.getAccountBook(accountBookId, userId);
+		findAndValidate(accountBookId, userId);
 	}
 
 	@Override
 	public AccountBookInfo getAccountBook(Long accountBookId, String userId) {
-		var accountBook = accountBookService.getAccountBook(accountBookId, userId);
-		return new AccountBookInfo(accountBook.baseCountryCode());
+		var accountBook = findAndValidate(accountBookId, userId);
+		return new AccountBookInfo(accountBook.getBaseCountryCode());
 	}
 
 	@Override
 	public void validateUserAccountBook(String userId, Long accountBookId) {
-		accountBookService.getAccountBook(accountBookId, userId);
+		findAndValidate(accountBookId, userId);
+	}
+
+	private com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity
+			findAndValidate(Long accountBookId, String userId) {
+		var accountBook =
+				accountBookRepository
+						.findById(accountBookId)
+						.orElseThrow(
+								() ->
+										new com.genesis.unipocket.global.exception
+												.BusinessException(
+												com.genesis.unipocket.global.exception.ErrorCode
+														.ACCOUNT_BOOK_NOT_FOUND));
+
+		if (!accountBook.getUserId().equals(userId)) {
+			throw new com.genesis.unipocket.global.exception.BusinessException(
+					com.genesis.unipocket.global.exception.ErrorCode
+							.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);
+		}
+		return accountBook;
 	}
 }

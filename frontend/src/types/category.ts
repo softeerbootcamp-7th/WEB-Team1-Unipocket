@@ -1,14 +1,17 @@
-export type CategoryType =
-  | '거주'
-  | '식비'
-  | '교통비'
-  | '생활'
-  | '여가'
-  | '쇼핑'
-  | '통신비'
-  | '학교'
-  | '수입'
-  | '미분류';
+export const CATEGORY = {
+  0: '거주',
+  1: '식비',
+  2: '교통비',
+  3: '생활',
+  4: '여가',
+  5: '쇼핑',
+  6: '통신비',
+  7: '학교',
+  8: '수입',
+  9: '미분류',
+} as const;
+
+export type CategoryType = (typeof CATEGORY)[keyof typeof CATEGORY];
 
 export const CATEGORY_STYLE: Record<
   CategoryType,

@@ -1,11 +1,8 @@
-package com.genesis.unipocket.user.service;
+package com.genesis.unipocket.auth.command.application;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.genesis.unipocket.auth.service.AuthService;
-import com.genesis.unipocket.auth.service.JwtProvider;
-import com.genesis.unipocket.auth.service.TokenBlacklistService;
 import com.genesis.unipocket.global.exception.TokenException;
 import com.genesis.unipocket.user.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.persistence.repository.UserRepository;

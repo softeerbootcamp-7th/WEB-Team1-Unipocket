@@ -1,6 +1,6 @@
-package com.genesis.unipocket.support;
+package com.genesis.unipocket.auth.support;
 
-import com.genesis.unipocket.auth.service.JwtProvider;
+import com.genesis.unipocket.auth.command.application.JwtProvider;
 import jakarta.servlet.http.Cookie;
 import java.util.UUID;
 import org.springframework.stereotype.Component;

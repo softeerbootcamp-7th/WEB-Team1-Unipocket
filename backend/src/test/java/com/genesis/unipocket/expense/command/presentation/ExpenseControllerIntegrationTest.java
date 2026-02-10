@@ -13,7 +13,7 @@ import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepos
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import com.genesis.unipocket.support.JwtTestHelper;
+import com.genesis.unipocket.auth.support.JwtTestHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;

@@ -19,7 +19,7 @@ const ReportContainer = ({
         className,
       )}
     >
-      <span className="body2-normal-medium text-label-alternative">
+      <span className="body2-normal-medium text-label-alternative px-2.5">
         {title}
       </span>
       {children}

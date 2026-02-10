@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -201,7 +202,7 @@ public class AuthController {
 				return uri.getScheme() + "://" + uri.getHost();
 			}
 			return uri.getScheme() + "://" + uri.getHost() + ":" + port;
-		} catch (Exception e) {
+		} catch (IllegalArgumentException | MalformedURLException e) {
 			return null;
 		}
 	}

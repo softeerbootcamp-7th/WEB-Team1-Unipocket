@@ -3,8 +3,6 @@ import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import type { AccountBookMeta } from '@/types/accountBook';
 
-import { TEST_DATA } from './mock';
-
 interface AccountBookState {
   accountBook: AccountBookMeta | null;
 
@@ -17,8 +15,7 @@ export const useAccountBookStore = create<AccountBookState>()(
   devtools(
     persist(
       (set) => ({
-        // TODO: API 연동 전까지 목업 데이터로 사용, 연동 시 해당 부분 null으로 변경
-        accountBook: TEST_DATA,
+        accountBook: null,
 
         setAccountBook: (data) => set({ accountBook: data }),
 

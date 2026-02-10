@@ -62,8 +62,21 @@ const CurrencyConverter = ({
       return;
     }
 
-    setAmountError(null);
     const num = Number(sanitized);
+
+    if (sanitized !== '' && num <= 0) {
+      setAmountError('0보다 큰 금액을 입력해주세요.');
+      if (direction === 'toBase') {
+        setLocalCurrency(sanitized);
+        setBaseCurrency('');
+      } else {
+        setBaseCurrency(sanitized);
+        setLocalCurrency('');
+      }
+      return;
+    }
+
+    setAmountError(null);
 
     if (direction === 'toBase') {
       setLocalCurrency(sanitized);

@@ -6,8 +6,8 @@ import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.auth.service.AuthService;
 import com.genesis.unipocket.auth.service.JwtProvider;
 import com.genesis.unipocket.auth.service.TokenBlacklistService;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.persistence.repository.UserRepository;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -23,18 +23,21 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @SpringBootTest
 @Transactional
-@TestPropertySource(
-		properties = {"spring.data.redis.host=localhost", "spring.data.redis.port=6379"})
+@TestPropertySource(properties = { "spring.data.redis.host=localhost", "spring.data.redis.port=6379" })
 @DisplayName("AuthService 통합 테스트")
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test-it")
 @Tag("integration")
 class AuthServiceIntegrationTest {
 
-	@Autowired private AuthService authService;
-	@Autowired private JwtProvider jwtProvider;
-	@Autowired private TokenBlacklistService blacklistService;
-	@Autowired private UserRepository userRepository;
+	@Autowired
+	private AuthService authService;
+	@Autowired
+	private JwtProvider jwtProvider;
+	@Autowired
+	private TokenBlacklistService blacklistService;
+	@Autowired
+	private UserRepository userRepository;
 
 	@Test
 	@DisplayName("전체 로그인 플로우 - 토큰 발급 및 검증")

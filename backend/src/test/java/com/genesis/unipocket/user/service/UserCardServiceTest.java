@@ -7,13 +7,13 @@ import static org.mockito.Mockito.lenient;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.user.dto.request.UserCardRequest;
-import com.genesis.unipocket.user.dto.response.UserCardResponse;
-import com.genesis.unipocket.user.persistence.entity.UserCardEntity;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.persistence.entity.enums.CardCompany;
-import com.genesis.unipocket.user.persistence.repository.UserCardRepository;
-import com.genesis.unipocket.user.persistence.repository.UserRepository;
+import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import com.genesis.unipocket.user.query.persistence.response.UserCardResponse;
+import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.command.persistence.repository.UserCardRepository;
+import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,17 +28,26 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserCardServiceTest {
 
-	@Mock private UserCardRepository userCardRepository;
+	@Mock
+	private UserCardRepository userCardRepository;
 
-	@Mock private UserRepository userRepository;
+	@Mock
+	private UserRepository userRepository;
 
-	@InjectMocks private UserCardService userCardService;
+	@InjectMocks
+	private com.genesis.unipocket.user.command.application.UserCardCommandService userCardCommandService;
 
-	@Mock private UserEntity user;
+	@InjectMocks
+	private com.genesis.unipocket.user.query.service.UserCardQueryService userCardQueryService;
 
-	@Mock private UserEntity otherUser;
+	@Mock
+	private UserEntity user;
 
-	@Mock private UserCardEntity userCard;
+	@Mock
+	private UserEntity otherUser;
+
+	@Mock
+	private UserCardEntity userCard;
 
 	private UUID userId;
 	private UUID otherUserId;
@@ -70,7 +79,7 @@ class UserCardServiceTest {
 		when(userCardRepository.save(any(UserCardEntity.class))).thenReturn(userCard);
 
 		// When
-		Long result = userCardService.createCard(userId, request);
+		Long result = userCardCommandService.createCard(userId, request);
 
 		// Then
 		assertThat(result).isEqualTo(cardId);
@@ -87,7 +96,7 @@ class UserCardServiceTest {
 		when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
 		// When & Then
-		assertThatThrownBy(() -> userCardService.createCard(userId, request))
+		assertThatThrownBy(() -> userCardCommandService.createCard(userId, request))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.USER_NOT_FOUND);
 
@@ -102,7 +111,7 @@ class UserCardServiceTest {
 		when(userCardRepository.findAllByUser_Id(userId)).thenReturn(cards);
 
 		// When
-		List<UserCardResponse> result = userCardService.getCards(userId);
+		List<UserCardResponse> result = userCardQueryService.getCards(userId);
 
 		// Then
 		assertThat(result).hasSize(1);
@@ -116,7 +125,7 @@ class UserCardServiceTest {
 		when(userCardRepository.findById(cardId)).thenReturn(Optional.of(userCard));
 
 		// When
-		userCardService.deleteCard(cardId, userId);
+		userCardCommandService.deleteCard(cardId, userId);
 
 		// Then
 		verify(userCardRepository).findById(cardId);
@@ -130,7 +139,7 @@ class UserCardServiceTest {
 		when(userCardRepository.findById(cardId)).thenReturn(Optional.empty());
 
 		// When & Then
-		assertThatThrownBy(() -> userCardService.deleteCard(cardId, userId))
+		assertThatThrownBy(() -> userCardCommandService.deleteCard(cardId, userId))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.RESOURCE_NOT_FOUND);
 
@@ -144,7 +153,7 @@ class UserCardServiceTest {
 		when(userCardRepository.findById(cardId)).thenReturn(Optional.of(userCard));
 
 		// When & Then
-		assertThatThrownBy(() -> userCardService.deleteCard(cardId, otherUserId))
+		assertThatThrownBy(() -> userCardCommandService.deleteCard(cardId, otherUserId))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.FORBIDDEN);
 

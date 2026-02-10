@@ -2,9 +2,9 @@ package com.genesis.unipocket.auth.service.oauth;
 
 import com.genesis.unipocket.auth.exception.oauth.OAuthCommunicationException;
 import com.genesis.unipocket.global.config.OAuth2Properties.OidcProviderConfig;
-import com.genesis.unipocket.user.common.dto.oauth.KakaoUserInfo;
-import com.genesis.unipocket.user.common.dto.oauth.OAuthTokenResponse;
-import com.genesis.unipocket.user.common.dto.oauth.OAuthUserInfo;
+import com.genesis.unipocket.user.common.KakaoUserInfo;
+import com.genesis.unipocket.user.common.OAuthTokenResponse;
+import com.genesis.unipocket.user.common.OAuthUserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

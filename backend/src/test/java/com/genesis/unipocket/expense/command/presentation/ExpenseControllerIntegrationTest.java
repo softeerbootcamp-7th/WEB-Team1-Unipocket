@@ -5,15 +5,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.genesis.unipocket.TestcontainersConfiguration;
-import com.genesis.unipocket.accountbook.persistence.entity.AccountBookCreateArgs;
-import com.genesis.unipocket.accountbook.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.persistence.repository.AccountBookRepository;
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import com.genesis.unipocket.auth.support.JwtTestHelper;
+import com.genesis.unipocket.support.JwtTestHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +47,7 @@ class ExpenseControllerIntegrationTest {
 
 	@Autowired private ExpenseRepository expenseRepository;
 
-	@Autowired private AccountBookRepository accountBookRepository;
+	@Autowired private AccountBookCommandRepository accountBookRepository;
 
 	@Autowired private JwtTestHelper jwtTestHelper;
 

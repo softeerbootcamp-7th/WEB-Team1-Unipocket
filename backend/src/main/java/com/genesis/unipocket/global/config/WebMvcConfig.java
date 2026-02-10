@@ -1,6 +1,6 @@
 package com.genesis.unipocket.global.config;
 
-import com.genesis.unipocket.auth.common.resolver.LoginUserArgumentResolver;
+import com.genesis.unipocket.auth.resolver.LoginUserArgumentResolver;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

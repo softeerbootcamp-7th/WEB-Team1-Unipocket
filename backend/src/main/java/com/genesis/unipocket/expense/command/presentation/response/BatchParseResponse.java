@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.response;
+package com.genesis.unipocket.expense.command.presentation.response;
 
 /**
  * <b>Batch 파싱 응답 DTO</b>

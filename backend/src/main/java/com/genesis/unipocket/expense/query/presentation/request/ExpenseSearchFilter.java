@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.query.presentation.request;
 
 import com.genesis.unipocket.expense.common.enums.Category;
 import java.math.BigDecimal;

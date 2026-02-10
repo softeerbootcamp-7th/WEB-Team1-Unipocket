@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.command.presentation.request;
 
 /**
  * <b>파일 파싱 요청 DTO</b>

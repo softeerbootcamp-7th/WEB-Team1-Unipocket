@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.command.presentation.request;
 
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -7,13 +7,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * <b>지출내역 생성 - 수기 DTO</b>
- * <p>Client -> Presentation
+ * <b>지출내역 수정 요청 DTO</b>
+ * <p>Full replacement (PUT) - 모든 필드 필수
  *
- * @author codingbaraGo
- * @since 2026-02-03
+ * @author bluefishez
+ * @since 2026-02-07
  */
-public record ExpenseManualCreateRequest(
+public record ExpenseUpdateRequest(
 		@NotNull String merchantName,
 		Category category,
 		String paymentMethod,

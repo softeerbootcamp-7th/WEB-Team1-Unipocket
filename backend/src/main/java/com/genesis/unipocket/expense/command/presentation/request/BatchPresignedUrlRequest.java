@@ -1,6 +1,6 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.command.presentation.request;
 
-import com.genesis.unipocket.expense.persistence.entity.expense.File.FileType;
+import com.genesis.unipocket.expense.command.persistence.entity.expense.File.FileType;
 import java.util.List;
 
 /**

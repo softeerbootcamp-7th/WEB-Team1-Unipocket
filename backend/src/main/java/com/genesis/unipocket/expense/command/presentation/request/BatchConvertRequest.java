@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.request;
+package com.genesis.unipocket.expense.command.presentation.request;
 
 import java.util.List;
 

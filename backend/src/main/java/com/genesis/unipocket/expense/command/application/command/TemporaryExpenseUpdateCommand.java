@@ -1,7 +1,7 @@
-package com.genesis.unipocket.expense.persistence.entity.dto;
+package com.genesis.unipocket.expense.command.application.command;
 
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.dto.request.TemporaryExpenseUpdateRequest;
+import com.genesis.unipocket.expense.command.presentation.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * <b>임시지출내역 수정 Command DTO</b>
  * <p>
- * Facade -&gt; Application
+ * Facade -> Application
  *
  * @author 김동균
  * @since 2026-02-08

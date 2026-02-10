@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.dto.response;
+package com.genesis.unipocket.expense.query.presentation.response;
 
 import java.util.List;
 

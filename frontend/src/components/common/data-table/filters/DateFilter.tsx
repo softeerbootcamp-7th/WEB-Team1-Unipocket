@@ -41,15 +41,6 @@ const DateFilter = () => {
     setDateRange({ startDate: start, endDate: end });
   };
 
-  const handleInputChange = (value: string, type: 'start' | 'end') => {
-    const newDate = new Date(value);
-
-    handleDateChange({
-      start: type === 'start' ? newDate : dateRange.startDate,
-      end: type === 'end' ? newDate : dateRange.endDate,
-    });
-  };
-
   const handlePresetClick = (id: DatePresetId) => {
     const { startDate, endDate } = getDateRangeFromPreset(id);
     handleDateChange({ start: startDate, end: endDate });
@@ -115,7 +106,6 @@ const DateFilter = () => {
                       : ''
                   }
                   onClick={() => setIsCalendarOpen(true)}
-                  onChange={(val) => handleInputChange(val, 'start')}
                   onClear={() =>
                     handleDateChange({ start: null, end: dateRange.endDate })
                   }
@@ -128,7 +118,6 @@ const DateFilter = () => {
                       : ''
                   }
                   onClick={() => setIsCalendarOpen(true)}
-                  onChange={(val) => handleInputChange(val, 'end')}
                   onClear={() =>
                     handleDateChange({ start: dateRange.startDate, end: null })
                   }

@@ -5,7 +5,6 @@ import { Icons } from '@/assets';
 interface CalendarInputProps {
   title: string;
   value: string;
-  onChange: (value: string) => void;
   onClick: () => void;
   onClear: () => void;
 }
@@ -13,7 +12,6 @@ interface CalendarInputProps {
 const CalendarInput = ({
   title,
   value,
-  onChange,
   onClick,
   onClear,
 }: CalendarInputProps) => {
@@ -34,7 +32,6 @@ const CalendarInput = ({
           )}
           placeholder="날짜를 입력해주세요."
           value={value}
-          onChange={(e) => onChange(e.target.value)}
         />
 
         {showClearButton && (

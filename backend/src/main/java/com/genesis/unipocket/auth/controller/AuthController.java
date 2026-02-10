@@ -7,10 +7,9 @@ import com.genesis.unipocket.global.config.OAuth2Properties;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.CookieUtil;
-import com.genesis.unipocket.user.dto.request.LogoutRequest;
-import com.genesis.unipocket.user.dto.request.ReissueRequest;
 import com.genesis.unipocket.user.dto.response.AuthorizeResponse;
 import com.genesis.unipocket.user.dto.response.LoginResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,10 +22,10 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,10 +63,11 @@ public class AuthController {
 	 */
 	@PostMapping("/reissue")
 	public LoginResponse reissue(
-			@RequestBody ReissueRequest request, HttpServletResponse response) {
+			@Parameter(hidden = true) @CookieValue(value = "refresh_token") String refreshToken,
+			HttpServletResponse response) {
 		log.info("토큰 재발급 요청");
 
-		AuthService.TokenPair tokenPair = authService.reissue(request.getRefreshToken());
+		AuthService.TokenPair tokenPair = authService.reissue(refreshToken);
 
 		// Access Token 쿠키 갱신
 		cookieUtil.addCookie(
@@ -91,10 +91,13 @@ public class AuthController {
 	 * 로그아웃 (토큰 블랙리스트 등록)
 	 */
 	@PostMapping("/logout")
-	public void logout(@RequestBody LogoutRequest request, HttpServletResponse response) {
+	public void logout(
+			@Parameter(hidden = true) @CookieValue(value = "access_token") String accessToken,
+			@Parameter(hidden = true) @CookieValue(value = "refresh_token") String refreshToken,
+			HttpServletResponse response) {
 		log.info("로그아웃 요청");
 
-		authService.logout(request.getAccessToken(), request.getRefreshToken());
+		authService.logout(accessToken, refreshToken);
 
 		// 쿠키 삭제
 		cookieUtil.deleteCookie(response, "access_token");

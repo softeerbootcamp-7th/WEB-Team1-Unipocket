@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import Divider from '@/components/common/Divider';
 import DropDown from '@/components/common/dropdown/Dropdown';
+import { ModalContext } from '@/components/common/modal/useModalContext';
 import TextInput from '@/components/common/TextInput';
 
 import { Icons } from '@/assets';
@@ -29,10 +30,19 @@ interface CurrencyConverterProps {
 const CurrencyConverter = ({
   showCurrencyDropdown = false,
 }: CurrencyConverterProps) => {
+  const modalContext = useContext(ModalContext);
+
   const [localCurrency, setLocalCurrency] = useState('');
   const [baseCurrency, setBaseCurrency] = useState('');
   const [localCurrencyType, setLocalCurrencyType] = useState(13); // USD. 실제값으로 변경 필요
   const [amountError, setAmountError] = useState<string | null>('');
+
+  useEffect(() => {
+    if (!modalContext) return;
+    const hasValidInput =
+      localCurrency !== '' && baseCurrency !== '' && !amountError;
+    modalContext.setActionReady(hasValidInput);
+  }, [localCurrency, baseCurrency, amountError, modalContext]);
 
   const validateNumber = (value: string) => {
     const sanitized = value.replace(/[^0-9.]/g, '');

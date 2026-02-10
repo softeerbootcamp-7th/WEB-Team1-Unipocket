@@ -10,14 +10,14 @@ interface ReportCategoryProps {
   countryCode: CountryCode;
   data: {
     maxDiffCategoryIndex: number;
-    isOverSpent: boolean; // @TODO: 텍스트 분기 처리 예정
+    isOverSpent: boolean;
     maxLabel: string;
     items: {
       categoryIndex: number;
       mySpentAmount: string;
       averageSpentAmount: string;
     }[];
-  }
+  };
 }
 
 const ReportCategory = ({ data, countryCode }: ReportCategoryProps) => {
@@ -29,8 +29,8 @@ const ReportCategory = ({ data, countryCode }: ReportCategoryProps) => {
       <ReportContent className="h-166.5 gap-7">
         <h3 className="heading1-bold text-label-normal">
           나랑 같은 국가의 교환학생보다{' '}
-          <span className="text-primary-normal">{category}</span> 소비가 유독
-          많아요
+          <span className="text-primary-normal">{category}</span> 소비가 유독{' '}
+          {data.isOverSpent ? '많아요' : '적어요'}
         </h3>
         <ReportBarGraph
           maxLabel={maxLabelValue}

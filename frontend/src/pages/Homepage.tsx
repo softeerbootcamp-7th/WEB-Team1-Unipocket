@@ -1,7 +1,11 @@
 import Button from '@/components/common/Button';
 import { DataTable } from '@/components/common/data-table/DataTable';
 import DataTableProvider from '@/components/common/data-table/DataTableProvider';
+import CategoryFilter from '@/components/common/data-table/filters/CategoryFilter';
+import DateFilter from '@/components/common/data-table/filters/DateFilter';
+import MerchantFilter from '@/components/common/data-table/filters/MerchantFilter';
 import Divider from '@/components/common/Divider';
+import UploadMenu from '@/components/common/upload/UploadMenu';
 import { columns } from '@/components/home-page/columns';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { type Expense, getData } from '@/components/landing-page/dummy';
@@ -49,6 +53,14 @@ const Homepage = () => {
       <div className="bg-background-normal relative rounded-2xl px-2 py-4 shadow">
         {/* <Icons.ChevronBack className="text-label-alternative absolute left-1/2 z-50 size-12 -translate-x-1/2 rotate-90" /> */}
         <DataTableProvider columns={columns} data={data}>
+          <DataTableFilterProvider>
+            <DateFilter />
+            <MerchantFilter />
+            <CategoryFilter />
+            <div className="flex-1" />
+            <UploadMenu />
+          </DataTableFilterProvider>
+
           <DataTable
             groupBy={(row: Expense) =>
               new Date(row.date).toLocaleDateString('ko-KR', {

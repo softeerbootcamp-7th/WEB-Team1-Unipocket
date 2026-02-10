@@ -19,7 +19,11 @@ const ReportBarList = ({ data }: ReportBarListProps) => {
       <VerticalGrid steps={6} maxValue={maxCategoryValue} />
       <div className="relative z-10 flex flex-col gap-4.5">
         {data.map((item) => (
-          <ReportBarRow key={item.category} {...item} />
+          <ReportBarRow
+            key={item.category}
+            {...item}
+            maxValue={maxCategoryValue}
+          />
         ))}
       </div>
     </div>

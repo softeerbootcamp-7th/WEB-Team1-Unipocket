@@ -9,6 +9,7 @@ interface ReportBarProps {
   value: number;
   variant: 'me' | 'other';
   countryCode: CountryCode;
+  maxValue?: number;
 }
 
 const VARIANT_STYLES = {
@@ -24,17 +25,21 @@ const VARIANT_STYLES = {
   },
 } as const;
 
-const ReportBar = ({ value, variant, countryCode }: ReportBarProps) => {
+const ReportBar = ({ value, variant, countryCode, maxValue = 100 }: ReportBarProps) => {
   const styles = VARIANT_STYLES[variant];
+  const percentage = (value / maxValue) * 100;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-1 items-center gap-2">
       <div
         className={clsx(
-          'animate-expand-width h-3 w-57.75 origin-left rounded-r-xs',
+          'animate-expand-width h-3 origin-left rounded-r-xs',
           styles.bgColor,
         )}
-        style={{ animationDuration: `${TOTAL_ANIMATION_DURATION}s` }}
+        style={{
+          width: `${percentage}%`,
+          animationDuration: `${TOTAL_ANIMATION_DURATION}s`,
+        }}
       />
       <CurrencyAmountDisplay
         amount={value}

@@ -1,8 +1,11 @@
+import { useState } from 'react';
+
 import Button from '@/components/common/Button';
 import { mockData } from '@/components/common/chart/budget/mock';
 import ChartContainer from '@/components/common/chart/layout/ChartContainer';
 import ChartContent from '@/components/common/chart/layout/ChartContent';
 import ChartHeader from '@/components/common/chart/layout/ChartHeader';
+import BudgetSetupModal from '@/components/common/modal/BudgetSetupModal';
 
 import BudgetChartSkeleton from './BudgetChartSkeleton';
 import BudgetChartView from './BudgetChartView';
@@ -10,11 +13,14 @@ import BudgetChartView from './BudgetChartView';
 const BudgetChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   // 렌더링용 데이터. API 연동 시 변경 필요
   const { totalBudget, usedBudget } = mockData;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <ChartContainer>
       <ChartHeader title="남은 예산">
-        <Button size="2xs">설정</Button>
+        <Button size="2xs" onClick={() => setIsModalOpen(true)}>
+          설정
+        </Button>
       </ChartHeader>
       <ChartContent
         className="w-full p-5"
@@ -23,6 +29,10 @@ const BudgetChart = ({ isLoading = false }: { isLoading?: boolean }) => {
       >
         <BudgetChartView totalBudget={totalBudget} usedBudget={usedBudget} />
       </ChartContent>
+      <BudgetSetupModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </ChartContainer>
   );
 };

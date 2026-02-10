@@ -1,9 +1,15 @@
 import CurrencyConverter from '../currency/CurrencyConverter';
 import Modal from './Modal';
 
-const BudgetSetupModal = () => {
+interface BudgetSetupModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const BudgetSetupModal = ({ isOpen, onClose }: BudgetSetupModalProps) => {
   return (
-    <Modal isOpen={true} onClose={() => {}} onAction={() => {}}>
+    // TODO: API 연동 시 onAction 연동 필요
+    <Modal isOpen={isOpen} onClose={onClose} onAction={() => {}}>
       <div className="flex w-86 flex-col items-center">
         {/* title section */}
         <div className="flex flex-col items-center gap-1.5">

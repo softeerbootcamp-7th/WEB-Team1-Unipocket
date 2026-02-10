@@ -1,4 +1,4 @@
-package com.genesis.unipocket.accountbook.dto.request;
+package com.genesis.unipocket.accountbook.command.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;

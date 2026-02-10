@@ -44,8 +44,7 @@ const Button = ({
     disabled && variant === 'danger' && 'bg-status-negative/10',
 
     /* --- size --- */
-    size === 'xxs' &&
-      'pl-[7px] pr-[5px] py-1 h-6 caption1-medium rounded-modal-6',
+    size === 'xxs' && 'px-[5px] py-1 h-6 caption1-medium rounded-modal-6',
     size === 'xs' && 'px-[5px] py-1 h-[26px] label2-medium rounded-modal-6',
     size === 'sm' && 'px-[14px] py-[7px] h-8 label2-medium rounded-modal-8',
     size === 'md' && 'px-5 py-[9px] h-10 body2-normal-medium rounded-modal-10',

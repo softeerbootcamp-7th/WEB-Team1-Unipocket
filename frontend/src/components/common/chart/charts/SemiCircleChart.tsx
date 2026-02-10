@@ -13,7 +13,7 @@ interface SemiCircleChartProps {
 
 const CHART_CONFIG = {
   STROKE_WIDTH: 12,
-  TRACK_GAP: 4,
+  TRACK_GAP: 2.5,
 } as const;
 
 const SemiCircleChart = ({

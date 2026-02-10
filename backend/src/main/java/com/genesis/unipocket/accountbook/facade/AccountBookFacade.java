@@ -7,8 +7,8 @@ import com.genesis.unipocket.accountbook.dto.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookResponse;
 import com.genesis.unipocket.accountbook.dto.response.AccountBookSummaryResponse;
 import com.genesis.unipocket.accountbook.service.AccountBookService;
-import com.genesis.unipocket.user.dto.response.UserResponse;
-import com.genesis.unipocket.user.service.UserService;
+import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
+import com.genesis.unipocket.user.query.service.UserQueryService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +19,12 @@ import org.springframework.stereotype.Component;
 public class AccountBookFacade {
 
 	private final AccountBookService accountBookService;
-	private final UserService userService;
+	private final UserQueryService userQueryService;
 
 	public AccountBookResponse createAccountBook(UUID userId, AccountBookCreateRequest req) {
 
 		String userIdStr = userId.toString();
-		UserResponse userResponse = userService.getUserInfo(userId);
+		UserQueryResponse userResponse = userQueryService.getUserInfo(userId);
 
 		AccountBookDto dto = accountBookService.create(userIdStr, userResponse.name(), req);
 
@@ -57,7 +57,7 @@ public class AccountBookFacade {
 	}
 
 	public List<AccountBookSummaryResponse> getAccountBooks(UUID userId) {
-		UserResponse userResponse = userService.getUserInfo(userId);
+		UserQueryResponse userResponse = userQueryService.getUserInfo(userId);
 
 		// TODO: 유저 정보 받아와서 메인 가계부인지 확인하기
 

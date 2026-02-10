@@ -26,89 +26,96 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserCommandService {
 
-    private final UserCommandRepository userRepository;
-    private final SocialAuthRepository socialAuthRepository;
-    private final UserCardCommandRepository userCardRepository;
-    private final TokenService tokenService;
+	private final UserCommandRepository userRepository;
+	private final SocialAuthRepository socialAuthRepository;
+	private final UserCardCommandRepository userCardRepository;
+	private final TokenService tokenService;
 
-    @Transactional
-    public LoginResponse loginOrRegister(RegisterUserCommand command) {
-        OAuthUserInfo userInfo = command.userInfo();
-        ProviderType providerType = command.providerType();
+	@Transactional
+	public LoginResponse loginOrRegister(RegisterUserCommand command) {
+		OAuthUserInfo userInfo = command.userInfo();
+		ProviderType providerType = command.providerType();
 
-        SocialAuthEntity socialAuth = socialAuthRepository
-                .findByProviderAndProviderId(providerType, userInfo.getProviderId())
-                .orElseGet(() -> createNewUser(userInfo, providerType));
+		SocialAuthEntity socialAuth =
+				socialAuthRepository
+						.findByProviderAndProviderId(providerType, userInfo.getProviderId())
+						.orElseGet(() -> createNewUser(userInfo, providerType));
 
-        UserEntity user = socialAuth.getUser();
-        return tokenService.createTokens(user.getId());
-    }
+		UserEntity user = socialAuth.getUser();
+		return tokenService.createTokens(user.getId());
+	}
 
-    private SocialAuthEntity createNewUser(OAuthUserInfo userInfo, ProviderType providerType) {
-        log.info(
-                "Creating new user from OAuth: provider={}, providerId={}",
-                providerType,
-                userInfo.getProviderId());
+	private SocialAuthEntity createNewUser(OAuthUserInfo userInfo, ProviderType providerType) {
+		log.info(
+				"Creating new user from OAuth: provider={}, providerId={}",
+				providerType,
+				userInfo.getProviderId());
 
-        UserEntity user = UserEntity.builder()
-                .email(userInfo.getEmail())
-                .name(userInfo.getName())
-                .profileImgUrl(userInfo.getProfileImageUrl())
-                .build();
+		UserEntity user =
+				UserEntity.builder()
+						.email(userInfo.getEmail())
+						.name(userInfo.getName())
+						.profileImgUrl(userInfo.getProfileImageUrl())
+						.build();
 
-        userRepository.save(user);
+		userRepository.save(user);
 
-        SocialAuthEntity socialAuth = SocialAuthEntity.builder()
-                .user(user)
-                .provider(providerType)
-                .email(userInfo.getEmail())
-                .providerId(userInfo.getProviderId())
-                .build();
+		SocialAuthEntity socialAuth =
+				SocialAuthEntity.builder()
+						.user(user)
+						.provider(providerType)
+						.email(userInfo.getEmail())
+						.providerId(userInfo.getProviderId())
+						.build();
 
-        return socialAuthRepository.save(socialAuth);
-    }
+		return socialAuthRepository.save(socialAuth);
+	}
 
-    @Transactional
-    public void withdrawUser(WithdrawUserCommand command) {
-        UserEntity user = userRepository
-                .findById(command.userId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	@Transactional
+	public void withdrawUser(WithdrawUserCommand command) {
+		UserEntity user =
+				userRepository
+						.findById(command.userId())
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        socialAuthRepository.deleteByUser(user);
-        userRepository.delete(user);
-    }
+		socialAuthRepository.deleteByUser(user);
+		userRepository.delete(user);
+	}
 
-    @Transactional
-    public Long createCard(CreateCardCommand command) {
-        UserEntity user = userRepository
-                .findById(command.userId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	@Transactional
+	public Long createCard(CreateCardCommand command) {
+		UserEntity user =
+				userRepository
+						.findById(command.userId())
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        long cardCount = userCardRepository.countByUser(user);
-        if (cardCount >= 10) {
-            throw new BusinessException(ErrorCode.CARD_LIMIT_EXCEEDED);
-        }
+		long cardCount = userCardRepository.countByUser(user);
+		if (cardCount >= 10) {
+			throw new BusinessException(ErrorCode.CARD_LIMIT_EXCEEDED);
+		}
 
-        UserCardEntity userCard = UserCardEntity.builder()
-                .user(user)
-                .nickName(command.nickName())
-                .cardNumber(command.cardNumber())
-                .cardCompany(command.cardCompany())
-                .build();
-        userCardRepository.save(userCard);
-        return userCard.getUserCardId();
-    }
+		UserCardEntity userCard =
+				UserCardEntity.builder()
+						.user(user)
+						.nickName(command.nickName())
+						.cardNumber(command.cardNumber())
+						.cardCompany(command.cardCompany())
+						.build();
+		userCardRepository.save(userCard);
+		return userCard.getUserCardId();
+	}
 
-    @Transactional
-    public void deleteCard(DeleteCardCommand command) {
-        UserCardEntity userCard = userCardRepository
-                .findById(command.cardId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
+	@Transactional
+	public void deleteCard(DeleteCardCommand command) {
+		UserCardEntity userCard =
+				userCardRepository
+						.findById(command.cardId())
+						.orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
 
-        if (!userCard.getUser().getId().equals(command.userId())) {
-            throw new BusinessException(ErrorCode.CARD_NOT_OWNED);
-        }
+		if (!userCard.getUser().getId().equals(command.userId())) {
+			throw new BusinessException(ErrorCode.CARD_NOT_OWNED);
+		}
 
-        userCardRepository.delete(userCard);
-    }
+		userCardRepository.delete(userCard);
+	}
 }

@@ -128,6 +128,5 @@ public class AuthService {
 	/**
 	 * 토큰 쌍 (Access Token + Refresh Token)
 	 */
-	public record TokenPair(String accessToken, String refreshToken) {
-	}
+	public record TokenPair(String accessToken, String refreshToken) {}
 }

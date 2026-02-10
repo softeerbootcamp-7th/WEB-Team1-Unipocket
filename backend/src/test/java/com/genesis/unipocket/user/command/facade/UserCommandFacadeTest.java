@@ -21,42 +21,42 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserCommandFacadeTest {
 
-    @Mock
-    private UserCommandService userCommandService;
+	@Mock private UserCommandService userCommandService;
 
-    @InjectMocks
-    private UserCommandFacade userCommandFacade;
+	@InjectMocks private UserCommandFacade userCommandFacade;
 
-    @Test
-    @DisplayName("로그인 또는 회원가입 처리 - 성공")
-    void loginOrRegister_Success() {
-        // given
-        OAuthUserInfo userInfo = org.mockito.Mockito.mock(OAuthUserInfo.class);
-        ProviderType providerType = ProviderType.GOOGLE;
-        LoginResponse expectedResponse = LoginResponse.builder()
-                .accessToken("accessToken")
-                .refreshToken("refreshToken")
-                .build();
+	@Test
+	@DisplayName("로그인 또는 회원가입 처리 - 성공")
+	void loginOrRegister_Success() {
+		// given
+		OAuthUserInfo userInfo = org.mockito.Mockito.mock(OAuthUserInfo.class);
+		ProviderType providerType = ProviderType.GOOGLE;
+		LoginResponse expectedResponse =
+				LoginResponse.builder()
+						.accessToken("accessToken")
+						.refreshToken("refreshToken")
+						.build();
 
-        when(userCommandService.loginOrRegister(any(LoginCreateCommand.class))).thenReturn(expectedResponse);
+		when(userCommandService.loginOrRegister(any(LoginCreateCommand.class)))
+				.thenReturn(expectedResponse);
 
-        // when
-        userCommandFacade.loginOrRegister(userInfo, providerType);
+		// when
+		userCommandFacade.loginOrRegister(userInfo, providerType);
 
-        // then
-        verify(userCommandService).loginOrRegister(any(LoginCreateCommand.class));
-    }
+		// then
+		verify(userCommandService).loginOrRegister(any(LoginCreateCommand.class));
+	}
 
-    @Test
-    @DisplayName("회원 탈퇴 처리 - 성공")
-    void withdrawUser_Success() {
-        // given
-        UUID userId = UUID.randomUUID();
+	@Test
+	@DisplayName("회원 탈퇴 처리 - 성공")
+	void withdrawUser_Success() {
+		// given
+		UUID userId = UUID.randomUUID();
 
-        // when
-        userCommandFacade.withdrawUser(userId);
+		// when
+		userCommandFacade.withdrawUser(userId);
 
-        // then
-        verify(userCommandService).withdrawUser(any(WithdrawCommand.class));
-    }
+		// then
+		verify(userCommandService).withdrawUser(any(WithdrawCommand.class));
+	}
 }

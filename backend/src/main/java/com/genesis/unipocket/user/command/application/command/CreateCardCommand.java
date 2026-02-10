@@ -5,10 +5,10 @@ import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
 import java.util.UUID;
 
 public record CreateCardCommand(
-        UUID userId, String nickName, String cardNumber, CardCompany cardCompany) {
+		UUID userId, String nickName, String cardNumber, CardCompany cardCompany) {
 
-    public static CreateCardCommand of(UUID userId, UserCardRequest request) {
-        return new CreateCardCommand(
-                userId, request.nickName(), request.cardNumber(), request.cardCompany());
-    }
+	public static CreateCardCommand of(UUID userId, UserCardRequest request) {
+		return new CreateCardCommand(
+				userId, request.nickName(), request.cardNumber(), request.cardCompany());
+	}
 }

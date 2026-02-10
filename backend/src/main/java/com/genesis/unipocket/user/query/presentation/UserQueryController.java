@@ -20,20 +20,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserQueryController {
 
-    private final UserQueryService userQueryService;
+	private final UserQueryService userQueryService;
 
-    @GetMapping("/me")
-    public ResponseEntity<UserQueryResponse> getMyInfo(@LoginUser UUID userId) {
-        return ResponseEntity.ok(userQueryService.getUserInfo(userId));
-    }
+	@GetMapping("/me")
+	public ResponseEntity<UserQueryResponse> getMyInfo(@LoginUser UUID userId) {
+		return ResponseEntity.ok(userQueryService.getUserInfo(userId));
+	}
 
-    @GetMapping("/cards")
-    public ResponseEntity<List<UserCardQueryResponse>> getCards(@LoginUser UUID userId) {
-        return ResponseEntity.ok(userQueryService.getCards(userId));
-    }
+	@GetMapping("/cards")
+	public ResponseEntity<List<UserCardQueryResponse>> getCards(@LoginUser UUID userId) {
+		return ResponseEntity.ok(userQueryService.getCards(userId));
+	}
 
-    @GetMapping("/cards/companies")
-    public ResponseEntity<List<CardCompany>> getCardCompanies() {
-        return ResponseEntity.ok(userQueryService.getCardCompanies());
-    }
+	@GetMapping("/cards/companies")
+	public ResponseEntity<List<CardCompany>> getCardCompanies() {
+		return ResponseEntity.ok(userQueryService.getCardCompanies());
+	}
 }

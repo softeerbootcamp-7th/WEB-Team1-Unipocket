@@ -119,8 +119,10 @@ public enum ErrorCode {
 			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다.");
 
 	public static class CodeLiterals {
-		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED = "400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED";
-		public static final String ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED = "400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED";
+		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =
+				"400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED";
+		public static final String ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED =
+				"400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED";
 	}
 
 	private final HttpStatus status;

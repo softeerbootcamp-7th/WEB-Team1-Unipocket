@@ -7,13 +7,13 @@ import static org.mockito.Mockito.lenient;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
-import com.genesis.unipocket.user.query.persistence.response.UserCardResponse;
 import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardRepository;
 import com.genesis.unipocket.user.command.persistence.repository.UserRepository;
+import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import com.genesis.unipocket.user.query.persistence.response.UserCardResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,11 +28,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UserCardServiceTest {
 
-	@Mock
-	private UserCardRepository userCardRepository;
+	@Mock private UserCardRepository userCardRepository;
 
-	@Mock
-	private UserRepository userRepository;
+	@Mock private UserRepository userRepository;
 
 	@InjectMocks
 	private com.genesis.unipocket.user.command.application.UserCardService userCardCommandService;
@@ -40,14 +38,11 @@ class UserCardServiceTest {
 	@InjectMocks
 	private com.genesis.unipocket.user.query.service.UserCardQueryService userCardQueryService;
 
-	@Mock
-	private UserEntity user;
+	@Mock private UserEntity user;
 
-	@Mock
-	private UserEntity otherUser;
+	@Mock private UserEntity otherUser;
 
-	@Mock
-	private UserCardEntity userCard;
+	@Mock private UserCardEntity userCard;
 
 	private UUID userId;
 	private UUID otherUserId;

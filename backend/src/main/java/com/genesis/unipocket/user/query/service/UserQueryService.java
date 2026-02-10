@@ -18,19 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserQueryService {
 
-    private final UserQueryRepository userQueryRepository;
+	private final UserQueryRepository userQueryRepository;
 
-    public UserQueryResponse getUserInfo(UUID userId) {
-        return userQueryRepository
-                .findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-    }
+	public UserQueryResponse getUserInfo(UUID userId) {
+		return userQueryRepository
+				.findById(userId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+	}
 
-    public List<UserCardQueryResponse> getCards(UUID userId) {
-        return userQueryRepository.findAllCardsByUserId(userId);
-    }
+	public List<UserCardQueryResponse> getCards(UUID userId) {
+		return userQueryRepository.findAllCardsByUserId(userId);
+	}
 
-    public List<CardCompany> getCardCompanies() {
-        return Arrays.asList(CardCompany.values());
-    }
+	public List<CardCompany> getCardCompanies() {
+		return Arrays.asList(CardCompany.values());
+	}
 }

@@ -1,6 +1,6 @@
 package com.genesis.unipocket.global.controller;
 
-import com.genesis.unipocket.auth.common.annotation.LoginUser;
+import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service;
 import com.genesis.unipocket.global.infrastructure.aws.S3Service.PresignedUrlResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

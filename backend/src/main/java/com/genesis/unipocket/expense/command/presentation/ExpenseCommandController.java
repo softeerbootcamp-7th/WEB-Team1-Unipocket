@@ -1,6 +1,6 @@
 package com.genesis.unipocket.expense.command.presentation;
 
-import com.genesis.unipocket.auth.common.annotation.LoginUser;
+import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.ExpenseCommandFacade;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;

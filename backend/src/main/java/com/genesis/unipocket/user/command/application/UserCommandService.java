@@ -14,7 +14,7 @@ import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
-import com.genesis.unipocket.user.common.dto.oauth.OAuthUserInfo;
+import com.genesis.unipocket.user.common.OAuthUserInfo;
 import com.genesis.unipocket.user.query.persistence.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +36,9 @@ public class UserCommandService {
 		OAuthUserInfo userInfo = command.userInfo();
 		ProviderType providerType = command.providerType();
 
-		SocialAuthEntity socialAuth =
-				socialAuthRepository
-						.findByProviderAndProviderId(providerType, userInfo.getProviderId())
-						.orElseGet(() -> createNewUser(userInfo, providerType));
+		SocialAuthEntity socialAuth = socialAuthRepository
+				.findByProviderAndProviderId(providerType, userInfo.getProviderId())
+				.orElseGet(() -> createNewUser(userInfo, providerType));
 
 		UserEntity user = socialAuth.getUser();
 		return tokenService.createTokens(user.getId());
@@ -51,32 +50,29 @@ public class UserCommandService {
 				providerType,
 				userInfo.getProviderId());
 
-		UserEntity user =
-				UserEntity.builder()
-						.email(userInfo.getEmail())
-						.name(userInfo.getName())
-						.profileImgUrl(userInfo.getProfileImageUrl())
-						.build();
+		UserEntity user = UserEntity.builder()
+				.email(userInfo.getEmail())
+				.name(userInfo.getName())
+				.profileImgUrl(userInfo.getProfileImageUrl())
+				.build();
 
 		userRepository.save(user);
 
-		SocialAuthEntity socialAuth =
-				SocialAuthEntity.builder()
-						.user(user)
-						.provider(providerType)
-						.email(userInfo.getEmail())
-						.providerId(userInfo.getProviderId())
-						.build();
+		SocialAuthEntity socialAuth = SocialAuthEntity.builder()
+				.user(user)
+				.provider(providerType)
+				.email(userInfo.getEmail())
+				.providerId(userInfo.getProviderId())
+				.build();
 
 		return socialAuthRepository.save(socialAuth);
 	}
 
 	@Transactional
 	public void withdrawUser(WithdrawUserCommand command) {
-		UserEntity user =
-				userRepository
-						.findById(command.userId())
-						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		UserEntity user = userRepository
+				.findById(command.userId())
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
 		socialAuthRepository.deleteByUser(user);
 		userRepository.delete(user);
@@ -84,33 +80,31 @@ public class UserCommandService {
 
 	@Transactional
 	public Long createCard(CreateCardCommand command) {
-		UserEntity user =
-				userRepository
-						.findById(command.userId())
-						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		UserEntity user = userRepository
+				.findById(command.userId())
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
 		long cardCount = userCardRepository.countByUser(user);
 		if (cardCount >= 10) {
 			throw new BusinessException(ErrorCode.CARD_LIMIT_EXCEEDED);
 		}
 
-		UserCardEntity userCard =
-				UserCardEntity.builder()
-						.user(user)
-						.nickName(command.nickName())
-						.cardNumber(command.cardNumber())
-						.cardCompany(command.cardCompany())
-						.build();
-		userCardRepository.save(userCard);
-		return userCard.getUserCardId();
+		UserCardEntity userCard = UserCardEntity.builder()
+				.user(user)
+				.nickName(command.nickName())
+				.cardNumber(command.cardNumber())
+				.cardCompany(command.cardCompany())
+				.build();
+
+		UserCardEntity savedCard = userCardRepository.save(userCard);
+		return savedCard.getUserCardId();
 	}
 
 	@Transactional
 	public void deleteCard(DeleteCardCommand command) {
-		UserCardEntity userCard =
-				userCardRepository
-						.findById(command.cardId())
-						.orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
+		UserCardEntity userCard = userCardRepository
+				.findById(command.cardId())
+				.orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
 
 		if (!userCard.getUser().getId().equals(command.userId())) {
 			throw new BusinessException(ErrorCode.CARD_NOT_OWNED);

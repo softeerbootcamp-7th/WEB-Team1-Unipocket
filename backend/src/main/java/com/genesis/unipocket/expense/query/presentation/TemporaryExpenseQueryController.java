@@ -1,6 +1,6 @@
 package com.genesis.unipocket.expense.query.presentation;
 
-import com.genesis.unipocket.auth.common.annotation.LoginUser;
+import com.genesis.unipocket.auth.annotation.LoginUser;
 import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
 import com.genesis.unipocket.expense.common.infrastructure.ParsingProgressPublisher;
 import com.genesis.unipocket.expense.query.presentation.response.TemporaryExpenseListResponse;

@@ -1,11 +1,11 @@
 package com.genesis.unipocket.user.service;
 
-import com.genesis.unipocket.auth.persistence.entity.SocialAuthEntity;
-import com.genesis.unipocket.auth.persistence.repository.SocialAuthRepository;
-import com.genesis.unipocket.auth.service.TokenService;
+import com.genesis.unipocket.auth.command.application.TokenService;
+import com.genesis.unipocket.auth.command.persistence.entity.SocialAuthEntity;
+import com.genesis.unipocket.auth.command.persistence.repository.SocialAuthRepository;
+import com.genesis.unipocket.auth.common.dto.LoginResult;
+import com.genesis.unipocket.auth.common.dto.oauth.OAuthUserInfo;
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
-import com.genesis.unipocket.user.dto.common.oauth.OAuthUserInfo;
-import com.genesis.unipocket.user.dto.response.LoginResponse;
 import com.genesis.unipocket.user.dto.response.UserResponse;
 import com.genesis.unipocket.user.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.persistence.repository.UserRepository;
@@ -40,7 +40,7 @@ public class UserService {
 	 * @return 로그인 응답 (JWT 토큰)
 	 */
 	@Transactional
-	public LoginResponse loginOrRegister(OAuthUserInfo userInfo, ProviderType providerType) {
+	public LoginResult loginOrRegister(OAuthUserInfo userInfo, ProviderType providerType) {
 		// 1. 소셜 인증 정보 조회 또는 생성
 		SocialAuthEntity socialAuth =
 				socialAuthRepository

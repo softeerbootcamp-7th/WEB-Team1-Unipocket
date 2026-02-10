@@ -70,7 +70,6 @@ const Filter = ({
       <span className="px-0.5">{children}</span>
       {active ? (
         <div
-          role="button" // 접근성을 위해 role 추가, 중복 button 방지`
           onClick={(e) => {
             e.stopPropagation();
             onReset?.();

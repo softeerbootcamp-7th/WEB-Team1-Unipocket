@@ -1,4 +1,4 @@
-package com.genesis.unipocket.user.persistence.entity.enums;
+package com.genesis.unipocket.user.command.persistence.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

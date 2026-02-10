@@ -1,6 +1,6 @@
-package com.genesis.unipocket.user.persistence.entity;
+package com.genesis.unipocket.user.command.persistence.entity;
 
-import com.genesis.unipocket.user.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

@@ -1,7 +1,7 @@
 package com.genesis.unipocket.auth.persistence.entity;
 
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;

@@ -1,7 +1,7 @@
-package com.genesis.unipocket.user.persistence.entity;
+package com.genesis.unipocket.user.command.persistence.entity;
 
-import com.genesis.unipocket.user.persistence.entity.enums.UserRole;
-import com.genesis.unipocket.user.persistence.entity.enums.UserStatus;
+import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
+import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;

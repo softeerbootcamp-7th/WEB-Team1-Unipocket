@@ -31,7 +31,7 @@ const TextInput = ({
   const showClearButton = value.length > 0 && isFocused && !isDisabled;
 
   return (
-    <div className={clsx('flex flex-col gap-2', className)}>
+    <div className={clsx('flex flex-col gap-2 text-left', className)}>
       {title && (
         <p className="label1-normal-bold text-label-neutral">{title}</p>
       )}

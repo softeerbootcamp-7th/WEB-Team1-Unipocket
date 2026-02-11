@@ -3,7 +3,7 @@ package com.genesis.unipocket.global.infrastructure.storage.s3;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.MediaContentType;
-import com.genesis.unipocket.global.infrastructure.storage.s3.dto.S3PresignedUrlResult;
+import com.genesis.unipocket.media.command.facade.port.dto.PresignedUrlInfo;
 import io.awspring.cloud.s3.S3Template;
 
 import java.time.Duration;
@@ -36,7 +36,7 @@ public class S3Service {
 	private final S3Template s3Template; // 일반적인 업로드/다운로드용
 	private final S3Presigner s3Presigner; // Presigned URL 생성용
 
-	public S3PresignedUrlResult getPresignedUrl(String prefix, String originalFileName) {
+	public PresignedUrlInfo getPresignedUrl(String prefix, String originalFileName) {
 		String extension = extractExtension(originalFileName);
 		MediaContentType mediaContentType =
 				MediaContentType.fromExtension(extension)
@@ -65,14 +65,14 @@ public class S3Service {
 						.build();
 
 		PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-		return new S3PresignedUrlResult(presignedRequest.url().toString(), key);
+		return new PresignedUrlInfo(presignedRequest.url().toString(), key);
 	}
 
 	public boolean validateExists(String filePath) {
 		return s3Template.objectExists(bucketName, filePath);
 	}
 
-	public String getPresignedViewUrl(String filePath) {
+	public String provideViewUrl(String filePath) {
 		// 조회용 GetObjectRequest 생성
 		GetObjectRequest getObjectRequest =
 				GetObjectRequest.builder().bucket(bucketName).key(filePath).build();

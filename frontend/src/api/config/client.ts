@@ -9,7 +9,7 @@ import { ApiError } from './error';
 
 interface customFetchParams {
   endpoint: string;
-  params?: Record<string, string | number>;
+  params?: Record<string, string>;
   options?: RequestInit;
   isRetry?: boolean; // 재시도 여부 플래그 -> 401 재발급 시도 무한 루프 방지용
 }
@@ -57,13 +57,14 @@ export const customFetch = async <T>({
   // 1. 쿼리 스트링 처리 로직 분리 및 정렬 적용
   let queryString = '';
   if (params) {
-    const searchParams = new URLSearchParams(params as Record<string, string>);
+    const searchParams = new URLSearchParams(params);
     searchParams.sort(); // 알파벳 순으로 파라미터 정렬 (캐싱 효율 상승)
     queryString = `?${searchParams.toString()}`;
   }
 
+  const baseUrl = API_BASE_URL.replace(/\/$/, '');
   const cleanEndpoint = endpoint.replace(/^\//, '');
-  const url = `${API_BASE_URL}/${cleanEndpoint}${queryString}`;
+  const url = `${baseUrl}/${cleanEndpoint}${queryString}`;
   try {
     const response = await fetch(url, {
       ...restOptions,

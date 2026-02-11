@@ -6,8 +6,8 @@ import { formatDateTime } from '@/components/common/calendar/date.utils';
 import Category from '@/components/common/Category';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
-import CurrencyConverter from '@/components/common/side-panel/CurrencyConverter';
 import DateTimePicker from '@/components/common/side-panel/DateTimePicker';
+import MoneyContainer from '@/components/common/side-panel/MoneyContainer';
 import ValueContainer, {
   type ValueItemProps,
 } from '@/components/common/side-panel/ValueContainer';
@@ -142,7 +142,7 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
           )}
         </div>
         <Divider style="thin" />
-        <CurrencyConverter />
+        <MoneyContainer />
         <Divider style="thin" />
         <TextInput
           value={memo}

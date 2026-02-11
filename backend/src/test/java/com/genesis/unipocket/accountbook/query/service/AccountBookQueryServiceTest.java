@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookQueryResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -83,5 +84,41 @@ class AccountBookQueryServiceTest {
 		// then
 		assertThat(result).hasSize(2);
 		assertThat(result.get(0).title()).isEqualTo("Title1");
+	}
+
+	@Test
+	@DisplayName("가계부 상세 조회 - 성공")
+	void getAccountBookDetail_Success() {
+		Long accountBookId = 1L;
+		AccountBookDetailResponse response =
+				new AccountBookDetailResponse(
+						accountBookId,
+						"Title",
+						CountryCode.US,
+						CountryCode.KR,
+						10000L,
+						List.of(),
+						LocalDate.now(),
+						LocalDate.now());
+
+		given(repository.findDetailById(userId, accountBookId)).willReturn(Optional.of(response));
+
+		AccountBookDetailResponse result =
+				accountBookQueryService.getAccountBookDetail(userId, accountBookId);
+
+		assertThat(result.id()).isEqualTo(accountBookId);
+		assertThat(result.title()).isEqualTo("Title");
+	}
+
+	@Test
+	@DisplayName("가계부 상세 조회 - 실패 (존재하지 않음 또는 권한 없음)")
+	void getAccountBookDetail_NotFoundOrUnauthorized() {
+		Long accountBookId = 1L;
+		given(repository.findDetailById(userId, accountBookId)).willReturn(Optional.empty());
+
+		assertThatThrownBy(
+						() -> accountBookQueryService.getAccountBookDetail(userId, accountBookId))
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.ACCOUNT_BOOK_NOT_FOUND);
 	}
 }

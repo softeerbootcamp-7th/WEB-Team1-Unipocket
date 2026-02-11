@@ -31,15 +31,7 @@ public class AccountBookQueryController {
 	@GetMapping("/{accountBookId}")
 	public ResponseEntity<AccountBookDetailResponse> getAccountBook(
 			@LoginUser UUID userId, @PathVariable Long accountBookId) {
-		// Note: Validation if user owns the account book should be handled.
-		// In Query side, we usually just filter by userId in repository or verify
-		// ownership.
-		// For now, let's assume repository or service handles security, or we return
-		// what we find.
-		// Since we didn't pass userId to findDetailById in Repository, anyone can see?
-		// We should probably pass userId to findDetailById to ensure privacy.
-		// For this refactoring step, I'll rely on service implementation but note that
-		// findDetailById in repository currently doesn't check userId.
-		return ResponseEntity.ok(accountBookQueryService.getAccountBookDetail(accountBookId));
+		return ResponseEntity.ok(
+				accountBookQueryService.getAccountBookDetail(userId.toString(), accountBookId));
 	}
 }

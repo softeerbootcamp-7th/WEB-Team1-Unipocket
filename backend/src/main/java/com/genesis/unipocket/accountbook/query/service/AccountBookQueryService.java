@@ -24,9 +24,9 @@ public class AccountBookQueryService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 	}
 
-	public AccountBookDetailResponse getAccountBookDetail(Long accountBookId) {
+	public AccountBookDetailResponse getAccountBookDetail(String userId, Long accountBookId) {
 		return repository
-				.findDetailById(accountBookId)
+				.findDetailById(userId, accountBookId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 	}
 

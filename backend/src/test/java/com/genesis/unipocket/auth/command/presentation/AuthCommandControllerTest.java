@@ -61,13 +61,15 @@ class AuthCommandControllerTest {
 						any(HttpServletResponse.class),
 						eq("access_token"),
 						eq(newAccessToken),
-						anyInt());
+						anyInt(),
+						eq("/"));
 		verify(cookieUtil)
 				.addCookie(
 						any(HttpServletResponse.class),
 						eq("refresh_token"),
 						eq(newRefreshToken),
-						anyInt());
+						anyInt(),
+						eq("/api/auth"));
 	}
 
 	@Test
@@ -85,8 +87,10 @@ class AuthCommandControllerTest {
 				.andExpect(status().isOk());
 
 		verify(authService).logout(accessToken, refreshToken);
-		verify(cookieUtil).deleteCookie(any(HttpServletResponse.class), eq("access_token"));
-		verify(cookieUtil).deleteCookie(any(HttpServletResponse.class), eq("refresh_token"));
+		verify(cookieUtil)
+				.deleteCookie(any(HttpServletResponse.class), eq("access_token"), eq("/"));
+		verify(cookieUtil)
+				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/api/auth"));
 	}
 
 	@Test
@@ -145,13 +149,15 @@ class AuthCommandControllerTest {
 						any(HttpServletResponse.class),
 						eq("access_token"),
 						eq(accessToken),
-						eq(expiresIn.intValue()));
+						eq(expiresIn.intValue()),
+						eq("/"));
 
 		verify(cookieUtil)
 				.addCookie(
 						any(HttpServletResponse.class),
 						eq("refresh_token"),
 						eq(refreshToken),
-						anyInt());
+						anyInt(),
+						eq("/api/auth"));
 	}
 }

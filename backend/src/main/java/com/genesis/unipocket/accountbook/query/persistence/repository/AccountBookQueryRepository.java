@@ -31,7 +31,7 @@ public class AccountBookQueryRepository {
 		return result.stream().findFirst();
 	}
 
-	public Optional<AccountBookDetailResponse> findDetailById(Long id) {
+	public Optional<AccountBookDetailResponse> findDetailById(String userId, Long id) {
 		// TODO: tempExpenseBatchIds is currently empty list, need to implement logic if
 		// needed
 		List<AccountBookDetailResponse> result =
@@ -40,9 +40,11 @@ public class AccountBookQueryRepository {
 									+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse("
 									+ " a.id, a.title, a.localCountryCode, a.baseCountryCode,"
 									+ " a.budget, null, a.startDate, a.endDate) FROM"
-									+ " AccountBookEntity a WHERE a.id = :id",
+									+ " AccountBookEntity a WHERE a.id = :id AND a.userId ="
+									+ " :userId",
 								AccountBookDetailResponse.class)
 						.setParameter("id", id)
+						.setParameter("userId", userId)
 						.getResultList();
 
 		return result.stream().findFirst();

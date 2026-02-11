@@ -32,3 +32,23 @@ export const redirectIfAuthenticated = async () => {
     // 인증되지 않은 상태(401 등)이면 아무 작업도 하지 않음
   }
 };
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  userId: string;
+  expiresIn: number;
+  tokenType: string;
+}
+
+export const loginDev = (
+  userId: string = '66e6bfde-9262-4bb8-ab3f-596c53baa480',
+): Promise<LoginResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.LOGIN_DEV,
+    params: { userId },
+    options: {
+      method: 'POST',
+    },
+  });
+};

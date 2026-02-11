@@ -19,10 +19,12 @@ export const BankLogos = {
 
 import Google from './authLogos/google.svg';
 import Kakao from './authLogos/kakao.svg';
+import Mingyu from './authLogos/mingyu.svg';
 
 export const AuthLogos = {
   Google,
   Kakao,
+  Mingyu,
 } as const;
 
 // 2. Cards

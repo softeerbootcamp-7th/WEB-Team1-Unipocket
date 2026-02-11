@@ -40,7 +40,10 @@ class AccountBookCommandControllerTest {
 	@MockBean private AccountBookCommandFacade accountBookCommandFacade;
 	@MockBean private JwtProvider jwtProvider;
 	@MockBean private TokenBlacklistService tokenBlacklistService;
-	@MockBean private org.springframework.data.jpa.mapping.JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+	@MockBean
+	private org.springframework.data.jpa.mapping.JpaMetamodelMappingContext
+			jpaMetamodelMappingContext;
 
 	@Test
 	@DisplayName("가계부 생성 성공")
@@ -53,7 +56,8 @@ class AccountBookCommandControllerTest {
 						CountryCode.US, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31));
 
 		mockAuthentication(accessToken, userId);
-		given(accountBookCommandFacade.createAccountBook(eq(userId), eq(request))).willReturn(accountBookId);
+		given(accountBookCommandFacade.createAccountBook(eq(userId), eq(request)))
+				.willReturn(accountBookId);
 
 		mockMvc.perform(
 						post("/api/account-books")
@@ -80,7 +84,9 @@ class AccountBookCommandControllerTest {
 						LocalDate.of(2026, 2, 28));
 
 		mockAuthentication(accessToken, userId);
-		given(accountBookCommandFacade.updateAccountBook(eq(userId), eq(accountBookId), eq(request)))
+		given(
+						accountBookCommandFacade.updateAccountBook(
+								eq(userId), eq(accountBookId), eq(request)))
 				.willReturn(accountBookId);
 
 		mockMvc.perform(
@@ -123,7 +129,8 @@ class AccountBookCommandControllerTest {
 								.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
-				.andExpect(jsonPath("$.message").value("400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED"));
+				.andExpect(
+						jsonPath("$.message").value("400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED"));
 
 		verify(accountBookCommandFacade, never()).createAccountBook(any(), any());
 	}
@@ -152,7 +159,8 @@ class AccountBookCommandControllerTest {
 								.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
-				.andExpect(jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
+				.andExpect(
+						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
 
 		verify(accountBookCommandFacade, never()).updateAccountBook(any(), any(), any());
 	}

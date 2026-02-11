@@ -89,15 +89,15 @@ public class TemporaryExpenseQueryService {
 			List<TemporaryExpense> fileExpenses =
 					expensesByFile.getOrDefault(file.getFileId(), List.of());
 
-			int normalCount = 0;
-			int incompleteCount = 0;
-			int abnormalCount = 0;
-
-			for (TemporaryExpense te : fileExpenses) {
-				if (te.getStatus() == TemporaryExpenseStatus.NORMAL) normalCount++;
-				else if (te.getStatus() == TemporaryExpenseStatus.INCOMPLETE) incompleteCount++;
-				else if (te.getStatus() == TemporaryExpenseStatus.ABNORMAL) abnormalCount++;
-			}
+			Map<TemporaryExpenseStatus, Long> counts =
+					fileExpenses.stream()
+							.collect(
+									Collectors.groupingBy(
+											TemporaryExpense::getStatus, Collectors.counting()));
+			int normalCount = counts.getOrDefault(TemporaryExpenseStatus.NORMAL, 0L).intValue();
+			int incompleteCount =
+					counts.getOrDefault(TemporaryExpenseStatus.INCOMPLETE, 0L).intValue();
+			int abnormalCount = counts.getOrDefault(TemporaryExpenseStatus.ABNORMAL, 0L).intValue();
 
 			boolean processed =
 					!fileExpenses.isEmpty() && incompleteCount == 0 && abnormalCount == 0;
@@ -124,53 +124,35 @@ public class TemporaryExpenseQueryService {
 	 */
 	public ImageProcessingSummaryResponse getImageProcessingSummary(
 			Long accountBookId, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		// getFileProcessingSummary는 내부적으로 ownership 검증을 수행하므로, 여기서 중복으로 호출할 필요가 없습니다.
+		FileProcessingSummaryResponse fileSummary = getFileProcessingSummary(accountBookId, userId);
 
-		// 1. 가계부에 속한 메타 → 파일 조회
-		List<TempExpenseMeta> metas = tempExpenseMetaRepository.findByAccountBookId(accountBookId);
-		if (metas.isEmpty()) {
+		if (fileSummary.files().isEmpty()) {
 			return new ImageProcessingSummaryResponse(0, 0, 0, 0, 0, 0, 0);
 		}
 
-		List<Long> metaIds = metas.stream().map(TempExpenseMeta::getTempExpenseMetaId).toList();
-		List<File> files = fileRepository.findByTempExpenseMetaIdIn(metaIds);
-
-		// 2. 전체 임시지출내역 조회
-		List<Long> fileIds = files.stream().map(File::getFileId).toList();
-		List<TemporaryExpense> allExpenses = temporaryExpenseRepository.findByFileIdIn(fileIds);
-
-		// 3. 전체 통계
-		int normalExpenses = 0;
-		int incompleteExpenses = 0;
-		int abnormalExpenses = 0;
-
-		for (TemporaryExpense te : allExpenses) {
-			if (te.getStatus() == TemporaryExpenseStatus.NORMAL) normalExpenses++;
-			else if (te.getStatus() == TemporaryExpenseStatus.INCOMPLETE) incompleteExpenses++;
-			else if (te.getStatus() == TemporaryExpenseStatus.ABNORMAL) abnormalExpenses++;
-		}
-
-		// 4. 파일별 처리 여부 집계
-		Map<Long, List<TemporaryExpense>> expensesByFile =
-				allExpenses.stream().collect(Collectors.groupingBy(TemporaryExpense::getFileId));
-
-		int processedImages = 0;
-		for (File file : files) {
-			List<TemporaryExpense> fileExpenses =
-					expensesByFile.getOrDefault(file.getFileId(), List.of());
-			boolean allNormal =
-					!fileExpenses.isEmpty()
-							&& fileExpenses.stream()
-									.allMatch(
-											te -> te.getStatus() == TemporaryExpenseStatus.NORMAL);
-			if (allNormal) processedImages++;
-		}
+		int totalExpenses =
+				fileSummary.files().stream()
+						.mapToInt(FileProcessingSummaryResponse.FileSummary::totalExpenses)
+						.sum();
+		int normalExpenses =
+				fileSummary.files().stream()
+						.mapToInt(FileProcessingSummaryResponse.FileSummary::normalCount)
+						.sum();
+		int incompleteExpenses =
+				fileSummary.files().stream()
+						.mapToInt(FileProcessingSummaryResponse.FileSummary::incompleteCount)
+						.sum();
+		int abnormalExpenses =
+				fileSummary.files().stream()
+						.mapToInt(FileProcessingSummaryResponse.FileSummary::abnormalCount)
+						.sum();
 
 		return new ImageProcessingSummaryResponse(
-				files.size(),
-				processedImages,
-				files.size() - processedImages,
-				allExpenses.size(),
+				fileSummary.totalFiles(),
+				fileSummary.processedFiles(),
+				fileSummary.unprocessedFiles(),
+				totalExpenses,
 				normalExpenses,
 				incompleteExpenses,
 				abnormalExpenses);

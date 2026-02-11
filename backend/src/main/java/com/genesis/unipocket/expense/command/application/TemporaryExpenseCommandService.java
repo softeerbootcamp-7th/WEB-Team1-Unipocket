@@ -5,6 +5,7 @@ import com.genesis.unipocket.expense.command.application.result.TemporaryExpense
 import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
 import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
 import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.expense.common.enums.Category;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -127,7 +128,7 @@ public class TemporaryExpenseCommandService {
 			String merchantName,
 			java.math.BigDecimal localCurrencyAmount,
 			java.time.LocalDateTime occurredAt,
-			Object category) {
+			Category category) {
 		// ABNORMAL 상태는 자동 변경하지 않음
 		if (originalStatus == TemporaryExpenseStatus.ABNORMAL) {
 			return TemporaryExpenseStatus.ABNORMAL;

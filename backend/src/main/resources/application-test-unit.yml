@@ -49,6 +49,9 @@ oauth2:
       scope: profile_nickname,profile_image,account_email
 
 app:
+  media:
+    presigned-get-expiration-seconds: 100
+    presigned-put-expiration-seconds: 100
   frontend:
     url: http://localhost:5173
   cookie:

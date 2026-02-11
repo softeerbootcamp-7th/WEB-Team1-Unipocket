@@ -4,8 +4,7 @@ import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 
 public record UserCardQueryResponse(
-		Long userCardId, String nickName, String cardNumber,
-		CardCompany cardCompany) {
+		Long userCardId, String nickName, String cardNumber, CardCompany cardCompany) {
 	public static UserCardQueryResponse from(UserCardEntity entity) {
 		return new UserCardQueryResponse(
 				entity.getUserCardId(),

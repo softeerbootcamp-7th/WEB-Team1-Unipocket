@@ -49,7 +49,7 @@ const Header = () => {
           </div>
         )}
         <Button onClick={() => {}}>모바일</Button>
-        {/* <ProfilePopover /> */}
+        <ProfilePopover />
       </div>
     </div>
   );

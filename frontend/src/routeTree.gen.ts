@@ -15,9 +15,9 @@ import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppTravelRouteImport } from './routes/_app/travel'
 import { Route as AppSettingRouteImport } from './routes/_app/setting'
+import { Route as AppReportRouteImport } from './routes/_app/report'
 import { Route as AppInitRouteImport } from './routes/_app/init'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
-import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -47,6 +47,11 @@ const AppSettingRoute = AppSettingRouteImport.update({
   path: '/setting',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportRoute = AppReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppInitRoute = AppInitRouteImport.update({
   id: '/init',
   path: '/init',
@@ -57,26 +62,21 @@ const AppHomeRoute = AppHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => AppRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
-  '/analytics': typeof AppAnalyticsRoute
   '/home': typeof AppHomeRoute
   '/init': typeof AppInitRoute
+  '/report': typeof AppReportRoute
   '/setting': typeof AppSettingRoute
   '/travel': typeof AppTravelRoute
   '/login': typeof AuthLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthIndexRoute
-  '/analytics': typeof AppAnalyticsRoute
   '/home': typeof AppHomeRoute
   '/init': typeof AppInitRoute
+  '/report': typeof AppReportRoute
   '/setting': typeof AppSettingRoute
   '/travel': typeof AppTravelRoute
   '/login': typeof AuthLoginRoute
@@ -85,9 +85,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
-  '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/init': typeof AppInitRoute
+  '/_app/report': typeof AppReportRoute
   '/_app/setting': typeof AppSettingRoute
   '/_app/travel': typeof AppTravelRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -97,21 +97,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/analytics'
     | '/home'
     | '/init'
+    | '/report'
     | '/setting'
     | '/travel'
     | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analytics' | '/home' | '/init' | '/setting' | '/travel' | '/login'
+  to: '/' | '/home' | '/init' | '/report' | '/setting' | '/travel' | '/login'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
-    | '/_app/analytics'
     | '/_app/home'
     | '/_app/init'
+    | '/_app/report'
     | '/_app/setting'
     | '/_app/travel'
     | '/_auth/login'
@@ -167,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/report': {
+      id: '/_app/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof AppReportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/init': {
       id: '/_app/init'
       path: '/init'
@@ -181,28 +188,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/analytics': {
-      id: '/_app/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AppAnalyticsRouteImport
-      parentRoute: typeof AppRoute
-    }
   }
 }
 
 interface AppRouteChildren {
-  AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppHomeRoute: typeof AppHomeRoute
   AppInitRoute: typeof AppInitRoute
+  AppReportRoute: typeof AppReportRoute
   AppSettingRoute: typeof AppSettingRoute
   AppTravelRoute: typeof AppTravelRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAnalyticsRoute: AppAnalyticsRoute,
   AppHomeRoute: AppHomeRoute,
   AppInitRoute: AppInitRoute,
+  AppReportRoute: AppReportRoute,
   AppSettingRoute: AppSettingRoute,
   AppTravelRoute: AppTravelRoute,
 }

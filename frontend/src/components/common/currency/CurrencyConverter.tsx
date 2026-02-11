@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 
+import useCurrencyConverter from '@/components/common/currency/useCurrencyConverter';
 import Divider from '@/components/common/Divider';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import { ModalContext } from '@/components/common/modal/useModalContext';
@@ -20,6 +21,8 @@ const currencyOptions: CurrencyOption[] = Object.values(countryData).map(
   }),
 );
 
+const DEFAULT_LOCAL_CURRENCY_TYPE = 13; // USD. 실제값으로 변경 필요
+
 // 환율 고정 (API 연동 후 선택 가능하도록 변경 예정)
 const RATE = 1464; // USD -> KRW
 
@@ -31,72 +34,22 @@ const CurrencyConverter = ({
   showCurrencyDropdown = false,
 }: CurrencyConverterProps) => {
   const modalContext = useContext(ModalContext);
-
-  const [localCurrency, setLocalCurrency] = useState('');
-  const [baseCurrency, setBaseCurrency] = useState('');
-  const [localCurrencyType, setLocalCurrencyType] = useState(13); // USD. 실제값으로 변경 필요
-  const [amountError, setAmountError] = useState<string | null>('');
+  const {
+    localCurrency,
+    baseCurrency,
+    amountError,
+    handleCurrencyChange,
+    isValid,
+  } = useCurrencyConverter(RATE);
+  const [localCurrencyType, setLocalCurrencyType] = useState(
+    DEFAULT_LOCAL_CURRENCY_TYPE,
+  );
 
   useEffect(() => {
-    if (!modalContext) return;
-    const hasValidInput =
-      localCurrency !== '' && baseCurrency !== '' && !amountError;
-    modalContext.setActionReady(hasValidInput);
-  }, [localCurrency, baseCurrency, amountError, modalContext]);
-
-  const validateNumber = (value: string) => {
-    const sanitized = value.replace(/[^0-9.]/g, '');
-    const isValid =
-      value === sanitized && (sanitized.match(/\./g)?.length ?? 0) <= 1;
-    return { sanitized, isValid };
-  };
-
-  const handleCurrencyChange = (
-    value: string,
-    direction: 'toBase' | 'toLocal',
-  ) => {
-    const { sanitized, isValid } = validateNumber(value);
-
-    if (!isValid) {
-      setAmountError('숫자만 입력할 수 있어요.');
-      return;
+    if (modalContext) {
+      modalContext.setActionReady(isValid);
     }
-
-    const num = Number(sanitized);
-
-    if (sanitized !== '' && num <= 0) {
-      setAmountError('0보다 큰 금액을 입력해주세요.');
-      if (direction === 'toBase') {
-        setLocalCurrency(sanitized);
-        setBaseCurrency('');
-      } else {
-        setBaseCurrency(sanitized);
-        setLocalCurrency('');
-      }
-      return;
-    }
-
-    setAmountError(null);
-
-    if (direction === 'toBase') {
-      setLocalCurrency(sanitized);
-      setBaseCurrency(
-        sanitized === ''
-          ? ''
-          : Number((num * RATE).toFixed(0)).toLocaleString(),
-      );
-    } else {
-      setBaseCurrency(sanitized);
-      setLocalCurrency(
-        sanitized === ''
-          ? ''
-          : Number((num / RATE).toFixed(2)).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }),
-      );
-    }
-  };
+  }, [isValid, modalContext]);
 
   return (
     <div className="flex flex-col gap-3">

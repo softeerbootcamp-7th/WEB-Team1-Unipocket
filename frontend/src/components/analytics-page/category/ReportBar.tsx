@@ -1,0 +1,86 @@
+import { useEffect, useState } from 'react';
+import clsx from 'clsx';
+
+import { TOTAL_ANIMATION_DURATION } from '@/components/common/chart/chartType';
+import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
+import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
+
+import { type CountryCode } from '@/data/countryCode';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
+
+import { useAnalyticsContext } from '../AnalyticsContext';
+
+interface ReportBarProps {
+  value: number;
+  variant: 'me' | 'other';
+  maxValue: number;
+}
+
+const VARIANT_STYLES = {
+  me: {
+    bgColor: 'bg-primary-normal',
+    textStyle: 'text-primary-normal body2-normal-bold',
+    size: 'md',
+  },
+  other: {
+    bgColor: 'bg-cool-neutral-95',
+    textStyle: 'text-cool-neutral-80 label2-medium',
+    size: 'sm',
+  },
+} as const;
+
+const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
+  const { currencyType } = useAnalyticsContext();
+  const countryCode = useAccountBookStore((state) => state.accountBook?.localCountryCode) as CountryCode;
+  
+  const styles = VARIANT_STYLES[variant];
+  const percentage = (value / maxValue) * 100;
+  const [showAmount, setShowAmount] = useState(false);
+
+  const isLocal = currencyType === 'LOCAL';
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAmount(true);
+    }, TOTAL_ANIMATION_DURATION * 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex flex-1 items-center gap-2">
+      <div
+        className={clsx(
+          'animate-expand-width h-3 origin-left rounded-r-xs',
+          styles.bgColor,
+        )}
+        style={{
+          width: `${percentage}%`,
+          animationDuration: `${TOTAL_ANIMATION_DURATION}s`,
+        }}
+      />
+      <div
+        className={clsx(
+          'flex items-center gap-1 transition-opacity duration-200',
+          showAmount ? 'opacity-100' : 'opacity-0',
+        )}
+      >
+        {isLocal && (
+          <CurrencyBadge
+            countryCode={countryCode}
+            className={styles.textStyle}
+          />
+        )}
+        <CurrencyAmountDisplay
+          amount={value}
+          countryCode={countryCode}
+          size={styles.size}
+          className={styles.textStyle}
+          decimalOffset={1}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default ReportBar;

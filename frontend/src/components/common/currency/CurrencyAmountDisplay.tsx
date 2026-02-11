@@ -33,6 +33,7 @@ interface CurrencyAmountDisplayProps {
   countryCode: CountryCode;
   amount: number;
   className?: string;
+  decimalOffset?: number;
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
@@ -41,6 +42,7 @@ const CurrencyAmountDisplay = ({
   amount,
   size = 'md',
   className,
+  decimalOffset,
 }: CurrencyAmountDisplayProps) => {
   const countryInfo = getCountryInfo(countryCode);
 
@@ -77,7 +79,7 @@ const CurrencyAmountDisplay = ({
 
       {/* 숫자 영역 (정수 + 소수) */}
       <div className="flex items-center">
-        <span className={styles.integer}>{integerPart}</span>
+        <span className={cn(styles.integer, className)}>{integerPart}</span>
 
         {decimalPart && (
           <span
@@ -87,6 +89,10 @@ const CurrencyAmountDisplay = ({
               styles.decimal,
               className,
             )}
+            style={{
+              position: 'relative',
+              top: decimalOffset ?? 0,
+            }}
           >
             .{decimalPart}
           </span>

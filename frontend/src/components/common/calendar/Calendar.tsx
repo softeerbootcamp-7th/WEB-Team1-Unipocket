@@ -11,7 +11,13 @@ export interface DateRange {
 }
 
 interface CalendarProps extends DateRange {
-  onChange: ({ start, end }: { start: Date | null; end: Date | null }) => void;
+  onChange: ({
+    startDate,
+    endDate,
+  }: {
+    startDate: Date | null;
+    endDate: Date | null;
+  }) => void;
 }
 
 const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
@@ -51,7 +57,7 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
       newEnd = null;
     }
 
-    onChange({ start: newStart, end: newEnd });
+    onChange({ startDate: newStart, endDate: newEnd });
   };
 
   return (

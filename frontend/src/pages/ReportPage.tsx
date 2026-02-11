@@ -14,9 +14,9 @@ const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('LOCAL'); // @TODO: 드롭다운 추가 예정
 
   return (
-    <div className="flex p-3 gap-5 w-283">
+    <div className="flex p-3 gap-3.5">
       <ReportProvider currencyType={currencyType} onCurrencyTypeChange={setCurrencyType}>
-        <div className="flex flex-col gap-2.75" >
+        <div className="flex flex-col justify-between" >
           <ReportMonthly />
           <ReportMyself data={myselfData} />
         </div>

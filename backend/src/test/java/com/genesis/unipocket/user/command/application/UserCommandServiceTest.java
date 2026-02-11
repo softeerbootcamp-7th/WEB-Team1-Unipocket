@@ -1,13 +1,13 @@
 /*
  * package com.genesis.unipocket.user.command.application;
- * 
+ *
  * import static org.assertj.core.api.Assertions.assertThat;
  * import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * import static org.mockito.ArgumentMatchers.any;
  * import static org.mockito.Mockito.never;
  * import static org.mockito.Mockito.verify;
  * import static org.mockito.Mockito.when;
- * 
+ *
  * import com.genesis.unipocket.global.exception.BusinessException;
  * import com.genesis.unipocket.global.exception.ErrorCode;
  * import
@@ -33,7 +33,7 @@
  * import org.mockito.InjectMocks;
  * import org.mockito.Mock;
  * import org.mockito.junit.jupiter.MockitoExtension;
- * 
+ *
  * @ExtendWith(MockitoExtension.class)
  * class UserCommandServiceTest {
  * // Tests commented out

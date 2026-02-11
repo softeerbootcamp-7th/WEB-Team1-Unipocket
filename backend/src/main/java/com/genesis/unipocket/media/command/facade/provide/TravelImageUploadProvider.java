@@ -1,7 +1,6 @@
 package com.genesis.unipocket.media.command.facade.provide;
 
 import com.genesis.unipocket.global.infrastructure.MediaContentType;
-import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.media.command.facade.port.MediaObjectStoragePort;
 import com.genesis.unipocket.media.command.facade.port.dto.PresignedUrlInfo;
 import com.genesis.unipocket.travel.command.facade.port.TravelImageUploadPathIssueService;
@@ -29,7 +28,8 @@ public class TravelImageUploadProvider implements TravelImageUploadPathIssueServ
 		// String prefix = mediaUploadPolicyService.travelImagePrefix(accountBookId);
 
 		PresignedUrlInfo response =
-				mediaObjectStoragePort.getPresignedUrl("travels", "upload" + mediaContentType.getExt());
+				mediaObjectStoragePort.getPresignedUrl(
+						"travels", "upload" + mediaContentType.getExt());
 
 		return new TravelImageUploadPathInfo(response.presignedUrl(), response.imageKey());
 	}

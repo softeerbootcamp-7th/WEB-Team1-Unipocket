@@ -1,7 +1,6 @@
 package com.genesis.unipocket.media.command.facade.port;
 
 import com.genesis.unipocket.media.command.facade.port.dto.PresignedUrlInfo;
-
 import java.util.List;
 
 public interface MediaObjectStoragePort {

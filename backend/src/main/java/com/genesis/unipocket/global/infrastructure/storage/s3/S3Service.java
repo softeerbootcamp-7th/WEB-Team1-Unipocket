@@ -5,7 +5,6 @@ import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.facade.port.dto.PresignedUrlInfo;
 import io.awspring.cloud.s3.S3Template;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -40,9 +39,7 @@ public class S3Service {
 		String extension = extractExtension(originalFileName);
 		MediaContentType mediaContentType =
 				MediaContentType.fromExtension(extension)
-						.orElseThrow(
-								() ->
-										new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
+						.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
 
 		String normalizedPrefix = prefix == null || prefix.isBlank() ? "" : prefix.trim();
 

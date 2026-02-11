@@ -34,7 +34,7 @@ public class LoginResponse {
 	/**
 	 * Access Token 만료 시간 (초)
 	 */
-	private Long expiresIn;
+	private int expiresIn;
 
 	/**
 	 * 토큰 타입 (Bearer)
@@ -45,7 +45,7 @@ public class LoginResponse {
 	 * 정적 팩토리 메서드
 	 */
 	public static LoginResponse of(
-			String accessToken, String refreshToken, UUID userId, Long expiresIn) {
+			String accessToken, String refreshToken, UUID userId, int expiresIn) {
 		return LoginResponse.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)

@@ -62,6 +62,7 @@ oauth2:
 app:
   frontend:
     url: ${FRONTEND_URL}
+    allowed-origins: ${FRONTEND_ALLOWED_ORIGINS}
   cookie:
     domain: ${COOKIE_DOMAIN}
     secure: true

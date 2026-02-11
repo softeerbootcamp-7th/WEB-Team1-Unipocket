@@ -4,7 +4,6 @@ import com.genesis.unipocket.user.dto.response.LoginResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TokenService {
 
 	private final AuthService authService;
-
-	@Value("${jwt.access-token-expiration}")
-	private long accessTokenExpirationMs;
+	private final JwtProvider jwtProvider;
 
 	@Transactional
 	public LoginResponse createTokens(UUID userId) {
@@ -29,6 +26,6 @@ public class TokenService {
 				tokenPair.accessToken(),
 				tokenPair.refreshToken(),
 				userId,
-				accessTokenExpirationMs / 1000);
+				jwtProvider.getAccessTokenExpirationAsSeconds());
 	}
 }

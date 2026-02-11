@@ -170,4 +170,12 @@ public class JwtProvider {
 			return 0;
 		}
 	}
+
+	public int getAccessTokenExpirationAsSeconds() {
+		return (int) (accessTokenExpiration / 1000);
+	}
+
+	public int getRefreshTokenExpirationAsSeconds() {
+		return (int) (refreshTokenExpiration / 1000);
+	}
 }

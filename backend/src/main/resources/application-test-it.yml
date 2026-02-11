@@ -47,6 +47,7 @@ oauth2:
 app:
   frontend:
     url: http://localhost:5173
+    allowed-origins: http://localhost:5173
   cookie:
     domain:
     secure: false

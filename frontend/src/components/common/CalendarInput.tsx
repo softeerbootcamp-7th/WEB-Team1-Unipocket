@@ -21,7 +21,6 @@ const CalendarInput = ({
     <div className="flex flex-col gap-2 text-left">
       <p className="label1-normal-bold text-label-neutral">{title}</p>
       <div className="relative" onClick={onClick}>
-        {/* 너무 길어서 개행하기 위해 clsx 사용 */}
         <input
           className={clsx(
             'bg-background-normal rounded-modal-12 px-4 py-3.25 pr-20',
@@ -41,7 +40,7 @@ const CalendarInput = ({
             onClick={onClear}
           />
         )}
-        <Icons.Calendar className="text-label-alternative absolute top-1/2 right-3 size-6 -translate-y-1/2" />
+        <Icons.Calendar className="text-label-alternative absolute top-1/2 right-3 size-5.5 -translate-y-1/2" />
       </div>
     </div>
   );

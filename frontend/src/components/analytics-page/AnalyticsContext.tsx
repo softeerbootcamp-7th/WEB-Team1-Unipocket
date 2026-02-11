@@ -13,7 +13,7 @@ export const useAnalyticsContext = () => {
   const context = useContext(AnalyticsContext);
 
   if (!context) {
-    throw new Error('AnalyticsContext is missing in ReportCategory tree');
+    throw new Error('AnalyticsContext is missing in AnalyticsProvider tree');
   }
 
   return context;

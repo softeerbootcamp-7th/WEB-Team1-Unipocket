@@ -9,6 +9,7 @@ import { ApiError } from './error';
 
 interface customFetchParams {
   endpoint: string;
+  params?: Record<string, string | number>;
   options?: RequestInit;
   isRetry?: boolean; // 재시도 여부 플래그 -> 401 재발급 시도 무한 루프 방지용
 }
@@ -43,6 +44,7 @@ const refreshAccessToken = async (): Promise<void> => {
 
 export const customFetch = async <T>({
   endpoint,
+  params,
   options = {},
   isRetry = false,
 }: customFetchParams): Promise<T> => {
@@ -52,9 +54,16 @@ export const customFetch = async <T>({
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
 
-  // URL 안전하게 결합 (슬래시 중복 방지)
-  const url = `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+  // 1. 쿼리 스트링 처리 로직 분리 및 정렬 적용
+  let queryString = '';
+  if (params) {
+    const searchParams = new URLSearchParams(params as Record<string, string>);
+    searchParams.sort(); // 알파벳 순으로 파라미터 정렬 (캐싱 효율 상승)
+    queryString = `?${searchParams.toString()}`;
+  }
 
+  const cleanEndpoint = endpoint.replace(/^\//, '');
+  const url = `${API_BASE_URL}/${cleanEndpoint}${queryString}`;
   try {
     const response = await fetch(url, {
       ...restOptions,

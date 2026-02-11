@@ -39,6 +39,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class AuthCommandController {
 
+	private static final String ACCESS_TOKEN_COOKIE_PATH = "/";
+	private static final String REFRESH_TOKEN_COOKIE_PATH = "/api/auth";
+	private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 10 * 24 * 60 * 60;
+
 	private final AuthService authService;
 	private final CookieUtil cookieUtil;
 	private final OAuthAuthorizeFacade authorizeFacade;
@@ -66,11 +70,16 @@ public class AuthCommandController {
 				response,
 				"access_token",
 				tokenPair.accessToken(),
-				(int) (accessTokenExpirationMs / 1000));
+				(int) accessTokenExpiresIn(),
+				ACCESS_TOKEN_COOKIE_PATH);
 
 		// Refresh Token 쿠키 갱신
 		cookieUtil.addCookie(
-				response, "refresh_token", tokenPair.refreshToken(), 10 * 24 * 60 * 60);
+				response,
+				"refresh_token",
+				tokenPair.refreshToken(),
+				REFRESH_TOKEN_MAX_AGE_SECONDS,
+				REFRESH_TOKEN_COOKIE_PATH);
 
 		return ResponseEntity.ok().build();
 	}
@@ -88,8 +97,8 @@ public class AuthCommandController {
 		authService.logout(accessToken, refreshToken);
 
 		// 쿠키 삭제
-		cookieUtil.deleteCookie(response, "access_token");
-		cookieUtil.deleteCookie(response, "refresh_token");
+		cookieUtil.deleteCookie(response, "access_token", ACCESS_TOKEN_COOKIE_PATH);
+		cookieUtil.deleteCookie(response, "refresh_token", REFRESH_TOKEN_COOKIE_PATH);
 	}
 
 	/**
@@ -127,11 +136,16 @@ public class AuthCommandController {
 				response,
 				"access_token",
 				loginResponse.getAccessToken(),
-				loginResponse.getExpiresIn().intValue());
+				loginResponse.getExpiresIn().intValue(),
+				ACCESS_TOKEN_COOKIE_PATH);
 
 		// Refresh Token 쿠키 저장 (10일)
 		cookieUtil.addCookie(
-				response, "refresh_token", loginResponse.getRefreshToken(), 10 * 24 * 60 * 60);
+				response,
+				"refresh_token",
+				loginResponse.getRefreshToken(),
+				REFRESH_TOKEN_MAX_AGE_SECONDS,
+				REFRESH_TOKEN_COOKIE_PATH);
 
 		String redirectUrl = createRedirectUrl();
 		response.sendRedirect(redirectUrl);

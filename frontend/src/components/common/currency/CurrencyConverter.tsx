@@ -52,7 +52,7 @@ const CurrencyConverter = ({
   }, [isValid, modalContext]);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-62 flex-col gap-3">
       <div className="flex gap-4">
         <TextInput
           title="현지 금액"

@@ -1,4 +1,4 @@
-import { getCategoryName } from '@/types/category';
+import { type CategoryId,getCategoryName } from '@/types/category';
 
 import ReportContainer from '../layout/ReportContainer';
 import ReportContent from '../layout/ReportContent';
@@ -6,11 +6,11 @@ import ReportBarGraph from './ReportBarGraph';
 
 interface ReportCategoryProps {
   data: {
-    maxDiffCategoryIndex: number;
+    maxDiffCategoryIndex: CategoryId;
     isOverSpent: boolean;
     maxLabel: string;
     items: {
-      categoryIndex: number;
+      categoryIndex: CategoryId;
       mySpentAmount: string;
       averageSpentAmount: string;
     }[];

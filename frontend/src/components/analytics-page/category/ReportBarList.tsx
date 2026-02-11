@@ -1,10 +1,12 @@
+import type { CategoryId } from '@/types/category';
+
 import ReportBarRow from './ReportBarRow';
 import VerticalGrid from './VerticalGrid';
 
 interface ReportBarListProps {
   maxLabel: number;
   items: {
-    categoryIndex: number;
+    categoryIndex: CategoryId;
     me: number;
     other: number;
   }[];

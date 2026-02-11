@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
 
+import type { CategoryId } from '@/types/category';
+
 import ReportBarList from './ReportBarList';
 
 const LEGEND_COLOR = {
@@ -27,7 +29,7 @@ const ReportBarLegend = ({ color, label }: ReportBarLegendProps) => {
 interface ReportBarGraphProps {
   maxLabel: number;
   items: {
-    categoryIndex: number;
+    categoryIndex: CategoryId;
     mySpentAmount: string;
     averageSpentAmount: string;
   }[];

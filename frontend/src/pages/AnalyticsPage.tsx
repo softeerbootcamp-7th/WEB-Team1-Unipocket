@@ -5,7 +5,7 @@ import ReportCategory from '@/components/analytics-page/category/ReportCategory'
 
 import { type CurrencyType } from '@/types/currency';
 
-import mockData from '../components/analytics-page/mock.json';
+import mockData from '../components/analytics-page/mock';
 
 const AnalyticsPage = () => {
   const categoryData = mockData.compareByCategory;

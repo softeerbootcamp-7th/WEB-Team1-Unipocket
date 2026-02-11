@@ -1,9 +1,9 @@
-import { getCategoryName } from '@/types/category';
+import { type CategoryId,getCategoryName } from '@/types/category';
 
 import ReportBar from './ReportBar';
 
 interface ReportBarRowProps {
-  categoryIndex: number;
+  categoryIndex: CategoryId;
   me: number;
   other: number;
   maxLabel: number;

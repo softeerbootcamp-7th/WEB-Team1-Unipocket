@@ -30,117 +30,134 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(AuthCommandController.class)
 class AuthCommandControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private AuthService authService;
+	@MockBean private AuthService authService;
 
-    @MockBean
-    private CookieUtil cookieUtil;
+	@MockBean private CookieUtil cookieUtil;
 
-    @MockBean
-    private OAuthAuthorizeFacade authorizeFacade;
+	@MockBean private OAuthAuthorizeFacade authorizeFacade;
 
-    @MockBean
-    private UserLoginFacade loginFacade;
+	@MockBean private UserLoginFacade loginFacade;
 
-    @MockBean
-    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+	@MockBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
-    @MockBean
-    private com.genesis.unipocket.auth.command.application.JwtProvider jwtProvider;
+	@MockBean private com.genesis.unipocket.auth.command.application.JwtProvider jwtProvider;
 
-    @MockBean
-    private com.genesis.unipocket.auth.command.application.TokenBlacklistService tokenBlacklistService;
+	@MockBean
+	private com.genesis.unipocket.auth.command.application.TokenBlacklistService
+			tokenBlacklistService;
 
-    @Test
-    @DisplayName("토큰 재발급 성공")
-    void reissue_Success() throws Exception {
-        // given
-        String refreshToken = "valid_refresh_token";
-        String newAccessToken = "new_access_token";
-        String newRefreshToken = "new_refresh_token";
-        AuthService.TokenPair tokenPair = new AuthService.TokenPair(newAccessToken, newRefreshToken);
+	@Test
+	@DisplayName("토큰 재발급 성공")
+	void reissue_Success() throws Exception {
+		// given
+		String refreshToken = "valid_refresh_token";
+		String newAccessToken = "new_access_token";
+		String newRefreshToken = "new_refresh_token";
+		AuthService.TokenPair tokenPair =
+				new AuthService.TokenPair(newAccessToken, newRefreshToken);
 
-        given(authService.reissue(refreshToken)).willReturn(tokenPair);
+		given(authService.reissue(refreshToken)).willReturn(tokenPair);
 
-        // when & then
-        mockMvc.perform(post("/api/auth/reissue")
-                        .cookie(new Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk());
+		// when & then
+		mockMvc.perform(post("/api/auth/reissue").cookie(new Cookie("refresh_token", refreshToken)))
+				.andExpect(status().isOk());
 
-        verify(authService).reissue(refreshToken);
-        verify(cookieUtil).addCookie(any(HttpServletResponse.class), eq("access_token"), eq(newAccessToken), anyInt());
-        verify(cookieUtil).addCookie(any(HttpServletResponse.class), eq("refresh_token"), eq(newRefreshToken), anyInt());
-    }
+		verify(authService).reissue(refreshToken);
+		verify(cookieUtil)
+				.addCookie(
+						any(HttpServletResponse.class),
+						eq("access_token"),
+						eq(newAccessToken),
+						anyInt());
+		verify(cookieUtil)
+				.addCookie(
+						any(HttpServletResponse.class),
+						eq("refresh_token"),
+						eq(newRefreshToken),
+						anyInt());
+	}
 
-    @Test
-    @DisplayName("로그아웃 성공")
-    void logout_Success() throws Exception {
-        // given
-        String accessToken = "valid_access_token";
-        String refreshToken = "valid_refresh_token";
+	@Test
+	@DisplayName("로그아웃 성공")
+	void logout_Success() throws Exception {
+		// given
+		String accessToken = "valid_access_token";
+		String refreshToken = "valid_refresh_token";
 
-        // when & then
-        mockMvc.perform(post("/api/auth/logout")
-                        .cookie(new Cookie("access_token", accessToken))
-                        .cookie(new Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk());
+		// when & then
+		mockMvc.perform(
+						post("/api/auth/logout")
+								.cookie(new Cookie("access_token", accessToken))
+								.cookie(new Cookie("refresh_token", refreshToken)))
+				.andExpect(status().isOk());
 
-        verify(authService).logout(accessToken, refreshToken);
-        verify(cookieUtil).deleteCookie(any(HttpServletResponse.class), eq("access_token"));
-        verify(cookieUtil).deleteCookie(any(HttpServletResponse.class), eq("refresh_token"));
-    }
+		verify(authService).logout(accessToken, refreshToken);
+		verify(cookieUtil).deleteCookie(any(HttpServletResponse.class), eq("access_token"));
+		verify(cookieUtil).deleteCookie(any(HttpServletResponse.class), eq("refresh_token"));
+	}
 
-    @Test
-    @DisplayName("OAuth2 인증 요청 리다이렉트 성공")
-    void authorize_Success() throws Exception {
-        // given
-        String provider = "kakao";
-        String authorizationUrl = "https://kauth.kakao.com/oauth/authorize";
-        String state = "state_code";
-        AuthorizeResult authorizeResult = new AuthorizeResult(authorizationUrl, state);
+	@Test
+	@DisplayName("OAuth2 인증 요청 리다이렉트 성공")
+	void authorize_Success() throws Exception {
+		// given
+		String provider = "kakao";
+		String authorizationUrl = "https://kauth.kakao.com/oauth/authorize";
+		String state = "state_code";
+		AuthorizeResult authorizeResult = new AuthorizeResult(authorizationUrl, state);
 
-        given(authorizeFacade.authorize(OAuth2Properties.ProviderType.KAKAO))
-                .willReturn(authorizeResult);
+		given(authorizeFacade.authorize(OAuth2Properties.ProviderType.KAKAO))
+				.willReturn(authorizeResult);
 
-        // when & then
-        mockMvc.perform(get("/api/auth/oauth2/authorize/{provider}", provider))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(authorizationUrl));
+		// when & then
+		mockMvc.perform(get("/api/auth/oauth2/authorize/{provider}", provider))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl(authorizationUrl));
 
-        verify(authorizeFacade).authorize(OAuth2Properties.ProviderType.KAKAO);
-    }
+		verify(authorizeFacade).authorize(OAuth2Properties.ProviderType.KAKAO);
+	}
 
-    @Test
-    @DisplayName("OAuth2 콜백 처리 및 로그인 성공")
-    void callback_Success() throws Exception {
-        // given
-        String provider = "kakao";
-        String code = "auth_code";
-        String state = "state_code";
-        String accessToken = "new_access_token";
-        String refreshToken = "new_refresh_token";
-        Long expiresIn = 3600L;
+	@Test
+	@DisplayName("OAuth2 콜백 처리 및 로그인 성공")
+	void callback_Success() throws Exception {
+		// given
+		String provider = "kakao";
+		String code = "auth_code";
+		String state = "state_code";
+		String accessToken = "new_access_token";
+		String refreshToken = "new_refresh_token";
+		Long expiresIn = 3600L;
 
-        LoginResult loginResult = LoginResult.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .expiresIn(expiresIn)
-                .build();
+		LoginResult loginResult =
+				LoginResult.builder()
+						.accessToken(accessToken)
+						.refreshToken(refreshToken)
+						.expiresIn(expiresIn)
+						.build();
 
-        given(loginFacade.login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state)))
-                .willReturn(loginResult);
+		given(loginFacade.login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state)))
+				.willReturn(loginResult);
 
-        // when & then
-        mockMvc.perform(get("/api/auth/oauth2/callback/{provider}", provider)
-                        .param("code", code)
-                        .param("state", state))
-                .andExpect(status().is3xxRedirection());
+		// when & then
+		mockMvc.perform(
+						get("/api/auth/oauth2/callback/{provider}", provider)
+								.param("code", code)
+								.param("state", state))
+				.andExpect(status().is3xxRedirection());
 
-        verify(loginFacade).login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state));
-        verify(cookieUtil).addCookie(any(HttpServletResponse.class), eq("access_token"), eq(accessToken), eq(expiresIn.intValue()));
-        verify(cookieUtil).addCookie(any(HttpServletResponse.class), eq("refresh_token"), eq(refreshToken), anyInt());
-    }
+		verify(loginFacade).login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state));
+		verify(cookieUtil)
+				.addCookie(
+						any(HttpServletResponse.class),
+						eq("access_token"),
+						eq(accessToken),
+						eq(expiresIn.intValue()));
+		verify(cookieUtil)
+				.addCookie(
+						any(HttpServletResponse.class),
+						eq("refresh_token"),
+						eq(refreshToken),
+						anyInt());
+	}
 }

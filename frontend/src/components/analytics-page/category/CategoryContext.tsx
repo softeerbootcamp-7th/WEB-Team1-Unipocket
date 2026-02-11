@@ -2,10 +2,7 @@ import { createContext, useContext } from 'react';
 
 import { type CurrencyType } from '@/types/currency';
 
-import { type CountryCode } from '@/data/countryCode';
-
 export interface CategoryContextValue {
-  countryCode: CountryCode;
   currencyType: CurrencyType;
 }
 

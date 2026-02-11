@@ -5,6 +5,9 @@ import { TOTAL_ANIMATION_DURATION } from '@/components/common/chart/chartType';
 import CurrencyAmountDisplay from '@/components/common/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/common/currency/CurrencyBadge';
 
+import { type CountryCode } from '@/data/countryCode';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
+
 import { useCategoryContext } from './CategoryContext';
 
 interface ReportBarProps {
@@ -27,7 +30,9 @@ const VARIANT_STYLES = {
 } as const;
 
 const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
-  const { countryCode, currencyType } = useCategoryContext();
+  const { currencyType } = useCategoryContext();
+  const countryCode = useAccountBookStore((state) => state.accountBook?.localCountryCode) as CountryCode;
+  
   const styles = VARIANT_STYLES[variant];
   const percentage = (value / maxValue) * 100;
   const [showAmount, setShowAmount] = useState(false);

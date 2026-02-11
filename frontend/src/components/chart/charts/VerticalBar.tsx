@@ -1,4 +1,3 @@
-import { useId } from 'react';
 import { motion } from 'framer-motion';
 
 import { TOTAL_ANIMATION_DURATION } from '@/components/chart/chartType';
@@ -34,7 +33,6 @@ const VerticalBar = ({
   bgColor = 'var(--color-fill-disable)',
   animate = true,
 }: VerticalBarProps) => {
-  const clipId = useId();
   const safeMaxValue = Math.max(1, maxValue);
   const ratio = value / safeMaxValue;
   const barHeight = Math.round(ratio * DRAW_HEIGHT);

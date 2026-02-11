@@ -1,12 +1,10 @@
 package com.genesis.unipocket.user.command.persistence.entity.enums;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum CardCompany {
 	SHINHAN("신한카드", "https://via.placeholder.com/150?text=Shinhan"),
 	SAMSUNG("삼성카드", "https://via.placeholder.com/150?text=Samsung"),

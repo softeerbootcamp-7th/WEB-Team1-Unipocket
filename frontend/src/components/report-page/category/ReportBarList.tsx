@@ -1,7 +1,7 @@
-import type { CategoryId } from '@/types/category';
+import ReportBarRow from '@/components/report-page/category/ReportBarRow';
+import VerticalGrid from '@/components/report-page/VerticalGrid';
 
-import ReportBarRow from './ReportBarRow';
-import VerticalGrid from './VerticalGrid';
+import type { CategoryId } from '@/types/category';
 
 interface ReportBarListProps {
   maxLabel: number;
@@ -12,9 +12,15 @@ interface ReportBarListProps {
   }[];
 }
 const ReportBarList = ({ items, maxLabel }: ReportBarListProps) => {
+  const steps = 6;
+  const labels = Array.from(
+    { length: steps + 1 },
+    (_, i) => (maxLabel / steps) * i,
+  );
+
   return (
     <div className="relative h-125.25 pt-4.75">
-      <VerticalGrid steps={6} maxLabel={maxLabel} />
+      <VerticalGrid steps={steps} labels={labels} />
       <div className="relative z-10 flex flex-col gap-4.5">
         {items.map((item) => (
           <ReportBarRow

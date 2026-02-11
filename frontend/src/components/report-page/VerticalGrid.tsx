@@ -1,22 +1,15 @@
 interface VerticalGridProps {
   steps: number;
-  maxLabel: number;
+  labels: (number | string)[];
 }
 
-const VerticalGrid = ({ steps, maxLabel }: VerticalGridProps) => {
-  if (steps <= 0) {
-    return null;
-  }
-
-  const values = Array.from(
-    { length: steps + 1 },
-    (_, i) => (maxLabel / steps) * i,
-  );
+const VerticalGrid = ({ steps, labels }: VerticalGridProps) => {
+  if (steps <= 0) return null;
 
   return (
     <div className="pointer-events-none absolute inset-0 left-14.75 flex h-full flex-col gap-4 pr-5">
       <div className="relative flex-1">
-        {values.map((_, i) => (
+        {Array.from({ length: steps + 1 }).map((_, i) => (
           <div
             key={i}
             className="border-line-normal-normal absolute top-0 h-full border-l border-dashed"
@@ -27,7 +20,7 @@ const VerticalGrid = ({ steps, maxLabel }: VerticalGridProps) => {
         ))}
       </div>
       <div className="relative">
-        {values.map((value, i) => (
+        {labels.map((label, i) => (
           <div
             key={i}
             className="text-label-assistive absolute text-xs"
@@ -36,7 +29,9 @@ const VerticalGrid = ({ steps, maxLabel }: VerticalGridProps) => {
               transform: 'translateX(-50%)',
             }}
           >
-            {Math.round(value).toLocaleString()}
+            {typeof label === 'number'
+              ? Math.round(label).toLocaleString()
+              : label}
           </div>
         ))}
       </div>

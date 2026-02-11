@@ -24,23 +24,26 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 	/**
 	 * 가계부 ID로 임시지출내역 조회 (File, TempExpenseMeta 조인)
 	 */
-	@Query(
-			"SELECT te FROM TemporaryExpense te "
-					+ "JOIN File f ON te.fileId = f.fileId "
-					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
-					+ "WHERE tm.accountBookId = :accountBookId")
+	@Query("SELECT te FROM TemporaryExpense te "
+			+ "JOIN File f ON te.fileId = f.fileId "
+			+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+			+ "WHERE tm.accountBookId = :accountBookId")
 	List<TemporaryExpense> findByAccountBookId(@Param("accountBookId") Long accountBookId);
 
 	/**
 	 * 가계부 ID + 상태로 임시지출내역 조회
 	 */
-	@Query(
-			"SELECT te FROM TemporaryExpense te "
-					+ "JOIN File f ON te.fileId = f.fileId "
-					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
-					+ "WHERE tm.accountBookId = :accountBookId "
-					+ "AND te.status = :status")
+	@Query("SELECT te FROM TemporaryExpense te "
+			+ "JOIN File f ON te.fileId = f.fileId "
+			+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+			+ "WHERE tm.accountBookId = :accountBookId "
+			+ "AND te.status = :status")
 	List<TemporaryExpense> findByAccountBookIdAndStatus(
 			@Param("accountBookId") Long accountBookId,
 			@Param("status") TemporaryExpense.TemporaryExpenseStatus status);
+
+	/**
+	 * 여러 파일 ID로 임시지출내역 조회
+	 */
+	List<TemporaryExpense> findByFileIdIn(List<Long> fileIds);
 }

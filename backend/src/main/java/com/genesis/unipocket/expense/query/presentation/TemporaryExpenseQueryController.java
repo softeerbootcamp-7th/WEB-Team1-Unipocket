@@ -3,6 +3,8 @@ package com.genesis.unipocket.expense.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
 import com.genesis.unipocket.expense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.expense.query.presentation.response.FileProcessingSummaryResponse;
+import com.genesis.unipocket.expense.query.presentation.response.ImageProcessingSummaryResponse;
 import com.genesis.unipocket.expense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.expense.query.presentation.response.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.query.service.TemporaryExpenseQueryService;
@@ -45,8 +47,8 @@ public class TemporaryExpenseQueryController {
 			@PathVariable Long accountBookId,
 			@RequestParam(required = false) TemporaryExpense.TemporaryExpenseStatus status,
 			@LoginUser UUID userId) {
-		List<TemporaryExpenseResponse> items =
-				temporaryExpenseQueryService.getTemporaryExpenses(accountBookId, status, userId);
+		List<TemporaryExpenseResponse> items = temporaryExpenseQueryService.getTemporaryExpenses(accountBookId, status,
+				userId);
 		TemporaryExpenseListResponse response = new TemporaryExpenseListResponse(items);
 
 		return ResponseEntity.ok(ApiResponse.success(response));
@@ -58,21 +60,40 @@ public class TemporaryExpenseQueryController {
 	@GetMapping("/api/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<ApiResponse<TemporaryExpenseResponse>> getTemporaryExpense(
 			@PathVariable Long tempExpenseId, @LoginUser UUID userId) {
-		TemporaryExpenseResponse response =
-				temporaryExpenseQueryService.getTemporaryExpense(tempExpenseId, userId);
+		TemporaryExpenseResponse response = temporaryExpenseQueryService.getTemporaryExpense(tempExpenseId, userId);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	/**
+	 * 파일(이미지) 단위 처리 현황 조회
+	 */
+	@GetMapping("/api/account-books/{accountBookId}/files/summary")
+	public ResponseEntity<ApiResponse<FileProcessingSummaryResponse>> getFileProcessingSummary(
+			@PathVariable Long accountBookId, @LoginUser UUID userId) {
+		FileProcessingSummaryResponse response = temporaryExpenseQueryService.getFileProcessingSummary(accountBookId,
+				userId);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	/**
+	 * 가계부 전체 이미지 처리 현황 요약 조회
+	 */
+	@GetMapping("/api/account-books/{accountBookId}/image-processing-summary")
+	public ResponseEntity<ApiResponse<ImageProcessingSummaryResponse>> getImageProcessingSummary(
+			@PathVariable Long accountBookId, @LoginUser UUID userId) {
+		ImageProcessingSummaryResponse response = temporaryExpenseQueryService.getImageProcessingSummary(
+				accountBookId, userId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
 	/**
 	 * SSE 진행 상황 스트림
 	 */
-	@GetMapping(
-			value = "/api/temporary-expenses/parse-status/{taskId}",
-			produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+	@GetMapping(value = "/api/temporary-expenses/parse-status/{taskId}", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
 	public org.springframework.web.servlet.mvc.method.annotation.SseEmitter streamParsingProgress(
 			@PathVariable String taskId) {
-		org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter =
-				new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(60000L); // 60초
+		org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter = new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(
+				60000L); // 60초
 
 		progressPublisher.addEmitter(taskId, emitter);
 

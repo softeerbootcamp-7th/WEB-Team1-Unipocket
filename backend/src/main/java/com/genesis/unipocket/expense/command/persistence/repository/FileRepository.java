@@ -23,13 +23,22 @@ public interface FileRepository extends JpaRepository<File, Long> {
 	boolean existsByS3Key(String s3Key);
 
 	/**
+	 * 메타 ID로 파일 목록 조회
+	 */
+	List<File> findByTempExpenseMetaId(Long tempExpenseMetaId);
+
+	/**
+	 * 여러 메타 ID로 파일 목록 조회
+	 */
+	List<File> findByTempExpenseMetaIdIn(List<Long> tempExpenseMetaIds);
+
+	/**
 	 * 일정 시간 경과했지만 파싱되지 않은 파일 조회
 	 */
-	@Query(
-			"SELECT f FROM File f "
-					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
-					+ "LEFT JOIN TemporaryExpense te ON te.fileId = f.fileId "
-					+ "WHERE tm.createdAt < :cutoff "
-					+ "AND te.tempExpenseId IS NULL")
+	@Query("SELECT f FROM File f "
+			+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+			+ "LEFT JOIN TemporaryExpense te ON te.fileId = f.fileId "
+			+ "WHERE tm.createdAt < :cutoff "
+			+ "AND te.tempExpenseId IS NULL")
 	List<File> findStaleUnparsedFiles(@Param("cutoff") LocalDateTime cutoff);
 }

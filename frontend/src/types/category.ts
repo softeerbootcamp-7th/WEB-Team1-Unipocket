@@ -11,10 +11,11 @@ export const CATEGORY = {
   9: '수입',
 } as const;
 
-export type CategoryType = (typeof CATEGORY)[keyof typeof CATEGORY];
+export type CategoryId = keyof typeof CATEGORY;
+export type CategoryType = (typeof CATEGORY)[CategoryId];
 
 export const getCategoryName = (index: number): CategoryType => {
-  return CATEGORY[index as keyof typeof CATEGORY] || CATEGORY[0];
+  return CATEGORY[index as CategoryId] || CATEGORY[0];
 };
 
 export const CATEGORY_STYLE: Record<

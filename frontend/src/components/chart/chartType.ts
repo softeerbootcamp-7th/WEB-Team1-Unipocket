@@ -11,7 +11,18 @@ export interface ExpenseChartUiItem {
   subLabel?: string;
 }
 
+export interface PeriodData {
+  label: string;
+  value: number;
+}
+
 // option
+export const PERIOD_ID = {
+  MONTHLY: 1,
+  WEEKLY: 2,
+  DAILY: 3,
+} as const;
+
 export const CURRENCY_OPTIONS: {
   id: number;
   name: string;
@@ -25,6 +36,15 @@ export const EXPENSE_TITLE_BY_MODE: Record<ExpenseChartMode, string> = {
   method: '결제수단별 지출',
   currency: '통화별 지출',
 };
+
+export const PERIOD_OPTIONS: {
+  id: number;
+  name: string;
+}[] = [
+  { id: PERIOD_ID.MONTHLY, name: '월별' },
+  { id: PERIOD_ID.WEEKLY, name: '주별' },
+  { id: PERIOD_ID.DAILY, name: '일별' },
+];
 
 /** constants */
 export const TOTAL_ANIMATION_DURATION = 0.8;

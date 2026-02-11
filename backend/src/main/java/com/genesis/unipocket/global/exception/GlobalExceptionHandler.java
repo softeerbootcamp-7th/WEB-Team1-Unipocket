@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -81,6 +82,18 @@ public class GlobalExceptionHandler {
 			HttpMediaTypeNotSupportedException e) {
 
 		return createErrorResponse(ErrorCode.UNSUPPORTED_MEDIA_TYPE);
+	}
+
+	/**
+	 * 필수 요청 파라미터 누락 시 발생 (400)
+	 */
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ResponseEntity<CustomErrorResponse> handleMissingServletRequestParameter(
+			MissingServletRequestParameterException e) {
+
+		String message = String.format("필수 요청 파라미터(%s)가 누락되었습니다.", e.getParameterName());
+		return ResponseEntity.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+				.body(new CustomErrorResponse(ErrorCode.INVALID_INPUT_VALUE.getCode(), message));
 	}
 
 	/**

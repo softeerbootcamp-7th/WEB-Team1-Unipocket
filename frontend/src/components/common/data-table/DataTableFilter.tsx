@@ -13,12 +13,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
+import Tag from '../Chip';
 import Filter from '../Filter';
 
 const DataTableFilterProvider = ({
   children,
 }: ComponentPropsWithoutRef<'div'>) => {
-  return <div className="flex items-center gap-3 px-2.5">{children}</div>;
+  return <div className="mb-5 flex items-center gap-3 px-2.5">{children}</div>;
 };
 
 interface DataTableSearchFilterProps<T extends string> {
@@ -26,12 +27,16 @@ interface DataTableSearchFilterProps<T extends string> {
   options: T[];
   selectedOptions: T[];
   setSelectedOptions: (selected: T[]) => void;
+  onInputChange: (term: string) => void;
+  onSelect?: (term: string) => void;
+  onSelectMultiple?: (terms: T[]) => void;
   // 렌더링 옵션
   renderOption: (option: T, searchTerm: string) => React.ReactNode;
-  renderTag?: (option: T, onRemove: () => void) => React.ReactNode; // 태그 렌더링 함수 (있으면 태그 인풋 모드)
   renderEmptyState?: () => React.ReactNode;
-  renderFooter?: (searchTerm: string) => React.ReactNode;
-  onSearch?: (term: string) => void;
+  renderSearchAllTrigger?: (
+    searchTerm: string,
+    onSelectAll: () => void,
+  ) => React.ReactNode;
 }
 
 const DataTableSearchFilter = <T extends string>({
@@ -40,10 +45,11 @@ const DataTableSearchFilter = <T extends string>({
   selectedOptions,
   setSelectedOptions,
   renderOption,
-  renderTag,
   renderEmptyState,
-  renderFooter,
-  onSearch,
+  renderSearchAllTrigger,
+  onInputChange,
+  onSelect,
+  onSelectMultiple,
 }: DataTableSearchFilterProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,12 +66,12 @@ const DataTableSearchFilter = <T extends string>({
   }, [options, searchTerm]);
 
   // 검색어 변경
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
     setActiveIndex(0);
     // api 호출예정
-    onSearch?.(value);
+    onInputChange(value);
   };
 
   // 항목 선택/해제 토글
@@ -76,6 +82,7 @@ const DataTableSearchFilter = <T extends string>({
       setSelectedOptions([...selectedOptions, option]);
     }
     setSearchTerm('');
+    onSelect?.(option);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -83,8 +90,7 @@ const DataTableSearchFilter = <T extends string>({
     if (
       e.key === 'Backspace' &&
       searchTerm === '' &&
-      selectedOptions.length > 0 &&
-      renderTag
+      selectedOptions.length > 0
     ) {
       const newSelection = [...selectedOptions];
       newSelection.pop(); // 마지막 항목 제거
@@ -132,6 +138,26 @@ const DataTableSearchFilter = <T extends string>({
     setSearchTerm('');
   };
 
+  const handleSelectAll = () => {
+    const newItemsToSelect = filteredOptions.filter(
+      (option) => !selectedOptions.includes(option),
+    );
+
+    if (newItemsToSelect.length === 0) return;
+
+    setSelectedOptions([...selectedOptions, ...newItemsToSelect]);
+
+    if (onSelectMultiple) {
+      onSelectMultiple(newItemsToSelect); //  배열 통째로 전달
+    } else if (onSelect) {
+      newItemsToSelect.forEach((item) => {
+        onSelect(item); //  fallback (덮어쓰기 위험 있음)
+      });
+    }
+
+    setSearchTerm('');
+  };
+
   const isActive = selectedOptions.length > 0;
 
   const getLabel = () => {
@@ -156,7 +182,7 @@ const DataTableSearchFilter = <T extends string>({
       <PopoverContent
         align="start"
         sideOffset={8}
-        className="rounded-modal-8 border-line-solid-normal shadow-semantic-subtle bg-background-normal flex min-w-75 flex-col overflow-hidden"
+        className="rounded-modal-8 border-line-solid-normal shadow-semantic-subtle bg-background-normal flex w-75 flex-col"
         onOpenAutoFocus={(e) => {
           e.preventDefault(); // Radix의 기본 포커스 동작(첫 번째 요소 찾기 등)을 막음
           handleContainerClick();
@@ -164,23 +190,22 @@ const DataTableSearchFilter = <T extends string>({
       >
         {/* --- 인풋 영역 (태그 모드 vs 일반 모드) --- */}
         <div
-          className="bg-fill-normal border-line-solid-normal relative flex cursor-text items-center gap-2.5 border-b px-3 py-2"
+          className="bg-fill-normal border-line-solid-normal relative flex cursor-text flex-wrap items-center gap-2.5 border-b px-3 py-2"
           onClick={handleContainerClick}
         >
-          {/* 1. 태그 렌더링 (renderTag가 있을 때만) */}
-          {renderTag &&
-            selectedOptions.map((option) => (
-              <div key={option} className="shrink-0">
-                {renderTag(option, () => toggleOption(option))}
-              </div>
-            ))}
+          {/* 1. 태그 렌더링 */}
+          {selectedOptions.map((option) => (
+            <div key={option} className="shrink-0">
+              <Tag type={option} onRemove={() => toggleOption(option)} />
+            </div>
+          ))}
 
           {/* 2. 실제 인풋  */}
           <input
             ref={inputRef}
             type="text"
             value={searchTerm}
-            onChange={handleSearchChange}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={
               selectedOptions.length > 0
@@ -193,7 +218,7 @@ const DataTableSearchFilter = <T extends string>({
         </div>
 
         {/* --- 리스트 && footer 영역 --- */}
-        <div ref={listRef} className="max-h-85 overflow-y-auto p-3">
+        <div ref={listRef} className="scrollbar max-h-85 overflow-y-auto p-3">
           {!searchTerm && renderEmptyState ? (
             renderEmptyState()
           ) : (
@@ -226,8 +251,11 @@ const DataTableSearchFilter = <T extends string>({
               )}
             </>
           )}
-          {/* Footer */}
-          {searchTerm && renderFooter && renderFooter(searchTerm)}
+          {/* Search All Trigger */}
+          {searchTerm &&
+            filteredOptions.length > 0 &&
+            renderSearchAllTrigger &&
+            renderSearchAllTrigger(searchTerm, handleSelectAll)}
         </div>
       </PopoverContent>
     </Popover>

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 
-import Tag from '../../Tag';
+import { Icons } from '@/assets';
+
 import { DataTableSearchFilter } from '../DataTableFilter';
 
 // 임시 데이터
@@ -55,20 +55,29 @@ const MerchantFilter = () => {
     }
   });
 
-  // 검색어 저장
-  const saveSearchTerm = (term: string) => {
-    if (!term.trim()) return;
-    const updated = [term, ...recentSearches.filter((t) => t !== term)].slice(
-      0,
-      5,
+  // 최근 검색어 추가 (단일/다중)
+  const addRecentSearches = (terms: string | string[]) => {
+    const newTerms = Array.isArray(terms) ? terms : [terms];
+    if (newTerms.length === 0) return;
+
+    // 기존 목록과 합치기 (새 항목이 앞으로)
+    const combined = [...newTerms, ...recentSearches];
+
+    // 중복 제거 (Set 활용) 및 빈 문자열 제거
+    const uniqueTerms = Array.from(new Set(combined)).filter(
+      (t) => t.trim() !== '',
     );
+
+    // 최대 5개까지만 유지
+    const updated = uniqueTerms.slice(0, 5);
+
     setRecentSearches(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  // 최근 검색어 삭제
+  // 최근 검색어 개별 삭제
   const removeRecentSearch = (e: React.MouseEvent, keyword: string) => {
-    e.stopPropagation(); // 부모(체크박스/선택 등) 이벤트 방지
+    e.stopPropagation();
     const updated = recentSearches.filter((item) => item !== keyword);
     setRecentSearches(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -81,13 +90,12 @@ const MerchantFilter = () => {
       selectedOptions={selectedMerchants}
       setSelectedOptions={setSelectedMerchants}
       // 1. 검색어 변경 감지 및 저장 (선택적이므로 여기서 저장 로직 수행)
-      onSearch={() => {
+      onInputChange={() => {
         // 타이핑 할 때마다
         // api 호출 작업 예정
       }}
-      renderTag={(merchant, onRemove) => {
-        return <Tag type={merchant} onRemove={onRemove} />;
-      }}
+      onSelect={(term) => addRecentSearches(term)}
+      onSelectMultiple={(terms) => addRecentSearches(terms)}
       // 2. 리스트 아이템 렌더링 (하이라이팅 적용)
       renderOption={(merchant, searchTerm) => (
         <HighlightText text={merchant} highlight={searchTerm} />
@@ -120,7 +128,7 @@ const MerchantFilter = () => {
                     onClick={(e) => removeRecentSearch(e, keyword)}
                     className="ml-auto opacity-0 transition group-hover:opacity-100"
                   >
-                    <X size={14} />
+                    <Icons.Close className="size-3.5" />
                   </button>
                 </div>
               ))}
@@ -128,12 +136,10 @@ const MerchantFilter = () => {
           )}
         </div>
       )}
-      renderFooter={(searchTerm) => (
+      renderSearchAllTrigger={(searchTerm, onSelectAll) => (
         <button
+          onClick={onSelectAll}
           className="caption1-bold text-primary-normal mt-2.5 cursor-pointer truncate text-start"
-          onClick={() => {
-            saveSearchTerm(searchTerm); // 버튼 클릭 시 검색어 저장
-          }}
         >
           '{searchTerm}'(이)가 포함된 모든 내역 필터링
         </button>

@@ -60,7 +60,6 @@ const Homepage = () => {
             <div className="flex-1" />
             <UploadMenu />
           </DataTableFilterProvider>
-
           <DataTable
             groupBy={(row: Expense) =>
               new Date(row.date).toLocaleDateString('ko-KR', {

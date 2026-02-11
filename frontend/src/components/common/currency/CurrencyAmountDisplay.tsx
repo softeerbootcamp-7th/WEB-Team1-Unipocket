@@ -28,6 +28,7 @@ interface CurrencyAmountDisplayProps {
   amount: number;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  decimalOffset?: number;
 }
 
 const CurrencyAmountDisplay = ({
@@ -35,6 +36,7 @@ const CurrencyAmountDisplay = ({
   amount,
   size = 'md',
   className,
+  decimalOffset,
 }: CurrencyAmountDisplayProps) => {
   const countryInfo = getCountryInfo(countryCode);
 
@@ -81,6 +83,10 @@ const CurrencyAmountDisplay = ({
               styles.decimal,
               className,
             )}
+            style={{
+              position: 'relative',
+              top: decimalOffset ?? 0,
+            }}
           >
             .{decimalPart}
           </span>

@@ -56,7 +56,7 @@ const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
       />
       <div
         className={clsx(
-          'flex gap-1 transition-opacity duration-200',
+          'flex items-center gap-1 transition-opacity duration-200',
           showAmount ? 'opacity-100' : 'opacity-0',
         )}
       >
@@ -71,6 +71,7 @@ const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
           countryCode={countryCode}
           size={styles.size}
           className={styles.textStyle}
+          decimalOffset={1}
         />
       </div>
     </div>

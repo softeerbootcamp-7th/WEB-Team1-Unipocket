@@ -6,6 +6,11 @@ interface CategoryItem {
   averageSpentAmount: string;
 }
 
+interface MyselfItem {
+  date: string;
+  cumulatedAmount: string;
+}
+
 const mockData = {
   countryCode: 'US',
   compareWithAverage: {
@@ -46,7 +51,7 @@ const mockData = {
       { date: '2026-01-18', cumulatedAmount: '700.3' },
       { date: '2026-01-19', cumulatedAmount: '780.1' },
       { date: '2026-01-20', cumulatedAmount: '830' },
-    ],
+    ] as Array<MyselfItem>,
     prevMonthItem: [
       { date: '2025-12-01', cumulatedAmount: '18' },
       { date: '2025-12-02', cumulatedAmount: '26' },
@@ -79,7 +84,7 @@ const mockData = {
       { date: '2025-12-29', cumulatedAmount: '1600' },
       { date: '2025-12-30', cumulatedAmount: '2000' },
       { date: '2025-12-31', cumulatedAmount: '2311.46' },
-    ],
+    ] as Array<MyselfItem>,
   },
   compareByCategory: {
     maxDiffCategoryIndex: 4,

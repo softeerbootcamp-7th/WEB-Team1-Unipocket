@@ -7,7 +7,7 @@ const LEGEND_COLOR = {
 
 const SHAPE_STYLE = {
   box: 'size-2.5',
-  line: 'w-6.25 h-1 rounded-full',
+  line: 'w-6.25 h-1 rounded-modal-10',
 } as const;
 
 interface ReportLegendProps {

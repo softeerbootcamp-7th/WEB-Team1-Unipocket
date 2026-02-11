@@ -2,12 +2,14 @@ package com.genesis.unipocket.accountbook.command.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 public record AccountBookUpdateRequest(
-		@NotNull(message = CODE) String title,
+		@NotBlank(message = CODE) @Size(max = 255, message = CODE) String title,
 		@NotNull(message = CODE) CountryCode localCountryCode,
 		@NotNull(message = CODE) CountryCode baseCountryCode,
 		Long budget,

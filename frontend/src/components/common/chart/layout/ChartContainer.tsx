@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
-import clsx from 'clsx';
+
+import { cn } from '@/lib/utils';
 
 // props 추가 시 type -> interface 변경 필요
 type ChartContainerProps = ComponentProps<'div'>;
@@ -11,8 +12,8 @@ const ChartContainer = ({
 }: ChartContainerProps) => {
   return (
     <div
-      className={clsx(
-        'rounded-modal-16 bg-background-normal shadow-semantic-subtle flex flex-col gap-2.5 p-2 pt-4',
+      className={cn(
+        'rounded-modal-16 bg-background-normal shadow-semantic-subtle flex w-67 flex-col gap-2.5 p-2 pt-4',
         className,
       )}
       {...props}

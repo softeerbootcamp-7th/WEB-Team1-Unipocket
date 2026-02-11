@@ -1,14 +1,15 @@
 import clsx from 'clsx';
-import { X } from 'lucide-react';
 
 import { CATEGORY_STYLE, type CategoryType } from '@/types/category';
 
-interface TagProps {
+import { Icons } from '@/assets';
+
+interface ChipProps {
   type: CategoryType | string;
   onRemove?: () => void;
 }
 
-const Tag = ({ type, onRemove }: TagProps) => {
+const Chip = ({ type, onRemove }: ChipProps) => {
   const { bg, text } = CATEGORY_STYLE[type as CategoryType] || {
     bg: 'bg-label-alternative/10',
     text: 'text-label-alternative',
@@ -28,11 +29,11 @@ const Tag = ({ type, onRemove }: TagProps) => {
           onMouseDown={(e) => e.preventDefault()} // DataTableFilter의 toggleOption에서 focus()를 다시 호출할 필요가 없어짐.
           className={clsx('cursor-pointer rounded-full p-0.5', text)}
         >
-          <X size={12} strokeWidth={3} />
+          <Icons.Close className="size-3.5" />
         </button>
       )}
     </div>
   );
 };
 
-export default Tag;
+export default Chip;

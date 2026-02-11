@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { CATEGORY_STYLE, type CategoryType } from '@/types/category';
 
-import Tag from '../../Tag';
+import Tag from '../../Chip';
 import { DataTableSearchFilter } from '../DataTableFilter';
 
 const CategoryFilter = () => {
@@ -17,10 +17,11 @@ const CategoryFilter = () => {
       options={categoryOptions}
       selectedOptions={selectedCategories}
       setSelectedOptions={setSelectedCategories}
-      renderTag={(category, onRemove) => {
-        return <Tag type={category} onRemove={onRemove} />;
-      }}
       renderOption={(category) => <Tag type={category} />}
+      onInputChange={() => {
+        // 타이핑 할 때마다
+        // api 호출 작업 예정
+      }}
     />
   );
 };

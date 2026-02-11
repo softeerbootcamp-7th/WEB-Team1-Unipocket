@@ -6,6 +6,7 @@ import DataTableProvider from '@/components/data-table/DataTableProvider';
 import CategoryFilter from '@/components/data-table/filters/CategoryFilter';
 import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
+import SortDropdown from '@/components/data-table/filters/SortDropdown';
 import { columns } from '@/components/home-page/columns';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { type Expense, getData } from '@/components/landing-page/dummy';
@@ -59,6 +60,7 @@ const Homepage = () => {
             <MerchantFilter />
             <CategoryFilter />
             <div className="flex-1" />
+            <SortDropdown />
             <UploadMenu />
           </DataTableFilterProvider>
           <DataTable

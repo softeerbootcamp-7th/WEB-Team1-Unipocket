@@ -1,17 +1,17 @@
-import { Link } from '@tanstack/react-router';
-import { clsx } from 'clsx';
-
-import { useGetUserQuery, useLogoutMutation } from '@/api/auth/query';
-import ProfileImage from '@/assets/images/profile.png';
-import { AUTH_PROVIDERS } from '@/constants/authProviders';
-
 import {
   Popover,
   PopoverClose,
   PopoverContent,
   PopoverTrigger,
-} from '../ui/popover';
-import Divider from './Divider';
+} from '@radix-ui/react-popover';
+import { Link } from '@tanstack/react-router';
+import { clsx } from 'clsx';
+
+import Divider from '@/components/common/Divider';
+
+import { useGetUserQuery, useLogoutMutation } from '@/api/auth/query';
+import ProfileImage from '@/assets/images/profile.png';
+import { AUTH_PROVIDERS } from '@/constants/authProviders';
 
 const ProfilePopover = () => {
   const { data } = useGetUserQuery();

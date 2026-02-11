@@ -1,10 +1,9 @@
 import { useState } from 'react';
 
+import { DataTableSearchFilter } from '@/components/data-table/DataTableFilter';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { Icons } from '@/assets';
-
-import { DataTableSearchFilter } from '../DataTableFilter';
 
 // 임시 데이터
 const MOCK_MERCHANTS = [

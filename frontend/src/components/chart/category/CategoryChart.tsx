@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react';
 
+import CategoryChartSkeleton from '@/components/chart/category/CategoryChartSkeleton';
+import CategoryChartView from '@/components/chart/category/CategoryChartView';
+import { mockData } from '@/components/chart/category/mock';
+import { CURRENCY_OPTIONS } from '@/components/chart/chartType';
+import ChartContainer from '@/components/chart/layout/ChartContainer';
+import ChartContent from '@/components/chart/layout/ChartContent';
+import ChartHeader from '@/components/chart/layout/ChartHeader';
 import DropDown from '@/components/common/dropdown/Dropdown';
-
-import { CURRENCY_OPTIONS } from '../chartType';
-import ChartContainer from '../layout/ChartContainer';
-import ChartContent from '../layout/ChartContent';
-import ChartHeader from '../layout/ChartHeader';
-import CategoryChartSkeleton from './CategoryChartSkeleton';
-import CategoryChartView from './CategoryChartView';
-import { mockData } from './mock';
 
 const PERIOD_OPTIONS = [
   { id: 1, name: '전체' },

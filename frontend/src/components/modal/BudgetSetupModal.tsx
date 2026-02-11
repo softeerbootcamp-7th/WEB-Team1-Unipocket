@@ -1,5 +1,5 @@
-import CurrencyConverter from '../currency/CurrencyConverter';
-import Modal from './Modal';
+import CurrencyConverter from '@/components/currency/CurrencyConverter';
+import Modal from '@/components/modal/Modal';
 
 interface BudgetSetupModalProps {
   isOpen: boolean;

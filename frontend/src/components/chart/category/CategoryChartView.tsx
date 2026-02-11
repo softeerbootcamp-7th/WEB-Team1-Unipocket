@@ -1,15 +1,14 @@
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
 
+import CategoryLegendItem from '@/components/chart/category/CategoryLegendItem';
+import PieChart from '@/components/chart/charts/PieChart';
+import { CATEGORY_CHART_COLORS } from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 
 import type { CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import type { CountryCode } from '@/data/countryCode';
-
-import PieChart from '../charts/PieChart';
-import { CATEGORY_CHART_COLORS } from '../chartType';
-import CategoryLegendItem from './CategoryLegendItem';
 
 interface CategoryChartViewProps {
   data: {

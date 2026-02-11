@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 
-import Button from '../common/Button';
+import Button from '@/components/common/Button';
 
 interface Currency {
   symbol: string;

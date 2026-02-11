@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import type { Expense } from '../landing-page/dummy';
-import { Checkbox } from '../ui/checkbox';
+import type { Expense } from '@/components/landing-page/dummy';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export const columns: ColumnDef<Expense>[] = [
   {

@@ -1,10 +1,9 @@
 import { useState } from 'react';
 
 import Tag from '@/components/common/Chip';
+import { DataTableSearchFilter } from '@/components/data-table/DataTableFilter';
 
 import { CATEGORY_STYLE, type CategoryType } from '@/types/category';
-
-import { DataTableSearchFilter } from '../DataTableFilter';
 
 const CategoryFilter = () => {
   const categoryOptions = Object.keys(CATEGORY_STYLE) as CategoryType[];

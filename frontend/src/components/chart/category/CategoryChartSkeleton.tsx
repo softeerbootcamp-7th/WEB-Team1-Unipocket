@@ -1,5 +1,5 @@
-import PieChart from '../charts/PieChart';
-import { mockData } from './mock';
+import { mockData } from '@/components/chart/category/mock';
+import PieChart from '@/components/chart/charts/PieChart';
 
 const CategoryLegendItemSkeleton = () => {
   return (

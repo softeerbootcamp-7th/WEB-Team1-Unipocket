@@ -1,10 +1,9 @@
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 
+import { logout } from '@/api/auth/api';
+import { getUser } from '@/api/user/api';
 import { queryClient } from '@/main';
-
-import { getUser } from '../user/api';
-import { logout } from './api';
 
 export const useLogoutMutation = () => {
   const navigate = useNavigate();

@@ -1,9 +1,12 @@
 import { useId } from 'react';
 import { motion } from 'framer-motion';
 
-import { cn } from '@/lib/utils';
+import {
+  EXPENSE_CHART_COLORS,
+  TOTAL_ANIMATION_DURATION,
+} from '@/components/chart/chartType';
 
-import { EXPENSE_CHART_COLORS, TOTAL_ANIMATION_DURATION } from '../chartType';
+import { cn } from '@/lib/utils';
 
 export interface BarData {
   percent: number;

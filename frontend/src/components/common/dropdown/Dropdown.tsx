@@ -3,8 +3,8 @@ import { clsx } from 'clsx';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
-import Filter from '../Filter';
-import OptionItem from './OptionItem';
+import OptionItem from '@/components/common/dropdown/OptionItem';
+import Filter from '@/components/common/Filter';
 
 interface Option {
   id: number;

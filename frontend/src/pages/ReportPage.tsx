@@ -1,11 +1,10 @@
 import { useState } from 'react';
 
 import ReportCategory from '@/components/report-page/category/ReportCategory';
+import mockData from '@/components/report-page/mock';
 import ReportProvider from '@/components/report-page/ReportProvider';
 
 import { type CurrencyType } from '@/types/currency';
-
-import mockData from '../components/report-page/mock';
 
 const ReportPage = () => {
   const categoryData = mockData.compareByCategory;
@@ -13,7 +12,10 @@ const ReportPage = () => {
 
   return (
     <div className="flex p-3">
-      <ReportProvider currencyType={currencyType} onCurrencyTypeChange={setCurrencyType}>
+      <ReportProvider
+        currencyType={currencyType}
+        onCurrencyTypeChange={setCurrencyType}
+      >
         <ReportCategory data={categoryData} />
       </ReportProvider>
     </div>

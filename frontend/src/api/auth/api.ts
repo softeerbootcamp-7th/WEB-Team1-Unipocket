@@ -2,8 +2,7 @@ import { isRedirect, redirect } from '@tanstack/react-router';
 
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
-
-import { getUser } from '../user/api';
+import { getUser } from '@/api/user/api';
 
 export const logout = () => {
   return customFetch({

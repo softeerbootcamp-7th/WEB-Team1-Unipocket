@@ -7,11 +7,10 @@ package com.genesis.unipocket.expense.query.presentation.response;
  * @since 2026-02-11
  */
 public record ImageProcessingSummaryResponse(
-        int totalImages,
-        int processedImages,
-        int unprocessedImages,
-        int totalExpenses,
-        int normalExpenses,
-        int incompleteExpenses,
-        int abnormalExpenses) {
-}
+		int totalImages,
+		int processedImages,
+		int unprocessedImages,
+		int totalExpenses,
+		int normalExpenses,
+		int incompleteExpenses,
+		int abnormalExpenses) {}

@@ -40,10 +40,11 @@ public class TemporaryExpenseQueryService {
 			Long accountBookId, TemporaryExpense.TemporaryExpenseStatus status, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 
-		List<TemporaryExpense> entities = status != null
-				? temporaryExpenseRepository.findByAccountBookIdAndStatus(
-						accountBookId, status)
-				: temporaryExpenseRepository.findByAccountBookId(accountBookId);
+		List<TemporaryExpense> entities =
+				status != null
+						? temporaryExpenseRepository.findByAccountBookIdAndStatus(
+								accountBookId, status)
+						: temporaryExpenseRepository.findByAccountBookId(accountBookId);
 
 		return TemporaryExpenseResponse.fromList(entities);
 	}
@@ -59,8 +60,7 @@ public class TemporaryExpenseQueryService {
 	/**
 	 * 파일(이미지) 단위 처리 현황 조회
 	 */
-	public FileProcessingSummaryResponse getFileProcessingSummary(
-			Long accountBookId, UUID userId) {
+	public FileProcessingSummaryResponse getFileProcessingSummary(Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 
 		// 1. 가계부에 속한 메타 조회
@@ -78,32 +78,30 @@ public class TemporaryExpenseQueryService {
 		List<TemporaryExpense> allExpenses = temporaryExpenseRepository.findByFileIdIn(fileIds);
 
 		// 4. fileId 기준으로 그룹핑
-		Map<Long, List<TemporaryExpense>> expensesByFile = allExpenses.stream()
-				.collect(Collectors.groupingBy(TemporaryExpense::getFileId));
+		Map<Long, List<TemporaryExpense>> expensesByFile =
+				allExpenses.stream().collect(Collectors.groupingBy(TemporaryExpense::getFileId));
 
 		// 5. 파일별 요약 생성
 		List<FileProcessingSummaryResponse.FileSummary> fileSummaries = new ArrayList<>();
 		int processedCount = 0;
 
 		for (File file : files) {
-			List<TemporaryExpense> fileExpenses = expensesByFile.getOrDefault(file.getFileId(), List.of());
+			List<TemporaryExpense> fileExpenses =
+					expensesByFile.getOrDefault(file.getFileId(), List.of());
 
 			int normalCount = 0;
 			int incompleteCount = 0;
 			int abnormalCount = 0;
 
 			for (TemporaryExpense te : fileExpenses) {
-				if (te.getStatus() == TemporaryExpenseStatus.NORMAL)
-					normalCount++;
-				else if (te.getStatus() == TemporaryExpenseStatus.INCOMPLETE)
-					incompleteCount++;
-				else if (te.getStatus() == TemporaryExpenseStatus.ABNORMAL)
-					abnormalCount++;
+				if (te.getStatus() == TemporaryExpenseStatus.NORMAL) normalCount++;
+				else if (te.getStatus() == TemporaryExpenseStatus.INCOMPLETE) incompleteCount++;
+				else if (te.getStatus() == TemporaryExpenseStatus.ABNORMAL) abnormalCount++;
 			}
 
-			boolean processed = !fileExpenses.isEmpty() && incompleteCount == 0 && abnormalCount == 0;
-			if (processed)
-				processedCount++;
+			boolean processed =
+					!fileExpenses.isEmpty() && incompleteCount == 0 && abnormalCount == 0;
+			if (processed) processedCount++;
 
 			fileSummaries.add(
 					new FileProcessingSummaryResponse.FileSummary(
@@ -118,10 +116,7 @@ public class TemporaryExpenseQueryService {
 		}
 
 		return new FileProcessingSummaryResponse(
-				fileSummaries,
-				files.size(),
-				processedCount,
-				files.size() - processedCount);
+				fileSummaries, files.size(), processedCount, files.size() - processedCount);
 	}
 
 	/**
@@ -150,27 +145,25 @@ public class TemporaryExpenseQueryService {
 		int abnormalExpenses = 0;
 
 		for (TemporaryExpense te : allExpenses) {
-			if (te.getStatus() == TemporaryExpenseStatus.NORMAL)
-				normalExpenses++;
-			else if (te.getStatus() == TemporaryExpenseStatus.INCOMPLETE)
-				incompleteExpenses++;
-			else if (te.getStatus() == TemporaryExpenseStatus.ABNORMAL)
-				abnormalExpenses++;
+			if (te.getStatus() == TemporaryExpenseStatus.NORMAL) normalExpenses++;
+			else if (te.getStatus() == TemporaryExpenseStatus.INCOMPLETE) incompleteExpenses++;
+			else if (te.getStatus() == TemporaryExpenseStatus.ABNORMAL) abnormalExpenses++;
 		}
 
 		// 4. 파일별 처리 여부 집계
-		Map<Long, List<TemporaryExpense>> expensesByFile = allExpenses.stream()
-				.collect(Collectors.groupingBy(TemporaryExpense::getFileId));
+		Map<Long, List<TemporaryExpense>> expensesByFile =
+				allExpenses.stream().collect(Collectors.groupingBy(TemporaryExpense::getFileId));
 
 		int processedImages = 0;
 		for (File file : files) {
-			List<TemporaryExpense> fileExpenses = expensesByFile.getOrDefault(file.getFileId(), List.of());
-			boolean allNormal = !fileExpenses.isEmpty()
-					&& fileExpenses.stream()
-							.allMatch(
-									te -> te.getStatus() == TemporaryExpenseStatus.NORMAL);
-			if (allNormal)
-				processedImages++;
+			List<TemporaryExpense> fileExpenses =
+					expensesByFile.getOrDefault(file.getFileId(), List.of());
+			boolean allNormal =
+					!fileExpenses.isEmpty()
+							&& fileExpenses.stream()
+									.allMatch(
+											te -> te.getStatus() == TemporaryExpenseStatus.NORMAL);
+			if (allNormal) processedImages++;
 		}
 
 		return new ImageProcessingSummaryResponse(
@@ -187,17 +180,20 @@ public class TemporaryExpenseQueryService {
 		return temporaryExpenseRepository
 				.findById(tempExpenseId)
 				.orElseThrow(
-						() -> new IllegalArgumentException(
-								"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
+						() ->
+								new IllegalArgumentException(
+										"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
 	}
 
 	private Long getAccountBookIdFromTempExpense(TemporaryExpense tempExpense) {
-		File file = fileRepository
-				.findById(tempExpense.getFileId())
-				.orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
-		TempExpenseMeta meta = tempExpenseMetaRepository
-				.findById(file.getTempExpenseMetaId())
-				.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		File file =
+				fileRepository
+						.findById(tempExpense.getFileId())
+						.orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(file.getTempExpenseMetaId())
+						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
 		return meta.getAccountBookId();
 	}
 }

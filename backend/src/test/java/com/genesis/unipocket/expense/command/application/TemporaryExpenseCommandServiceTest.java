@@ -31,29 +31,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TemporaryExpenseCommandServiceTest {
 
-	@Mock
-	private TemporaryExpenseRepository repository;
+	@Mock private TemporaryExpenseRepository repository;
 
-	@InjectMocks
-	private TemporaryExpenseCommandService service;
+	@InjectMocks private TemporaryExpenseCommandService service;
 
 	private TemporaryExpense testExpense;
 
 	@BeforeEach
 	void setUp() {
-		testExpense = TemporaryExpense.builder()
-				.tempExpenseId(1L)
-				.fileId(10L)
-				.merchantName("스타벅스")
-				.category(Category.FOOD)
-				.localCountryCode(CurrencyCode.KRW)
-				.localCurrencyAmount(BigDecimal.valueOf(5000))
-				.baseCountryCode(CurrencyCode.KRW)
-				.baseCurrencyAmount(BigDecimal.valueOf(5000))
-				.paymentsMethod("CARD")
-				.occurredAt(LocalDateTime.now())
-				.status(TemporaryExpenseStatus.NORMAL)
-				.build();
+		testExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("스타벅스")
+						.category(Category.FOOD)
+						.localCountryCode(CurrencyCode.KRW)
+						.localCurrencyAmount(BigDecimal.valueOf(5000))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(BigDecimal.valueOf(5000))
+						.paymentsMethod("CARD")
+						.occurredAt(LocalDateTime.now())
+						.status(TemporaryExpenseStatus.NORMAL)
+						.build();
 	}
 
 	@Test
@@ -90,17 +89,18 @@ class TemporaryExpenseCommandServiceTest {
 	void updateTemporaryExpense_Success() {
 		// given
 		Long tempExpenseId = 1L;
-		TemporaryExpenseUpdateCommand command = new TemporaryExpenseUpdateCommand(
-				"이디야커피", // merchantName
-				Category.FOOD,
-				CurrencyCode.KRW,
-				BigDecimal.valueOf(3000),
-				CurrencyCode.KRW,
-				BigDecimal.valueOf(3000),
-				"CASH",
-				"커피",
-				LocalDateTime.now(),
-				null);
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"이디야커피", // merchantName
+						Category.FOOD,
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(3000),
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(3000),
+						"CASH",
+						"커피",
+						LocalDateTime.now(),
+						null);
 
 		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(testExpense));
 		when(repository.save(any(TemporaryExpense.class)))
@@ -147,24 +147,26 @@ class TemporaryExpenseCommandServiceTest {
 	void updateTemporaryExpense_AllRequiredFields_StatusNormal() {
 		// given
 		Long tempExpenseId = 1L;
-		TemporaryExpense incompleteExpense = TemporaryExpense.builder()
-				.tempExpenseId(1L)
-				.fileId(10L)
-				.merchantName("스타벅스")
-				.status(TemporaryExpenseStatus.INCOMPLETE)
-				.build();
+		TemporaryExpense incompleteExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("스타벅스")
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build();
 
-		TemporaryExpenseUpdateCommand command = new TemporaryExpenseUpdateCommand(
-				"스타벅스",
-				Category.FOOD,
-				CurrencyCode.KRW,
-				BigDecimal.valueOf(5000),
-				CurrencyCode.KRW,
-				BigDecimal.valueOf(5000),
-				"CARD",
-				null,
-				LocalDateTime.now(),
-				null);
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"스타벅스",
+						Category.FOOD,
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						"CARD",
+						null,
+						LocalDateTime.now(),
+						null);
 
 		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(incompleteExpense));
 		when(repository.save(any(TemporaryExpense.class)))
@@ -182,17 +184,27 @@ class TemporaryExpenseCommandServiceTest {
 	void updateTemporaryExpense_MissingRequiredField_StaysIncomplete() {
 		// given
 		Long tempExpenseId = 1L;
-		TemporaryExpense incompleteExpense = TemporaryExpense.builder()
-				.tempExpenseId(1L)
-				.fileId(10L)
-				.merchantName("스타벅스")
-				.status(TemporaryExpenseStatus.INCOMPLETE)
-				.build();
+		TemporaryExpense incompleteExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("스타벅스")
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build();
 
 		// category가 null → 필수 필드 미비
-		TemporaryExpenseUpdateCommand command = new TemporaryExpenseUpdateCommand(
-				"이디야", null, null, BigDecimal.valueOf(3000), null, null, null, null,
-				null, null);
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"이디야",
+						null,
+						null,
+						BigDecimal.valueOf(3000),
+						null,
+						null,
+						null,
+						null,
+						null,
+						null);
 
 		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(incompleteExpense));
 		when(repository.save(any(TemporaryExpense.class)))
@@ -210,24 +222,26 @@ class TemporaryExpenseCommandServiceTest {
 	void updateTemporaryExpense_Abnormal_StaysAbnormal() {
 		// given
 		Long tempExpenseId = 1L;
-		TemporaryExpense abnormalExpense = TemporaryExpense.builder()
-				.tempExpenseId(1L)
-				.fileId(10L)
-				.merchantName("이상거래")
-				.status(TemporaryExpenseStatus.ABNORMAL)
-				.build();
+		TemporaryExpense abnormalExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("이상거래")
+						.status(TemporaryExpenseStatus.ABNORMAL)
+						.build();
 
-		TemporaryExpenseUpdateCommand command = new TemporaryExpenseUpdateCommand(
-				"수정됨",
-				Category.FOOD,
-				CurrencyCode.KRW,
-				BigDecimal.valueOf(5000),
-				CurrencyCode.KRW,
-				BigDecimal.valueOf(5000),
-				"CARD",
-				null,
-				LocalDateTime.now(),
-				null);
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"수정됨",
+						Category.FOOD,
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						"CARD",
+						null,
+						LocalDateTime.now(),
+						null);
 
 		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(abnormalExpense));
 		when(repository.save(any(TemporaryExpense.class)))

@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TempExpenseMetaRepository extends JpaRepository<TempExpenseMeta, Long> {
 
-    /**
-     * 가계부 ID로 메타데이터 목록 조회
-     */
-    List<TempExpenseMeta> findByAccountBookId(Long accountBookId);
+	/**
+	 * 가계부 ID로 메타데이터 목록 조회
+	 */
+	List<TempExpenseMeta> findByAccountBookId(Long accountBookId);
 }

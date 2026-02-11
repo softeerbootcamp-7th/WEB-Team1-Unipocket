@@ -9,19 +9,15 @@ import java.util.List;
  * @since 2026-02-11
  */
 public record FileProcessingSummaryResponse(
-        List<FileSummary> files,
-        int totalFiles,
-        int processedFiles,
-        int unprocessedFiles) {
+		List<FileSummary> files, int totalFiles, int processedFiles, int unprocessedFiles) {
 
-    public record FileSummary(
-            Long fileId,
-            String s3Key,
-            String fileType,
-            int totalExpenses,
-            int normalCount,
-            int incompleteCount,
-            int abnormalCount,
-            boolean processed) {
-    }
+	public record FileSummary(
+			Long fileId,
+			String s3Key,
+			String fileType,
+			int totalExpenses,
+			int normalCount,
+			int incompleteCount,
+			int abnormalCount,
+			boolean processed) {}
 }

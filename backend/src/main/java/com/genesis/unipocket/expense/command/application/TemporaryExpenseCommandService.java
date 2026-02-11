@@ -29,8 +29,9 @@ public class TemporaryExpenseCommandService {
 		return temporaryExpenseRepository
 				.findById(tempExpenseId)
 				.orElseThrow(
-						() -> new IllegalArgumentException(
-								"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
+						() ->
+								new IllegalArgumentException(
+										"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
 	}
 
 	/**
@@ -42,57 +43,64 @@ public class TemporaryExpenseCommandService {
 		TemporaryExpense entity = findById(tempExpenseId);
 
 		// 필드 값 결정 (command가 null이 아니면 command 값, 아니면 기존 값)
-		String resolvedMerchantName = command.merchantName() != null
-				? command.merchantName()
-				: entity.getMerchantName();
-		var resolvedCategory = command.category() != null ? command.category() : entity.getCategory();
-		var resolvedLocalCountryCode = command.localCountryCode() != null
-				? command.localCountryCode()
-				: entity.getLocalCountryCode();
-		var resolvedLocalCurrencyAmount = command.localCurrencyAmount() != null
-				? command.localCurrencyAmount()
-				: entity.getLocalCurrencyAmount();
-		var resolvedBaseCountryCode = command.baseCountryCode() != null
-				? command.baseCountryCode()
-				: entity.getBaseCountryCode();
-		var resolvedBaseCurrencyAmount = command.baseCurrencyAmount() != null
-				? command.baseCurrencyAmount()
-				: entity.getBaseCurrencyAmount();
-		String resolvedPaymentsMethod = command.paymentsMethod() != null
-				? command.paymentsMethod()
-				: entity.getPaymentsMethod();
+		String resolvedMerchantName =
+				command.merchantName() != null ? command.merchantName() : entity.getMerchantName();
+		var resolvedCategory =
+				command.category() != null ? command.category() : entity.getCategory();
+		var resolvedLocalCountryCode =
+				command.localCountryCode() != null
+						? command.localCountryCode()
+						: entity.getLocalCountryCode();
+		var resolvedLocalCurrencyAmount =
+				command.localCurrencyAmount() != null
+						? command.localCurrencyAmount()
+						: entity.getLocalCurrencyAmount();
+		var resolvedBaseCountryCode =
+				command.baseCountryCode() != null
+						? command.baseCountryCode()
+						: entity.getBaseCountryCode();
+		var resolvedBaseCurrencyAmount =
+				command.baseCurrencyAmount() != null
+						? command.baseCurrencyAmount()
+						: entity.getBaseCurrencyAmount();
+		String resolvedPaymentsMethod =
+				command.paymentsMethod() != null
+						? command.paymentsMethod()
+						: entity.getPaymentsMethod();
 		String resolvedMemo = command.memo() != null ? command.memo() : entity.getMemo();
-		var resolvedOccurredAt = command.occurredAt() != null
-				? command.occurredAt()
-				: entity.getOccurredAt();
-		String resolvedCardLastFourDigits = command.cardLastFourDigits() != null
-				? command.cardLastFourDigits()
-				: entity.getCardLastFourDigits();
+		var resolvedOccurredAt =
+				command.occurredAt() != null ? command.occurredAt() : entity.getOccurredAt();
+		String resolvedCardLastFourDigits =
+				command.cardLastFourDigits() != null
+						? command.cardLastFourDigits()
+						: entity.getCardLastFourDigits();
 
 		// 상태 재평가
-		TemporaryExpenseStatus resolvedStatus = reevaluateStatus(
-				entity.getStatus(),
-				resolvedMerchantName,
-				resolvedLocalCurrencyAmount,
-				resolvedOccurredAt,
-				resolvedCategory);
+		TemporaryExpenseStatus resolvedStatus =
+				reevaluateStatus(
+						entity.getStatus(),
+						resolvedMerchantName,
+						resolvedLocalCurrencyAmount,
+						resolvedOccurredAt,
+						resolvedCategory);
 
 		// 새로운 엔티티 생성 (불변 객체 패턴)
-		TemporaryExpense updated = TemporaryExpense.builder()
-				.tempExpenseId(entity.getTempExpenseId())
-				.fileId(entity.getFileId())
-				.merchantName(resolvedMerchantName)
-				.category(resolvedCategory)
-				.localCountryCode(resolvedLocalCountryCode)
-				.localCurrencyAmount(resolvedLocalCurrencyAmount)
-				.baseCountryCode(resolvedBaseCountryCode)
-				.baseCurrencyAmount(resolvedBaseCurrencyAmount)
-				.paymentsMethod(resolvedPaymentsMethod)
-				.memo(resolvedMemo)
-				.occurredAt(resolvedOccurredAt)
-				.status(resolvedStatus)
-				.cardLastFourDigits(resolvedCardLastFourDigits)
-				.build();
+		TemporaryExpense updated =
+				TemporaryExpense.builder()
+						.tempExpenseId(entity.getTempExpenseId())
+						.fileId(entity.getFileId())
+						.merchantName(resolvedMerchantName)
+						.category(resolvedCategory)
+						.localCountryCode(resolvedLocalCountryCode)
+						.localCurrencyAmount(resolvedLocalCurrencyAmount)
+						.baseCountryCode(resolvedBaseCountryCode)
+						.baseCurrencyAmount(resolvedBaseCurrencyAmount)
+						.paymentsMethod(resolvedPaymentsMethod)
+						.memo(resolvedMemo)
+						.occurredAt(resolvedOccurredAt)
+						.status(resolvedStatus)
+						.cardLastFourDigits(resolvedCardLastFourDigits)
+						.build();
 
 		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(updated));
 	}
@@ -126,14 +134,13 @@ public class TemporaryExpenseCommandService {
 		}
 
 		// 필수 필드 검증
-		boolean hasAllRequired = merchantName != null
-				&& !merchantName.isBlank()
-				&& localCurrencyAmount != null
-				&& occurredAt != null
-				&& category != null;
+		boolean hasAllRequired =
+				merchantName != null
+						&& !merchantName.isBlank()
+						&& localCurrencyAmount != null
+						&& occurredAt != null
+						&& category != null;
 
-		return hasAllRequired
-				? TemporaryExpenseStatus.NORMAL
-				: TemporaryExpenseStatus.INCOMPLETE;
+		return hasAllRequired ? TemporaryExpenseStatus.NORMAL : TemporaryExpenseStatus.INCOMPLETE;
 	}
 }

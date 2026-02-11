@@ -36,7 +36,12 @@ public class TestcontainersConfiguration {
 	@Bean
 	DynamicPropertyRegistrar dynamicPropertyRegistrar(LocalStackContainer localStack) {
 		return (registry) -> {
-			registry.add("spring.cloud.aws.s3.endpoint", () -> localStack.getEndpointOverride(LocalStackContainer.Service.S3).toString());
+			registry.add(
+					"spring.cloud.aws.s3.endpoint",
+					() ->
+							localStack
+									.getEndpointOverride(LocalStackContainer.Service.S3)
+									.toString());
 			registry.add("spring.cloud.aws.region.static", localStack::getRegion);
 			registry.add("spring.cloud.aws.credentials.access-key", localStack::getAccessKey);
 			registry.add("spring.cloud.aws.credentials.secret-key", localStack::getSecretKey);

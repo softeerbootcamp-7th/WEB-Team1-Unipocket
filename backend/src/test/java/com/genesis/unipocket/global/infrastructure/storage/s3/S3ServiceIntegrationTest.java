@@ -6,11 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.media.command.facade.port.dto.PresignedUrlInfo;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,9 @@ class S3ServiceIntegrationTest {
 		PresignedUrlInfo putInfo = s3Service.getPresignedUrl("it-test/upload", "upload.png");
 
 		putToPresignedUrl(
-				putInfo.presignedUrl(), "image/png", "localstack-test".getBytes(StandardCharsets.UTF_8));
+				putInfo.presignedUrl(),
+				"image/png",
+				"localstack-test".getBytes(StandardCharsets.UTF_8));
 
 		assertThat(s3Service.validateExists(putInfo.imageKey())).isTrue();
 

@@ -2,9 +2,8 @@ package com.genesis.unipocket.global.infrastructure.storage.s3.provide;
 
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.media.command.facade.port.MediaObjectStoragePort;
-import java.util.List;
-
 import com.genesis.unipocket.media.command.facade.port.dto.PresignedUrlInfo;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 public class S3MediaObjectStorageProvider implements MediaObjectStoragePort {
 
 	private final S3Service s3Service;
-
 
 	@Override
 	public String provideGetUrl(String mediaKey) {

@@ -1,6 +1,6 @@
-import { type CategoryId,getCategoryName } from '@/types/category';
+import ReportBar from '@/components/report-page/category/ReportBar';
 
-import ReportBar from './ReportBar';
+import { type CategoryId, getCategoryName } from '@/types/category';
 
 interface ReportBarRowProps {
   categoryIndex: CategoryId;

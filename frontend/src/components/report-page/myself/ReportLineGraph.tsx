@@ -1,6 +1,5 @@
+import ComparisonLineChart from '@/components/report-page/myself/ComparisonLineChart';
 import ReportLegend from '@/components/report-page/ReportLegend';
-
-import ComparisonLineChart from './ComparisonLineChart';
 
 interface ReportLineGraphProps {
   thisMonthItem: { date: string; cumulatedAmount: string }[];

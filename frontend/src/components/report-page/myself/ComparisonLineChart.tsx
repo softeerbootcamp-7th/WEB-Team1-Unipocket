@@ -1,4 +1,7 @@
-import { buildLinePath, type ChartItem } from './buildPath';
+import {
+  buildLinePath,
+  type ChartItem,
+} from '@/components/report-page/myself/buildPath';
 
 interface ComparisonLineChartProps {
   thisMonth: ChartItem[];

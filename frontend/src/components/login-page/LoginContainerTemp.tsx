@@ -8,7 +8,9 @@ const LoginContainerTemp = () => {
   const handleOnClick = async () => {
     try {
       const { accessToken, refreshToken, expiresIn } = await loginDev();
-      const domain = import.meta.env.PROD ? 'domain=.unipocket.co.kr; ' : '';
+      const domain = import.meta.env.PROD
+        ? `domain=${import.meta.env.VITE_COOKIE_DOMAIN}; `
+        : '';
       const baseOptions = `path=/; ${domain}Secure; SameSite=None; `;
       const REFRESH_EXPIRY = 30 * 24 * 60 * 60;
       document.cookie = `access_token=${accessToken}; max-age=${expiresIn}; ${baseOptions}`;

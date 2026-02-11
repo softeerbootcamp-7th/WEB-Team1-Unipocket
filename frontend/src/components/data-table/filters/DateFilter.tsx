@@ -1,8 +1,6 @@
 import { useState } from 'react';
 
-import Calendar, {
-  type DateRange,
-} from '@/components/calendar/Calendar';
+import Calendar, { type DateRange } from '@/components/calendar/Calendar';
 import CalendarInput from '@/components/common/CalendarInput';
 import Divider from '@/components/common/Divider';
 import Filter from '@/components/common/Filter';
@@ -62,7 +60,7 @@ const DateFilter = () => {
   })();
 
   return (
-    <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+    <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen} modal={false}>
       <PopoverTrigger asChild>
         <Filter
           size="md"

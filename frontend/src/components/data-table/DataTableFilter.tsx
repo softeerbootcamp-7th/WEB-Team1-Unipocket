@@ -166,7 +166,7 @@ const DataTableSearchFilter = <T extends string>({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <PopoverTrigger asChild>
         <Filter
           size="md"

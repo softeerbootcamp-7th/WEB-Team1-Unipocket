@@ -95,7 +95,11 @@ const DateFilter = () => {
           <Divider style="vertical" className="mx-6" />
 
           {/* 달력 및 인풋 영역 */}
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <Popover
+            open={isCalendarOpen}
+            onOpenChange={setIsCalendarOpen}
+            modal={false}
+          >
             <PopoverAnchor asChild>
               <div className="flex flex-col justify-between">
                 <CalendarInput

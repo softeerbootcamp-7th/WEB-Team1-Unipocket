@@ -16,9 +16,15 @@ public class CookieUtil {
 	private boolean cookieSecure;
 
 	public void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+		addCookie(response, name, value, maxAge, "/");
+	}
+
+	public void addCookie(
+			HttpServletResponse response, String name, String value, int maxAge, String path) {
+		String cookiePath = (path == null || path.isBlank()) ? "/" : path;
 		ResponseCookie.ResponseCookieBuilder cookieBuilder =
 				ResponseCookie.from(name, value)
-						.path("/")
+						.path(cookiePath)
 						.maxAge(maxAge)
 						.httpOnly(true)
 						.sameSite("Lax")
@@ -32,9 +38,14 @@ public class CookieUtil {
 	}
 
 	public void deleteCookie(HttpServletResponse response, String name) {
+		deleteCookie(response, name, "/");
+	}
+
+	public void deleteCookie(HttpServletResponse response, String name, String path) {
+		String cookiePath = (path == null || path.isBlank()) ? "/" : path;
 		ResponseCookie.ResponseCookieBuilder cookieBuilder =
 				ResponseCookie.from(name, "")
-						.path("/")
+						.path(cookiePath)
 						.maxAge(0)
 						.httpOnly(true)
 						.sameSite("Lax")

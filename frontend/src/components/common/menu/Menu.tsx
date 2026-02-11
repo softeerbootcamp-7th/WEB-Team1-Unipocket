@@ -7,7 +7,7 @@ import { Icons } from '@/assets';
 const menuItems = [
   { to: '/home', Icon: Icons.Home, label: '홈' },
   { to: '/travel', Icon: Icons.Travel, label: '여행' },
-  { to: '/analytics', Icon: Icons.Analytics, label: '분석' },
+  { to: '/report', Icon: Icons.Analytics, label: '분석' },
 ] as const;
 
 const Menu = () => {

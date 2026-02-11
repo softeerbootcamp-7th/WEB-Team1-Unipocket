@@ -2,24 +2,24 @@ import { type ReactNode } from 'react';
 
 import type { CurrencyType } from '@/types/currency';
 
-import { AnalyticsContext } from './AnalyticsContext';
+import { ReportContext } from './ReportContext';
 
-interface AnalyticsProviderProps {
+interface ReportProviderProps {
   currencyType: CurrencyType;
   onCurrencyTypeChange: (currencyType: CurrencyType) => void;
   children: ReactNode;
 }
 
-const AnalyticsProvider = ({
+const ReportProvider = ({
   currencyType,
   onCurrencyTypeChange,
   children,
-}: AnalyticsProviderProps) => {
+}: ReportProviderProps) => {
   return (
-    <AnalyticsContext.Provider value={{ currencyType, onCurrencyTypeChange }}>
+    <ReportContext.Provider value={{ currencyType, onCurrencyTypeChange }}>
       {children}
-    </AnalyticsContext.Provider>
+    </ReportContext.Provider>
   );
 };
 
-export default AnalyticsProvider;
+export default ReportProvider;

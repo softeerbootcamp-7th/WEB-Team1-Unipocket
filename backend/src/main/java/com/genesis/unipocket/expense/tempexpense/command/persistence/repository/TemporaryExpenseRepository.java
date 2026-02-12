@@ -1,6 +1,6 @@
-package com.genesis.unipocket.expense.command.persistence.repository;
+package com.genesis.unipocket.expense.tempexpense.command.persistence.repository;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,18 +16,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpense, Long> {
 
-	/**
-	 * 파일 ID로 임시지출내역 조회
-	 */
-	List<TemporaryExpense> findByFileId(Long fileId);
+	List<TemporaryExpense> findByTempExpenseMetaId(Long tempExpenseMetaId);
+
+	void deleteByTempExpenseMetaId(Long tempExpenseMetaId);
 
 	/**
 	 * 가계부 ID로 임시지출내역 조회 (File, TempExpenseMeta 조인)
 	 */
 	@Query(
 			"SELECT te FROM TemporaryExpense te "
-					+ "JOIN File f ON te.fileId = f.fileId "
-					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+					+ "JOIN TempExpenseMeta tm ON te.tempExpenseMetaId = tm.tempExpenseMetaId "
 					+ "WHERE tm.accountBookId = :accountBookId")
 	List<TemporaryExpense> findByAccountBookId(@Param("accountBookId") Long accountBookId);
 
@@ -36,16 +34,12 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 	 */
 	@Query(
 			"SELECT te FROM TemporaryExpense te "
-					+ "JOIN File f ON te.fileId = f.fileId "
-					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+					+ "JOIN TempExpenseMeta tm ON te.tempExpenseMetaId = tm.tempExpenseMetaId "
 					+ "WHERE tm.accountBookId = :accountBookId "
 					+ "AND te.status = :status")
 	List<TemporaryExpense> findByAccountBookIdAndStatus(
 			@Param("accountBookId") Long accountBookId,
 			@Param("status") TemporaryExpense.TemporaryExpenseStatus status);
 
-	/**
-	 * 여러 파일 ID로 임시지출내역 조회
-	 */
-	List<TemporaryExpense> findByFileIdIn(List<Long> fileIds);
+	List<TemporaryExpense> findByTempExpenseMetaIdIn(List<Long> tempExpenseMetaIds);
 }

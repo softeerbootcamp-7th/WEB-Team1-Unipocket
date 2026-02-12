@@ -1,6 +1,6 @@
-package com.genesis.unipocket.expense.command.persistence.repository;
+package com.genesis.unipocket.expense.tempexpense.command.persistence.repository;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TempExpenseMeta;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

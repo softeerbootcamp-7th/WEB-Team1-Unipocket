@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.command.persistence.entity.expense;
+package com.genesis.unipocket.expense.tempexpense.command.persistence.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.command.persistence.entity.expense;
+package com.genesis.unipocket.expense.tempexpense.command.persistence.entity;
 
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -26,8 +26,8 @@ public class TemporaryExpense {
 	@Column(name = "temp_expense_id")
 	private Long tempExpenseId;
 
-	@Column(name = "file_id", nullable = false)
-	private Long fileId;
+	@Column(name = "temp_expense_meta_id", nullable = false)
+	private Long tempExpenseMetaId;
 
 	@Column(name = "merchant_name", nullable = false)
 	private String merchantName;

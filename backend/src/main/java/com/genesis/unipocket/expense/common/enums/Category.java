@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.common.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -19,5 +20,10 @@ public enum Category {
 
 	Category(String name) {
 		this.name = name;
+	}
+
+	@JsonValue
+	public int getOrdinal() {
+		return this.ordinal();
 	}
 }

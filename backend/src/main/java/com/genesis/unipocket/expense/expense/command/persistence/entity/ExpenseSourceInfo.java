@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.command.persistence.entity.expense;
+package com.genesis.unipocket.expense.expense.command.persistence.entity;
 
 import com.genesis.unipocket.expense.common.enums.ExpenseSource;
 import jakarta.persistence.Column;

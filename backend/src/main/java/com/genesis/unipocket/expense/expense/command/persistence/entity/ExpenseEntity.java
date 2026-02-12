@@ -1,7 +1,7 @@
-package com.genesis.unipocket.expense.command.persistence.entity.expense;
+package com.genesis.unipocket.expense.expense.command.persistence.entity;
 
-import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.*;
@@ -109,15 +109,14 @@ public class ExpenseEntity extends BaseEntity {
 		return exchangeInfo != null ? exchangeInfo.getLocalCurrencyAmount() : null;
 	}
 
-	public CurrencyCode getStandardCurrency() {
+	public CurrencyCode getBaseCurrency() {
 		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyCode() : null;
 	}
 
-	public BigDecimal getStandardAmount() {
+	public BigDecimal getBaseAmount() {
 		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
 	}
 
-	// Update methods
 	public void updateMerchantName(String merchantName) {
 		if (merchantName == null || merchantName.trim().isEmpty()) {
 			throw new IllegalArgumentException("merchantName must not be blank");

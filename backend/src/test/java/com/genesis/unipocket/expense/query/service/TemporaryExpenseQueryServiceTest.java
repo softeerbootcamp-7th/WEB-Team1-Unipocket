@@ -3,18 +3,19 @@ package com.genesis.unipocket.expense.query.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File.FileType;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.expense.query.presentation.response.FileProcessingSummaryResponse;
-import com.genesis.unipocket.expense.query.presentation.response.ImageProcessingSummaryResponse;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File.FileType;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.FileRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.expense.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
+import com.genesis.unipocket.expense.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
+import com.genesis.unipocket.expense.tempexpense.query.service.TemporaryExpenseQueryService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,7 +64,7 @@ class TemporaryExpenseQueryServiceTest {
 		TemporaryExpense expense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1000L)
-						.fileId(100L)
+						.tempExpenseMetaId(10L)
 						.merchantName("스타벅스")
 						.category(Category.FOOD)
 						.localCurrencyAmount(BigDecimal.valueOf(5000))
@@ -74,7 +75,8 @@ class TemporaryExpenseQueryServiceTest {
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
 				.thenReturn(List.of(meta));
 		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L))).thenReturn(List.of(file));
-		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L))).thenReturn(List.of(expense));
+		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L)))
+				.thenReturn(List.of(expense));
 
 		// when
 		FileProcessingSummaryResponse result =
@@ -108,14 +110,14 @@ class TemporaryExpenseQueryServiceTest {
 		TemporaryExpense normalExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1000L)
-						.fileId(100L)
+						.tempExpenseMetaId(10L)
 						.merchantName("스타벅스")
 						.status(TemporaryExpenseStatus.NORMAL)
 						.build();
 		TemporaryExpense incompleteExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1001L)
-						.fileId(100L)
+						.tempExpenseMetaId(10L)
 						.merchantName("이디야")
 						.status(TemporaryExpenseStatus.INCOMPLETE)
 						.build();
@@ -123,7 +125,7 @@ class TemporaryExpenseQueryServiceTest {
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
 				.thenReturn(List.of(meta));
 		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L))).thenReturn(List.of(file));
-		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L)))
+		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L)))
 				.thenReturn(List.of(normalExpense, incompleteExpense));
 
 		// when
@@ -158,9 +160,14 @@ class TemporaryExpenseQueryServiceTest {
 	@DisplayName("이미지 처리 현황 요약 - 정상 동작")
 	void getImageProcessingSummary_success() {
 		// given
-		TempExpenseMeta meta =
+		TempExpenseMeta meta1 =
 				TempExpenseMeta.builder()
 						.tempExpenseMetaId(10L)
+						.accountBookId(ACCOUNT_BOOK_ID)
+						.build();
+		TempExpenseMeta meta2 =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(11L)
 						.accountBookId(ACCOUNT_BOOK_ID)
 						.build();
 		File file1 =
@@ -173,7 +180,7 @@ class TemporaryExpenseQueryServiceTest {
 		File file2 =
 				File.builder()
 						.fileId(101L)
-						.tempExpenseMetaId(10L)
+						.tempExpenseMetaId(11L)
 						.fileType(FileType.IMAGE)
 						.s3Key("img2.jpg")
 						.build();
@@ -181,30 +188,30 @@ class TemporaryExpenseQueryServiceTest {
 		TemporaryExpense normal1 =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)
-						.fileId(100L)
+						.tempExpenseMetaId(10L)
 						.status(TemporaryExpenseStatus.NORMAL)
 						.merchantName("A")
 						.build();
 		TemporaryExpense normal2 =
 				TemporaryExpense.builder()
 						.tempExpenseId(2L)
-						.fileId(100L)
+						.tempExpenseMetaId(10L)
 						.status(TemporaryExpenseStatus.NORMAL)
 						.merchantName("B")
 						.build();
 		TemporaryExpense incomplete =
 				TemporaryExpense.builder()
 						.tempExpenseId(3L)
-						.fileId(101L)
+						.tempExpenseMetaId(11L)
 						.status(TemporaryExpenseStatus.INCOMPLETE)
 						.merchantName("C")
 						.build();
 
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
-				.thenReturn(List.of(meta));
-		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L)))
+				.thenReturn(List.of(meta1, meta2));
+		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
 				.thenReturn(List.of(file1, file2));
-		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L, 101L)))
+		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
 				.thenReturn(List.of(normal1, normal2, incomplete));
 
 		// when

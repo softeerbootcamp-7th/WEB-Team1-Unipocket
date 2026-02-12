@@ -28,6 +28,37 @@ const CARD_MOCK_DATA = [
   },
 ];
 
+const LEDGER_SETTINGS_MOCK = [
+  {
+    id: 1,
+    tabName: '가계부 1',
+    isMain: true,
+    settings: {
+      name: '가계부 1',
+      baseCurrency: '원 ₩ KRW',
+      country: '미국',
+      syncPeriod: {
+        start: '2025.12.23',
+        end: '2026.05.31',
+      },
+    },
+  },
+  {
+    id: 2,
+    tabName: '가계부 2',
+    isMain: false,
+    settings: {
+      name: '가계부 2',
+      baseCurrency: '달러 $ USD',
+      country: '미국',
+      syncPeriod: {
+        start: '2026.01.01',
+        end: '2026.12.31',
+      },
+    },
+  },
+];
+
 const SettingPage = () => {
   return (
     <div className="bg flex flex-1 flex-col px-30 py-8">

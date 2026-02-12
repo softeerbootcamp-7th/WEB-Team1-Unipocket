@@ -3,6 +3,7 @@ package com.genesis.unipocket.expense.command.application;
 import static org.assertj.core.api.Assertions.*;
 
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.ParsedExpenseItem;
+import com.genesis.unipocket.tempexpense.command.application.CsvParsingService;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

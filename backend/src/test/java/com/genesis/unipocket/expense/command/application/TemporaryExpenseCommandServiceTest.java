@@ -4,13 +4,14 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.genesis.unipocket.expense.command.application.command.TemporaryExpenseUpdateCommand;
-import com.genesis.unipocket.expense.command.application.result.TemporaryExpenseResult;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
-import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
-import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseCommandService;
+import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
+import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -42,7 +43,7 @@ class TemporaryExpenseCommandServiceTest {
 		testExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)
-						.fileId(10L)
+						.tempExpenseMetaId(10L)
 						.merchantName("스타벅스")
 						.category(Category.FOOD)
 						.localCountryCode(CurrencyCode.KRW)
@@ -150,7 +151,7 @@ class TemporaryExpenseCommandServiceTest {
 		TemporaryExpense incompleteExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)
-						.fileId(10L)
+						.tempExpenseMetaId(10L)
 						.merchantName("스타벅스")
 						.status(TemporaryExpenseStatus.INCOMPLETE)
 						.build();
@@ -187,7 +188,7 @@ class TemporaryExpenseCommandServiceTest {
 		TemporaryExpense incompleteExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)
-						.fileId(10L)
+						.tempExpenseMetaId(10L)
 						.merchantName("스타벅스")
 						.status(TemporaryExpenseStatus.INCOMPLETE)
 						.build();
@@ -225,7 +226,7 @@ class TemporaryExpenseCommandServiceTest {
 		TemporaryExpense abnormalExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)
-						.fileId(10L)
+						.tempExpenseMetaId(10L)
 						.merchantName("이상거래")
 						.status(TemporaryExpenseStatus.ABNORMAL)
 						.build();

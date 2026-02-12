@@ -9,9 +9,9 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookC
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.auth.support.JwtTestHelper;
-import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
-import com.genesis.unipocket.expense.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;

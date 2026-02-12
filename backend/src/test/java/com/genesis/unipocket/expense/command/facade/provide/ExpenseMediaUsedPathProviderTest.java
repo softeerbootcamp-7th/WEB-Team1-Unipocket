@@ -3,8 +3,7 @@ package com.genesis.unipocket.expense.command.facade.provide;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.expense.command.facade.provide.ExpenseMediaUsedPathProvider;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;

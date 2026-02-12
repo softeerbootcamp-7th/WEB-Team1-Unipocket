@@ -52,7 +52,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 단일 임시지출내역 변환
 	 */
-	@PostMapping("/api/temporary-expenses/{tempExpenseId}/convert")
+	@PostMapping("/temporary-expenses/{tempExpenseId}/convert")
 	public ResponseEntity<ApiResponse<ConvertTemporaryExpenseResponse>> convertToExpense(
 			@PathVariable Long tempExpenseId) {
 		com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity expense =
@@ -68,7 +68,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * Batch 변환
 	 */
-	@PostMapping("/api/temporary-expenses/convert-batch")
+	@PostMapping("/temporary-expenses/convert-batch")
 	public ResponseEntity<ApiResponse<BatchConvertResponse>> convertBatch(
 			@RequestBody @Valid BatchConvertRequest request) {
 		TemporaryExpenseConversionService.BatchConversionResult result =
@@ -98,7 +98,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * Batch Presigned URL 발급
 	 */
-	@PostMapping("/api/temporary-expenses/upload/presigned-urls")
+	@PostMapping("/temporary-expenses/upload/presigned-urls")
 	public ResponseEntity<ApiResponse<BatchPresignedUrlResponse>> createBatchPresignedUrls(
 			@RequestBody @Valid BatchPresignedUrlRequest request) {
 		java.util.List<FileUploadService.FileUploadResponse> results =
@@ -121,7 +121,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 비동기 파싱 시작
 	 */
-	@PostMapping("/api/temporary-expenses/parse-async")
+	@PostMapping("/temporary-expenses/parse-async")
 	public ResponseEntity<ApiResponse<BatchParseResponse>> parseAsync(
 			@RequestBody @Valid BatchParseRequest request) {
 		String taskId = java.util.UUID.randomUUID().toString();
@@ -133,7 +133,7 @@ public class TemporaryExpenseCommandController {
 				new BatchParseResponse(
 						taskId,
 						request.fileIds().size(),
-						"/api/temporary-expenses/parse-status/" + taskId);
+						"/temporary-expenses/parse-status/" + taskId);
 
 		return ResponseEntity.accepted().body(ApiResponse.success(response));
 	}
@@ -141,7 +141,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * Presigned URL 발급
 	 */
-	@PostMapping("/api/temporary-expenses/upload/presigned-url")
+	@PostMapping("/temporary-expenses/upload/presigned-url")
 	public ResponseEntity<ApiResponse<PresignedUrlResponse>> createPresignedUrl(
 			@RequestBody @Valid PresignedUrlRequest request) {
 		FileUploadService.FileUploadResponse result =
@@ -158,7 +158,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * S3 업로드 파일 등록 (s3Key 기반)
 	 */
-	@PostMapping("/api/temporary-expenses/upload/register")
+	@PostMapping("/temporary-expenses/upload/register")
 	public ResponseEntity<ApiResponse<RegisterUploadedFileResponse>> registerUploadedFile(
 			@RequestBody @Valid RegisterUploadedFileRequest request, @LoginUser UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(request.accountBookId(), userId.toString());
@@ -176,7 +176,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 파일 파싱 실행
 	 */
-	@PostMapping("/api/temporary-expenses/parse")
+	@PostMapping("/temporary-expenses/parse")
 	public ResponseEntity<ApiResponse<ParseFileResponse>> parseFile(
 			@RequestBody @Valid ParseFileRequest request) {
 		TemporaryExpenseParsingService.ParsingResult result =
@@ -208,7 +208,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 임시지출내역 수정
 	 */
-	@PutMapping("/api/temporary-expenses/{tempExpenseId}")
+	@PutMapping("/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<ApiResponse<TemporaryExpenseUpdateResponse>> updateTemporaryExpense(
 			@PathVariable Long tempExpenseId,
 			@RequestBody @Valid TemporaryExpenseUpdateRequest request,
@@ -222,7 +222,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 임시지출내역 삭제
 	 */
-	@DeleteMapping("/api/temporary-expenses/{tempExpenseId}")
+	@DeleteMapping("/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<Void> deleteTemporaryExpense(
 			@PathVariable Long tempExpenseId, @LoginUser UUID userId) {
 		orchestrator.deleteTemporaryExpense(tempExpenseId, userId);

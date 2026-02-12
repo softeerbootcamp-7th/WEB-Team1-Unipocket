@@ -22,8 +22,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AuthCommandController.class)
@@ -31,14 +31,14 @@ class AuthCommandControllerTest {
 
 	@Autowired private MockMvc mockMvc;
 
-	@MockBean private AuthService authService;
-	@MockBean private CookieUtil cookieUtil;
-	@MockBean private OAuthAuthorizeFacade authorizeFacade;
-	@MockBean private UserLoginFacade loginFacade;
-	@MockBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-	@MockBean private JwtProvider jwtProvider;
-	@MockBean private TokenBlacklistService tokenBlacklistService;
-	@MockBean private JwtProperties jwtProperties;
+	@MockitoBean private AuthService authService;
+	@MockitoBean private CookieUtil cookieUtil;
+	@MockitoBean private OAuthAuthorizeFacade authorizeFacade;
+	@MockitoBean private UserLoginFacade loginFacade;
+	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+	@MockitoBean private JwtProvider jwtProvider;
+	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private JwtProperties jwtProperties;
 
 	@Test
 	@DisplayName("토큰 재발급 성공")
@@ -54,7 +54,7 @@ class AuthCommandControllerTest {
 		given(authService.reissue(refreshToken)).willReturn(tokenPair);
 
 		// when & then
-		mockMvc.perform(post("/api/auth/reissue").cookie(new Cookie("refresh_token", refreshToken)))
+		mockMvc.perform(post("/auth/reissue").cookie(new Cookie("refresh_token", refreshToken)))
 				.andExpect(status().isOk());
 
 		verify(authService).reissue(refreshToken);
@@ -71,7 +71,7 @@ class AuthCommandControllerTest {
 						eq("refresh_token"),
 						eq(newRefreshToken),
 						anyInt(),
-						eq("/api/auth"));
+						eq("/auth"));
 	}
 
 	@Test
@@ -83,7 +83,7 @@ class AuthCommandControllerTest {
 
 		// when & then
 		mockMvc.perform(
-						post("/api/auth/logout")
+						post("/auth/logout")
 								.cookie(new Cookie("access_token", accessToken))
 								.cookie(new Cookie("refresh_token", refreshToken)))
 				.andExpect(status().isOk());
@@ -92,7 +92,7 @@ class AuthCommandControllerTest {
 		verify(cookieUtil)
 				.deleteCookie(any(HttpServletResponse.class), eq("access_token"), eq("/"));
 		verify(cookieUtil)
-				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/api/auth"));
+				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/auth"));
 	}
 
 	@Test
@@ -109,7 +109,7 @@ class AuthCommandControllerTest {
 				.willReturn(authorizeResult);
 
 		// when & then
-		mockMvc.perform(get("/api/auth/oauth2/authorize/{provider}", provider))
+		mockMvc.perform(get("/auth/oauth2/authorize/{provider}", provider))
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl(authorizationUrl));
 
@@ -139,7 +139,7 @@ class AuthCommandControllerTest {
 
 		// when & then
 		mockMvc.perform(
-						get("/api/auth/oauth2/callback/{provider}", provider)
+						get("/auth/oauth2/callback/{provider}", provider)
 								.param("code", code)
 								.param("state", state))
 				.andExpect(status().is3xxRedirection());
@@ -160,6 +160,6 @@ class AuthCommandControllerTest {
 						eq("refresh_token"),
 						eq(refreshToken),
 						anyInt(),
-						eq("/api/auth"));
+						eq("/auth"));
 	}
 }

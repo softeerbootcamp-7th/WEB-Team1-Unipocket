@@ -49,7 +49,7 @@ class AccountBookQueryControllerTest {
 								new AccountBookSummaryResponse(2L, "보조 가계부", false)));
 		mockAuthentication(accessToken, userId);
 
-		mockMvc.perform(get("/api/account-books").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(get("/account-books").cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
 				.andExpect(jsonPath("$[0].title").value("메인 가계부"))
@@ -78,7 +78,7 @@ class AccountBookQueryControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}", accountBookId)
+						get("/account-books/{accountBookId}", accountBookId)
 								.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(accountBookId))

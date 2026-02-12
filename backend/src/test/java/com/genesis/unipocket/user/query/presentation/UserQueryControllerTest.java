@@ -22,8 +22,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserQueryController.class)
@@ -31,13 +31,13 @@ class UserQueryControllerTest {
 
 	@Autowired private MockMvc mockMvc;
 
-	@MockBean private UserQueryService userQueryService;
+	@MockitoBean private UserQueryService userQueryService;
 
-	@MockBean private JwtProvider jwtProvider;
+	@MockitoBean private JwtProvider jwtProvider;
 
-	@MockBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private TokenBlacklistService tokenBlacklistService;
 
-	@MockBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
 	@Autowired private ObjectMapper objectMapper;
 
@@ -62,7 +62,7 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getUserInfo(userId)).willReturn(response);
 
-		mockMvc.perform(get("/api/users/me").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(get("/users/me").cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.email").value("test@example.com"))
 				.andExpect(jsonPath("$.name").value("Tester"));
@@ -84,7 +84,7 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getCards(userId)).willReturn(response);
 
-		mockMvc.perform(get("/api/users/cards").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(get("/users/cards").cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].nickName").value("Card 1"))
 				.andExpect(jsonPath("$[0].cardCompany").value("HYUNDAI"));
@@ -97,7 +97,7 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getCardCompanies()).willReturn(companies);
 
-		mockMvc.perform(get("/api/users/cards/companies"))
+		mockMvc.perform(get("/users/cards/companies"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0]").value("HYUNDAI"))
 				.andExpect(jsonPath("$[1]").value("SAMSUNG"));

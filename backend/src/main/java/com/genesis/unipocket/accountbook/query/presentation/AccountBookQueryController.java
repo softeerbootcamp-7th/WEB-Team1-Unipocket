@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "가계부 Query API")
 @RestController
-@RequestMapping("/api/account-books")
+@RequestMapping("/account-books")
 @RequiredArgsConstructor
 public class AccountBookQueryController {
 

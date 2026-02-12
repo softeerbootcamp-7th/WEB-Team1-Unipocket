@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "이미지 업로드 기능")
 @RestController
-@RequestMapping("/api/images")
+@RequestMapping("/images")
 @RequiredArgsConstructor
 public class ImageController {
 

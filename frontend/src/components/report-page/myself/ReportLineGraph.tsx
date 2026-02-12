@@ -12,6 +12,8 @@ interface ReportLineGraphProps {
   prevMonthItem: { date: string; cumulatedAmount: string }[];
 }
 const ReportLineGraph = ({
+  thisMonthLabel,
+  lastMonthLabel,
   thisMonthCount,
   lastMonthCount,
   maxValue,
@@ -27,8 +29,8 @@ const ReportLineGraph = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end gap-4">
-        <ReportLegend label="1월" color="me" variant="line" />
-        <ReportLegend label="2월" color="other" variant="line" />
+        <ReportLegend label={thisMonthLabel} color="me" variant="line" />
+        <ReportLegend label={lastMonthLabel} color="other" variant="line" />
       </div>
       <div className="relative h-42">
         <VerticalGrid positions={positions} labels={labels} />

@@ -34,8 +34,9 @@ spring:
 # JWT Configuration (기본값 없음)
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: 180000000
-  refresh-token-expiration: 86400000000
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+  oauth-state-ttl: ${JWT_OAUTH_STATE_TTL}
 
 # OAuth2 Configuration (기본값 없음)
 oauth2:

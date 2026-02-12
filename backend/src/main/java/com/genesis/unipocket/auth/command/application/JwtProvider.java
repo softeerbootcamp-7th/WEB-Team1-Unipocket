@@ -1,5 +1,6 @@
 package com.genesis.unipocket.auth.command.application;
 
+import com.genesis.unipocket.auth.common.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -9,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 import javax.crypto.SecretKey;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,16 +23,13 @@ import org.springframework.stereotype.Component;
 public class JwtProvider {
 
 	private final SecretKey key;
-	private final long accessTokenExpiration;
-	private final long refreshTokenExpiration;
+	private final long accessTokenExpirationMs;
+	private final long refreshTokenExpirationMs;
 
-	public JwtProvider(
-			@Value("${jwt.secret}") String secretKey,
-			@Value("${jwt.access-token-expiration}") long accessTokenExpiration,
-			@Value("${jwt.refresh-token-expiration}") long refreshTokenExpiration) {
-		this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-		this.accessTokenExpiration = accessTokenExpiration;
-		this.refreshTokenExpiration = refreshTokenExpiration;
+	public JwtProvider(JwtProperties jwtProperties) {
+		this.key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+		this.accessTokenExpirationMs = jwtProperties.getAccessTokenExpirationMs();
+		this.refreshTokenExpirationMs = jwtProperties.getRefreshTokenExpirationMs();
 	}
 
 	/**
@@ -42,7 +39,7 @@ public class JwtProvider {
 	 * @return Access Token 문자열
 	 */
 	public String createAccessToken(UUID userId) {
-		return createToken(userId, accessTokenExpiration, "access");
+		return createToken(userId, accessTokenExpirationMs, "access");
 	}
 
 	/**
@@ -52,7 +49,7 @@ public class JwtProvider {
 	 * @return Refresh Token 문자열
 	 */
 	public String createRefreshToken(UUID userId) {
-		return createToken(userId, refreshTokenExpiration, "refresh");
+		return createToken(userId, refreshTokenExpirationMs, "refresh");
 	}
 
 	/**

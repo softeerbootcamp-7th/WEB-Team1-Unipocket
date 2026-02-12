@@ -2,8 +2,10 @@ package com.genesis.unipocket.auth.command.application;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.genesis.unipocket.auth.common.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,12 +21,16 @@ class JwtProviderTest {
 	private JwtProvider jwtProvider;
 	private final String testSecret =
 			"test-secret-key-must-be-at-least-32-characters-long-for-hs256";
-	private final long accessTokenExpiration = 1800000L; // 30분
-	private final long refreshTokenExpiration = 864000000L; // 10일
+	private final long accessTokenExpirationMs = 1800000L; // 30분
 
 	@BeforeEach
 	void setUp() {
-		jwtProvider = new JwtProvider(testSecret, accessTokenExpiration, refreshTokenExpiration);
+		JwtProperties props = new JwtProperties();
+		props.setSecret(testSecret);
+		props.setAccessTokenExpiration(Duration.ofMillis(accessTokenExpirationMs));
+		props.setRefreshTokenExpiration(Duration.ofDays(10));
+		props.setOauthStateTtl(Duration.ofMinutes(10));
+		jwtProvider = new JwtProvider(props);
 	}
 
 	@Test
@@ -169,7 +175,13 @@ class JwtProviderTest {
 	@DisplayName("토큰 검증 - 만료된 토큰")
 	void validateToken_ExpiredToken() throws InterruptedException {
 		// given - 1ms 만료 시간으로 토큰 생성
-		JwtProvider shortLivedProvider = new JwtProvider(testSecret, 1L, 1L);
+		JwtProperties shortLivedProps = new JwtProperties();
+		shortLivedProps.setSecret(testSecret);
+		shortLivedProps.setAccessTokenExpiration(Duration.ofMillis(1));
+		shortLivedProps.setRefreshTokenExpiration(Duration.ofMillis(1));
+		shortLivedProps.setOauthStateTtl(Duration.ofMinutes(10));
+		JwtProvider shortLivedProvider = new JwtProvider(shortLivedProps);
+
 		UUID userId = UUID.randomUUID();
 		String token = shortLivedProvider.createAccessToken(userId);
 
@@ -222,7 +234,7 @@ class JwtProviderTest {
 
 		// then
 		assertThat(remaining).isGreaterThan(0);
-		assertThat(remaining).isLessThanOrEqualTo(accessTokenExpiration);
+		assertThat(remaining).isLessThanOrEqualTo(accessTokenExpirationMs);
 	}
 
 	@Test

@@ -11,6 +11,7 @@ import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.command.facade.UserLoginFacade;
+import com.genesis.unipocket.auth.common.config.JwtProperties;
 import com.genesis.unipocket.auth.common.dto.AuthorizeResult;
 import com.genesis.unipocket.auth.common.dto.LoginResult;
 import com.genesis.unipocket.global.config.OAuth2Properties;
@@ -37,6 +38,7 @@ class AuthCommandControllerTest {
 	@MockBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 	@MockBean private JwtProvider jwtProvider;
 	@MockBean private TokenBlacklistService tokenBlacklistService;
+	@MockBean private JwtProperties jwtProperties;
 
 	@Test
 	@DisplayName("토큰 재발급 성공")

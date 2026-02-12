@@ -12,7 +12,7 @@ import com.genesis.unipocket.expense.command.persistence.repository.FileReposito
 import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.expense.query.presentation.response.FileProcessingSummaryResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ImageProcessingSummaryResponse;
 import java.math.BigDecimal;

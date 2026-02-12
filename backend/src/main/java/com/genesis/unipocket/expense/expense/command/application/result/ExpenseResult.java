@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.common.dto;
+package com.genesis.unipocket.expense.expense.command.application.result;
 
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.common.enums.ExpenseSource;
@@ -7,8 +7,15 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record ExpenseDto(
-		Long id,
+/**
+ * <b>지출내역 결과 DTO</b>
+ * <p>Application -> Facade
+ *
+ * @author bluefishez
+ * @since 2026-02-10
+ */
+public record ExpenseResult(
+		Long expenseId,
 		Long accountBookId,
 		Long travelId,
 		Category category,
@@ -26,8 +33,8 @@ public record ExpenseDto(
 		String memo,
 		String cardNumber) {
 
-	public static ExpenseDto from(ExpenseEntity entity) {
-		return new ExpenseDto(
+	public static ExpenseResult from(ExpenseEntity entity) {
+		return new ExpenseResult(
 				entity.getExpenseId(),
 				entity.getAccountBookId(),
 				entity.getTravelId(),

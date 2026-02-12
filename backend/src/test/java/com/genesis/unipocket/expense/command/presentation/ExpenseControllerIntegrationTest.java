@@ -9,9 +9,9 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookC
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.auth.support.JwtTestHelper;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
@@ -117,7 +117,7 @@ class ExpenseControllerIntegrationTest {
 		assertThat(saved.getCategory()).isEqualTo(Category.FOOD);
 
 		assertThat(saved.getAccountBookId()).isEqualTo(accountBookId);
-		assertThat(saved.getStandardAmount()).isEqualByComparingTo(BigDecimal.valueOf(10000.00));
+		assertThat(saved.getBaseAmount()).isEqualByComparingTo(BigDecimal.valueOf(10000.00));
 	}
 
 	@Test

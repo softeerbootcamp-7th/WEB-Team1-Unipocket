@@ -1,11 +1,10 @@
 package com.genesis.unipocket.expense.command.presentation.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * <b>지출내역 생성 - 수기 DTO</b>
@@ -18,7 +17,7 @@ public record ExpenseManualCreateRequest(
 		@NotNull String merchantName,
 		Category category,
 		Long userCardId,
-		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") @NotNull LocalDateTime occurredAt,
+		@NotNull Instant occurredAt,
 		@NotNull BigDecimal localCurrencyAmount,
 		@NotNull CurrencyCode localCurrencyCode,
 		String memo,

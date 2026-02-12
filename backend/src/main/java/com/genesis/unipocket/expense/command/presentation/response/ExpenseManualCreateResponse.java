@@ -1,11 +1,11 @@
 package com.genesis.unipocket.expense.command.presentation.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 public record ExpenseManualCreateResponse(
 		Long expenseId,
@@ -17,7 +17,7 @@ public record ExpenseManualCreateResponse(
 		CurrencyCode localCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
-		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") LocalDateTime occurredAt) {
+		Instant occurredAt) {
 
 	public static ExpenseManualCreateResponse from(ExpenseResult result) {
 		return new ExpenseManualCreateResponse(
@@ -36,6 +36,6 @@ public record ExpenseManualCreateResponse(
 				result.localCurrencyCode(),
 				result.baseCurrencyAmount(),
 				result.baseCurrencyCode(),
-				result.occurredAt());
+				result.occurredAt().toInstant(ZoneOffset.UTC));
 	}
 }

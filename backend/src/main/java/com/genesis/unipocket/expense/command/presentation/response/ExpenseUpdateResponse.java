@@ -1,12 +1,12 @@
 package com.genesis.unipocket.expense.command.presentation.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 /**
  * <b>지출내역 수정 응답 DTO</b>
@@ -22,7 +22,7 @@ public record ExpenseUpdateResponse(
 		String displayMerchantName,
 		Category category,
 		PaymentMethodResponse paymentMethod,
-		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'") LocalDateTime occurredAt,
+		Instant occurredAt,
 		BigDecimal localCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		BigDecimal baseCurrencyAmount,
@@ -46,7 +46,7 @@ public record ExpenseUpdateResponse(
 						result.cardCompany(),
 						result.cardLabel(),
 						result.cardLastDigits()),
-				result.occurredAt(),
+				result.occurredAt().toInstant(ZoneOffset.UTC),
 				result.localCurrencyAmount(),
 				result.localCurrencyCode(),
 				result.baseCurrencyAmount(),

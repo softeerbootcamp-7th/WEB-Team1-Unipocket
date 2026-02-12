@@ -12,6 +12,8 @@ import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateR
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,13 +46,15 @@ public class ExpenseCommandFacade {
 
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 
+		LocalDateTime occurredAt = LocalDateTime.ofInstant(request.occurredAt(), ZoneOffset.UTC);
+
 		ExpenseCreateCommand command =
 				new ExpenseCreateCommand(
 						accountBookId,
 						request.merchantName(),
 						request.category(),
 						request.userCardId(),
-						request.occurredAt(),
+						occurredAt,
 						request.localCurrencyAmount(),
 						request.localCurrencyCode(),
 						baseCurrencyCode,
@@ -73,6 +77,8 @@ public class ExpenseCommandFacade {
 
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 
+		LocalDateTime occurredAt = LocalDateTime.ofInstant(request.occurredAt(), ZoneOffset.UTC);
+
 		ExpenseUpdateCommand command =
 				new ExpenseUpdateCommand(
 						expenseId,
@@ -81,7 +87,7 @@ public class ExpenseCommandFacade {
 						request.category(),
 						request.userCardId(),
 						request.memo(),
-						request.occurredAt(),
+						occurredAt,
 						request.localCurrencyAmount(),
 						request.localCurrencyCode(),
 						request.travelId(),

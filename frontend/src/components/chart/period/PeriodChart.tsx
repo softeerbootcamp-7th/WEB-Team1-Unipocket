@@ -4,7 +4,6 @@ import {
   CURRENCY_OPTIONS,
   PERIOD_ID,
   PERIOD_OPTIONS,
-  PERIOD_SKELETON_COLOR,
 } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
@@ -41,40 +40,20 @@ const PeriodChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   // TODO: API 연동 시에 스켈레톤은 mockData를 활용하도록 변경 필요
   const renderChart = () => {
     switch (selectedPeriod) {
-      case PERIOD_ID.MONTHLY:
-        return (
-          <PeriodMonthlyView
-            data={MOCK_MONTHLY_DATA}
-            isLoading={isLoading}
-            dotColor={isLoading ? PERIOD_SKELETON_COLOR : undefined}
-            lineColor={isLoading ? PERIOD_SKELETON_COLOR : undefined}
-          />
-        );
       case PERIOD_ID.WEEKLY:
         return (
           <PeriodWeeklyView
             data={MOCK_WEEKLY_DATA}
             countryCode={currentCountryCode ?? 'KR'}
             isLoading={isLoading}
-            barColor={isLoading ? PERIOD_SKELETON_COLOR : undefined}
           />
         );
       case PERIOD_ID.DAILY:
-        return (
-          <PeriodDailyView
-            data={MOCK_DAILY_DATA}
-            isLoading={isLoading}
-            barColor={isLoading ? PERIOD_SKELETON_COLOR : undefined}
-          />
-        );
+        return <PeriodDailyView data={MOCK_DAILY_DATA} isLoading={isLoading} />;
+      case PERIOD_ID.MONTHLY:
       default:
         return (
-          <PeriodMonthlyView
-            data={MOCK_MONTHLY_DATA}
-            isLoading={isLoading}
-            dotColor={isLoading ? PERIOD_SKELETON_COLOR : undefined}
-            lineColor={isLoading ? PERIOD_SKELETON_COLOR : undefined}
-          />
+          <PeriodMonthlyView data={MOCK_MONTHLY_DATA} isLoading={isLoading} />
         );
     }
   };

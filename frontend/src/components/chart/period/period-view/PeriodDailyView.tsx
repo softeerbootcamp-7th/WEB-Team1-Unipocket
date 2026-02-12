@@ -1,10 +1,11 @@
 import VerticalBar from '@/components/chart/charts/VerticalBar';
-import { type PeriodData } from '@/components/chart/chartType';
+import {
+  PERIOD_SKELETON_COLOR,
+  type PeriodData,
+} from '@/components/chart/chartType';
 
 interface PeriodDailyViewProps {
   data: PeriodData[];
-  barColor?: string;
-  bgColor?: string;
   animate?: boolean;
   isLoading?: boolean;
 }
@@ -14,12 +15,12 @@ interface PeriodDailyViewProps {
  */
 const PeriodDailyView = ({
   data,
-  barColor,
-  bgColor,
   animate = true,
   isLoading = false,
 }: PeriodDailyViewProps) => {
   const maxValue = Math.max(1, ...data.map((d) => d.value));
+
+  const barColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
 
   return (
     <div className="flex w-full flex-col gap-2.5">
@@ -31,7 +32,6 @@ const PeriodDailyView = ({
               value={item.value}
               maxValue={maxValue}
               barColor={barColor}
-              bgColor={bgColor}
               animate={!isLoading && animate}
             />
           </div>

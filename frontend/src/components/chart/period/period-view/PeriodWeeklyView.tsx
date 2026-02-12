@@ -1,5 +1,8 @@
 import HorizontalBar from '@/components/chart/charts/HorizontalBar';
-import { type PeriodData } from '@/components/chart/chartType';
+import {
+  PERIOD_SKELETON_COLOR,
+  type PeriodData,
+} from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 
 import type { CountryCode } from '@/data/countryCode';
@@ -7,8 +10,6 @@ import type { CountryCode } from '@/data/countryCode';
 interface PeriodWeeklyViewProps {
   data: PeriodData[];
   countryCode?: CountryCode;
-  barColor?: string;
-  bgColor?: string;
   animate?: boolean;
   isLoading?: boolean;
 }
@@ -19,12 +20,12 @@ interface PeriodWeeklyViewProps {
 const PeriodWeeklyView = ({
   data,
   countryCode = 'KR',
-  barColor,
-  bgColor,
   animate = true,
   isLoading = false,
 }: PeriodWeeklyViewProps) => {
   const maxValue = Math.max(1, ...data.map((d) => d.value));
+
+  const barColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
 
   return (
     <div className="flex flex-col items-center gap-9.5">
@@ -48,7 +49,6 @@ const PeriodWeeklyView = ({
                 value={item.value}
                 maxValue={maxValue}
                 barColor={barColor}
-                bgColor={bgColor}
                 animate={!isLoading && animate}
               />
 

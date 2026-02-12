@@ -1,10 +1,11 @@
 import LineChart from '@/components/chart/charts/LineChart';
-import { type PeriodData } from '@/components/chart/chartType';
+import {
+  PERIOD_SKELETON_COLOR,
+  type PeriodData,
+} from '@/components/chart/chartType';
 
 interface PeriodMonthlyViewProps {
   data: PeriodData[];
-  lineColor?: string;
-  dotColor?: string;
   animate?: boolean;
   isLoading?: boolean;
 }
@@ -14,12 +15,13 @@ interface PeriodMonthlyViewProps {
  */
 const PeriodMonthlyView = ({
   data,
-  lineColor,
-  dotColor,
   animate = true,
   isLoading = false,
 }: PeriodMonthlyViewProps) => {
   const values = data.map((d) => d.value);
+
+  const dotColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
+  const lineColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
 
   return (
     <div className="flex w-full flex-col gap-2">

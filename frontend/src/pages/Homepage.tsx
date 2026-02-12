@@ -1,3 +1,5 @@
+import { MOCK_WIDGET_DATA } from '@/components/chart/widget/mock';
+import { renderWidget } from '@/components/chart/widget/renderWidget';
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
 import { DataTable } from '@/components/data-table/DataTable';
@@ -20,37 +22,39 @@ import { useAccountBookStore } from '@/stores/useAccountBookStore';
 useAccountBookStore.getState().setAccountBook(mockData);
 
 const Homepage = () => {
-  const title = useAccountBookStore((state) => state.accountBook?.title);
-
   const data = getData();
   return (
-    <div className="flex flex-col px-30 pt-8">
-      <div className="mb-10 flex items-end gap-4">
-        <ExpenseCard
-          label="총 지출"
-          baseCountryCode="KR"
-          baseCountryAmount={1402432}
-          localCountryCode="US"
-          localCountryAmount={12232}
-        />
-        <Divider style="vertical" className="h-15" />
-        <ExpenseCard
-          label="이번 달 지출"
-          baseCountryCode="KR"
-          baseCountryAmount={200342}
-          localCountryCode="US"
-          localCountryAmount={12232}
-        />
-        <div className="flex-1" />
-        <Button variant="outlined" size="md">
-          위젯 편집하기
-        </Button>
+    <div className="flex flex-col gap-5 px-30 pt-8">
+      {/* widget section */}
+      <div className="flex flex-col gap-10">
+        <div className="flex items-end gap-4">
+          <ExpenseCard
+            label="총 지출"
+            baseCountryCode="KR"
+            baseCountryAmount={1402432}
+            localCountryCode="US"
+            localCountryAmount={12232}
+          />
+          <Divider style="vertical" className="h-15" />
+          <ExpenseCard
+            label="이번 달 지출"
+            baseCountryCode="KR"
+            baseCountryAmount={200342}
+            localCountryCode="US"
+            localCountryAmount={12232}
+          />
+          <div className="flex-1" />
+          <Button variant="outlined" size="md">
+            위젯 편집하기
+          </Button>
+        </div>
+        <div className="flex w-full justify-center gap-8">
+          {MOCK_WIDGET_DATA.map((widget) => (
+            <div key={widget.order}>{renderWidget(widget)}</div>
+          ))}
+        </div>
       </div>
-      <div className="border-label-alternative mb-5 flex h-70 items-center justify-center rounded-lg border border-dashed">
-        Widget area
-        <br />
-        {title && `가계부 명: ${title}가계부`}
-      </div>
+
       <div className="bg-background-normal relative rounded-2xl px-2 py-4 shadow">
         {/* <Icons.ChevronBack className="text-label-alternative absolute left-1/2 z-50 size-12 -translate-x-1/2 rotate-90" /> */}
         <DataTableProvider columns={columns} data={data}>

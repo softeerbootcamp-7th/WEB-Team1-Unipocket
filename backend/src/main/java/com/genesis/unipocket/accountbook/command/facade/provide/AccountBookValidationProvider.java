@@ -1,11 +1,11 @@
 package com.genesis.unipocket.accountbook.command.facade.provide;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.expense.common.port.dto.AccountBookInfo;
-import com.genesis.unipocket.expense.expense.command.facade.port.AccountBookInfoFetchService;
+import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
 package com.genesis.unipocket.widget.query.persistence;
 
-import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import jakarta.persistence.EntityManager;

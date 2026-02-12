@@ -40,8 +40,8 @@ public class AccountBookQueryRepository {
 								"SELECT new"
 									+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse("
 									+ " a.id, a.title, a.localCountryCode, a.baseCountryCode,"
-									+ " a.budget, a.budgetCreatedAt, null, a.startDate, a.endDate) FROM"
-									+ " AccountBookEntity a WHERE a.id = :id AND a.user.id ="
+									+ " a.budget, a.budgetCreatedAt, null, a.startDate, a.endDate)"
+									+ " FROM AccountBookEntity a WHERE a.id = :id AND a.user.id ="
 									+ " :userId",
 								AccountBookDetailResponse.class)
 						.setParameter("id", id)
@@ -62,10 +62,11 @@ public class AccountBookQueryRepository {
 		// Let's return basics and map in service, OR use CASE WHEN.
 
 		return em.createQuery(
-							"SELECT new"
+						"SELECT new"
 							+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse("
 							+ " a.id, a.title, CASE WHEN a.id = :mainId THEN true ELSE false END)"
-							+ " FROM AccountBookEntity a WHERE a.user.id = :userId ORDER BY a.bucketOrder ASC",
+							+ " FROM AccountBookEntity a WHERE a.user.id = :userId ORDER BY"
+							+ " a.bucketOrder ASC",
 						AccountBookSummaryResponse.class)
 				.setParameter("userId", userId)
 				.setParameter("mainId", mainAccountBookId)

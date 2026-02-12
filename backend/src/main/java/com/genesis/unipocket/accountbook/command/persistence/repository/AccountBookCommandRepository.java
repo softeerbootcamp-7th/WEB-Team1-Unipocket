@@ -16,7 +16,9 @@ public interface AccountBookCommandRepository extends JpaRepository<AccountBookE
 	List<String> findNamesStartingWith(
 			@Param("userId") UUID userId, @Param("titlePrefix") String titlePrefix);
 
-	@Query("SELECT COALESCE(MAX(a.bucketOrder), 0) FROM AccountBookEntity a WHERE a.user.id = :userId")
+	@Query(
+			"SELECT COALESCE(MAX(a.bucketOrder), 0) FROM AccountBookEntity a WHERE a.user.id ="
+					+ " :userId")
 	Integer findMaxBucketOrderByUserId(@Param("userId") UUID userId);
 
 	long countByUser_Id(UUID userId);

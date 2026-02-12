@@ -15,9 +15,7 @@ public record AccountBookUpdateRequest(
 		@NotBlank(message = CODE) @Size(max = 255, message = CODE) String title,
 		@NotNull(message = CODE) CountryCode localCountryCode,
 		@NotNull(message = CODE) CountryCode baseCountryCode,
-		@DecimalMin(value = "0.00", inclusive = true, message = CODE)
-				@Digits(integer = 17, fraction = 2, message = CODE)
-		BigDecimal budget,
+		@DecimalMin(value = "0.00", inclusive = true, message = CODE) @Digits(integer = 17, fraction = 2, message = CODE) BigDecimal budget,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate startDate,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate endDate) {
 

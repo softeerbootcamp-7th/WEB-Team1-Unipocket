@@ -10,7 +10,6 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -45,10 +44,10 @@ public class AccountBookQueryService {
 
 		CurrencyCode baseCurrencyCode = accountBookDetail.baseCountryCode().getCurrencyCode();
 		CurrencyCode localCurrencyCode = accountBookDetail.localCountryCode().getCurrencyCode();
-		LocalDateTime budgetCreatedAt =
-				accountBookDetail.budgetCreatedAt() != null
-						? accountBookDetail.budgetCreatedAt()
-						: LocalDateTime.now();
+		var budgetCreatedAt = accountBookDetail.budgetCreatedAt();
+		if (budgetCreatedAt == null) {
+			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_BUDGET_NOT_SET);
+		}
 		var exchangeRate =
 				exchangeRateService.getExchangeRate(
 						baseCurrencyCode, localCurrencyCode, budgetCreatedAt);
@@ -63,10 +62,7 @@ public class AccountBookQueryService {
 	public List<AccountBookSummaryResponse> getAccountBooks(String userId) {
 		UUID userUuid = UUID.fromString(userId);
 		Long mainAccountBookId =
-				userRepository
-						.findById(userUuid)
-						.map(user -> user.getMainBucketId())
-						.orElse(0L);
+				userRepository.findById(userUuid).map(user -> user.getMainBucketId()).orElse(0L);
 		return repository.findAllByUserId(userUuid, mainAccountBookId);
 	}
 }

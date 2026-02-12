@@ -49,7 +49,9 @@ public class AccountBookCommandService {
 				getUniqueTitle(command.userId(), command.userName() + DEFAULT_NAME_SUFFIX);
 		boolean isFirstAccountBook = repository.countByUser_Id(command.userId()) == 0;
 		int bucketOrder =
-				isFirstAccountBook ? 0 : repository.findMaxBucketOrderByUserId(command.userId()) + 1;
+				isFirstAccountBook
+						? 0
+						: repository.findMaxBucketOrderByUserId(command.userId()) + 1;
 
 		AccountBookCreateArgs args =
 				new AccountBookCreateArgs(
@@ -89,7 +91,8 @@ public class AccountBookCommandService {
 	}
 
 	@Transactional
-	public AccountBookBudgetUpdateResult updateBudget(Long accountBookId, UUID userId, BigDecimal budget) {
+	public AccountBookBudgetUpdateResult updateBudget(
+			Long accountBookId, UUID userId, BigDecimal budget) {
 		AccountBookEntity entity = findAndVerifyOwnership(accountBookId, userId);
 		entity.updateBudget(budget);
 		validator.validate(entity);

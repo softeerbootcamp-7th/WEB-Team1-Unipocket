@@ -331,7 +331,11 @@ public class AccountBookCommandServiceTest {
 
 	private UserEntity createUser(UUID id, Long mainBucketId) {
 		UserEntity user =
-				UserEntity.builder().name("tester").email("t@t.com").mainBucketId(mainBucketId).build();
+				UserEntity.builder()
+						.name("tester")
+						.email("t@t.com")
+						.mainBucketId(mainBucketId)
+						.build();
 		try {
 			java.lang.reflect.Field idField = UserEntity.class.getDeclaredField("id");
 			idField.setAccessible(true);

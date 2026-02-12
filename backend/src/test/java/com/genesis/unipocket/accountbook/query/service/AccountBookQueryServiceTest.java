@@ -80,7 +80,8 @@ class AccountBookQueryServiceTest {
 	void getAccountBooks_Success() {
 		AccountBookSummaryResponse response1 = new AccountBookSummaryResponse(1L, "Title1", true);
 		AccountBookSummaryResponse response2 = new AccountBookSummaryResponse(2L, "Title2", false);
-		UserEntity user = UserEntity.builder().name("tester").email("t@t.com").mainBucketId(1L).build();
+		UserEntity user =
+				UserEntity.builder().name("tester").email("t@t.com").mainBucketId(1L).build();
 		given(userRepository.findById(UUID.fromString(userId))).willReturn(Optional.of(user));
 		given(repository.findAllByUserId(UUID.fromString(userId), 1L))
 				.willReturn(List.of(response1, response2));
@@ -150,7 +151,9 @@ class AccountBookQueryServiceTest {
 				.willReturn(Optional.of(accountBookDetailResponse));
 		given(
 						exchangeRateService.getExchangeRate(
-								eq(CurrencyCode.KRW), eq(CurrencyCode.USD), any(LocalDateTime.class)))
+								eq(CurrencyCode.KRW),
+								eq(CurrencyCode.USD),
+								any(LocalDateTime.class)))
 				.willReturn(BigDecimal.valueOf(0.00075));
 
 		AccountBookExchangeRateResponse result =
@@ -160,5 +163,32 @@ class AccountBookQueryServiceTest {
 		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
 		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
 		assertThat(result.budgetCreatedAt()).isEqualTo(LocalDateTime.of(2026, 2, 12, 8, 0, 0));
+	}
+
+	@Test
+	@DisplayName("가계부 기준/상대 국가 환율 조회 - 실패 (예산 미설정)")
+	void getAccountBookExchangeRate_Fail_WhenBudgetNotSet() {
+		Long accountBookId = 1L;
+		AccountBookDetailResponse accountBookDetailResponse =
+				new AccountBookDetailResponse(
+						accountBookId,
+						"Title",
+						CountryCode.US,
+						CountryCode.KR,
+						null,
+						null,
+						List.of(),
+						LocalDate.now(),
+						LocalDate.now());
+
+		given(repository.findDetailById(UUID.fromString(userId), accountBookId))
+				.willReturn(Optional.of(accountBookDetailResponse));
+
+		assertThatThrownBy(
+						() ->
+								accountBookQueryService.getAccountBookExchangeRate(
+										userId, accountBookId))
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.ACCOUNT_BOOK_BUDGET_NOT_SET);
 	}
 }

@@ -2,8 +2,8 @@ package com.genesis.unipocket.accountbook.command.persistence.entity;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
-import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record AccountBookCreateArgs(
 		UserEntity user,

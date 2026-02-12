@@ -102,8 +102,7 @@ public class AccountBookEntity extends BaseEntity {
 	}
 
 	public void resetBudget() {
-		this.budget = null;
-		this.budgetCreatedAt = null;
+		updateBudget(null);
 	}
 
 	public boolean isBudgetSet() {

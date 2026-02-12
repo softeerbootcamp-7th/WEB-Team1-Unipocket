@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 interface VerticalGridProps {
   steps?: number;
   labels: (number | string)[];
-  positions?: number[]; // Custom positions in percentage (0-100)
+  positions?: number[]; // 커스텀 위치 배열
   className?: string;
 }
 
@@ -13,7 +13,6 @@ const VerticalGrid = ({
   positions,
   className,
 }: VerticalGridProps) => {
-  // Use custom positions if provided, otherwise use equal steps
   const gridPositions =
     positions ||
     (steps !== undefined

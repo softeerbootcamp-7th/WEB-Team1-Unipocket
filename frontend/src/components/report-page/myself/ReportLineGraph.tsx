@@ -1,4 +1,4 @@
-import ComparisonLineChart from '@/components/report-page/myself/ComparisonLineChart';
+import ComparisonLineChart from '@/components/report-page/myself/ReportLineChart';
 import ReportLegend from '@/components/report-page/ReportLegend';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 

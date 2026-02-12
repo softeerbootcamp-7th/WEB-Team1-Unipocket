@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.common.validator;
+package com.genesis.unipocket.expense.common.port;
 
 /**
  * <b>가계부 소유권 검증 포트</b>

@@ -1,6 +1,6 @@
-package com.genesis.unipocket.expense.command.facade.port;
+package com.genesis.unipocket.expense.expense.command.facade.port;
 
-import com.genesis.unipocket.expense.common.dto.AccountBookInfo;
+import com.genesis.unipocket.expense.common.port.dto.AccountBookInfo;
 
 /**
  * <b>가계부 정보 조회 포트</b>

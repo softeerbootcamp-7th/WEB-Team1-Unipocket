@@ -14,6 +14,8 @@ import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseE
 import com.genesis.unipocket.expense.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +50,7 @@ class ExpenseControllerIntegrationTest {
 	@Autowired private ExpenseRepository expenseRepository;
 
 	@Autowired private AccountBookCommandRepository accountBookRepository;
+	@Autowired private UserCommandRepository userRepository;
 
 	@Autowired private JwtTestHelper jwtTestHelper;
 
@@ -56,12 +59,21 @@ class ExpenseControllerIntegrationTest {
 	@BeforeEach
 	void setUp() {
 		// Create an AccountBook for testing
+		UserEntity user =
+				userRepository.save(
+						UserEntity.builder()
+								.email("test-user@unipocket.com")
+								.name("test-user")
+								.mainBucketId(1L)
+								.build());
 		AccountBookCreateArgs args =
 				new AccountBookCreateArgs(
-						"00000000-0000-0000-0000-000000000001",
+						user,
 						"Test Account Book",
 						CountryCode.KR,
 						CountryCode.KR,
+						1,
+						null,
 						LocalDate.of(2026, 1, 1),
 						LocalDate.of(2026, 12, 31));
 		AccountBookEntity accountBook = AccountBookEntity.create(args);

@@ -15,10 +15,15 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
+import com.genesis.unipocket.expense.expense.command.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +40,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class AccountBookCommandServiceTest {
 
 	@Mock private AccountBookCommandRepository repository;
+	@Mock private UserCommandRepository userRepository;
 	@Mock private AccountBookValidator validator;
+	@Mock private ExchangeRateService exchangeRateService;
 
 	@InjectMocks private AccountBookCommandService accountBookCommandService;
 
@@ -52,7 +59,10 @@ public class AccountBookCommandServiceTest {
 
 		CreateAccountBookCommand command = CreateAccountBookCommand.of(userId, username, req);
 
+		UserEntity user = createUser(userId, 0L);
+		given(userRepository.findById(userId)).willReturn(Optional.of(user));
 		given(repository.findNamesStartingWith(any(), any())).willReturn(Collections.emptyList());
+		given(repository.countByUser_Id(userId)).willReturn(0L);
 		given(repository.save(any(AccountBookEntity.class)))
 				.willAnswer(
 						invocation -> {
@@ -76,6 +86,7 @@ public class AccountBookCommandServiceTest {
 		assertThat(resultId).isEqualTo(1L);
 		verify(validator).validate(any(AccountBookEntity.class));
 		verify(repository).save(any(AccountBookEntity.class));
+		assertThat(user.getMainBucketId()).isEqualTo(1L);
 	}
 
 	@Test
@@ -89,8 +100,12 @@ public class AccountBookCommandServiceTest {
 		CreateAccountBookCommand command = CreateAccountBookCommand.of(userId, username, req);
 
 		String baseTitle = username + "의 가계부";
-		given(repository.findNamesStartingWith(userId.toString(), baseTitle))
+		UserEntity user = createUser(userId, 1L);
+		given(userRepository.findById(userId)).willReturn(Optional.of(user));
+		given(repository.findNamesStartingWith(userId, baseTitle))
 				.willReturn(List.of(baseTitle + "1", baseTitle + "2"));
+		given(repository.countByUser_Id(userId)).willReturn(2L);
+		given(repository.findMaxBucketOrderByUserId(userId)).willReturn(2);
 
 		given(repository.save(any(AccountBookEntity.class)))
 				.willAnswer(
@@ -126,7 +141,7 @@ public class AccountBookCommandServiceTest {
 						"New Title",
 						CountryCode.JP,
 						CountryCode.KR,
-						1000L,
+						BigDecimal.valueOf(1000.00),
 						LocalDate.of(2023, 2, 1),
 						LocalDate.of(2023, 11, 30));
 
@@ -135,10 +150,12 @@ public class AccountBookCommandServiceTest {
 		AccountBookEntity entity =
 				AccountBookEntity.create(
 						new AccountBookCreateArgs(
-								userId.toString(),
+								createUser(userId, 1L),
 								"Old Title",
 								CountryCode.US,
 								CountryCode.KR,
+								1,
+								null,
 								LocalDate.of(2023, 1, 1),
 								LocalDate.of(2023, 12, 31)));
 
@@ -168,7 +185,7 @@ public class AccountBookCommandServiceTest {
 						"Title",
 						CountryCode.US,
 						CountryCode.KR,
-						1000L,
+						BigDecimal.valueOf(1000.00),
 						LocalDate.now(),
 						LocalDate.now());
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
@@ -184,13 +201,12 @@ public class AccountBookCommandServiceTest {
 	@DisplayName("가계부 수정 - 실패 (권한 없음)")
 	void update_Unauthorized() {
 		Long accountBookId = 1L;
-		String otherUserId = "otherUser";
 		AccountBookUpdateRequest req =
 				new AccountBookUpdateRequest(
 						"Title",
 						CountryCode.US,
 						CountryCode.KR,
-						1000L,
+						BigDecimal.valueOf(1000.00),
 						LocalDate.now(),
 						LocalDate.now());
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
@@ -198,10 +214,12 @@ public class AccountBookCommandServiceTest {
 		AccountBookEntity entity =
 				AccountBookEntity.create(
 						new AccountBookCreateArgs(
-								otherUserId,
+								createUser(UUID.randomUUID(), 1L),
 								"Title",
 								CountryCode.US,
 								CountryCode.KR,
+								1,
+								null,
 								LocalDate.now(),
 								LocalDate.now()));
 
@@ -221,10 +239,12 @@ public class AccountBookCommandServiceTest {
 		AccountBookEntity entity =
 				AccountBookEntity.create(
 						new AccountBookCreateArgs(
-								userId.toString(),
+								createUser(userId, 1L),
 								"Title",
 								CountryCode.US,
 								CountryCode.KR,
+								1,
+								null,
 								LocalDate.now(),
 								LocalDate.now()));
 
@@ -253,10 +273,12 @@ public class AccountBookCommandServiceTest {
 		AccountBookEntity entity =
 				AccountBookEntity.create(
 						new AccountBookCreateArgs(
-								userId.toString(),
+								createUser(userId, 1L),
 								"Old Title",
 								CountryCode.US,
 								CountryCode.KR,
+								1,
+								BigDecimal.valueOf(1000.00),
 								LocalDate.of(2023, 1, 1),
 								LocalDate.of(2023, 12, 31)));
 
@@ -273,5 +295,54 @@ public class AccountBookCommandServiceTest {
 		// then
 		assertThat(entity.getBudget()).isNull();
 		verify(validator).validate(entity);
+	}
+
+	@Test
+	@DisplayName("예산 설정 - 환율 반환")
+	void updateBudget_ReturnExchangeRate() throws Exception {
+		Long accountBookId = 1L;
+		AccountBookEntity entity =
+				AccountBookEntity.create(
+						new AccountBookCreateArgs(
+								createUser(userId, 1L),
+								"Old Title",
+								CountryCode.JP,
+								CountryCode.KR,
+								1,
+								null,
+								LocalDate.of(2023, 1, 1),
+								LocalDate.of(2023, 12, 31)));
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity, accountBookId);
+
+		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
+		given(exchangeRateService.getExchangeRate(any(), any(), any()))
+				.willReturn(BigDecimal.valueOf(0.11));
+
+		var result =
+				accountBookCommandService.updateBudget(
+						accountBookId, userId, BigDecimal.valueOf(1000.00));
+
+		assertThat(result.exchangeRate()).isEqualByComparingTo("0.11");
+		assertThat(result.budget()).isEqualByComparingTo("1000.00");
+		assertThat(result.budgetCreatedAt()).isBeforeOrEqualTo(LocalDateTime.now());
+	}
+
+	private UserEntity createUser(UUID id, Long mainBucketId) {
+		UserEntity user =
+				UserEntity.builder()
+						.name("tester")
+						.email("t@t.com")
+						.mainBucketId(mainBucketId)
+						.build();
+		try {
+			java.lang.reflect.Field idField = UserEntity.class.getDeclaredField("id");
+			idField.setAccessible(true);
+			idField.set(user, id);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return user;
 	}
 }

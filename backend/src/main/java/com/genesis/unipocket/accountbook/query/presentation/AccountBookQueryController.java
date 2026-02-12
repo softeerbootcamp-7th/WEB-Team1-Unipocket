@@ -1,6 +1,7 @@
 package com.genesis.unipocket.accountbook.query.presentation;
 
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
 import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
@@ -33,5 +34,13 @@ public class AccountBookQueryController {
 			@LoginUser UUID userId, @PathVariable Long accountBookId) {
 		return ResponseEntity.ok(
 				accountBookQueryService.getAccountBookDetail(userId.toString(), accountBookId));
+	}
+
+	@GetMapping("/{accountBookId}/exchange-rate")
+	public ResponseEntity<AccountBookExchangeRateResponse> getAccountBookExchangeRate(
+			@LoginUser UUID userId, @PathVariable Long accountBookId) {
+		return ResponseEntity.ok(
+				accountBookQueryService.getAccountBookExchangeRate(
+						userId.toString(), accountBookId));
 	}
 }

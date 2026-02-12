@@ -37,7 +37,7 @@ public class AccountBookValidationProvider
 		var accountBook = findAndValidate(accountBookId, userId);
 		return new AccountBookInfo(
 				accountBook.getId(),
-				accountBook.getUserId(),
+				accountBook.getUser().getId().toString(),
 				accountBook.getBaseCountryCode(),
 				accountBook.getLocalCountryCode());
 	}
@@ -53,7 +53,7 @@ public class AccountBookValidationProvider
 						.findById(accountBookId)
 						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 
-		if (!accountBook.getUserId().equals(userId)) {
+		if (!accountBook.getUser().getId().toString().equals(userId)) {
 			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);
 		}
 

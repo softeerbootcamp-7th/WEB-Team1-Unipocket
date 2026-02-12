@@ -96,6 +96,8 @@ public enum ErrorCode {
 			"현지 통화와 기준 통화는 달라야 합니다."),
 	ACCOUNT_BOOK_INVALID_BUDGET(
 			HttpStatus.BAD_REQUEST, "400_ACCOUNT_BOOK_INVALID_BUDGET", "예산은 0 이상이어야 합니다."),
+	ACCOUNT_BOOK_BUDGET_NOT_SET(
+			HttpStatus.BAD_REQUEST, "400_ACCOUNT_BOOK_BUDGET_NOT_SET", "해당 가계부에 예산이 설정되어 있지 않습니다."),
 	ACCOUNT_BOOK_UNAUTHORIZED_ACCESS(
 			HttpStatus.FORBIDDEN, "403_ACCOUNT_BOOK_UNAUTHORIZED_ACCESS", "해당 가계부에 접근할 권한이 없습니다."),
 

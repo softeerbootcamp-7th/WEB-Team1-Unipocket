@@ -4,6 +4,7 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
@@ -34,8 +35,8 @@ public class AccountBookValidator {
 		}
 	}
 
-	private void validateBudget(Long budget) {
-		if (budget != null && budget < 0) {
+	private void validateBudget(BigDecimal budget) {
+		if (budget != null && budget.compareTo(BigDecimal.ZERO) < 0) {
 			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_INVALID_BUDGET);
 		}
 	}

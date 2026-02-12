@@ -82,4 +82,12 @@ public class UserEntity {
 	public void deactivate() {
 		this.status = UserStatus.INACTIVE;
 	}
+
+	public void updateMainBucketId(Long mainBucketId) {
+		this.mainBucketId = mainBucketId;
+	}
+
+	public boolean hasMainBucket() {
+		return this.mainBucketId != null && this.mainBucketId > 0L;
+	}
 }

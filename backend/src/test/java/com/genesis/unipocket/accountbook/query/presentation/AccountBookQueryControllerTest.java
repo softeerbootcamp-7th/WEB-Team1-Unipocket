@@ -6,13 +6,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
 import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.servlet.http.Cookie;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -71,7 +74,8 @@ class AccountBookQueryControllerTest {
 								"메인 가계부",
 								CountryCode.US,
 								CountryCode.KR,
-								300000L,
+								BigDecimal.valueOf(300000),
+								LocalDateTime.of(2026, 1, 1, 9, 0, 0),
 								List.of(),
 								LocalDate.of(2026, 1, 1),
 								LocalDate.of(2026, 1, 31)));
@@ -83,7 +87,35 @@ class AccountBookQueryControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("메인 가계부"))
-				.andExpect(jsonPath("$.budget").value(300000));
+				.andExpect(jsonPath("$.budget").value("300000.00"))
+				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-01-01T09:00:00"));
+	}
+
+	@Test
+	@DisplayName("가계부 기준/상대 국가 환율 조회 성공")
+	void getAccountBookExchangeRate_Success() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 1L;
+		LocalDateTime quotedAt = LocalDateTime.of(2026, 2, 12, 11, 30, 0);
+
+		given(accountBookQueryService.getAccountBookExchangeRate(userId.toString(), accountBookId))
+				.willReturn(
+						new AccountBookExchangeRateResponse(
+								CountryCode.KR,
+								CountryCode.JP,
+								BigDecimal.valueOf(0.11),
+								quotedAt));
+		mockAuthentication(accessToken, userId);
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+								.cookie(new Cookie("access_token", accessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
+				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-12T11:30:00"));
 	}
 
 	private void mockAuthentication(String accessToken, UUID userId) {

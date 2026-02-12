@@ -70,4 +70,19 @@ public class WidgetQueryRepository {
 				.setParameter("income", Category.INCOME)
 				.getResultList();
 	}
+
+	// ── CURRENCY ────────────────────────────────────────
+
+	public List<Object[]> findCurrencySpentByAccountBookId(Long accountBookId) {
+		return em.createQuery(
+						"SELECT e.exchangeInfo.localCurrencyCode,"
+								+ " SUM(e.exchangeInfo.baseCurrencyAmount)"
+								+ " FROM ExpenseEntity e"
+								+ " WHERE e.accountBookId = :accountBookId"
+								+ " GROUP BY e.exchangeInfo.localCurrencyCode"
+								+ " ORDER BY SUM(e.exchangeInfo.baseCurrencyAmount) DESC",
+						Object[].class)
+				.setParameter("accountBookId", accountBookId)
+				.getResultList();
+	}
 }

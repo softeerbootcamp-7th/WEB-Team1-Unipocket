@@ -99,4 +99,75 @@ public class WidgetQueryService {
 
 		return new CategoryWidgetResponse(totalAmount, countryCode, items);
 	}
+
+	public CurrencyWidgetResponse getCurrencyWidget(UUID userId, Long accountBookId) {
+		userAccountBookValidator.validateUserAccountBook(userId, accountBookId);
+
+		List<Object[]> rows = widgetQueryRepository.findCurrencySpentByAccountBookId(accountBookId);
+
+		BigDecimal totalAmount =
+				rows.stream()
+						.map(row -> toBigDecimal(row[1]))
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		List<CurrencyItem> items =
+				rows.stream()
+						.map(
+								row -> {
+									CurrencyCode code = (CurrencyCode) row[0];
+									BigDecimal amount = toBigDecimal(row[1]);
+									int percent = calculatePercent(amount, totalAmount);
+									return new CurrencyItem(code, percent);
+								})
+						.toList();
+
+		return new CurrencyWidgetResponse(items.size(), items);
+	}
+
+	private int calculatePercent(BigDecimal amount, BigDecimal total) {
+		if (total.compareTo(BigDecimal.ZERO) == 0) {
+			return 0;
+		}
+		return amount.multiply(BigDecimal.valueOf(100))
+				.divide(total, 0, RoundingMode.HALF_UP)
+				.intValue();
+	}
+
+	private BigDecimal toBigDecimal(Object value) {
+		if (value instanceof BigDecimal bd) {
+			return bd.setScale(2, RoundingMode.DOWN);
+		}
+		return new BigDecimal(value.toString()).setScale(2, RoundingMode.DOWN);
+	}
+
+	// 퍼센테이지의 합을 100으로 맞춰주는 메서드
+	private List<CategoryItem> buildCategoryItemsWithPercentFix(
+			List<Object[]> rows, BigDecimal totalAmount) {
+		if (rows.isEmpty()) {
+			return List.of();
+		}
+		if (totalAmount.compareTo(BigDecimal.ZERO) == 0) {
+			return rows.stream()
+					.map(r -> new CategoryItem((Category) r[0], toBigDecimal(r[1]), 0))
+					.toList();
+		}
+
+		List<CategoryItem> items = new java.util.ArrayList<>(rows.size());
+		int percentSum = 0;
+
+		for (int i = 0; i < rows.size(); i++) {
+			Category category = (Category) rows.get(i)[0];
+			BigDecimal amount = toBigDecimal(rows.get(i)[1]);
+
+			int percent;
+			if (i < rows.size() - 1) {
+				percent = calculatePercent(amount, totalAmount);
+				percentSum += percent;
+			} else {
+				percent = Math.max(0, 100 - percentSum);
+			}
+			items.add(new CategoryItem(category, amount, percent));
+		}
+		return items;
+	}
 }

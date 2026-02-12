@@ -35,9 +35,7 @@ public class ExpenseQueryController {
 
 	private final ExpenseQueryService expenseQueryService;
 
-	@Operation(
-			summary = "지출내역 상세 조회 API",
-			description = "하나의 지출내역에 대한 조회를 합니다.")
+	@Operation(summary = "지출내역 상세 조회 API", description = "하나의 지출내역에 대한 조회를 합니다.")
 	@GetMapping("/account-books/{accountBookId}/expenses/{expenseId}")
 	public ResponseEntity<ExpenseResponse> getExpense(
 			@LoginUser UUID userId,
@@ -49,9 +47,7 @@ public class ExpenseQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(
-			summary = "지출내역 조회 및 필터링 API",
-			description = "지출내역 리스트를 조회합니다. 필터링 및 정렬을 할 수도 있습니다.")
+	@Operation(summary = "지출내역 조회 및 필터링 API", description = "지출내역 리스트를 조회합니다. 필터링 및 정렬을 할 수도 있습니다.")
 	@GetMapping("/account-books/{accountBookId}/expenses")
 	public ResponseEntity<ExpenseListResponse> getExpenses(
 			@LoginUser UUID userId,

@@ -22,11 +22,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserCommandService {
+
+	private static final String TEMP_USER_NAME_PREFIX = "user_";
 
 	private final UserCommandRepository userRepository;
 	private final UserCardCommandRepository userCardRepository;
@@ -60,7 +63,7 @@ public class UserCommandService {
 		UserEntity user =
 				UserEntity.builder()
 						.email(command.email())
-						.name(command.name())
+						.name(resolveName(command))
 						.profileImgUrl(command.profileImageUrl())
 						.build();
 
@@ -70,6 +73,13 @@ public class UserCommandService {
 				SocialAuthCreate.of(user.getId(), providerType, providerId, command.email()));
 
 		return user.getId();
+	}
+
+	private String resolveName(RegisterUserCommand command) {
+		if (StringUtils.hasText(command.name())) {
+			return command.name();
+		}
+		return TEMP_USER_NAME_PREFIX + UUID.randomUUID().toString().substring(0, 8);
 	}
 
 	@Transactional

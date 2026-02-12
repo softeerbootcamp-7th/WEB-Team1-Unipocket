@@ -5,7 +5,7 @@ import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookD
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookQueryResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
-import com.genesis.unipocket.expense.command.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;

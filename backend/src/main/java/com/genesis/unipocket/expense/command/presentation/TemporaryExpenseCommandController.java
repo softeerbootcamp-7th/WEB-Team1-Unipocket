@@ -21,7 +21,8 @@ import com.genesis.unipocket.expense.command.presentation.response.ParseFileResp
 import com.genesis.unipocket.expense.command.presentation.response.PresignedUrlResponse;
 import com.genesis.unipocket.expense.command.presentation.response.RegisterUploadedFileResponse;
 import com.genesis.unipocket.expense.command.presentation.response.TemporaryExpenseUpdateResponse;
-import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -55,8 +56,7 @@ public class TemporaryExpenseCommandController {
 	@PostMapping("/temporary-expenses/{tempExpenseId}/convert")
 	public ResponseEntity<ApiResponse<ConvertTemporaryExpenseResponse>> convertToExpense(
 			@PathVariable Long tempExpenseId) {
-		com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity expense =
-				conversionService.convertToExpense(tempExpenseId);
+		ExpenseEntity expense = conversionService.convertToExpense(tempExpenseId);
 
 		ConvertTemporaryExpenseResponse response =
 				new ConvertTemporaryExpenseResponse(

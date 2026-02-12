@@ -111,6 +111,12 @@ public enum ErrorCode {
 	EXPENSE_INVALID_CURRENCY(
 			HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_CURRENCY", "유효하지 않은 통화 코드입니다."),
 	EXPENSE_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_AMOUNT", "금액은 0보다 커야 합니다."),
+	EXPENSE_INVALID_SORT(
+			HttpStatus.BAD_REQUEST,
+			"400_EXPENSE_INVALID_SORT",
+			"유효하지 않은 정렬 기준입니다. ( occurredAt,desc(asc) baseCurrencyAmount,desc(asc) )"),
+
+	// 환율 관련 에러
 	EXCHANGE_RATE_API_ERROR(
 			HttpStatus.SERVICE_UNAVAILABLE,
 			"503_EXCHANGE_RATE_API_ERROR",

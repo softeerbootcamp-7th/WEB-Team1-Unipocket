@@ -1,8 +1,11 @@
 package com.genesis.unipocket.accountbook.command.facade.provide;
 
-import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
-import com.genesis.unipocket.expense.common.dto.AccountBookInfo;
-import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.port.dto.AccountBookInfo;
+import com.genesis.unipocket.expense.expense.command.facade.port.AccountBookInfoFetchService;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,7 +35,11 @@ public class AccountBookValidationProvider
 	@Override
 	public AccountBookInfo getAccountBook(Long accountBookId, String userId) {
 		var accountBook = findAndValidate(accountBookId, userId);
-		return new AccountBookInfo(accountBook.getBaseCountryCode());
+		return new AccountBookInfo(
+				accountBook.getId(),
+				accountBook.getUserId(),
+				accountBook.getBaseCountryCode(),
+				accountBook.getLocalCountryCode());
 	}
 
 	@Override
@@ -40,23 +47,16 @@ public class AccountBookValidationProvider
 		findAndValidate(accountBookId, userId);
 	}
 
-	private com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity
-			findAndValidate(Long accountBookId, String userId) {
+	private AccountBookEntity findAndValidate(Long accountBookId, String userId) {
 		var accountBook =
 				accountBookRepository
 						.findById(accountBookId)
-						.orElseThrow(
-								() ->
-										new com.genesis.unipocket.global.exception
-												.BusinessException(
-												com.genesis.unipocket.global.exception.ErrorCode
-														.ACCOUNT_BOOK_NOT_FOUND));
+						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 
 		if (!accountBook.getUserId().equals(userId)) {
-			throw new com.genesis.unipocket.global.exception.BusinessException(
-					com.genesis.unipocket.global.exception.ErrorCode
-							.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);
+			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);
 		}
+
 		return accountBook;
 	}
 }

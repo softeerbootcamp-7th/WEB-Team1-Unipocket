@@ -3,6 +3,7 @@ package com.genesis.unipocket.accountbook.query.persistence.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record AccountBookDetailResponse(
@@ -11,6 +12,8 @@ public record AccountBookDetailResponse(
 		CountryCode localCountryCode,
 		CountryCode baseCountryCode,
 		Long budget,
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+				LocalDateTime budgetCreatedAt,
 		List<?> tempExpenseBatchIds,
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate startDate,
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate endDate) {}

@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,6 +49,9 @@ public class AccountBookEntity extends BaseEntity {
 	@Column(nullable = true)
 	private Long budget;
 
+	@Column(name = "budget_created_at")
+	private LocalDateTime budgetCreatedAt;
+
 	@Column(name = "start_date", nullable = false, columnDefinition = "DATE")
 	private LocalDate startDate;
 
@@ -83,10 +87,12 @@ public class AccountBookEntity extends BaseEntity {
 
 	public void updateBudget(Long budget) {
 		this.budget = budget;
+		this.budgetCreatedAt = budget == null ? null : LocalDateTime.now();
 	}
 
 	public void resetBudget() {
 		this.budget = null;
+		this.budgetCreatedAt = null;
 	}
 
 	public boolean isBudgetSet() {

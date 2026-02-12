@@ -39,8 +39,8 @@ public class AccountBookQueryRepository {
 								"SELECT new"
 									+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse("
 									+ " a.id, a.title, a.localCountryCode, a.baseCountryCode,"
-									+ " a.budget, null, a.startDate, a.endDate) FROM"
-									+ " AccountBookEntity a WHERE a.id = :id AND a.userId ="
+									+ " a.budget, a.budgetCreatedAt, null, a.startDate, a.endDate)"
+									+ " FROM AccountBookEntity a WHERE a.id = :id AND a.userId ="
 									+ " :userId",
 								AccountBookDetailResponse.class)
 						.setParameter("id", id)

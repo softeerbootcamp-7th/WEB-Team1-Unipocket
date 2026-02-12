@@ -57,6 +57,42 @@ public class WidgetQueryService {
 				.build();
 	}
 
+	public PeriodWidgetResponse getPeriodWidget(
+			UUID userId, Long accountBookId, Period periodType) {
+		userAccountBookValidator.validateUserAccountBook(userId, accountBookId);
+
+		CountryCode countryCode =
+				widgetQueryRepository.getAccountBookCountryCode(accountBookId, CurrencyType.BASE);
+
+		List<Object[]> rows;
+		switch (periodType) {
+			case DAILY -> rows = widgetQueryRepository.findDailySpentByAccountBookId(accountBookId);
+			case WEEKLY ->
+					rows = widgetQueryRepository.findWeeklySpentByAccountBookId(accountBookId);
+			case MONTHLY ->
+					rows = widgetQueryRepository.findMonthlySpentByAccountBookId(accountBookId);
+			default -> throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+
+		List<PeriodItem> items;
+		if (WEEKLY.equals(periodType)) {
+			items =
+					rows.stream()
+							.map(
+									row ->
+											new PeriodItem(
+													row[0] + "-W" + row[1], toBigDecimal(row[2])))
+							.toList();
+		} else {
+			items =
+					rows.stream()
+							.map(row -> new PeriodItem(row[0].toString(), toBigDecimal(row[1])))
+							.toList();
+		}
+
+		return new PeriodWidgetResponse(countryCode, items.size(), items);
+	}
+
 	public CategoryWidgetResponse getCategoryWidget(UUID userId, Long accountBookId) {
 		userAccountBookValidator.validateUserAccountBook(userId, accountBookId);
 

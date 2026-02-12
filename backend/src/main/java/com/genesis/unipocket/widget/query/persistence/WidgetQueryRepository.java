@@ -55,6 +55,73 @@ public class WidgetQueryRepository {
 				.getSingleResult();
 	}
 
+	// ── PERIOD ──────────────────────────────────────────
+
+	public List<Object[]> findDailySpentByAccountBookId(Long accountBookId) {
+		List<Object[]> result =
+				em.createQuery(
+								"SELECT CAST(e.occurredAt AS DATE), "
+										+ "SUM(e.exchangeInfo.baseCurrencyAmount) "
+										+ "FROM ExpenseEntity e "
+										+ "WHERE e.accountBookId = :accountBookId "
+										+ "GROUP BY CAST(e.occurredAt AS DATE) "
+										+ "ORDER BY CAST(e.occurredAt AS DATE) DESC",
+								Object[].class)
+						.setParameter("accountBookId", accountBookId)
+						.setMaxResults(7)
+						.getResultList();
+
+		Collections.reverse(result);
+		return result;
+	}
+
+	public List<Object[]> findWeeklySpentByAccountBookId(Long accountBookId) {
+		List<Object[]> result =
+				em.createQuery(
+								"SELECT YEAR(e.occurredAt), MONTH(e.occurredAt), FUNCTION('WEEK',"
+									+ " e.occurredAt), SUM(e.exchangeInfo.baseCurrencyAmount) FROM"
+									+ " ExpenseEntity e WHERE e.accountBookId = :accountBookId"
+									+ " GROUP BY YEAR(e.occurredAt), MONTH(e.occurredAt),"
+									+ " FUNCTION('WEEK', e.occurredAt) ORDER BY YEAR(e.occurredAt)"
+									+ " DESC, FUNCTION('WEEK', e.occurredAt) DESC",
+								Object[].class)
+						.setParameter("accountBookId", accountBookId)
+						.setMaxResults(5)
+						.getResultList();
+
+		Collections.reverse(result);
+		return result;
+	}
+
+	public List<Object[]> findMonthlySpentByAccountBookId(Long accountBookId) {
+		String monthExpr =
+				"CONCAT(YEAR(e.occurredAt), '-', "
+						+ "CASE WHEN MONTH(e.occurredAt) < 10 "
+						+ "THEN CONCAT('0', MONTH(e.occurredAt)) "
+						+ "ELSE CAST(MONTH(e.occurredAt) AS STRING) END)";
+
+		List<Object[]> result =
+				em.createQuery(
+								"SELECT "
+										+ monthExpr
+										+ ", SUM(e.exchangeInfo.baseCurrencyAmount) "
+										+ "FROM ExpenseEntity e "
+										+ "WHERE e.accountBookId = :accountBookId "
+										+ "GROUP BY "
+										+ monthExpr
+										+ " "
+										+ "ORDER BY "
+										+ monthExpr
+										+ " DESC",
+								Object[].class)
+						.setParameter("accountBookId", accountBookId)
+						.setMaxResults(6)
+						.getResultList();
+
+		Collections.reverse(result);
+		return result;
+	}
+
 	// ── CATEGORY ────────────────────────────────────────
 
 	public List<Object[]> findCategorySpentByAccountBookId(Long accountBookId) {

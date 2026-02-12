@@ -1,12 +1,12 @@
 import { type CountryCode } from '@/data/countryCode';
 
-export interface CreateAccountBookRequest {
+interface CreateAccountBookRequest {
   localCountryCode: CountryCode;
   startDate: string;
   endDate: string;
 }
 
-export interface AccountBookResponse {
+interface AccountBookResponse {
   id: number;
   title: string;
   localCountryCode: CountryCode;
@@ -15,3 +15,15 @@ export interface AccountBookResponse {
   startDate: string;
   endDate: string;
 }
+
+interface GetAccountBooksResponse {
+  id: number;
+  title: string;
+  isMain: boolean;
+}
+
+export type {
+  AccountBookResponse,
+  CreateAccountBookRequest,
+  GetAccountBooksResponse,
+};

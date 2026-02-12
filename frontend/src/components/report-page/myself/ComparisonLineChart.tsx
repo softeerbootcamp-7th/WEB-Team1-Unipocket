@@ -15,8 +15,9 @@ const buildLinePath = (
   width: number,
   height: number,
   maxValue: number,
+  maxDay: number,
 ) => {
-  const stepX = width / (data.length - 1);
+  const stepX = width / (maxDay - 1);
 
   return data
     .map((item, index) => {
@@ -32,8 +33,8 @@ const buildLinePath = (
 const ComparisonLineChart = ({
   thisMonth,
   prevMonth,
-  width = 320,
-  height = 180,
+  width = 368,
+  height = 154,
 }: ComparisonLineChartProps) => {
   const allValues = [
     ...thisMonth.map((v) => Number(v.cumulatedAmount)),
@@ -41,14 +42,15 @@ const ComparisonLineChart = ({
   ];
 
   const maxValue = Math.max(...allValues);
+  const maxDay = Math.max(thisMonth.length, prevMonth.length);
 
-  const thisPath = buildLinePath(thisMonth, width, height, maxValue);
-  const prevPath = buildLinePath(prevMonth, width, height, maxValue);
+  const thisPath = buildLinePath(thisMonth, width, height, maxValue, maxDay);
+  const prevPath = buildLinePath(prevMonth, width, height, maxValue, maxDay);
 
   return (
     <svg width={width} height={height}>
-      <path d={prevPath} fill="none" stroke="#C2C4C8" strokeWidth={3} />
       <path d={thisPath} fill="none" stroke="#44A3B6" strokeWidth={3} />
+      <path d={prevPath} fill="none" stroke="#C2C4C8" strokeWidth={3} />
     </svg>
   );
 };

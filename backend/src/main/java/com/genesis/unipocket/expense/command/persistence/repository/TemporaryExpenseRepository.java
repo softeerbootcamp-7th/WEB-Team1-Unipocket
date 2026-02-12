@@ -43,4 +43,9 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 	List<TemporaryExpense> findByAccountBookIdAndStatus(
 			@Param("accountBookId") Long accountBookId,
 			@Param("status") TemporaryExpense.TemporaryExpenseStatus status);
+
+	/**
+	 * 여러 파일 ID로 임시지출내역 조회
+	 */
+	List<TemporaryExpense> findByFileIdIn(List<Long> fileIds);
 }

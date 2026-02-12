@@ -141,4 +141,116 @@ class TemporaryExpenseCommandServiceTest {
 		assertThatThrownBy(() -> service.deleteTemporaryExpense(tempExpenseId))
 				.isInstanceOf(IllegalArgumentException.class);
 	}
+
+	@Test
+	@DisplayName("수정 시 필수 필드 모두 채우면 상태가 NORMAL로 변경")
+	void updateTemporaryExpense_AllRequiredFields_StatusNormal() {
+		// given
+		Long tempExpenseId = 1L;
+		TemporaryExpense incompleteExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("스타벅스")
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build();
+
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"스타벅스",
+						Category.FOOD,
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						"CARD",
+						null,
+						LocalDateTime.now(),
+						null);
+
+		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(incompleteExpense));
+		when(repository.save(any(TemporaryExpense.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		// when
+		TemporaryExpenseResult result = service.updateTemporaryExpense(tempExpenseId, command);
+
+		// then
+		assertThat(result.status()).isEqualTo("NORMAL");
+	}
+
+	@Test
+	@DisplayName("수정 후에도 필수 필드 누락이면 INCOMPLETE 유지")
+	void updateTemporaryExpense_MissingRequiredField_StaysIncomplete() {
+		// given
+		Long tempExpenseId = 1L;
+		TemporaryExpense incompleteExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("스타벅스")
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build();
+
+		// category가 null → 필수 필드 미비
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"이디야",
+						null,
+						null,
+						BigDecimal.valueOf(3000),
+						null,
+						null,
+						null,
+						null,
+						null,
+						null);
+
+		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(incompleteExpense));
+		when(repository.save(any(TemporaryExpense.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		// when
+		TemporaryExpenseResult result = service.updateTemporaryExpense(tempExpenseId, command);
+
+		// then
+		assertThat(result.status()).isEqualTo("INCOMPLETE");
+	}
+
+	@Test
+	@DisplayName("ABNORMAL 상태는 수정해도 ABNORMAL 유지")
+	void updateTemporaryExpense_Abnormal_StaysAbnormal() {
+		// given
+		Long tempExpenseId = 1L;
+		TemporaryExpense abnormalExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.fileId(10L)
+						.merchantName("이상거래")
+						.status(TemporaryExpenseStatus.ABNORMAL)
+						.build();
+
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						"수정됨",
+						Category.FOOD,
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						CurrencyCode.KRW,
+						BigDecimal.valueOf(5000),
+						"CARD",
+						null,
+						LocalDateTime.now(),
+						null);
+
+		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(abnormalExpense));
+		when(repository.save(any(TemporaryExpense.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		// when
+		TemporaryExpenseResult result = service.updateTemporaryExpense(tempExpenseId, command);
+
+		// then
+		assertThat(result.status()).isEqualTo("ABNORMAL");
+	}
 }

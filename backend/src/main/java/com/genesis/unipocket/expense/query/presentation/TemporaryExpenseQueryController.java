@@ -3,6 +3,8 @@ package com.genesis.unipocket.expense.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
 import com.genesis.unipocket.expense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.expense.query.presentation.response.FileProcessingSummaryResponse;
+import com.genesis.unipocket.expense.query.presentation.response.ImageProcessingSummaryResponse;
 import com.genesis.unipocket.expense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.expense.query.presentation.response.TemporaryExpenseResponse;
 import com.genesis.unipocket.expense.query.service.TemporaryExpenseQueryService;
@@ -60,6 +62,28 @@ public class TemporaryExpenseQueryController {
 			@PathVariable Long tempExpenseId, @LoginUser UUID userId) {
 		TemporaryExpenseResponse response =
 				temporaryExpenseQueryService.getTemporaryExpense(tempExpenseId, userId);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	/**
+	 * 파일(이미지) 단위 처리 현황 조회
+	 */
+	@GetMapping("/api/account-books/{accountBookId}/files/summary")
+	public ResponseEntity<ApiResponse<FileProcessingSummaryResponse>> getFileProcessingSummary(
+			@PathVariable Long accountBookId, @LoginUser UUID userId) {
+		FileProcessingSummaryResponse response =
+				temporaryExpenseQueryService.getFileProcessingSummary(accountBookId, userId);
+		return ResponseEntity.ok(ApiResponse.success(response));
+	}
+
+	/**
+	 * 가계부 전체 이미지 처리 현황 요약 조회
+	 */
+	@GetMapping("/api/account-books/{accountBookId}/image-processing-summary")
+	public ResponseEntity<ApiResponse<ImageProcessingSummaryResponse>> getImageProcessingSummary(
+			@PathVariable Long accountBookId, @LoginUser UUID userId) {
+		ImageProcessingSummaryResponse response =
+				temporaryExpenseQueryService.getImageProcessingSummary(accountBookId, userId);
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 

@@ -4,6 +4,8 @@ import com.genesis.unipocket.accountbook.command.application.AccountBookCommandS
 import com.genesis.unipocket.accountbook.command.application.command.CreateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
+import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
+import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookBudgetUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
@@ -42,5 +44,11 @@ public class AccountBookCommandFacade {
 		DeleteAccountBookCommand command = DeleteAccountBookCommand.of(accountBookId, userId);
 
 		accountBookCommandService.delete(command);
+	}
+
+	@Transactional
+	public AccountBookBudgetUpdateResult updateBudget(
+			UUID userId, Long accountBookId, AccountBookBudgetUpdateRequest req) {
+		return accountBookCommandService.updateBudget(accountBookId, userId, req.budget());
 	}
 }

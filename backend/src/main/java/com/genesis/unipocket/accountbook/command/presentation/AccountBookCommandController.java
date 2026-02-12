@@ -1,8 +1,10 @@
 package com.genesis.unipocket.accountbook.command.presentation;
 
 import com.genesis.unipocket.accountbook.command.facade.AccountBookCommandFacade;
+import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookBudgetUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
+import com.genesis.unipocket.accountbook.command.presentation.response.AccountBookBudgetUpdateResponse;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -40,6 +42,16 @@ public class AccountBookCommandController {
 			@RequestBody @Valid AccountBookUpdateRequest req) {
 		accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
 		return ResponseEntity.noContent().build();
+	}
+
+	@PatchMapping("/{accountBookId}/budget")
+	public ResponseEntity<AccountBookBudgetUpdateResponse> updateBudget(
+			@LoginUser UUID userId,
+			@PathVariable Long accountBookId,
+			@RequestBody @Valid AccountBookBudgetUpdateRequest req) {
+		return ResponseEntity.ok(
+				AccountBookBudgetUpdateResponse.from(
+						accountBookCommandFacade.updateBudget(userId, accountBookId, req)));
 	}
 
 	@DeleteMapping("/{accountBookId}")

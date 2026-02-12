@@ -89,7 +89,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when
 		mockMvc.perform(
-						post("/api/account-books/{accountBookId}/expenses/manual", accountBookId)
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
@@ -117,7 +117,7 @@ class ExpenseControllerIntegrationTest {
 		// when & then
 		mockMvc.perform(
 						get(
-										"/api/account-books/{accountBookId}/expenses/{expenseId}",
+										"/account-books/{accountBookId}/expenses/{expenseId}",
 										accountBookId,
 										expenseId)
 								.with(jwtTestHelper.withJwtAuth()))
@@ -134,7 +134,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -153,7 +153,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -189,7 +189,7 @@ class ExpenseControllerIntegrationTest {
 		// when & then
 		mockMvc.perform(
 						put(
-										"/api/account-books/{accountBookId}/expenses/{expenseId}",
+										"/account-books/{accountBookId}/expenses/{expenseId}",
 										accountBookId,
 										expenseId)
 								.with(jwtTestHelper.withJwtAuth())
@@ -208,7 +208,7 @@ class ExpenseControllerIntegrationTest {
 		// when & then
 		mockMvc.perform(
 						delete(
-										"/api/account-books/{accountBookId}/expenses/{expenseId}",
+										"/account-books/{accountBookId}/expenses/{expenseId}",
 										accountBookId,
 										expenseId)
 								.with(jwtTestHelper.withJwtAuth()))
@@ -224,7 +224,7 @@ class ExpenseControllerIntegrationTest {
 		// when & then
 		mockMvc.perform(
 						get(
-										"/api/account-books/{accountBookId}/expenses/{expenseId}",
+										"/account-books/{accountBookId}/expenses/{expenseId}",
 										accountBookId,
 										nonExistentExpenseId)
 								.with(jwtTestHelper.withJwtAuth()))
@@ -241,7 +241,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then - FOOD 카테고리만 조회
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -263,7 +263,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then - "스타벅스"로 검색
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -285,7 +285,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then - 2026-02-03 ~ 2026-02-07 범위 조회
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -308,7 +308,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then - 10000 ~ 30000 범위 조회
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -332,7 +332,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then - 카테고리=FOOD, 거래처명=스타벅스, 금액 8000~15000
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -358,7 +358,7 @@ class ExpenseControllerIntegrationTest {
 
 		// when & then - travelId=100인 지출내역만 조회
 		mockMvc.perform(
-						get("/api/account-books/{accountBookId}/expenses", accountBookId)
+						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.param("page", "0")
 								.param("size", "20")
@@ -385,7 +385,7 @@ class ExpenseControllerIntegrationTest {
 			""";
 
 		mockMvc.perform(
-						post("/api/account-books/{accountBookId}/expenses/manual", accountBookId)
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
@@ -419,7 +419,7 @@ class ExpenseControllerIntegrationTest {
 						merchantName, category, occurredAt, amount, travelIdJson);
 
 		mockMvc.perform(
-						post("/api/account-books/{accountBookId}/expenses/manual", accountBookId)
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
 								.with(jwtTestHelper.withJwtAuth())
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))

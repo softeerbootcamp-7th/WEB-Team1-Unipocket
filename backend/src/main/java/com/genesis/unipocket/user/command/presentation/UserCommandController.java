@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "유저 Command API")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserCommandController {
 
@@ -34,7 +34,7 @@ public class UserCommandController {
 	public ResponseEntity<Void> createCard(
 			@LoginUser UUID userId, @RequestBody @Valid UserCardRequest request) {
 		Long cardId = userCommandFacade.createCard(request, userId);
-		return ResponseEntity.created(URI.create("/api/users/cards/" + cardId)).build();
+		return ResponseEntity.created(URI.create("/users/cards/" + cardId)).build();
 	}
 
 	@DeleteMapping("/cards/{cardId}")

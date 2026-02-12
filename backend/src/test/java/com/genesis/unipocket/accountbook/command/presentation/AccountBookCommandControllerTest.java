@@ -61,12 +61,12 @@ class AccountBookCommandControllerTest {
 				.willReturn(accountBookId);
 
 		mockMvc.perform(
-						post("/api/account-books")
+						post("/account-books")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isCreated())
-				.andExpect(header().string("Location", "/api/account-books/" + accountBookId));
+				.andExpect(header().string("Location", "/account-books/" + accountBookId));
 	}
 
 	@Test
@@ -91,7 +91,7 @@ class AccountBookCommandControllerTest {
 				.willReturn(accountBookId);
 
 		mockMvc.perform(
-						patch("/api/account-books/{accountBookId}", accountBookId)
+						patch("/account-books/{accountBookId}", accountBookId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(new Cookie("access_token", accessToken)))
@@ -109,7 +109,7 @@ class AccountBookCommandControllerTest {
 		doNothing().when(accountBookCommandFacade).deleteAccountBook(userId, accountBookId);
 
 		mockMvc.perform(
-						delete("/api/account-books/{accountBookId}", accountBookId)
+						delete("/account-books/{accountBookId}", accountBookId)
 								.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isNoContent());
 	}
@@ -124,7 +124,7 @@ class AccountBookCommandControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						post("/api/account-books")
+						post("/account-books")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(invalidBody)
 								.cookie(new Cookie("access_token", accessToken)))
@@ -154,7 +154,7 @@ class AccountBookCommandControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						patch("/api/account-books/{accountBookId}", accountBookId)
+						patch("/account-books/{accountBookId}", accountBookId)
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(new Cookie("access_token", accessToken)))

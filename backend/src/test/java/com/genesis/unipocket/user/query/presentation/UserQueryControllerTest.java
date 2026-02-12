@@ -62,7 +62,7 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getUserInfo(userId)).willReturn(response);
 
-		mockMvc.perform(get("/api/users/me").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(get("/users/me").cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.email").value("test@example.com"))
 				.andExpect(jsonPath("$.name").value("Tester"));
@@ -84,7 +84,7 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getCards(userId)).willReturn(response);
 
-		mockMvc.perform(get("/api/users/cards").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(get("/users/cards").cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].nickName").value("Card 1"))
 				.andExpect(jsonPath("$[0].cardCompany").value("HYUNDAI"));
@@ -97,7 +97,7 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getCardCompanies()).willReturn(companies);
 
-		mockMvc.perform(get("/api/users/cards/companies"))
+		mockMvc.perform(get("/users/cards/companies"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0]").value("HYUNDAI"))
 				.andExpect(jsonPath("$[1]").value("SAMSUNG"));

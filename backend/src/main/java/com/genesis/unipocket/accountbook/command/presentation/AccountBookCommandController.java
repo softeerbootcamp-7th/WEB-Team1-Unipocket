@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "가계부 Command API")
 @RestController
-@RequestMapping("/api/account-books")
+@RequestMapping("/account-books")
 @RequiredArgsConstructor
 public class AccountBookCommandController {
 
@@ -30,7 +30,7 @@ public class AccountBookCommandController {
 	public ResponseEntity<Void> createAccountBook(
 			@LoginUser UUID userId, @RequestBody @Valid AccountBookCreateRequest req) {
 		Long id = accountBookCommandFacade.createAccountBook(userId, req);
-		return ResponseEntity.created(URI.create("/api/account-books/" + id)).build();
+		return ResponseEntity.created(URI.create("/account-books/" + id)).build();
 	}
 
 	@PatchMapping("/{accountBookId}")

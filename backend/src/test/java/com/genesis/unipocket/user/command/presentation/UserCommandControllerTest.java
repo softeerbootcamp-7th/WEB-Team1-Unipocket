@@ -56,7 +56,7 @@ class UserCommandControllerTest {
 		doNothing().when(userCommandFacade).withdraw(userId);
 
 		mockMvc.perform(
-						delete("/api/users/me")
+						delete("/users/me")
 								.cookie(
 										new jakarta.servlet.http.Cookie(
 												"access_token", accessToken)))
@@ -80,14 +80,14 @@ class UserCommandControllerTest {
 		given(userCommandFacade.createCard(any(UserCardRequest.class), any())).willReturn(cardId);
 
 		mockMvc.perform(
-						post("/api/users/cards")
+						post("/users/cards")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(
 										new jakarta.servlet.http.Cookie(
 												"access_token", accessToken)))
 				.andExpect(status().isCreated())
-				.andExpect(header().string("Location", "/api/users/cards/" + cardId));
+				.andExpect(header().string("Location", "/users/cards/" + cardId));
 	}
 
 	@Test
@@ -106,7 +106,7 @@ class UserCommandControllerTest {
 		doNothing().when(userCommandFacade).deleteCard(any(), any());
 
 		mockMvc.perform(
-						delete("/api/users/cards/{cardId}", cardId)
+						delete("/users/cards/{cardId}", cardId)
 								.cookie(
 										new jakarta.servlet.http.Cookie(
 												"access_token", accessToken)))

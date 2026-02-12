@@ -30,7 +30,7 @@ oauth2:
     - type: GOOGLE
       client-id: test-google-client-id
       client-secret: test-google-client-secret
-      redirect-uri: http://localhost:5173/api/auth/oauth2/callback/google
+      redirect-uri: http://localhost:5173/auth/oauth2/callback/google
       authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
       token-uri: https://oauth2.googleapis.com/token
       user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
@@ -39,7 +39,7 @@ oauth2:
       scope: openid profile email
     - type: KAKAO
       client-id: test-kakao-client-id
-      redirect-uri: http://localhost:5173/api/auth/oauth2/callback/kakao
+      redirect-uri: http://localhost:5173/auth/oauth2/callback/kakao
       authorization-uri: https://kauth.kakao.com/oauth/authorize
       token-uri: https://kauth.kakao.com/oauth/token
       user-info-uri: https://kapi.kakao.com/v2/user/me

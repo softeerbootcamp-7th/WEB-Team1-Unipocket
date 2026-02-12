@@ -28,7 +28,7 @@ public class ExpenseCommandController {
 
 	private final ExpenseCommandFacade expenseFacade;
 
-	@PostMapping("/api/account-books/{accountBookId}/expenses/manual")
+	@PostMapping("/account-books/{accountBookId}/expenses/manual")
 	public ResponseEntity<ExpenseManualCreateResponse> createExpenseManual(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
@@ -39,7 +39,7 @@ public class ExpenseCommandController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@PutMapping("/api/account-books/{accountBookId}/expenses/{expenseId}")
+	@PutMapping("/account-books/{accountBookId}/expenses/{expenseId}")
 	public ResponseEntity<ExpenseUpdateResponse> updateExpense(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
@@ -52,7 +52,7 @@ public class ExpenseCommandController {
 		return ResponseEntity.ok(response);
 	}
 
-	@DeleteMapping("/api/account-books/{accountBookId}/expenses/{expenseId}")
+	@DeleteMapping("/account-books/{accountBookId}/expenses/{expenseId}")
 	public ResponseEntity<Void> deleteExpense(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,

@@ -36,12 +36,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Tag(name = "인증 기능")
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthCommandController {
 
 	private static final String ACCESS_TOKEN_COOKIE_PATH = "/";
-	private static final String REFRESH_TOKEN_COOKIE_PATH = "/api/auth";
+	private static final String REFRESH_TOKEN_COOKIE_PATH = "/auth";
 
 	private final AuthService authService;
 	private final CookieUtil cookieUtil;

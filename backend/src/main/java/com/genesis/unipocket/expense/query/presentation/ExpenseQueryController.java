@@ -34,7 +34,7 @@ public class ExpenseQueryController {
 
 	private final ExpenseQueryService expenseQueryService;
 
-	@GetMapping("/api/account-books/{accountBookId}/expenses/{expenseId}")
+	@GetMapping("/account-books/{accountBookId}/expenses/{expenseId}")
 	public ResponseEntity<ExpenseResponse> getExpense(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
@@ -45,7 +45,7 @@ public class ExpenseQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/api/account-books/{accountBookId}/expenses")
+	@GetMapping("/account-books/{accountBookId}/expenses")
 	public ResponseEntity<ExpenseListResponse> getExpenses(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,

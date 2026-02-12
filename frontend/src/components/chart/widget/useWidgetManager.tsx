@@ -1,0 +1,122 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { MOCK_WIDGET_DATA } from '@/components/chart/widget/mock';
+import {
+  WIDGET_TYPES,
+  type WidgetItem,
+  type WidgetType,
+} from '@/components/chart/widget/type';
+
+const DESKTOP_BREAKPOINT = 1800;
+
+/** 위젯이 차지하는 슬롯 수 */
+const getWidgetSpan = (widgetType: WidgetType | 'BLANK') =>
+  widgetType === 'CATEGORY' ? 2 : 1;
+
+/** 위젯 목록이 차지하는 총 슬롯 수 */
+const getTotalSlots = (widgets: WidgetItem[]) =>
+  widgets.reduce((sum, w) => sum + getWidgetSpan(w.widgetType), 0);
+
+/** order를 0부터 연속된 정수로 정규화 */
+const normalizeOrders = (widgets: WidgetItem[]): WidgetItem[] =>
+  [...widgets]
+    .sort((a, b) => a.order - b.order)
+    .map((w, i) => ({ ...w, order: i }));
+
+export const useWidgetManager = () => {
+  const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
+  const [maxWidgets, setMaxWidgets] = useState(4);
+  const [width, setWidth] = useState(1400);
+
+  useEffect(() => {
+    const updateLayout = () => {
+      const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+      setMaxWidgets(isDesktop ? 5 : 4);
+      setWidth(isDesktop ? 1600 : 1400);
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
+  // 추가된 위젯 목록 (일단 mock 활용)
+  const [addedWidgets, setAddedWidgets] =
+    useState<WidgetItem[]>(MOCK_WIDGET_DATA);
+
+  /** 표시용 위젯 목록: 실제 위젯 + 남은 슬롯만큼 BLANK 채우기 */
+  const displayWidgets: WidgetItem[] = useMemo(() => {
+    let used = 0;
+    const visible: WidgetItem[] = [];
+    const sorted = normalizeOrders(addedWidgets);
+
+    for (const widget of sorted) {
+      const span = getWidgetSpan(widget.widgetType);
+      if (used + span > maxWidgets) break;
+      used += span;
+      visible.push(widget);
+    }
+
+    const blanks: WidgetItem[] = Array.from(
+      { length: maxWidgets - used },
+      (_, i) => ({
+        order: visible.length + i,
+        widgetType: 'BLANK',
+      }),
+    );
+
+    return [...visible, ...blanks];
+  }, [addedWidgets, maxWidgets]);
+
+  /** 추가 가능한 위젯 타입 목록 */
+  const availableWidgets = useMemo(() => {
+    const addedTypes = new Set(addedWidgets.map((w) => w.widgetType));
+    return WIDGET_TYPES.filter((type) => !addedTypes.has(type));
+  }, [addedWidgets]);
+
+  /** 해당 위젯을 추가할 수 있는지 여부 (드래그 시 drop 가능 여부 판별용) */
+  const canAddWidget = useCallback(
+    (widgetType: WidgetType) => {
+      const used = getTotalSlots(addedWidgets);
+      return used + getWidgetSpan(widgetType) <= maxWidgets;
+    },
+    [addedWidgets, maxWidgets],
+  );
+
+  /** 위젯을 맨 뒤에 추가 */
+  const handleAddWidget = useCallback(
+    (widgetType: WidgetType) => {
+      setAddedWidgets((prev) => {
+        if (getTotalSlots(prev) + getWidgetSpan(widgetType) > maxWidgets)
+          return prev;
+
+        const normalized = normalizeOrders(prev);
+        return [...normalized, { order: normalized.length, widgetType }];
+      });
+    },
+    [maxWidgets],
+  );
+
+  /** 위젯 제거 */
+  const handleRemoveWidget = useCallback((order: number) => {
+    setAddedWidgets((prev) =>
+      normalizeOrders(prev.filter((w) => w.order !== order)),
+    );
+  }, []);
+
+  const toggleEditMode = useCallback(() => {
+    setIsWidgetEditMode((prev) => !prev);
+  }, []);
+
+  return {
+    isWidgetEditMode,
+    toggleEditMode,
+    width,
+    maxWidgets,
+    displayWidgets,
+    availableWidgets,
+    canAddWidget,
+    handleAddWidget,
+    handleRemoveWidget,
+  };
+};

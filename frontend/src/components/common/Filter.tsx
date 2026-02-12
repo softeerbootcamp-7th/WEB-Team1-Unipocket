@@ -27,7 +27,7 @@ const Filter = ({
     // asChild로 사용 시 넘어온 스타일이 override 않도록 하기 위해 className 분리
     className,
 
-    'flex items-center justify-between gap-0.5 box-border transition-colors',
+    'w-fit flex items-center justify-between gap-0.5 box-border transition-colors',
     'border cursor-pointer',
 
     /* --- disabled --- */
@@ -67,7 +67,7 @@ const Filter = ({
       ref={ref}
       {...props}
     >
-      <span className="px-0.5">{children}</span>
+      <span className="px-0.5 whitespace-nowrap">{children}</span>
       {active ? (
         <div
           onClick={(e) => {

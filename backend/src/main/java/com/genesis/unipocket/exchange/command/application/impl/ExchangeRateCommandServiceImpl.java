@@ -116,7 +116,11 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 		try {
 			response = objectMapper.readValue(responseBody, YahooChartResponse.class);
 		} catch (Exception e) {
-			log.error("Yahoo rate response parse failed. currency={}, date={}", currencyCode, date, e);
+			log.error(
+					"Yahoo rate response parse failed. currency={}, date={}",
+					currencyCode,
+					date,
+					e);
 			throw new BusinessException(ErrorCode.EXCHANGE_RATE_API_ERROR);
 		}
 

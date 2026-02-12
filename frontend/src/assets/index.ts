@@ -17,9 +17,9 @@ export const BankLogos = {
   Hyundai: HyundaiCard,
 } as const;
 
-import Mingyu from '@/assets/authLogos/mingyu.svg';
 import Google from '@/assets/authLogos/google.svg';
 import Kakao from '@/assets/authLogos/kakao.svg';
+import Mingyu from '@/assets/authLogos/mingyu.svg';
 
 export const AuthLogos = {
   Google,
@@ -48,6 +48,7 @@ import CheckmarkCircle from '@/assets/Icons/checkmark-circle.svg';
 import ChevronBack from '@/assets/Icons/chevron-back.svg';
 import ChevronForward from '@/assets/Icons/chevron-forward.svg';
 import Close from '@/assets/Icons/close.svg';
+import CloseButton from '@/assets/Icons/close-button.svg';
 import CloseCircle from '@/assets/Icons/close-circle.svg';
 import Edit from '@/assets/Icons/edit.svg';
 import FileBox from '@/assets/Icons/file-box.svg';
@@ -69,6 +70,7 @@ export const Icons = {
   ChevronBack,
   ChevronForward,
   CheckmarkCircle,
+  CloseButton,
   Logo,
   Loading,
   Analytics,

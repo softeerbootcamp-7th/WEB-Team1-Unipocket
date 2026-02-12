@@ -1,7 +1,7 @@
-package com.genesis.unipocket.expense.command.persistence.repository;
+package com.genesis.unipocket.expense.expense.command.persistence.repository;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
 import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;

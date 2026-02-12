@@ -1,16 +1,20 @@
-package com.genesis.unipocket.expense.query.service;
+package com.genesis.unipocket.expense.expense.query.service;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.expense.common.dto.ExpenseDto;
-import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
-import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
+import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+
+import java.time.ZoneOffset;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ExpenseQueryService {
 
+	private static final Set<String> ALLOWED_SORT_PROPERTIES =
+			Set.of("occurredAt", "baseCurrencyAmount");
+
 	private final ExpenseRepository expenseRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
@@ -36,17 +43,26 @@ public class ExpenseQueryService {
 
 	public Page<ExpenseDto> getExpenses(
 			Long accountBookId, UUID userId, ExpenseSearchFilter filter, Pageable pageable) {
+
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 
+		for (Sort.Order order : pageable.getSort()) {
+			String property = order.getProperty();
+			if (!ALLOWED_SORT_PROPERTIES.contains(property)) {
+				throw new BusinessException(ErrorCode.EXPENSE_INVALID_SORT);
+			}
+		}
+
 		Page<ExpenseEntity> entities;
+
 		if (filter == null || isFilterEmpty(filter)) {
 			entities = expenseRepository.findByAccountBookId(accountBookId, pageable);
 		} else {
 			entities =
 					expenseRepository.findByFilters(
 							accountBookId,
-							filter.startDate(),
-							filter.endDate(),
+							filter.startDate().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+							filter.endDate().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime(),
 							filter.category(),
 							filter.minAmount(),
 							filter.maxAmount(),

@@ -1,8 +1,8 @@
-package com.genesis.unipocket.expense.command.application.result;
+package com.genesis.unipocket.expense.expense.command.application.result;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.expense.common.enums.ExpenseSource;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

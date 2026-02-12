@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.command.application.command;
+package com.genesis.unipocket.expense.expense.command.application.command;
 
 import com.genesis.unipocket.expense.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;

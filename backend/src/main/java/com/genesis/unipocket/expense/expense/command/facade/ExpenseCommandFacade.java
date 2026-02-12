@@ -1,13 +1,14 @@
-package com.genesis.unipocket.expense.command.facade;
+package com.genesis.unipocket.expense.expense.command.facade;
 
-import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
-import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
-import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
-import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
-import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
-import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
-import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.port.dto.AccountBookInfo;
+import com.genesis.unipocket.expense.expense.command.application.ExpenseCommandService;
+import com.genesis.unipocket.expense.expense.command.application.command.ExpenseCreateCommand;
+import com.genesis.unipocket.expense.expense.command.application.command.ExpenseUpdateCommand;
+import com.genesis.unipocket.expense.expense.command.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.expense.command.facade.port.AccountBookInfoFetchService;
+import com.genesis.unipocket.expense.expense.command.presentation.request.ExpenseManualCreateRequest;
+import com.genesis.unipocket.expense.expense.command.presentation.request.ExpenseUpdateRequest;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -32,8 +33,10 @@ public class ExpenseCommandFacade {
 	@Transactional
 	public ExpenseResult createExpenseManual(
 			ExpenseManualCreateRequest request, Long accountBookId, UUID userId) {
-		// userId - accountBookId 소유권 검증
-		var accountBookInfo =
+
+		accountBookOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
+
+		AccountBookInfo accountBookInfo =
 				accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString());
 
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
@@ -57,7 +60,10 @@ public class ExpenseCommandFacade {
 	@Transactional
 	public ExpenseResult updateExpense(
 			Long expenseId, Long accountBookId, UUID userId, ExpenseUpdateRequest request) {
-		var accountBookInfo =
+
+		accountBookOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
+
+		AccountBookInfo accountBookInfo =
 				accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString());
 
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();

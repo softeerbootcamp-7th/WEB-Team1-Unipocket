@@ -1,11 +1,13 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.expense.command.application;
 
-import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
-import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
-import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.ExpenseEntity;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.expense.command.application.command.ExpenseCreateCommand;
+import com.genesis.unipocket.expense.expense.command.application.command.ExpenseUpdateCommand;
+import com.genesis.unipocket.expense.expense.command.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
+import com.genesis.unipocket.expense.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +29,7 @@ public class ExpenseCommandService {
 	@Transactional
 	public ExpenseResult createExpenseManual(ExpenseCreateCommand command) {
 
-		// 환율 정보 바탕으로 기준 환율 값 계산
+		// TODO: 환율 정보 바탕으로 기준 환율 값 계산
 		BigDecimal baseCurrencyAmount =
 				exchangeRateService.convertAmount(
 						command.localCurrencyAmount(),
@@ -88,16 +90,10 @@ public class ExpenseCommandService {
 		ExpenseEntity entity =
 				expenseRepository
 						.findById(expenseId)
-						.orElseThrow(
-								() ->
-										new com.genesis.unipocket.global.exception
-												.BusinessException(
-												com.genesis.unipocket.global.exception.ErrorCode
-														.EXPENSE_NOT_FOUND));
+						.orElseThrow(() -> new BusinessException(ErrorCode.EXPENSE_NOT_FOUND));
 
 		if (!entity.getAccountBookId().equals(accountBookId)) {
-			throw new com.genesis.unipocket.global.exception.BusinessException(
-					com.genesis.unipocket.global.exception.ErrorCode.EXPENSE_UNAUTHORIZED_ACCESS);
+			throw new BusinessException(ErrorCode.EXPENSE_UNAUTHORIZED_ACCESS);
 		}
 
 		return entity;

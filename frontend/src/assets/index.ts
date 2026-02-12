@@ -17,9 +17,9 @@ export const BankLogos = {
   Hyundai: HyundaiCard,
 } as const;
 
-import Mingyu from '@/assets/authLogos/mingyu.svg';
 import Google from '@/assets/authLogos/google.svg';
 import Kakao from '@/assets/authLogos/kakao.svg';
+import Mingyu from '@/assets/authLogos/mingyu.svg';
 
 export const AuthLogos = {
   Google,
@@ -59,7 +59,9 @@ import LogoText from '@/assets/Icons/logo-text.svg';
 import Phone from '@/assets/Icons/phone.svg';
 import Refresh from '@/assets/Icons/refresh.svg';
 import Swap from '@/assets/Icons/swap.svg';
+import Trash from '@/assets/Icons/trash.svg';
 import Travel from '@/assets/Icons/travel.svg';
+import Update from '@/assets/Icons/update.svg';
 import UploadFile from '@/assets/Icons/upload-file.svg';
 
 export const Icons = {
@@ -76,6 +78,8 @@ export const Icons = {
   Travel,
   CaretDown,
   Close,
+  Trash,
+  Update,
   Refresh,
   Phone,
   Camera,

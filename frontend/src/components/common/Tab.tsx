@@ -54,7 +54,7 @@ const TabProvider = ({
         variant,
       }}
     >
-      {children}
+      <div>{children}</div>
     </TabContext.Provider>
   );
 };

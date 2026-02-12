@@ -1,4 +1,4 @@
-import ComparisonLineChart from '@/components/report-page/myself/ReportLineChart';
+import ReportLineChart from '@/components/report-page/myself/ReportLineChart';
 import ReportLegend from '@/components/report-page/ReportLegend';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 
@@ -31,10 +31,10 @@ const ReportLineGraph = ({
         <ReportLegend label={thisMonthLabel} color="primary" variant="line" />
         <ReportLegend label={lastMonthLabel} color="secondary" variant="line" />
       </div>
-      <div className="relative h-42">
-        <VerticalGrid positions={positions} labels={labels} />
-        <div className="relative z-10 pt-2.5">
-          <ComparisonLineChart
+      <div className="relative h-42 pl-3">
+        <VerticalGrid positions={positions} labels={labels} className="pl-3" />
+        <div className="relative z-10 pt-2">
+          <ReportLineChart
             thisMonthCount={thisMonthCount}
             lastMonthCount={lastMonthCount}
             maxValue={maxValue}

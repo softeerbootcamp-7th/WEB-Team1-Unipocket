@@ -52,7 +52,7 @@ public class AccountBookValidationProvider
 												com.genesis.unipocket.global.exception.ErrorCode
 														.ACCOUNT_BOOK_NOT_FOUND));
 
-		if (!accountBook.getUserId().equals(userId)) {
+		if (!accountBook.getUser().getId().toString().equals(userId)) {
 			throw new com.genesis.unipocket.global.exception.BusinessException(
 					com.genesis.unipocket.global.exception.ErrorCode
 							.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);

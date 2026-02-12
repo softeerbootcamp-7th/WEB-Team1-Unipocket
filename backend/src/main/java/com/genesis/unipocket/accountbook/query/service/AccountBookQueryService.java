@@ -9,8 +9,10 @@ import com.genesis.unipocket.expense.command.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class AccountBookQueryService {
 
 	private final AccountBookQueryRepository repository;
 	private final ExchangeRateService exchangeRateService;
+	private final UserCommandRepository userRepository;
 
 	public AccountBookQueryResponse getAccountBook(Long accountBookId) {
 		return repository
@@ -30,8 +33,9 @@ public class AccountBookQueryService {
 	}
 
 	public AccountBookDetailResponse getAccountBookDetail(String userId, Long accountBookId) {
+		UUID userUuid = UUID.fromString(userId);
 		return repository
-				.findDetailById(userId, accountBookId)
+				.findDetailById(userUuid, accountBookId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 	}
 
@@ -57,8 +61,12 @@ public class AccountBookQueryService {
 	}
 
 	public List<AccountBookSummaryResponse> getAccountBooks(String userId) {
-		// TODO: Implement logic to get mainAccountBookId from User setting or similar
-		Long mainAccountBookId = 1L;
-		return repository.findAllByUserId(userId, mainAccountBookId);
+		UUID userUuid = UUID.fromString(userId);
+		Long mainAccountBookId =
+				userRepository
+						.findById(userUuid)
+						.map(user -> user.getMainBucketId())
+						.orElse(0L);
+		return repository.findAllByUserId(userUuid, mainAccountBookId);
 	}
 }

@@ -2,6 +2,7 @@ package com.genesis.unipocket.accountbook.command.application.command;
 
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ public record UpdateAccountBookCommand(
 		String title,
 		CountryCode localCountryCode,
 		CountryCode baseCountryCode,
-		Long budget,
+		BigDecimal budget,
 		LocalDate startDate,
 		LocalDate endDate) {
 

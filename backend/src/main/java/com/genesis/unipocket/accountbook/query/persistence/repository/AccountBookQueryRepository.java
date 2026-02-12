@@ -7,6 +7,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -31,7 +32,7 @@ public class AccountBookQueryRepository {
 		return result.stream().findFirst();
 	}
 
-	public Optional<AccountBookDetailResponse> findDetailById(String userId, Long id) {
+	public Optional<AccountBookDetailResponse> findDetailById(UUID userId, Long id) {
 		// TODO: tempExpenseBatchIds is currently empty list, need to implement logic if
 		// needed
 		List<AccountBookDetailResponse> result =
@@ -39,8 +40,8 @@ public class AccountBookQueryRepository {
 								"SELECT new"
 									+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse("
 									+ " a.id, a.title, a.localCountryCode, a.baseCountryCode,"
-									+ " a.budget, a.budgetCreatedAt, null, a.startDate, a.endDate)"
-									+ " FROM AccountBookEntity a WHERE a.id = :id AND a.userId ="
+									+ " a.budget, a.budgetCreatedAt, null, a.startDate, a.endDate) FROM"
+									+ " AccountBookEntity a WHERE a.id = :id AND a.user.id ="
 									+ " :userId",
 								AccountBookDetailResponse.class)
 						.setParameter("id", id)
@@ -50,7 +51,7 @@ public class AccountBookQueryRepository {
 		return result.stream().findFirst();
 	}
 
-	public List<AccountBookSummaryResponse> findAllByUserId(String userId, Long mainAccountBookId) {
+	public List<AccountBookSummaryResponse> findAllByUserId(UUID userId, Long mainAccountBookId) {
 		// Note: isMain logic is calculated in memory or query if possible. Here
 		// simplified.
 		// Assuming we pass mainAccountBookId to determine isMain in the service or
@@ -61,10 +62,10 @@ public class AccountBookQueryRepository {
 		// Let's return basics and map in service, OR use CASE WHEN.
 
 		return em.createQuery(
-						"SELECT new"
+							"SELECT new"
 							+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse("
 							+ " a.id, a.title, CASE WHEN a.id = :mainId THEN true ELSE false END)"
-							+ " FROM AccountBookEntity a WHERE a.userId = :userId",
+							+ " FROM AccountBookEntity a WHERE a.user.id = :userId ORDER BY a.bucketOrder ASC",
 						AccountBookSummaryResponse.class)
 				.setParameter("userId", userId)
 				.setParameter("mainId", mainAccountBookId)

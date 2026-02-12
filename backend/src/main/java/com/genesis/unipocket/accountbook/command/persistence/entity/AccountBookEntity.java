@@ -2,14 +2,19 @@ package com.genesis.unipocket.accountbook.command.persistence.entity;
 
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -31,9 +36,9 @@ public class AccountBookEntity extends BaseEntity {
 	@Column(nullable = false, name = "account_book_id")
 	private Long id;
 
-	// TODO: User 모델을 받으면 새롭게 주입 예정
-	@Column(nullable = false, name = "user_id")
-	private String userId;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
+	private UserEntity user;
 
 	@Column(columnDefinition = "CHAR(4)")
 	@Enumerated(value = EnumType.STRING)
@@ -46,8 +51,14 @@ public class AccountBookEntity extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String title;
 
-	@Column(nullable = true)
-	private Long budget;
+	@Column(name = "bucket_order", nullable = false)
+	private Integer bucketOrder;
+
+	@Column(nullable = true, precision = 19, scale = 2)
+	private BigDecimal budget;
+
+	@Column(name = "budget_created_at")
+	private LocalDateTime budgetCreatedAt;
 
 	@Column(name = "budget_created_at")
 	private LocalDateTime budgetCreatedAt;
@@ -61,10 +72,13 @@ public class AccountBookEntity extends BaseEntity {
 	public static AccountBookEntity create(AccountBookCreateArgs args) {
 
 		return AccountBookEntity.builder()
-				.userId(args.userId())
+				.user(args.user())
 				.localCountryCode(args.localCountryCode())
 				.baseCountryCode(args.baseCountryCode())
 				.title(args.title())
+				.bucketOrder(args.bucketOrder())
+				.budget(args.budget())
+				.budgetCreatedAt(args.budget() == null ? null : LocalDateTime.now())
 				.startDate(args.startDate())
 				.endDate(args.endDate())
 				.build();
@@ -85,7 +99,7 @@ public class AccountBookEntity extends BaseEntity {
 		this.baseCountryCode = baseCountryCode;
 	}
 
-	public void updateBudget(Long budget) {
+	public void updateBudget(BigDecimal budget) {
 		this.budget = budget;
 		this.budgetCreatedAt = budget == null ? null : LocalDateTime.now();
 	}

@@ -3,14 +3,22 @@ package com.genesis.unipocket.accountbook.command.application;
 import com.genesis.unipocket.accountbook.command.application.command.CreateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
+import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.expense.command.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -26,27 +34,40 @@ public class AccountBookCommandService {
 	private static final CountryCode DEFAULT_BASE_COUNTRY_CODE = CountryCode.KR;
 
 	private final AccountBookCommandRepository repository;
+	private final UserCommandRepository userRepository;
 	private final AccountBookValidator validator;
+	private final ExchangeRateService exchangeRateService;
 
 	@Transactional
 	public Long create(CreateAccountBookCommand command) {
+		UserEntity user =
+				userRepository
+						.findById(command.userId())
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
 		String uniqueTitle =
-				getUniqueTitle(
-						command.userId().toString(), command.userName() + DEFAULT_NAME_SUFFIX);
+				getUniqueTitle(command.userId(), command.userName() + DEFAULT_NAME_SUFFIX);
+		boolean isFirstAccountBook = repository.countByUser_Id(command.userId()) == 0;
+		int bucketOrder =
+				isFirstAccountBook ? 0 : repository.findMaxBucketOrderByUserId(command.userId()) + 1;
 
 		AccountBookCreateArgs args =
 				new AccountBookCreateArgs(
-						command.userId().toString(),
+						user,
 						uniqueTitle,
 						command.localCountryCode(),
 						DEFAULT_BASE_COUNTRY_CODE,
+						bucketOrder,
+						null,
 						command.startDate(),
 						command.endDate());
 
 		AccountBookEntity newEntity = AccountBookEntity.create(args);
 		validator.validate(newEntity);
 		AccountBookEntity savedEntity = repository.save(newEntity);
+		if (!user.hasMainBucket()) {
+			user.updateMainBucketId(savedEntity.getId());
+		}
 
 		return savedEntity.getId();
 	}
@@ -55,7 +76,7 @@ public class AccountBookCommandService {
 	public Long update(UpdateAccountBookCommand command) {
 
 		AccountBookEntity entity =
-				findAndVerifyOwnership(command.accountBookId(), command.userId().toString());
+				findAndVerifyOwnership(command.accountBookId(), command.userId());
 
 		entity.updateBudget(command.budget());
 		entity.updateTitle(command.title());
@@ -68,25 +89,47 @@ public class AccountBookCommandService {
 	}
 
 	@Transactional
+	public AccountBookBudgetUpdateResult updateBudget(Long accountBookId, UUID userId, BigDecimal budget) {
+		AccountBookEntity entity = findAndVerifyOwnership(accountBookId, userId);
+		entity.updateBudget(budget);
+		validator.validate(entity);
+
+		CurrencyCode baseCurrencyCode = entity.getBaseCountryCode().getCurrencyCode();
+		CurrencyCode localCurrencyCode = entity.getLocalCountryCode().getCurrencyCode();
+		LocalDateTime budgetCreatedAt = entity.getBudgetCreatedAt();
+		BigDecimal exchangeRate =
+				exchangeRateService.getExchangeRate(
+						baseCurrencyCode, localCurrencyCode, budgetCreatedAt);
+
+		return new AccountBookBudgetUpdateResult(
+				entity.getId(),
+				entity.getBaseCountryCode(),
+				entity.getLocalCountryCode(),
+				entity.getBudget(),
+				budgetCreatedAt,
+				exchangeRate);
+	}
+
+	@Transactional
 	public void delete(DeleteAccountBookCommand command) {
 		AccountBookEntity entity =
-				findAndVerifyOwnership(command.accountBookId(), command.userId().toString());
+				findAndVerifyOwnership(command.accountBookId(), command.userId());
 
 		repository.delete(entity);
 	}
 
-	private AccountBookEntity findAndVerifyOwnership(Long accountBookId, String userId) {
+	private AccountBookEntity findAndVerifyOwnership(Long accountBookId, UUID userId) {
 		AccountBookEntity entity =
 				repository
 						.findById(accountBookId)
 						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
-		if (!entity.getUserId().equals(userId)) {
+		if (!entity.getUser().getId().equals(userId)) {
 			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);
 		}
 		return entity;
 	}
 
-	private String getUniqueTitle(String userId, String baseTitle) {
+	private String getUniqueTitle(UUID userId, String baseTitle) {
 		List<String> existingNames = repository.findNamesStartingWith(userId, baseTitle);
 
 		if (existingNames.isEmpty()) {

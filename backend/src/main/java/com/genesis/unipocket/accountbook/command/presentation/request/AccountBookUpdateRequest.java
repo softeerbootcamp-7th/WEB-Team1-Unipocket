@@ -2,9 +2,12 @@ package com.genesis.unipocket.accountbook.command.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -12,7 +15,9 @@ public record AccountBookUpdateRequest(
 		@NotBlank(message = CODE) @Size(max = 255, message = CODE) String title,
 		@NotNull(message = CODE) CountryCode localCountryCode,
 		@NotNull(message = CODE) CountryCode baseCountryCode,
-		Long budget,
+		@DecimalMin(value = "0.00", inclusive = true, message = CODE)
+				@Digits(integer = 17, fraction = 2, message = CODE)
+		BigDecimal budget,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate startDate,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate endDate) {
 

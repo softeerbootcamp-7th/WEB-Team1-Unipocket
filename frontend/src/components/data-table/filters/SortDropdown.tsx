@@ -9,6 +9,8 @@ import {
 
 import { Icons } from '@/assets';
 
+const DROPDOWN_WIDTH_CLASS = 'w-24';
+
 const CRITERIA = {
   DATE: 'date',
   AMOUNT: 'amount',
@@ -75,21 +77,21 @@ const SortDropdown = () => {
       >
         <p className="text-label-normal caption2-bold">정렬</p>
         <div className="flex gap-2">
-          <div className="w-24">
+          <div className={DROPDOWN_WIDTH_CLASS}>
             <DropDown
               size="md"
               align="left"
-              itemWidth="w-24"
+              itemWidth={DROPDOWN_WIDTH_CLASS}
               options={criteriaOptions}
               selected={selectedCriteriaId}
               onSelect={handleCriteriaSelect}
             />
           </div>
-          <div className="w-24">
+          <div className={DROPDOWN_WIDTH_CLASS}>
             <DropDown
               size="md"
               align="left"
-              itemWidth="w-24"
+              itemWidth={DROPDOWN_WIDTH_CLASS}
               options={orderOptions}
               selected={selectedOrderId}
               onSelect={handleOrderSelect}

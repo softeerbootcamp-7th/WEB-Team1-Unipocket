@@ -9,6 +9,25 @@ import {
   TabTrigger,
 } from '@/components/common/Tab';
 
+import { Icons } from '@/assets';
+
+const CARD_MOCK_DATA = [
+  {
+    id: 1,
+    cardImg: 'https://example.com/hana_viva_x.png', // 실제 이미지 경로로 대체
+    cardName: '하나 비바X',
+    cardNumber: '2468',
+    nickname: '별명어쩌구',
+  },
+  {
+    id: 2,
+    cardImg: 'https://example.com/travel_wallet.png', // 실제 이미지 경로로 대체
+    cardName: '트레블월렛',
+    cardNumber: '8372',
+    nickname: '별명어쩌구',
+  },
+];
+
 const SettingPage = () => {
   return (
     <div className="bg flex flex-1 flex-col px-30 py-8">
@@ -48,11 +67,77 @@ const MainAccountBookSelection = () => {
     </SettingSection>
   );
 };
+
+interface LinkedCardItemProps {
+  cardImg: string;
+  cardName: string;
+  cardNumber: string;
+  nickname: string;
+}
+const LinkedCardItem = ({
+  cardImg,
+  cardName,
+  cardNumber,
+  nickname,
+}: LinkedCardItemProps) => {
+  return (
+    <div className="flex items-center justify-between border-b border-gray-100 py-3 last:border-0">
+      {/* 1. 카드 정보 영역 (왼쪽) */}
+      <div className="flex items-center gap-4">
+        {/* 카드 이미지 (하나 비바X 등) */}
+        <div className="h-10 w-16 overflow-hidden rounded-md border border-gray-200 bg-white">
+          <img
+            src={cardImg}
+            alt={cardName}
+            className="h-full w-full object-cover"
+          />
+        </div>
+
+        {/* 카드 텍스트 정보 */}
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-semibold text-gray-900">{cardName}</span>
+          <span className="text-gray-400">({cardNumber})</span>
+          <span className="mx-1 text-gray-300">|</span>
+          <span className="text-gray-500">{nickname}</span>
+        </div>
+      </div>
+
+      {/* 2. 액션 버튼 영역 (오른쪽) */}
+      <div className="flex items-center gap-2">
+        <button className="rounded-full p-2 transition-colors hover:bg-gray-100">
+          <Icons.Update className="h-5 w-5 text-gray-400" />
+        </button>
+        <button className="rounded-full p-2 text-red-400 transition-colors hover:bg-gray-100">
+          <Icons.Trash className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const LinkedCardList = () => {
   return (
     <SettingSection>
       <SettingTitle>국내카드 연동 목록</SettingTitle>
-      <div>ss</div>
+      <div className="flex flex-col">
+        {CARD_MOCK_DATA.map((card) => (
+          <LinkedCardItem
+            key={card.id}
+            cardImg={card.cardImg}
+            cardName={card.cardName}
+            cardNumber={card.cardNumber}
+            nickname={card.nickname}
+          />
+        ))}
+
+        {/* 새 카드 추가 버튼 영역 */}
+        <button className="flex items-center gap-4 py-3">
+          <div className="flex h-10 w-16 items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50">
+            <span className="text-xl text-gray-400">+</span>
+          </div>
+          <span className="text-sm text-gray-500">새 카드 추가</span>
+        </button>
+      </div>
     </SettingSection>
   );
 };
@@ -64,7 +149,6 @@ const AccountBookConfigurator = () => {
         <TabList>
           <TabTrigger value="sample1">Sample1.png</TabTrigger>
         </TabList>
-        <div className="h-10" />
         <TabContent value="sample1">
           <div className="bg-amber-300">ss</div>
         </TabContent>

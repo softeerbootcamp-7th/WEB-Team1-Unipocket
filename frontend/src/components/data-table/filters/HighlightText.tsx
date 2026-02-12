@@ -5,11 +5,12 @@ interface HighlightTextProps {
 
 const HighlightText = ({ text, highlight }: HighlightTextProps) => {
   if (!highlight.trim()) return <span className="caption1-medium">{text}</span>;
-  const regex = new RegExp(`(${highlight})`, 'gi');
+  const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedHighlight})`, 'gi');
   return (
     <span className="caption1-medium">
       {text.split(regex).map((part, i) =>
-        regex.test(part) ? (
+        i % 2 === 1 ? (
           <span key={i} className="underline">
             {part}
           </span>

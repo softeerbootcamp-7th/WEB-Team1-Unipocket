@@ -29,6 +29,8 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class UserCommandService {
 
+	private static final String TEMP_USER_NAME_PREFIX = "user_";
+
 	private final UserCommandRepository userRepository;
 	private final UserCardCommandRepository userCardRepository;
 	private final SocialAuthReadPort socialAuthReadPort;
@@ -77,7 +79,7 @@ public class UserCommandService {
 		if (StringUtils.hasText(command.name())) {
 			return command.name();
 		}
-		return "user_" + UUID.randomUUID().toString().substring(0, 8);
+		return TEMP_USER_NAME_PREFIX + UUID.randomUUID().toString().substring(0, 8);
 	}
 
 	@Transactional

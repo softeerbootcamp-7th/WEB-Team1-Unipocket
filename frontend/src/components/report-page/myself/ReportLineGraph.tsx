@@ -3,15 +3,21 @@ import ReportLegend from '@/components/report-page/ReportLegend';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 
 interface ReportLineGraphProps {
+  thisMonthCount: number;
+  lastMonthCount: number;
+  maxValue: number;
   thisMonthItem: { date: string; cumulatedAmount: string }[];
   prevMonthItem: { date: string; cumulatedAmount: string }[];
 }
 const ReportLineGraph = ({
+  thisMonthCount,
+  lastMonthCount,
+  maxValue,
   thisMonthItem,
   prevMonthItem,
 }: ReportLineGraphProps) => {
-  const maxDays = Math.max(thisMonthItem.length, prevMonthItem.length);
-  const thisMonthLastDay = thisMonthItem.length;
+  const maxDays = Math.max(thisMonthCount, lastMonthCount);
+  const thisMonthLastDay = thisMonthCount;
 
   const positions = [0, ((thisMonthLastDay - 1) / (maxDays - 1)) * 100, 100];
   const labels = ['1일', `${thisMonthLastDay}일`, `${maxDays}일`];
@@ -26,6 +32,7 @@ const ReportLineGraph = ({
         <VerticalGrid positions={positions} labels={labels} />
         <div className="relative z-10 pt-1.5">
           <ComparisonLineChart
+            maxValue={maxValue}
             thisMonth={thisMonthItem}
             prevMonth={prevMonthItem}
           />

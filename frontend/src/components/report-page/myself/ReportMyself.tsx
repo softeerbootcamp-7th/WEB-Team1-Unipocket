@@ -38,6 +38,11 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
       ? getCountryInfo(localCountryCode)?.currencyUnitKor || ''
       : getCountryInfo(baseCountryCode)?.currencyUnitKor || '';
 
+  const maxValue = Math.max(
+    Number(data.totalSpent.lastMonthTotal),
+    Number(data.totalSpent.thisMonthToDate),
+  );
+
   return (
     <ReportContainer title="전월 대비 지출 비교">
       <ReportContent className="h-86.25 w-109 pb-5 pl-6.5">
@@ -51,11 +56,14 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
             쓰는 중이에요
           </h3>
           <span className="body1-normal-medium text-label-alternative">
-            오늘까지 {data.thisMonthCount}
+            오늘까지 {data.totalSpent.thisMonthToDate}
             {unit} 썼어요
           </span>
         </div>
         <ReportLineGraph
+          thisMonthCount={data.thisMonthCount}
+          lastMonthCount={data.lastMonthCount}
+          maxValue={maxValue}
           thisMonthItem={data.thisMonthItem}
           prevMonthItem={data.prevMonthItem}
         />

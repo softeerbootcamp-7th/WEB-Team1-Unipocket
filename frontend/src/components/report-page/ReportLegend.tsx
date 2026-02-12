@@ -2,7 +2,7 @@ import clsx from 'clsx';
 
 const LEGEND_COLOR = {
   me: 'bg-primary-normal',
-  other: 'bg-cool-neutral-95',
+  other: 'bg-cool-neutral-90',
 } as const;
 
 const SHAPE_STYLE = {

@@ -34,6 +34,8 @@ const ReportLineGraph = ({
         <VerticalGrid positions={positions} labels={labels} />
         <div className="relative z-10 pt-2.5">
           <ComparisonLineChart
+            thisMonthCount={thisMonthCount}
+            lastMonthCount={lastMonthCount}
             maxValue={maxValue}
             thisMonth={thisMonthItem}
             prevMonth={prevMonthItem}

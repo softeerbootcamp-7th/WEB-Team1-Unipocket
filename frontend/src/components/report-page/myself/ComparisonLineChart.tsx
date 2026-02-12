@@ -6,6 +6,8 @@ interface ChartItem {
 interface ComparisonLineChartProps {
   thisMonth: ChartItem[];
   prevMonth: ChartItem[];
+  thisMonthCount: number;
+  lastMonthCount: number;
   maxValue: number;
   width?: number;
   height?: number;
@@ -57,13 +59,15 @@ const buildAreaPath = (
 };
 
 const ComparisonLineChart = ({
+  thisMonthCount,
+  lastMonthCount,
   thisMonth,
   prevMonth,
   maxValue,
   width = 360,
   height = 140,
 }: ComparisonLineChartProps) => {
-  const maxDay = Math.max(thisMonth.length, prevMonth.length);
+  const maxDay = Math.max(thisMonthCount, lastMonthCount);
 
   const thisPath = buildLinePath(thisMonth, width, height, maxValue, maxDay);
   const prevAreaPath = buildAreaPath(

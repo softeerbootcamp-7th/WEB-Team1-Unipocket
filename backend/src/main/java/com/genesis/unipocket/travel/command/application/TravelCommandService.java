@@ -1,5 +1,6 @@
 package com.genesis.unipocket.travel.command.application;
 
+import com.genesis.unipocket.global.common.enums.WidgetType;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.travel.command.application.command.CreateTravelCommand;
@@ -11,7 +12,6 @@ import com.genesis.unipocket.travel.command.persistence.entity.Travel;
 import com.genesis.unipocket.travel.command.persistence.entity.TravelWidget;
 import com.genesis.unipocket.travel.command.persistence.repository.TravelCommandRepository;
 import com.genesis.unipocket.travel.command.persistence.repository.TravelWidgetCommandRepository;
-import com.genesis.unipocket.global.common.enums.WidgetType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

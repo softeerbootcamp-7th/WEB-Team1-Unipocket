@@ -7,7 +7,7 @@ import {
 interface PeriodDailyViewProps {
   data: PeriodData[];
   animate?: boolean;
-  isLoading?: boolean;
+  isPreview?: boolean;
 }
 
 /**
@@ -16,11 +16,11 @@ interface PeriodDailyViewProps {
 const PeriodDailyView = ({
   data,
   animate = true,
-  isLoading = false,
+  isPreview = false,
 }: PeriodDailyViewProps) => {
   const maxValue = Math.max(1, ...data.map((d) => d.value));
 
-  const barColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
+  const barColor = isPreview ? PERIOD_SKELETON_COLOR : undefined;
 
   return (
     <div className="flex w-full flex-col gap-2.5">
@@ -32,7 +32,7 @@ const PeriodDailyView = ({
               value={item.value}
               maxValue={maxValue}
               barColor={barColor}
-              animate={!isLoading && animate}
+              animate={!isPreview && animate}
             />
           </div>
         ))}
@@ -41,7 +41,7 @@ const PeriodDailyView = ({
       {/* 라벨 */}
       <div className="flex w-full justify-between">
         {data.map((item) =>
-          isLoading ? (
+          isPreview ? (
             <div key={item.label} className="flex flex-1 justify-center">
               <div className="bg-fill-normal h-3 w-4 animate-pulse rounded" />
             </div>

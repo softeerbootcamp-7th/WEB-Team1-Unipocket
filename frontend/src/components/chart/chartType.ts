@@ -1,6 +1,10 @@
 import type { CurrencyType } from '@/types/currency';
 
 // type & interface
+export interface ChartMode {
+  isPreview?: boolean;
+}
+
 export type ExpenseChartMode = 'method' | 'currency';
 
 export interface ExpenseChartUiItem {

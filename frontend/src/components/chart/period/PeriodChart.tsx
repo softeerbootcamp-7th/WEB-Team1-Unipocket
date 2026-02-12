@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import {
+  type ChartMode,
   CURRENCY_OPTIONS,
   PERIOD_ID,
   PERIOD_OPTIONS,
@@ -20,7 +21,7 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
-const PeriodChart = ({ isLoading = false }: { isLoading?: boolean }) => {
+const PeriodChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
     CURRENCY_OPTIONS[0].id,
   );
@@ -45,15 +46,15 @@ const PeriodChart = ({ isLoading = false }: { isLoading?: boolean }) => {
           <PeriodWeeklyView
             data={MOCK_WEEKLY_DATA}
             countryCode={currentCountryCode ?? 'KR'}
-            isLoading={isLoading}
+            isPreview={isPreview}
           />
         );
       case PERIOD_ID.DAILY:
-        return <PeriodDailyView data={MOCK_DAILY_DATA} isLoading={isLoading} />;
+        return <PeriodDailyView data={MOCK_DAILY_DATA} isPreview={isPreview} />;
       case PERIOD_ID.MONTHLY:
       default:
         return (
-          <PeriodMonthlyView data={MOCK_MONTHLY_DATA} isLoading={isLoading} />
+          <PeriodMonthlyView data={MOCK_MONTHLY_DATA} isPreview={isPreview} />
         );
     }
   };
@@ -65,7 +66,7 @@ const PeriodChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   };
 
   return (
-    <ChartContainer>
+    <ChartContainer isPreview={isPreview}>
       <ChartHeader title="기간별 지출">
         {selectedPeriod === PERIOD_ID.WEEKLY && (
           <DropDown

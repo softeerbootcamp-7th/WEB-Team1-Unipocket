@@ -7,7 +7,6 @@ import com.genesis.unipocket.expense.expense.command.persistence.repository.Expe
 import com.genesis.unipocket.expense.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-
 import java.time.ZoneOffset;
 import java.util.Set;
 import java.util.UUID;
@@ -61,8 +60,12 @@ public class ExpenseQueryService {
 			entities =
 					expenseRepository.findByFilters(
 							accountBookId,
-							filter.startDate().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime(),
-							filter.endDate().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+							filter.startDate()
+									.withOffsetSameInstant(ZoneOffset.UTC)
+									.toLocalDateTime(),
+							filter.endDate()
+									.withOffsetSameInstant(ZoneOffset.UTC)
+									.toLocalDateTime(),
 							filter.category(),
 							filter.minAmount(),
 							filter.maxAmount(),

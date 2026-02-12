@@ -29,7 +29,9 @@ public class ExpenseCommandController {
 
 	private final ExpenseCommandFacade expenseFacade;
 
-	@Operation(summary = "지출내역 수기작성 생성 API", description = "지출내역을 accountBookId 하위에 수기 작성하여 하나 생성합니다.")
+	@Operation(
+			summary = "지출내역 수기작성 생성 API",
+			description = "지출내역을 accountBookId 하위에 수기 작성하여 하나 생성합니다.")
 	@PostMapping("/account-books/{accountBookId}/expenses/manual")
 	public ResponseEntity<ExpenseManualCreateResponse> createExpenseManual(
 			@LoginUser UUID userId,
@@ -41,7 +43,9 @@ public class ExpenseCommandController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@Operation(summary = "지출내역 수정 API", description = "지출내역 하나에 대한 전체 데이터 수정을 합니다. 전체 데이터가 덮어씌워지며, 기존의 데이터는 남지 않습니다.")
+	@Operation(
+			summary = "지출내역 수정 API",
+			description = "지출내역 하나에 대한 전체 데이터 수정을 합니다. 전체 데이터가 덮어씌워지며, 기존의 데이터는 남지 않습니다.")
 	@PutMapping("/account-books/{accountBookId}/expenses/{expenseId}")
 	public ResponseEntity<ExpenseUpdateResponse> updateExpense(
 			@LoginUser UUID userId,

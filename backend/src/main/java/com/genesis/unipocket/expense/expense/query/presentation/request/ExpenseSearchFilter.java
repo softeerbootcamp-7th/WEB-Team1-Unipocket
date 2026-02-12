@@ -1,9 +1,7 @@
 package com.genesis.unipocket.expense.expense.query.presentation.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.genesis.unipocket.expense.common.enums.Category;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**

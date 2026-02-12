@@ -9,7 +9,7 @@ import com.genesis.unipocket.expense.command.persistence.entity.expense.Temporar
 import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.expense.command.presentation.request.TemporaryExpenseUpdateRequest;
-import com.genesis.unipocket.expense.common.validator.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

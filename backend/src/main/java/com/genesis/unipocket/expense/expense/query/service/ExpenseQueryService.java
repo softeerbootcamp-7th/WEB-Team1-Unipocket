@@ -7,6 +7,7 @@ import com.genesis.unipocket.expense.expense.command.persistence.repository.Expe
 import com.genesis.unipocket.expense.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Set;
 import java.util.UUID;
@@ -74,15 +75,24 @@ public class ExpenseQueryService {
 		if (filter == null || isFilterEmpty(filter)) {
 			entities = expenseRepository.findByAccountBookId(accountBookId, refinedPageable);
 		} else {
+			var startDate =
+					filter.startDate() != null
+							? filter.startDate()
+									.withOffsetSameInstant(ZoneOffset.UTC)
+									.toLocalDateTime()
+							: null;
+			var endDate =
+					filter.endDate() != null
+							? filter.endDate()
+									.withOffsetSameInstant(ZoneOffset.UTC)
+									.toLocalDateTime()
+							: LocalDateTime.now();
+
 			entities =
 					expenseRepository.findByFilters(
 							accountBookId,
-							filter.startDate()
-									.withOffsetSameInstant(ZoneOffset.UTC)
-									.toLocalDateTime(),
-							filter.endDate()
-									.withOffsetSameInstant(ZoneOffset.UTC)
-									.toLocalDateTime(),
+							startDate,
+							endDate,
 							filter.category(),
 							filter.minAmount(),
 							filter.maxAmount(),

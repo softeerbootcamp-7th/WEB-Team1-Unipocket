@@ -1,16 +1,16 @@
-package com.genesis.unipocket.expense.query.service;
+package com.genesis.unipocket.expense.tempexpense.query.service;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.expense.common.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.expense.query.presentation.response.FileProcessingSummaryResponse;
-import com.genesis.unipocket.expense.query.presentation.response.ImageProcessingSummaryResponse;
-import com.genesis.unipocket.expense.query.presentation.response.TemporaryExpenseResponse;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.FileRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.expense.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
+import com.genesis.unipocket.expense.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
+import com.genesis.unipocket.expense.tempexpense.query.presentation.response.TemporaryExpenseResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +49,14 @@ public class TemporaryExpenseQueryService {
 		return TemporaryExpenseResponse.fromList(entities);
 	}
 
-	public TemporaryExpenseResponse getTemporaryExpense(Long tempExpenseId, UUID userId) {
+	public TemporaryExpenseResponse getTemporaryExpense(
+			Long accountBookId, Long tempExpenseId, UUID userId) {
 		TemporaryExpense tempExpense = findById(tempExpenseId);
-		Long accountBookId = getAccountBookIdFromTempExpense(tempExpense);
+		Long resourceAccountBookId = getAccountBookIdFromTempExpense(tempExpense);
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		if (!accountBookId.equals(resourceAccountBookId)) {
+			throw new IllegalArgumentException("가계부와 임시지출내역이 일치하지 않습니다.");
+		}
 
 		return TemporaryExpenseResponse.from(tempExpense);
 	}
@@ -72,22 +76,30 @@ public class TemporaryExpenseQueryService {
 		// 2. 메타에 속한 파일 조회
 		List<Long> metaIds = metas.stream().map(TempExpenseMeta::getTempExpenseMetaId).toList();
 		List<File> files = fileRepository.findByTempExpenseMetaIdIn(metaIds);
+		Map<Long, File> fileByMetaId =
+				files.stream()
+						.collect(
+								Collectors.toMap(
+										File::getTempExpenseMetaId,
+										f -> f,
+										(existing, replacement) -> existing));
 
-		// 3. 파일별 임시지출내역 조회
-		List<Long> fileIds = files.stream().map(File::getFileId).toList();
-		List<TemporaryExpense> allExpenses = temporaryExpenseRepository.findByFileIdIn(fileIds);
+		// 3. 메타별 임시지출내역 조회
+		List<TemporaryExpense> allExpenses =
+				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds);
 
-		// 4. fileId 기준으로 그룹핑
+		// 4. tempExpenseMetaId 기준으로 그룹핑
 		Map<Long, List<TemporaryExpense>> expensesByFile =
-				allExpenses.stream().collect(Collectors.groupingBy(TemporaryExpense::getFileId));
+				allExpenses.stream()
+						.collect(Collectors.groupingBy(TemporaryExpense::getTempExpenseMetaId));
 
 		// 5. 파일별 요약 생성
-		List<FileProcessingSummaryResponse.FileSummary> fileSummaries = new ArrayList<>();
+		List<FileProcessingSummaryResponse.FileSummary> metaSummaries = new ArrayList<>();
 		int processedCount = 0;
 
-		for (File file : files) {
-			List<TemporaryExpense> fileExpenses =
-					expensesByFile.getOrDefault(file.getFileId(), List.of());
+		for (Long metaId : metaIds) {
+			File file = fileByMetaId.get(metaId);
+			List<TemporaryExpense> fileExpenses = expensesByFile.getOrDefault(metaId, List.of());
 
 			Map<TemporaryExpenseStatus, Long> counts =
 					fileExpenses.stream()
@@ -103,11 +115,13 @@ public class TemporaryExpenseQueryService {
 					!fileExpenses.isEmpty() && incompleteCount == 0 && abnormalCount == 0;
 			if (processed) processedCount++;
 
-			fileSummaries.add(
+			metaSummaries.add(
 					new FileProcessingSummaryResponse.FileSummary(
-							file.getFileId(),
-							file.getS3Key(),
-							file.getFileType() != null ? file.getFileType().name() : null,
+							metaId,
+							file != null ? file.getS3Key() : null,
+							file != null && file.getFileType() != null
+									? file.getFileType().name()
+									: null,
 							fileExpenses.size(),
 							normalCount,
 							incompleteCount,
@@ -116,7 +130,7 @@ public class TemporaryExpenseQueryService {
 		}
 
 		return new FileProcessingSummaryResponse(
-				fileSummaries, files.size(), processedCount, files.size() - processedCount);
+				metaSummaries, metaIds.size(), processedCount, metaIds.size() - processedCount);
 	}
 
 	/**
@@ -168,13 +182,9 @@ public class TemporaryExpenseQueryService {
 	}
 
 	private Long getAccountBookIdFromTempExpense(TemporaryExpense tempExpense) {
-		File file =
-				fileRepository
-						.findById(tempExpense.getFileId())
-						.orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
-						.findById(file.getTempExpenseMetaId())
+						.findById(tempExpense.getTempExpenseMetaId())
 						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
 		return meta.getAccountBookId();
 	}

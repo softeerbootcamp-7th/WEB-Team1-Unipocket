@@ -1,14 +1,14 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.tempexpense.command.application;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.expense.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.BatchConversionResult;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.ConversionResult;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -30,13 +30,12 @@ public class TemporaryExpenseConversionService {
 	private final TemporaryExpenseRepository tempExpenseRepository;
 	private final ExpenseRepository expenseRepository;
 	private final TempExpenseMetaRepository metaRepository;
-	private final FileRepository fileRepository;
 
 	/**
 	 * 단일 변환
 	 */
 	@Transactional
-	public ExpenseEntity convertToExpense(Long tempExpenseId) {
+	public ExpenseEntity convertToExpense(Long accountBookId, Long tempExpenseId) {
 		log.info("Converting temporary expense to permanent: {}", tempExpenseId);
 
 		// 1. TemporaryExpense 조회
@@ -51,15 +50,14 @@ public class TemporaryExpenseConversionService {
 		// 2. 필수 필드 검증
 		validateRequiredFields(temp);
 
-		// 3. accountBookId 조회 (fileId → meta)
-		File file =
-				fileRepository
-						.findById(temp.getFileId())
-						.orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+		// 3. accountBookId 조회 (meta)
 		TempExpenseMeta meta =
 				metaRepository
-						.findById(file.getTempExpenseMetaId())
+						.findById(temp.getTempExpenseMetaId())
 						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		if (!meta.getAccountBookId().equals(accountBookId)) {
+			throw new IllegalArgumentException("가계부와 임시지출내역이 일치하지 않습니다.");
+		}
 
 		// 4. ExpenseManualCreateArgs 생성 (manual 팩토리 메서드 사용)
 		ExpenseManualCreateArgs args =
@@ -101,7 +99,10 @@ public class TemporaryExpenseConversionService {
 	 * Batch 변환
 	 */
 	@Transactional
-	public BatchConversionResult convertBatch(List<Long> tempExpenseIds) {
+	public BatchConversionResult convertBatch(Long accountBookId, List<Long> tempExpenseIds) {
+		if (tempExpenseIds == null || tempExpenseIds.isEmpty()) {
+			return new BatchConversionResult(0, 0, 0, List.of());
+		}
 		log.info("Starting batch conversion for {} temporary expenses", tempExpenseIds.size());
 
 		List<ConversionResult> results = new ArrayList<>();
@@ -110,7 +111,7 @@ public class TemporaryExpenseConversionService {
 
 		for (Long tempExpenseId : tempExpenseIds) {
 			try {
-				ExpenseEntity expense = convertToExpense(tempExpenseId);
+				ExpenseEntity expense = convertToExpense(accountBookId, tempExpenseId);
 				results.add(
 						new ConversionResult(
 								tempExpenseId, expense.getExpenseId(), "SUCCESS", null));
@@ -131,6 +132,27 @@ public class TemporaryExpenseConversionService {
 		return new BatchConversionResult(tempExpenseIds.size(), successCount, failedCount, results);
 	}
 
+	@Transactional
+	public BatchConversionResult convertMeta(
+			Long accountBookId, Long tempExpenseMetaId, List<Long> tempExpenseIds) {
+		TempExpenseMeta meta =
+				metaRepository
+						.findById(tempExpenseMetaId)
+						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		if (!meta.getAccountBookId().equals(accountBookId)) {
+			throw new IllegalArgumentException("가계부와 메타데이터가 일치하지 않습니다.");
+		}
+
+		List<Long> targetIds =
+				(tempExpenseIds == null || tempExpenseIds.isEmpty())
+						? tempExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId).stream()
+								.map(TemporaryExpense::getTempExpenseId)
+								.toList()
+						: tempExpenseIds;
+
+		return convertBatch(accountBookId, targetIds);
+	}
+
 	/**
 	 * 필수 필드 검증
 	 */
@@ -146,19 +168,4 @@ public class TemporaryExpenseConversionService {
 		}
 		// Category는 null 허용 (UNCLASSIFIED로 변환 가능)
 	}
-
-	/**
-	 * Batch 변환 결과
-	 */
-	public record BatchConversionResult(
-			int totalRequested,
-			int successCount,
-			int failedCount,
-			List<ConversionResult> results) {}
-
-	/**
-	 * 개별 변환 결과
-	 */
-	public record ConversionResult(
-			Long tempExpenseId, Long expenseId, String status, String reason) {}
 }

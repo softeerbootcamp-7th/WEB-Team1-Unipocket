@@ -1,11 +1,11 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.tempexpense.command.application;
 
-import com.genesis.unipocket.expense.command.application.command.TemporaryExpenseUpdateCommand;
-import com.genesis.unipocket.expense.command.application.result.TemporaryExpenseResult;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
-import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.expense.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,7 +89,7 @@ public class TemporaryExpenseCommandService {
 		TemporaryExpense updated =
 				TemporaryExpense.builder()
 						.tempExpenseId(entity.getTempExpenseId())
-						.fileId(entity.getFileId())
+						.tempExpenseMetaId(entity.getTempExpenseMetaId())
 						.merchantName(resolvedMerchantName)
 						.category(resolvedCategory)
 						.localCountryCode(resolvedLocalCountryCode)

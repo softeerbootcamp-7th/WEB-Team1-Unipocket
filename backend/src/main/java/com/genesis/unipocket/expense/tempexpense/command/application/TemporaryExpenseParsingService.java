@@ -1,14 +1,16 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.tempexpense.command.application;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TemporaryExpense.TemporaryExpenseStatus;
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.expense.common.enums.Category;
-import com.genesis.unipocket.expense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.BatchParsingResult;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.ParsingResult;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.FileRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.expense.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.GeminiParseResponse;
@@ -44,21 +46,24 @@ public class TemporaryExpenseParsingService {
 	 * 파일 파싱 및 TemporaryExpense 생성
 	 */
 	@Transactional
-	public ParsingResult parseFile(Long fileId) {
-		// 1. File 조회
+	public ParsingResult parseFile(Long accountBookId, String s3Key) {
 		File file =
 				fileRepository
-						.findById(fileId)
+						.findByS3Key(s3Key)
 						.orElseThrow(
-								() -> new IllegalArgumentException("파일을 찾을 수 없습니다. ID: " + fileId));
+								() ->
+										new IllegalArgumentException(
+												"파일을 찾을 수 없습니다. s3Key: " + s3Key));
 
-		// 2. TempExpenseMeta 조회
+		Long tempExpenseMetaId = file.getTempExpenseMetaId();
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
-						.findById(file.getTempExpenseMetaId())
+						.findById(tempExpenseMetaId)
 						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		if (!meta.getAccountBookId().equals(accountBookId)) {
+			throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
+		}
 
-		// 3. Gemini 파싱 (S3 GET presigned URL 생성)
 		String s3Url =
 				s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
 		GeminiParseResponse geminiResponse = geminiService.parseReceiptImage(s3Url);
@@ -67,7 +72,6 @@ public class TemporaryExpenseParsingService {
 			throw new RuntimeException("파싱 실패: " + geminiResponse.errorMessage());
 		}
 
-		// 4. TemporaryExpense 엔티티 생성
 		List<TemporaryExpense> createdExpenses = new ArrayList<>();
 		int normalCount = 0;
 		int incompleteCount = 0;
@@ -79,7 +83,7 @@ public class TemporaryExpenseParsingService {
 
 			TemporaryExpense expense =
 					TemporaryExpense.builder()
-							.fileId(fileId)
+							.tempExpenseMetaId(tempExpenseMetaId)
 							.merchantName(item.merchantName())
 							.category(parseCategory(item.category()))
 							.localCountryCode(parseCurrencyCode(item.localCurrency()))
@@ -97,10 +101,8 @@ public class TemporaryExpenseParsingService {
 			createdExpenses.add(expense);
 		}
 
-		// 5. 저장
 		List<TemporaryExpense> savedExpenses = temporaryExpenseRepository.saveAll(createdExpenses);
 
-		// 6. 결과 반환
 		return new ParsingResult(
 				meta.getTempExpenseMetaId(),
 				savedExpenses.size(),
@@ -156,27 +158,25 @@ public class TemporaryExpenseParsingService {
 	 */
 	@org.springframework.scheduling.annotation.Async("parsingExecutor")
 	public java.util.concurrent.CompletableFuture<BatchParsingResult> parseBatchFilesAsync(
-			List<Long> fileIds, String taskId) {
-		log.info("Starting async batch parsing for task: {}, files: {}", taskId, fileIds.size());
+			Long accountBookId, List<String> s3Keys, String taskId) {
+		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());
 
-		int totalFiles = fileIds.size();
+		int totalFiles = s3Keys.size();
 		int completedFiles = 0;
 		int totalParsed = 0;
 		int totalNormal = 0;
 		int totalIncomplete = 0;
 		Long firstMetaId = null;
 
-		for (Long fileId : fileIds) {
+		for (String s3Key : s3Keys) {
 			try {
-				// 파일 조회
-				File file = fileRepository.findById(fileId).orElse(null);
+				File file = fileRepository.findByS3Key(s3Key).orElse(null);
 				if (file == null) {
-					log.warn("File not found: {}", fileId);
+					log.warn("File not found: {}", s3Key);
 					completedFiles++;
 					continue;
 				}
 
-				// 진행 상황 알림
 				progressPublisher.publishProgress(
 						taskId,
 						new ParsingProgressPublisher.ParsingProgressEvent(
@@ -185,8 +185,7 @@ public class TemporaryExpenseParsingService {
 								file.getS3Key(),
 								(completedFiles * 100) / totalFiles));
 
-				// 파싱 실행
-				ParsingResult result = parseFile(fileId);
+				ParsingResult result = parseFile(accountBookId, s3Key);
 				if (firstMetaId == null) {
 					firstMetaId = result.metaId();
 				}
@@ -197,7 +196,7 @@ public class TemporaryExpenseParsingService {
 				completedFiles++;
 
 			} catch (Exception e) {
-				log.error("Failed to parse file: {}", fileId, e);
+				log.error("Failed to parse file: {}", s3Key, e);
 				completedFiles++;
 			}
 		}
@@ -210,25 +209,4 @@ public class TemporaryExpenseParsingService {
 
 		return java.util.concurrent.CompletableFuture.completedFuture(finalResult);
 	}
-
-	/**
-	 * 파싱 결과
-	 */
-	public record ParsingResult(
-			Long metaId,
-			int totalCount,
-			int normalCount,
-			int incompleteCount,
-			int abnormalCount,
-			List<TemporaryExpense> expenses) {}
-
-	/**
-	 * Batch 파싱 결과
-	 */
-	public record BatchParsingResult(
-			Long metaId,
-			int totalParsed,
-			int normalCount,
-			int incompleteCount,
-			int abnormalCount) {}
 }

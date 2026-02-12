@@ -1,6 +1,6 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.tempexpense.command.application;
 
-import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.ParsedExpenseItem;
+import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -8,10 +8,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * <b>CSV 파싱 서비스</b>
+ */
 /**
  * <b>CSV 파싱 서비스</b>
  *
@@ -37,7 +44,7 @@ public class CsvParsingService {
 	 * @param csvContent CSV 텍스트
 	 * @return 파싱된 지출내역 목록
 	 */
-	public List<ParsedExpenseItem> parseCsv(String csvContent) {
+	public List<GeminiService.ParsedExpenseItem> parseCsv(String csvContent) {
 		log.info("Parsing CSV content, length: {}", csvContent.length());
 
 		try {
@@ -52,11 +59,11 @@ public class CsvParsingService {
 			log.info("Detected headers: {}", headerMap);
 
 			// 데이터 변환
-			List<ParsedExpenseItem> items = new ArrayList<>();
+			List<GeminiService.ParsedExpenseItem> items = new ArrayList<>();
 			for (int i = 1; i < rows.size(); i++) {
 				String[] row = rows.get(i);
 				try {
-					ParsedExpenseItem item = mapRowToExpenseItem(row, headerMap);
+					GeminiService.ParsedExpenseItem item = mapRowToExpenseItem(row, headerMap);
 					if (item != null) {
 						items.add(item);
 					}
@@ -176,7 +183,8 @@ public class CsvParsingService {
 	/**
 	 * CSV 행을 ParsedExpenseItem으로 변환
 	 */
-	private ParsedExpenseItem mapRowToExpenseItem(String[] row, Map<String, Integer> headerMap) {
+	private GeminiService.ParsedExpenseItem mapRowToExpenseItem(
+			String[] row, Map<String, Integer> headerMap) {
 		String merchantName = getField(row, headerMap, "merchantName");
 		String amountStr = getField(row, headerMap, "amount");
 		String dateStr = getField(row, headerMap, "date");
@@ -210,7 +218,7 @@ public class CsvParsingService {
 		// 카드 번호
 		String card = getField(row, headerMap, "card");
 
-		return new ParsedExpenseItem(
+		return new GeminiService.ParsedExpenseItem(
 				merchantName,
 				category != null ? category.name() : null,
 				amount,

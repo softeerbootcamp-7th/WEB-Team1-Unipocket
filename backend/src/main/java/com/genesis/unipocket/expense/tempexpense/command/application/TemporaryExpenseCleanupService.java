@@ -1,8 +1,8 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.tempexpense.command.application;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.FileRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <b>미사용 업로드 정리 서비스</b>
- *
- * @author 김동균
+ * <p>
+ * S3 리소스 지우는 서비스가 아닌, <br>
+ * 파싱 후 일정 시간이 지난 임시 지출내역 데이터들을 지워주는 서비스
+ * </p>
+ * @author bluefishez
  * @since 2026-02-10
  */
 @Slf4j

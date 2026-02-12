@@ -1,12 +1,14 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.expense.tempexpense.command.application;
 
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.File.FileType;
-import com.genesis.unipocket.expense.command.persistence.entity.expense.TempExpenseMeta;
-import com.genesis.unipocket.expense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.expense.command.presentation.request.BatchPresignedUrlRequest;
-import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.FileRegisterResult;
+import com.genesis.unipocket.expense.tempexpense.command.application.result.FileUploadResult;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.File.FileType;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.FileRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.expense.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,14 +26,15 @@ public class FileUploadService {
 
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 	private final FileRepository fileRepository;
-	private final S3Service s3Service;
+	private final TemporaryExpenseRepository temporaryExpenseRepository;
+	private final MediaObjectStorage mediaObjectStorage;
 	private static final String TEMP_EXPENSE_PREFIX = "temp-expenses/";
 
 	/**
 	 * Presigned URL 생성 및 메타데이터 저장
 	 */
 	@Transactional
-	public FileUploadResponse createPresignedUrl(
+	public FileUploadResult createPresignedUrl(
 			Long accountBookId, String fileName, FileType fileType) {
 		// 1. TempExpenseMeta 생성
 		TempExpenseMeta meta = TempExpenseMeta.builder().accountBookId(accountBookId).build();
@@ -39,7 +42,7 @@ public class FileUploadService {
 
 		// 2. S3 Presigned URL 생성
 		String prefix = "temp-expenses/" + accountBookId;
-		PresignedUrlResult s3Response = s3Service.getPresignedUrl(prefix, fileName);
+		PresignedUrlResult s3Response = mediaObjectStorage.getPresignedUrl(prefix, fileName);
 
 		// 3. File 엔티티 생성
 		File file =
@@ -48,18 +51,21 @@ public class FileUploadService {
 						.fileType(fileType)
 						.s3Key(s3Response.imageKey())
 						.build();
-		File savedFile = fileRepository.save(file);
+		fileRepository.save(file);
 
 		// 4. Response 반환
-		return new FileUploadResponse(
-				savedFile.getFileId(), s3Response.presignedUrl(), s3Response.imageKey(), 300);
+		return new FileUploadResult(
+				savedMeta.getTempExpenseMetaId(),
+				s3Response.presignedUrl(),
+				s3Response.imageKey(),
+				300);
 	}
 
 	/**
 	 * S3 업로드 파일 등록 (s3Key 기반)
 	 */
 	@Transactional
-	public FileRegisterResponse registerUploadedFile(
+	public FileRegisterResult registerUploadedFile(
 			Long accountBookId, String s3Key, FileType fileType) {
 		if (s3Key == null || s3Key.isBlank()) {
 			throw new IllegalArgumentException("s3Key는 필수입니다.");
@@ -82,35 +88,20 @@ public class FileUploadService {
 						.build();
 		File savedFile = fileRepository.save(file);
 
-		return new FileRegisterResponse(
-				savedFile.getFileId(), savedMeta.getTempExpenseMetaId(), savedFile.getS3Key());
+		return new FileRegisterResult(savedMeta.getTempExpenseMetaId(), savedFile.getS3Key());
 	}
 
-	/**
-	 * 여러 파일 Presigned URL 생성 (Batch)
-	 */
 	@Transactional
-	public java.util.List<FileUploadResponse> createBatchPresignedUrls(
-			Long accountBookId, java.util.List<BatchPresignedUrlRequest.FileInfo> files) {
-		java.util.List<FileUploadResponse> responses = new java.util.ArrayList<>();
-
-		for (BatchPresignedUrlRequest.FileInfo fileInfo : files) {
-			FileUploadResponse response =
-					createPresignedUrl(accountBookId, fileInfo.fileName(), fileInfo.fileType());
-			responses.add(response);
+	public void deleteMeta(Long accountBookId, Long tempExpenseMetaId) {
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(tempExpenseMetaId)
+						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		if (!meta.getAccountBookId().equals(accountBookId)) {
+			throw new IllegalArgumentException("가계부와 메타데이터가 일치하지 않습니다.");
 		}
-
-		return responses;
+		temporaryExpenseRepository.deleteByTempExpenseMetaId(tempExpenseMetaId);
+		fileRepository.deleteByTempExpenseMetaId(tempExpenseMetaId);
+		tempExpenseMetaRepository.delete(meta);
 	}
-
-	/**
-	 * 파일 업로드 응답
-	 */
-	public record FileUploadResponse(
-			Long fileId, String presignedUrl, String s3Key, int expiresIn) {}
-
-	/**
-	 * 파일 등록 응답
-	 */
-	public record FileRegisterResponse(Long fileId, Long metaId, String s3Key) {}
 }

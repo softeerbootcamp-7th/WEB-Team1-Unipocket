@@ -1,0 +1,45 @@
+import { renderWidget } from '@/components/chart/widget/renderWidget';
+import type { WidgetType } from '@/components/chart/widget/type';
+
+interface WidgetPickerProps {
+  maxWidgets: number;
+  availableWidgets: WidgetType[];
+  handleAddWidget: (widgetType: WidgetType) => void;
+}
+
+const WidgetPicker = ({
+  maxWidgets,
+  availableWidgets,
+  handleAddWidget,
+}: WidgetPickerProps) => {
+  return (
+    <div className="rounded-modal-20 shadow-semantic-subtle bg-background-normal z-50 mb-8 flex h-full flex-col items-start justify-between rounded-b-none px-10 py-9 pb-30">
+      <div className="flex flex-col gap-2.75">
+        <h3 className="title3-semibold text-label-normal">
+          추가 가능한 위젯들
+        </h3>
+        <span className="label1-normal-medium text-label-neutral">
+          추가하고 싶은 위젯을 상단에 드래그 해주세요.
+          <br />
+          {`위젯은 최대 ${maxWidgets}개까지 설정할 수 있습니다.`}
+        </span>
+      </div>
+      <div className="w-full min-w-0 overflow-x-auto">
+        <div className="flex w-max gap-8 py-1">
+          {/* 스크롤 될 아이템들 (추가되지 않은 위젯들) */}
+          {availableWidgets.map((widgetType) => (
+            <div
+              key={widgetType}
+              onClick={() => handleAddWidget(widgetType)}
+              className="cursor-pointer"
+            >
+              {renderWidget({ order: -1, widgetType }, { isPreview: true })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WidgetPicker;

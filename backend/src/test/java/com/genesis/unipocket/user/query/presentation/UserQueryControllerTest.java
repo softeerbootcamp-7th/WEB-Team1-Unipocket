@@ -22,7 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,13 +31,13 @@ class UserQueryControllerTest {
 
 	@Autowired private MockMvc mockMvc;
 
-	@MockBean private UserQueryService userQueryService;
+	@MockitoBean private UserQueryService userQueryService;
 
-	@MockBean private JwtProvider jwtProvider;
+	@MockitoBean private JwtProvider jwtProvider;
 
-	@MockBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private TokenBlacklistService tokenBlacklistService;
 
-	@MockBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
 	@Autowired private ObjectMapper objectMapper;
 

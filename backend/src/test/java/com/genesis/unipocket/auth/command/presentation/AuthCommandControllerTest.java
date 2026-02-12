@@ -22,7 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,14 +31,14 @@ class AuthCommandControllerTest {
 
 	@Autowired private MockMvc mockMvc;
 
-	@MockBean private AuthService authService;
-	@MockBean private CookieUtil cookieUtil;
-	@MockBean private OAuthAuthorizeFacade authorizeFacade;
-	@MockBean private UserLoginFacade loginFacade;
-	@MockBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-	@MockBean private JwtProvider jwtProvider;
-	@MockBean private TokenBlacklistService tokenBlacklistService;
-	@MockBean private JwtProperties jwtProperties;
+	@MockitoBean private AuthService authService;
+	@MockitoBean private CookieUtil cookieUtil;
+	@MockitoBean private OAuthAuthorizeFacade authorizeFacade;
+	@MockitoBean private UserLoginFacade loginFacade;
+	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+	@MockitoBean private JwtProvider jwtProvider;
+	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private JwtProperties jwtProperties;
 
 	@Test
 	@DisplayName("토큰 재발급 성공")

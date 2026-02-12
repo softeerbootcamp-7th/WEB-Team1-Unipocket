@@ -18,7 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,15 +27,15 @@ class UserCommandControllerTest {
 
 	@Autowired private MockMvc mockMvc;
 
-	@MockBean private UserCommandFacade userCommandFacade;
+	@MockitoBean private UserCommandFacade userCommandFacade;
 
-	@MockBean private JwtProvider jwtProvider;
+	@MockitoBean private JwtProvider jwtProvider;
 
-	@MockBean
+	@MockitoBean
 	private com.genesis.unipocket.auth.command.application.TokenBlacklistService
 			tokenBlacklistService;
 
-	@MockBean
+	@MockitoBean
 	private org.springframework.data.jpa.mapping.JpaMetamodelMappingContext
 			jpaMetamodelMappingContext;
 

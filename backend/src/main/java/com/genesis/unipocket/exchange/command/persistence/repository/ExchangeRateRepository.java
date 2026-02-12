@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long> {
 
-	Optional<ExchangeRate> findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-			CurrencyCode currencyCode, LocalDateTime startOfDay, LocalDateTime nextDayStart);
+	Optional<ExchangeRate>
+			findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+					CurrencyCode currencyCode,
+					LocalDateTime startOfDay,
+					LocalDateTime nextDayStart);
 }

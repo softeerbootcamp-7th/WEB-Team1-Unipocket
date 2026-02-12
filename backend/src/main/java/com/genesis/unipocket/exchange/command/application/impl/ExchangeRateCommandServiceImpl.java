@@ -36,18 +36,21 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 	private final RestTemplate restTemplate;
 
 	@Override
-	public BigDecimal resolveAndStoreUsdRelativeRate(CurrencyCode currencyCode, LocalDate targetDate) {
+	public BigDecimal resolveAndStoreUsdRelativeRate(
+			CurrencyCode currencyCode, LocalDate targetDate) {
 		LocalDate probeDate = targetDate;
 		int attempt = 0;
 		while (attempt <= MAX_BACKTRACK_DAYS) {
-			Optional<ExchangeRate> dbRate = exchangeRateQueryService.findRateOnDate(currencyCode, probeDate);
+			Optional<ExchangeRate> dbRate =
+					exchangeRateQueryService.findRateOnDate(currencyCode, probeDate);
 			if (dbRate.isPresent()) {
 				BigDecimal rate = dbRate.get().getRate();
 				saveRateIfMissing(currencyCode, targetDate, rate);
 				return rate;
 			}
 
-			Optional<BigDecimal> yahooRate = fetchUsdRelativeRateFromYahooForDate(currencyCode, probeDate);
+			Optional<BigDecimal> yahooRate =
+					fetchUsdRelativeRateFromYahooForDate(currencyCode, probeDate);
 			if (yahooRate.isPresent()) {
 				BigDecimal rate = yahooRate.get();
 				if (probeDate.isEqual(targetDate)) {
@@ -64,7 +67,8 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 		}
 
 		log.warn(
-				"Exchange rate not found after backtracking. currency={}, targetDate={}, maxDays={}",
+				"Exchange rate not found after backtracking. currency={}, targetDate={},"
+						+ " maxDays={}",
 				currencyCode,
 				targetDate,
 				MAX_BACKTRACK_DAYS);
@@ -128,7 +132,10 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 			for (int i = 0; i < size; i++) {
 				JsonNode tsNode = timestamps.get(i);
 				JsonNode closeNode = closes.get(i);
-				if (tsNode == null || !tsNode.isNumber() || closeNode == null || !closeNode.isNumber()) {
+				if (tsNode == null
+						|| !tsNode.isNumber()
+						|| closeNode == null
+						|| !closeNode.isNumber()) {
 					continue;
 				}
 

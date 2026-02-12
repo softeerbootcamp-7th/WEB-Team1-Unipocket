@@ -59,7 +59,11 @@ class ExchangeRateServiceImplTest {
 
 		assertThat(result)
 				.isEqualByComparingTo(
-						new BigDecimal("0.79").divide(new BigDecimal("1300.00"), 10, java.math.RoundingMode.HALF_UP));
+						new BigDecimal("0.79")
+								.divide(
+										new BigDecimal("1300.00"),
+										10,
+										java.math.RoundingMode.HALF_UP));
 		verify(exchangeRateCommandService, never())
 				.resolveAndStoreUsdRelativeRate(any(CurrencyCode.class), any(LocalDate.class));
 	}
@@ -84,7 +88,11 @@ class ExchangeRateServiceImplTest {
 
 		assertThat(result)
 				.isEqualByComparingTo(
-						new BigDecimal("0.79").divide(new BigDecimal("1300.00"), 10, java.math.RoundingMode.HALF_UP));
+						new BigDecimal("0.79")
+								.divide(
+										new BigDecimal("1300.00"),
+										10,
+										java.math.RoundingMode.HALF_UP));
 		verify(exchangeRateCommandService)
 				.resolveAndStoreUsdRelativeRate(CurrencyCode.KRW, dateTime.toLocalDate());
 		verify(exchangeRateCommandService)

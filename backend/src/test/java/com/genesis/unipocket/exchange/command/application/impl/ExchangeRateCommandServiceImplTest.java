@@ -54,8 +54,8 @@ class ExchangeRateCommandServiceImplTest {
 												.rate(new BigDecimal("1300.00"))
 												.build());
 							}
-								return Optional.empty();
-							});
+							return Optional.empty();
+						});
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooEmptyResponse(), yahooEmptyResponse());
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))

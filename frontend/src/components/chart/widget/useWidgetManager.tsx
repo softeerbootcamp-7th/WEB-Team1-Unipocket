@@ -8,6 +8,10 @@ import {
 } from '@/components/chart/widget/type';
 
 const DESKTOP_BREAKPOINT = 1800;
+const MIN_WIDGET_SLOTS = 4;
+const MAX_WIDGET_SLOTS = 5;
+const MIN_WIDTH = 1400;
+const MAX_WIDTH = 1600;
 
 /** 위젯이 차지하는 슬롯 수 */
 const getWidgetSpan = (widgetType: WidgetType | 'BLANK') =>
@@ -25,14 +29,14 @@ const normalizeOrders = (widgets: WidgetItem[]): WidgetItem[] =>
 
 export const useWidgetManager = () => {
   const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
-  const [maxWidgets, setMaxWidgets] = useState(4);
-  const [width, setWidth] = useState(1400);
+  const [maxWidgets, setMaxWidgets] = useState(MIN_WIDGET_SLOTS);
+  const [width, setWidth] = useState(MIN_WIDTH);
 
   useEffect(() => {
     const updateLayout = () => {
       const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
-      setMaxWidgets(isDesktop ? 5 : 4);
-      setWidth(isDesktop ? 1600 : 1400);
+      setMaxWidgets(isDesktop ? MAX_WIDGET_SLOTS : MIN_WIDGET_SLOTS);
+      setWidth(isDesktop ? MAX_WIDTH : MIN_WIDTH);
     };
 
     updateLayout();
@@ -40,7 +44,7 @@ export const useWidgetManager = () => {
     return () => window.removeEventListener('resize', updateLayout);
   }, []);
 
-  // 추가된 위젯 목록 (일단 mock 활용)
+  // TODO: 추가된 위젯 목록 (API 연동 전까지 mock 활용)
   const [addedWidgets, setAddedWidgets] =
     useState<WidgetItem[]>(MOCK_WIDGET_DATA);
 
@@ -74,15 +78,6 @@ export const useWidgetManager = () => {
     return WIDGET_TYPES.filter((type) => !addedTypes.has(type));
   }, [addedWidgets]);
 
-  /** 해당 위젯을 추가할 수 있는지 여부 (드래그 시 drop 가능 여부 판별용) */
-  const canAddWidget = useCallback(
-    (widgetType: WidgetType) => {
-      const used = getTotalSlots(addedWidgets);
-      return used + getWidgetSpan(widgetType) <= maxWidgets;
-    },
-    [addedWidgets, maxWidgets],
-  );
-
   /** 위젯을 맨 뒤에 추가 */
   const handleAddWidget = useCallback(
     (widgetType: WidgetType) => {
@@ -115,7 +110,6 @@ export const useWidgetManager = () => {
     maxWidgets,
     displayWidgets,
     availableWidgets,
-    canAddWidget,
     handleAddWidget,
     handleRemoveWidget,
   };

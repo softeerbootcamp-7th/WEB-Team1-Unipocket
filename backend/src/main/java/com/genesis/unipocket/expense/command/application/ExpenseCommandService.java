@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.command.application;
 
+import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;

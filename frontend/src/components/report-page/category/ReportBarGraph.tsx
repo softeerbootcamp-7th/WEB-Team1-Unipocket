@@ -27,8 +27,8 @@ const ReportBarGraph = ({ maxLabel, items }: ReportBarGraphProps) => {
   return (
     <div className="flex w-145.5 flex-col gap-3.5">
       <div className="flex justify-end gap-4">
-        <ReportLegend label="나" color="me" />
-        <ReportLegend label="다른 학생" color="other" />
+        <ReportLegend label="나" color="primary" />
+        <ReportLegend label="다른 학생" color="secondary" />
       </div>
       <ReportBarList items={data} maxLabel={maxLabel} />
     </div>

@@ -29,8 +29,8 @@ const ReportLineGraph = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end gap-4">
-        <ReportLegend label={thisMonthLabel} color="me" variant="line" />
-        <ReportLegend label={lastMonthLabel} color="other" variant="line" />
+        <ReportLegend label={thisMonthLabel} color="primary" variant="line" />
+        <ReportLegend label={lastMonthLabel} color="secondary" variant="line" />
       </div>
       <div className="relative h-42">
         <VerticalGrid positions={positions} labels={labels} />

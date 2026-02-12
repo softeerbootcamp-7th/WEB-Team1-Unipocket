@@ -13,7 +13,7 @@ const WidgetList = ({
   handleRemoveWidget,
 }: WidgetListProps) => {
   return (
-    <div className="flex items-center justify-around">
+    <div className="flex w-full items-center justify-between">
       {displayWidgets
         .sort((a, b) => a.order - b.order)
         .map((widget) => (

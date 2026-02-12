@@ -8,10 +8,10 @@ import {
 } from '@/components/chart/widget/type';
 
 const DESKTOP_BREAKPOINT = 1800;
-const MIN_WIDGET_SLOTS = 4;
+const MIN_WIDGET_SLOTS = 5;
 const MAX_WIDGET_SLOTS = 5;
-const MIN_WIDTH = 1400;
-const MAX_WIDTH = 1600;
+const MIN_WIDTH = 1420;
+const MAX_WIDTH = 1620;
 
 /** 위젯이 차지하는 슬롯 수 */
 const getWidgetSpan = (widgetType: WidgetType | 'BLANK') =>

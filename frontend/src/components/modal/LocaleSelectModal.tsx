@@ -122,10 +122,8 @@ const LocaleSelectModal = ({
           className="bg-fill-normal rounded-modal-10 h-15 w-full"
         />
         <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {Object.keys(COUNTRY_CODE).map((code, index) => {
-            const countryCode = code as CountryCode;
+          {Object.values(COUNTRY_CODE).map((countryCode, index, arr) => {
             const data = getCountryInfo(countryCode);
-
             if (!data) return null;
 
             return (
@@ -137,7 +135,7 @@ const LocaleSelectModal = ({
                 currency={`${data.currencySign} ${data.currencyName}`}
                 checked={selectedCode === countryCode}
                 onChange={handleSelect}
-                isLast={index === Object.keys(COUNTRY_CODE).length - 1}
+                isLast={index === arr.length - 1}
               />
             );
           })}

@@ -1,7 +1,7 @@
-import {
-  buildLinePath,
-  type ChartItem,
-} from '@/components/report-page/myself/buildPath';
+interface ChartItem {
+  date: string;
+  cumulatedAmount: string;
+}
 
 interface ComparisonLineChartProps {
   thisMonth: ChartItem[];
@@ -9,6 +9,25 @@ interface ComparisonLineChartProps {
   width?: number;
   height?: number;
 }
+
+const buildLinePath = (
+  data: ChartItem[],
+  width: number,
+  height: number,
+  maxValue: number,
+) => {
+  const stepX = width / (data.length - 1);
+
+  return data
+    .map((item, index) => {
+      const x = stepX * index;
+      const value = Number(item.cumulatedAmount);
+      const y = height - (value / maxValue) * height;
+
+      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+    })
+    .join(' ');
+};
 
 const ComparisonLineChart = ({
   thisMonth,
@@ -28,8 +47,8 @@ const ComparisonLineChart = ({
 
   return (
     <svg width={width} height={height}>
-      <path d={prevPath} fill="none" stroke="#C4C7CC" strokeWidth={3} />
-      <path d={thisPath} fill="none" stroke="#2B8C94" strokeWidth={3} />
+      <path d={prevPath} fill="none" stroke="#C2C4C8" strokeWidth={3} />
+      <path d={thisPath} fill="none" stroke="#44A3B6" strokeWidth={3} />
     </svg>
   );
 };

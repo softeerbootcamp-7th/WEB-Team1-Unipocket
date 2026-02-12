@@ -25,8 +25,9 @@ spring:
 
 jwt:
   secret: test-secret-key-must-be-at-least-32-characters-long
-  access-token-expiration: 1800000
-  refresh-token-expiration: 864000000
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:10d}
+  oauth-state-ttl: ${JWT_OAUTH_STATE_TTL:10m}
 
 oauth2:
   providers:

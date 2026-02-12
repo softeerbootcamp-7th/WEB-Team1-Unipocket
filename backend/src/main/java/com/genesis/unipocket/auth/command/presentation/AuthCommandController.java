@@ -3,6 +3,7 @@ package com.genesis.unipocket.auth.command.presentation;
 import com.genesis.unipocket.auth.command.application.AuthService;
 import com.genesis.unipocket.auth.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.command.facade.UserLoginFacade;
+import com.genesis.unipocket.auth.common.config.JwtProperties;
 import com.genesis.unipocket.auth.common.dto.AuthorizeResult;
 import com.genesis.unipocket.auth.common.dto.LoginResult;
 import com.genesis.unipocket.global.config.OAuth2Properties;
@@ -41,15 +42,12 @@ public class AuthCommandController {
 
 	private static final String ACCESS_TOKEN_COOKIE_PATH = "/";
 	private static final String REFRESH_TOKEN_COOKIE_PATH = "/api/auth";
-	private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 10 * 24 * 60 * 60;
 
 	private final AuthService authService;
 	private final CookieUtil cookieUtil;
 	private final OAuthAuthorizeFacade authorizeFacade;
 	private final UserLoginFacade loginFacade;
-
-	@Value("${jwt.access-token-expiration}")
-	private long accessTokenExpirationMs;
+	private final JwtProperties jwtProperties;
 
 	@Value("${app.frontend.url}")
 	private String frontendUrl;
@@ -70,7 +68,7 @@ public class AuthCommandController {
 				response,
 				"access_token",
 				tokenPair.accessToken(),
-				(int) accessTokenExpiresIn(),
+				jwtProperties.getAccessTokenExpirationSeconds(),
 				ACCESS_TOKEN_COOKIE_PATH);
 
 		// Refresh Token 쿠키 갱신
@@ -78,7 +76,7 @@ public class AuthCommandController {
 				response,
 				"refresh_token",
 				tokenPair.refreshToken(),
-				REFRESH_TOKEN_MAX_AGE_SECONDS,
+				jwtProperties.getRefreshTokenExpirationSeconds(),
 				REFRESH_TOKEN_COOKIE_PATH);
 
 		return ResponseEntity.ok().build();
@@ -139,23 +137,16 @@ public class AuthCommandController {
 				loginResponse.getExpiresIn().intValue(),
 				ACCESS_TOKEN_COOKIE_PATH);
 
-		// Refresh Token 쿠키 저장 (10일)
+		// Refresh Token 쿠키 저장
 		cookieUtil.addCookie(
 				response,
 				"refresh_token",
 				loginResponse.getRefreshToken(),
-				REFRESH_TOKEN_MAX_AGE_SECONDS,
+				jwtProperties.getRefreshTokenExpirationSeconds(),
 				REFRESH_TOKEN_COOKIE_PATH);
 
 		String redirectUrl = createRedirectUrl();
 		response.sendRedirect(redirectUrl);
-	}
-
-	/**
-	 * Access Token 만료 시간 (초) 계산
-	 */
-	private long accessTokenExpiresIn() {
-		return accessTokenExpirationMs / 1000;
 	}
 
 	/**

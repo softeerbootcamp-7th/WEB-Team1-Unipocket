@@ -30,17 +30,17 @@ const LABELS = {
   [`${CRITERIA.AMOUNT}_${ORDER.ASC}`]: '낮은순',
 };
 
-const CRITERIA_LIST = [CRITERIA.DATE, CRITERIA.AMOUNT];
-const ORDER_LIST = [ORDER.DESC, ORDER.ASC];
+const CRITERIA_LIST = Object.values(CRITERIA);
+const ORDER_LIST = Object.values(ORDER);
 
 type SortCriteriaType = (typeof CRITERIA)[keyof typeof CRITERIA];
 type SortOrderType = (typeof ORDER)[keyof typeof ORDER];
 
 const SortDropdown = () => {
-  const [selectedCriteria, setSelectedCriteria] = useState<SortCriteriaType>(
-    CRITERIA.DATE,
-  );
-  const [selectedOrder, setSelectedOrder] = useState<SortOrderType>(ORDER.DESC);
+  const [sort, setSort] = useState<{
+    criteria: SortCriteriaType;
+    order: SortOrderType;
+  }>({ criteria: CRITERIA.DATE, order: ORDER.DESC });
 
   const criteriaOptions = CRITERIA_LIST.map((key, index) => ({
     id: index,
@@ -49,18 +49,18 @@ const SortDropdown = () => {
 
   const orderOptions = ORDER_LIST.map((key, index) => ({
     id: index,
-    name: LABELS[`${selectedCriteria}_${key}` as keyof typeof LABELS],
+    name: LABELS[`${sort.criteria}_${key}` as keyof typeof LABELS],
   }));
 
-  const selectedCriteriaId = CRITERIA_LIST.indexOf(selectedCriteria);
-  const selectedOrderId = ORDER_LIST.indexOf(selectedOrder);
+  const selectedCriteriaId = CRITERIA_LIST.indexOf(sort.criteria);
+  const selectedOrderId = ORDER_LIST.indexOf(sort.order);
 
   const handleCriteriaSelect = (id: number) => {
-    setSelectedCriteria(CRITERIA_LIST[id]);
+    setSort((prev) => ({ ...prev, criteria: CRITERIA_LIST[id] }));
   };
 
   const handleOrderSelect = (id: number) => {
-    setSelectedOrder(ORDER_LIST[id]);
+    setSort((prev) => ({ ...prev, order: ORDER_LIST[id] }));
   };
 
   return (

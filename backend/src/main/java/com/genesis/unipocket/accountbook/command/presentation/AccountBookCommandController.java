@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "가계부 Command API")
+@Tag(name = "가계부 기능")
 @RestController
 @RequestMapping("/account-books")
 @RequiredArgsConstructor

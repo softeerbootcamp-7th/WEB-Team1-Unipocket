@@ -95,8 +95,8 @@ class ExpenseControllerIntegrationTest {
 			{
 			"merchantName": "스타벅스",
 			"category": 2,
-			"paymentMethod": "CARD",
-			"occurredAt": "2026-02-04T12:30:00",
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
 			"localCurrencyAmount": 10000.0,
 			"localCurrencyCode": "KRW",
 			"memo": "아메리카노"
@@ -191,8 +191,8 @@ class ExpenseControllerIntegrationTest {
 			{
 			"merchantName": "스타벅스 수정",
 			"category": 2,
-			"paymentMethod": "CASH",
-			"occurredAt": "2026-02-04T12:30:00",
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
 			"localCurrencyAmount": 15000.0,
 			"localCurrencyCode": "KRW",
 			"memo": "수정된 메모",
@@ -390,8 +390,8 @@ class ExpenseControllerIntegrationTest {
 			{
 			"merchantName": "스타벅스",
 			"category": 2,
-			"paymentMethod": "CARD",
-			"occurredAt": "2026-02-04T12:30:00",
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
 			"localCurrencyAmount": 10000.0,
 			"localCurrencyCode": "KRW",
 			"memo": "아메리카노"
@@ -422,8 +422,8 @@ class ExpenseControllerIntegrationTest {
 			{
 			"merchantName": "%s",
 			"category": %d,
-			"paymentMethod": "CARD",
-			"occurredAt": "%s",
+			"userCardId": null,
+			"occurredAt": "%sZ",
 			"localCurrencyAmount": %.1f,
 			"localCurrencyCode": "KRW",
 			"memo": "테스트",

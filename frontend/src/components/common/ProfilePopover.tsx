@@ -4,7 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@radix-ui/react-popover';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 
 import Divider from '@/components/common/Divider';
@@ -16,6 +16,7 @@ import { AUTH_PROVIDERS } from '@/constants/authProviders';
 const ProfilePopover = () => {
   const { data } = useGetUserQuery();
   const logoutMutation = useLogoutMutation();
+  const navigator = useNavigate();
 
   const isGoogleUser = data.profileImgUrl?.includes('googleusercontent');
   const authProvider = AUTH_PROVIDERS.find(
@@ -25,7 +26,22 @@ const ProfilePopover = () => {
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
-    logoutMutation.mutate();
+
+    // 기존 로그아웃 API 호출 (임시 주석 처리)
+    // logoutMutation.mutate();
+
+    // 로그인할 때와 동일한 도메인 및 옵션 설정
+    const domain = import.meta.env.PROD
+      ? `domain=${import.meta.env.VITE_COOKIE_DOMAIN}; `
+      : '';
+    const baseOptions = `path=/; ${domain}Secure; SameSite=None; `;
+
+    // max-age=0 (또는 과거의 expires)을 사용하여 쿠키 삭제
+    document.cookie = `access_token=; max-age=0; ${baseOptions}`;
+    document.cookie = `refresh_token=; max-age=0; ${baseOptions}`;
+
+    // 로그아웃 후 로그인 페이지나 메인으로 이동 (필요시 주석 해제하여 사용하세요)
+    navigator({ to: '/login' });
   };
 
   return (

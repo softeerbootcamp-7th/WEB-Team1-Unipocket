@@ -145,11 +145,19 @@ public class TemporaryExpenseParsingService {
 
 			StringBuilder sb = new StringBuilder();
 			org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0); // 첫 번째 시트만 처리
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator =
+					workbook.getCreationHelper().createFormulaEvaluator();
 
 			for (org.apache.poi.ss.usermodel.Row row : sheet) {
 				List<String> cells = new ArrayList<>();
-				for (org.apache.poi.ss.usermodel.Cell cell : row) {
-					cells.add(getCellValue(cell));
+				int lastColumn = row.getLastCellNum();
+				for (int cn = 0; cn < lastColumn; cn++) {
+					org.apache.poi.ss.usermodel.Cell cell =
+							row.getCell(
+									cn,
+									org.apache.poi.ss.usermodel.Row.MissingCellPolicy
+											.RETURN_BLANK_AS_NULL);
+					cells.add(getCellValue(cell, evaluator));
 				}
 				sb.append(String.join(",", cells)).append("\n");
 			}
@@ -160,7 +168,9 @@ public class TemporaryExpenseParsingService {
 		}
 	}
 
-	private String getCellValue(org.apache.poi.ss.usermodel.Cell cell) {
+	private String getCellValue(
+			org.apache.poi.ss.usermodel.Cell cell,
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
 		if (cell == null) return "";
 		switch (cell.getCellType()) {
 			case STRING:
@@ -173,13 +183,47 @@ public class TemporaryExpenseParsingService {
 			case BOOLEAN:
 				return String.valueOf(cell.getBooleanCellValue());
 			case FORMULA:
-				try {
-					return cell.getStringCellValue();
-				} catch (IllegalStateException e) {
-					return String.valueOf(cell.getNumericCellValue());
-				}
+				return getFormulaCellValue(cell, evaluator);
 			default:
 				return "";
+		}
+	}
+
+	private String getFormulaCellValue(
+			org.apache.poi.ss.usermodel.Cell cell,
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
+		try {
+			org.apache.poi.ss.usermodel.CellValue evaluated = evaluator.evaluate(cell);
+			if (evaluated == null) {
+				return "";
+			}
+
+			switch (evaluated.getCellType()) {
+				case STRING:
+					return evaluated.getStringValue();
+				case NUMERIC:
+					if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+						return org.apache.poi.ss.usermodel.DateUtil.getLocalDateTime(
+										evaluated.getNumberValue())
+								.toString();
+					}
+					return String.valueOf(evaluated.getNumberValue());
+				case BOOLEAN:
+					return String.valueOf(evaluated.getBooleanValue());
+				case BLANK:
+					return "";
+				case ERROR:
+					log.warn(
+							"Formula evaluated to error for cell {}: {}",
+							cell.getAddress(),
+							evaluated.getErrorValue());
+					return "";
+				default:
+					return "";
+			}
+		} catch (Exception e) {
+			log.warn("Failed to evaluate formula for cell {}", cell.getAddress(), e);
+			return "";
 		}
 	}
 

@@ -5,6 +5,7 @@ import com.genesis.unipocket.accountbook.command.application.command.CreateAccou
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
+import com.genesis.unipocket.accountbook.command.facade.port.AccountBookDefaultWidgetPort;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookBudgetUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
@@ -21,6 +22,7 @@ public class AccountBookCommandFacade {
 
 	private final AccountBookCommandService accountBookCommandService;
 	private final UserQueryService userQueryService;
+	private final AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
 
 	@Transactional
 	public Long createAccountBook(UUID userId, AccountBookCreateRequest req) {
@@ -29,7 +31,9 @@ public class AccountBookCommandFacade {
 		CreateAccountBookCommand command =
 				CreateAccountBookCommand.of(userId, userResponse.name(), req);
 
-		return accountBookCommandService.create(command);
+		Long accountBookId = accountBookCommandService.create(command);
+		accountBookDefaultWidgetPort.setDefaultWidget(accountBookId);
+		return accountBookId;
 	}
 
 	@Transactional

@@ -1,7 +1,7 @@
 package com.genesis.unipocket.analysis.query.persistence.repository;
 
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
-import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,13 +15,9 @@ public class AnalysisQueryRepository {
 
 	@PersistenceContext private EntityManager em;
 
-	public Object[] getAccountBookInfo(Long accountBookId, CurrencyType type) {
-		String countryField =
-				type == CurrencyType.BASE ? "ab.baseCountryCode" : "ab.localCountryCode";
+	public Object[] getAccountBookCountryCodes(Long accountBookId) {
 		return em.createQuery(
-						"SELECT "
-								+ countryField
-								+ ", ab.userId"
+						"SELECT ab.localCountryCode, ab.baseCountryCode"
 								+ " FROM AccountBookEntity ab"
 								+ " WHERE ab.id = :id",
 						Object[].class)

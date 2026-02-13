@@ -8,14 +8,17 @@ import com.genesis.unipocket.analysis.query.persistence.response.CompareByCatego
 import com.genesis.unipocket.analysis.query.persistence.response.CompareWithAverageRes;
 import com.genesis.unipocket.analysis.query.persistence.response.CompareWithLastMonthRes;
 import com.genesis.unipocket.analysis.query.persistence.response.CompareWithLastMonthRes.DailyItem;
-import com.genesis.unipocket.expense.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.util.AmountFormatUtil;
+import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -38,16 +41,21 @@ public class AnalysisQueryService {
 	public AccountBookAnalysisRes getAnalysis(
 			UUID userId, Long accountBookId, CurrencyType currencyType, int year, int month) {
 
-		Object[] abInfo = repository.getAccountBookInfo(accountBookId, currencyType);
-		CountryCode countryCode = (CountryCode) abInfo[0];
+		Object[] countryCodes = repository.getAccountBookCountryCodes(accountBookId);
+		CountryCode localCountryCode = (CountryCode) countryCodes[0];
+		CountryCode baseCountryCode = (CountryCode) countryCodes[1];
+		CountryCode comparisonCountryCode =
+				currencyType == CurrencyType.BASE ? baseCountryCode : localCountryCode;
 		String userIdStr = userId.toString();
 
-		LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
-		LocalDateTime end = start.plusMonths(1);
+		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountryCode);
+
+		LocalDateTime start = toUtcDateTime(LocalDate.of(year, month, 1), zoneId);
+		LocalDateTime end = toUtcDateTime(LocalDate.of(year, month, 1).plusMonths(1), zoneId);
 
 		Object[] otherData =
 				repository.getOtherUsersTotalAndCount(
-						countryCode, userIdStr, start, end, currencyType);
+						comparisonCountryCode, userIdStr, start, end, currencyType);
 		BigDecimal otherTotal = toBigDecimal(otherData[0]);
 		long otherCount = ((Number) otherData[1]).longValue();
 
@@ -56,12 +64,13 @@ public class AnalysisQueryService {
 						accountBookId, start, end, month, currencyType, otherTotal, otherCount);
 
 		CompareWithLastMonthRes compareWithLastMonth =
-				buildCompareWithLastMonth(accountBookId, start, end, year, month, currencyType);
+				buildCompareWithLastMonth(
+						accountBookId, start, end, year, month, currencyType, zoneId);
 
 		CompareByCategoryRes compareByCategory =
 				buildCompareByCategory(
 						accountBookId,
-						countryCode,
+						comparisonCountryCode,
 						userIdStr,
 						start,
 						end,
@@ -69,7 +78,7 @@ public class AnalysisQueryService {
 						otherCount);
 
 		return new AccountBookAnalysisRes(
-				countryCode.name(), compareWithAverage, compareWithLastMonth, compareByCategory);
+				comparisonCountryCode, compareWithAverage, compareWithLastMonth, compareByCategory);
 	}
 
 	private CompareWithAverageRes buildCompareWithAverage(
@@ -90,7 +99,10 @@ public class AnalysisQueryService {
 		BigDecimal diff = myTotal.subtract(avgAmount);
 
 		return new CompareWithAverageRes(
-				month, formatAmount(myTotal), formatAmount(avgAmount), formatAmount(diff));
+				month,
+				AmountFormatUtil.format(myTotal),
+				AmountFormatUtil.format(avgAmount),
+				AmountFormatUtil.format(diff));
 	}
 
 	private CompareWithLastMonthRes buildCompareWithLastMonth(
@@ -99,21 +111,23 @@ public class AnalysisQueryService {
 			LocalDateTime thisMonthEnd,
 			int year,
 			int month,
-			CurrencyType currencyType) {
+			CurrencyType currencyType,
+			ZoneId zoneId) {
 
 		YearMonth thisYearMonth = YearMonth.of(year, month);
 		YearMonth prevYearMonth = thisYearMonth.minusMonths(1);
 
-		LocalDateTime prevStart = thisMonthStart.minusMonths(1);
+		LocalDate prevLocalStart = prevYearMonth.atDay(1);
+		LocalDateTime prevStart = toUtcDateTime(prevLocalStart, zoneId);
 		LocalDateTime prevEnd = thisMonthStart;
 
-		LocalDate today = LocalDate.now(ZoneOffset.UTC);
+		LocalDate today = LocalDate.now(zoneId);
 		boolean isCurrentMonth = year == today.getYear() && month == today.getMonthValue();
 
 		LocalDate thisEndDate = isCurrentMonth ? today : thisYearMonth.atEndOfMonth();
 
 		LocalDateTime thisQueryEnd =
-				isCurrentMonth ? today.plusDays(1).atStartOfDay() : thisMonthEnd;
+				isCurrentMonth ? toUtcDateTime(today.plusDays(1), zoneId) : thisMonthEnd;
 
 		List<Object[]> thisRaw =
 				repository.getMyDailySpent(
@@ -148,12 +162,12 @@ public class AnalysisQueryService {
 		String lastMonthStr = String.valueOf(prevYearMonth.getMonthValue());
 
 		return new CompareWithLastMonthRes(
-				formatAmount(rawDiff),
+				AmountFormatUtil.format(rawDiff),
 				thisMonthStr,
 				thisMonthItems.size(),
 				lastMonthStr,
 				prevMonthItems.size(),
-				formatAmount(rawThisMonthToDate),
+				AmountFormatUtil.format(rawThisMonthToDate),
 				thisMonthItems,
 				prevMonthItems);
 	}
@@ -203,7 +217,11 @@ public class AnalysisQueryService {
 									BigDecimal.valueOf(otherCount), AVG_SCALE, RoundingMode.HALF_UP)
 							: BigDecimal.ZERO;
 
-			items.add(new CategoryItem(catIndex, formatAmount(myAmount), formatAmount(avgAmount)));
+			items.add(
+					new CategoryItem(
+							catIndex,
+							AmountFormatUtil.format(myAmount),
+							AmountFormatUtil.format(avgAmount)));
 
 			BigDecimal diff = myAmount.subtract(avgAmount);
 			BigDecimal absDiff = diff.abs();
@@ -238,6 +256,11 @@ public class AnalysisQueryService {
 
 	// ── helpers ──────────────────────────────────────────
 
+	private static LocalDateTime toUtcDateTime(LocalDate localDate, ZoneId zoneId) {
+		ZonedDateTime zoned = localDate.atStartOfDay(zoneId);
+		return zoned.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+	}
+
 	private Map<LocalDate, BigDecimal> toDailyMap(List<Object[]> rows) {
 		Map<LocalDate, BigDecimal> map = new HashMap<>();
 		for (Object[] row : rows) {
@@ -262,7 +285,7 @@ public class AnalysisQueryService {
 		List<DailyItem> items = new ArrayList<>(cumulated.size());
 		for (int i = 0; i < cumulated.size(); i++) {
 			LocalDate date = startDate.plusDays(i);
-			items.add(new DailyItem(date.toString(), formatAmount(cumulated.get(i))));
+			items.add(new DailyItem(date.toString(), AmountFormatUtil.format(cumulated.get(i))));
 		}
 		return items;
 	}
@@ -282,13 +305,5 @@ public class AnalysisQueryService {
 			return bd;
 		}
 		return new BigDecimal(value.toString());
-	}
-
-	private String formatAmount(BigDecimal amount) {
-		if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
-			return "0";
-		}
-		BigDecimal scaled = amount.setScale(2, RoundingMode.DOWN).stripTrailingZeros();
-		return scaled.toPlainString();
 	}
 }

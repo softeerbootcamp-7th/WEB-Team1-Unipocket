@@ -10,7 +10,8 @@ import CategoryFilter from '@/components/data-table/filters/CategoryFilter';
 import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
 import MethodFilter from '@/components/data-table/filters/MethodFilter';
-import SelectionActionProvider from '@/components/data-table/SelectionActionProvider';
+import ImportToFolderBar from '@/components/data-table/ImportToFolderBar';
+import SelectionActionBar from '@/components/data-table/SelectionActionBar';
 import { columns } from '@/components/home-page/columns';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { type Expense, getData } from '@/components/landing-page/dummy';
@@ -81,13 +82,33 @@ const TravelDetailPage = () => {
             }
             blankFallbackText={'여행 지출 내역을 추가해주세요'}
           />
+          <SelectionActionBar />
         </DataTableProvider>
       </div>
       <BottomSheet
         isOpen={isBottomSheetOpen}
         onClose={() => setBottomSheetOpen(false)}
       >
-        <div className="p-4">Bottom Sheet Content</div>
+        <DataTableProvider columns={columns} data={data}>
+          <DataTableFilterProvider>
+            <DateFilter />
+            <MerchantFilter />
+            <CategoryFilter />
+            <MethodFilter />
+            <div className="flex-1" />
+          </DataTableFilterProvider>
+          <DataTable
+            groupBy={(row: Expense) =>
+              new Date(row.date).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+              })
+            }
+            blankFallbackText={'여행 지출 내역을 추가해주세요'}
+          />
+          <ImportToFolderBar />
+        </DataTableProvider>
       </BottomSheet>
     </div>
   );

@@ -21,7 +21,6 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -122,29 +121,38 @@ class AnalysisQueryServiceTest {
 			when(repository.getAccountBookCountryCodes(ACCOUNT_BOOK_ID))
 					.thenReturn(new Object[] {CountryCode.KR, CountryCode.US});
 			when(repository.getOtherUsersTotalAndCount(
-							eq(CountryCode.KR), anyString(), eq(expectedStart), eq(expectedEnd),
+							eq(CountryCode.KR),
+							anyString(),
+							eq(expectedStart),
+							eq(expectedEnd),
 							eq(CurrencyType.LOCAL)))
 					.thenReturn(new Object[] {BigDecimal.ZERO, 0L});
 			when(repository.getMyMonthlyTotal(
-							eq(ACCOUNT_BOOK_ID), eq(expectedStart), eq(expectedEnd),
+							eq(ACCOUNT_BOOK_ID),
+							eq(expectedStart),
+							eq(expectedEnd),
 							eq(CurrencyType.LOCAL)))
 					.thenReturn(BigDecimal.ZERO);
 			when(repository.getMyDailySpent(
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 			when(repository.getMyCategorySpent(
-							eq(ACCOUNT_BOOK_ID), eq(expectedStart), eq(expectedEnd),
+							eq(ACCOUNT_BOOK_ID),
+							eq(expectedStart),
+							eq(expectedEnd),
 							eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 			when(repository.getOtherUsersCategoryTotal(
-							eq(CountryCode.KR), anyString(), eq(expectedStart), eq(expectedEnd),
+							eq(CountryCode.KR),
+							anyString(),
+							eq(expectedStart),
+							eq(expectedEnd),
 							eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 
 			// when & then (쿼리가 UTC 변환된 경계값으로 정확히 호출되면 예외 없이 통과)
 			AccountBookAnalysisRes result =
-					service.getAnalysis(
-							USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
+					service.getAnalysis(USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
 
 			assertThat(result).isNotNull();
 			// KR(UTC+9): 2025-01-01 00:00 KST = 2024-12-31 15:00 UTC
@@ -185,8 +193,7 @@ class AnalysisQueryServiceTest {
 			when(repository.getAccountBookCountryCodes(ACCOUNT_BOOK_ID))
 					.thenReturn(new Object[] {CountryCode.KR, CountryCode.US});
 			when(repository.getOtherUsersTotalAndCount(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(new Object[] {BigDecimal.ZERO, 0L});
 			when(repository.getMyMonthlyTotal(
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
@@ -198,14 +205,12 @@ class AnalysisQueryServiceTest {
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 			when(repository.getOtherUsersCategoryTotal(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 
 			// when
 			AccountBookAnalysisRes result =
-					service.getAnalysis(
-							USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
+					service.getAnalysis(USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
 
 			// then
 			CompareWithAverageRes avg = result.compareWithAverage();
@@ -225,8 +230,7 @@ class AnalysisQueryServiceTest {
 			when(repository.getAccountBookCountryCodes(ACCOUNT_BOOK_ID))
 					.thenReturn(new Object[] {CountryCode.KR, CountryCode.US});
 			when(repository.getOtherUsersTotalAndCount(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(new Object[] {BigDecimal.ZERO, 0L});
 			when(repository.getMyMonthlyTotal(
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
@@ -249,14 +253,12 @@ class AnalysisQueryServiceTest {
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 			when(repository.getOtherUsersCategoryTotal(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 
 			// when
 			AccountBookAnalysisRes result =
-					service.getAnalysis(
-							USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
+					service.getAnalysis(USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
 
 			// then
 			CompareWithLastMonthRes lastMonth = result.compareWithLastMonth();
@@ -314,8 +316,7 @@ class AnalysisQueryServiceTest {
 			assertThat(items).hasSize(Category.values().length - 1);
 
 			boolean hasIncome =
-					items.stream()
-							.anyMatch(i -> i.categoryIndex() == Category.INCOME.ordinal());
+					items.stream().anyMatch(i -> i.categoryIndex() == Category.INCOME.ordinal());
 			assertThat(hasIncome).isFalse();
 		}
 
@@ -332,8 +333,7 @@ class AnalysisQueryServiceTest {
 			when(repository.getAccountBookCountryCodes(ACCOUNT_BOOK_ID))
 					.thenReturn(new Object[] {CountryCode.KR, CountryCode.US});
 			when(repository.getOtherUsersTotalAndCount(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(new Object[] {BigDecimal.ZERO, 0L});
 			when(repository.getMyMonthlyTotal(
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
@@ -345,14 +345,12 @@ class AnalysisQueryServiceTest {
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(myCategory);
 			when(repository.getOtherUsersCategoryTotal(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 
 			// when
 			AccountBookAnalysisRes result =
-					service.getAnalysis(
-							USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
+					service.getAnalysis(USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
 
 			// then
 			List<CategoryItem> items = result.compareByCategory().items();
@@ -380,8 +378,7 @@ class AnalysisQueryServiceTest {
 			when(repository.getAccountBookCountryCodes(ACCOUNT_BOOK_ID))
 					.thenReturn(new Object[] {CountryCode.KR, CountryCode.US});
 			when(repository.getOtherUsersTotalAndCount(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(new Object[] {BigDecimal.valueOf(200000), 2L});
 			when(repository.getMyMonthlyTotal(
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
@@ -393,14 +390,12 @@ class AnalysisQueryServiceTest {
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(myCategory);
 			when(repository.getOtherUsersCategoryTotal(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(otherCategory);
 
 			// when
 			AccountBookAnalysisRes result =
-					service.getAnalysis(
-							USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
+					service.getAnalysis(USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
 
 			// then
 			CompareByCategoryRes category = result.compareByCategory();
@@ -422,8 +417,7 @@ class AnalysisQueryServiceTest {
 			when(repository.getAccountBookCountryCodes(ACCOUNT_BOOK_ID))
 					.thenReturn(new Object[] {CountryCode.KR, CountryCode.US});
 			when(repository.getOtherUsersTotalAndCount(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(new Object[] {BigDecimal.valueOf(100), 3L});
 			// 100 / 3 = 33.3333... → 포맷: "33.33"
 			when(repository.getMyMonthlyTotal(
@@ -436,14 +430,12 @@ class AnalysisQueryServiceTest {
 							eq(ACCOUNT_BOOK_ID), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 			when(repository.getOtherUsersCategoryTotal(
-							eq(CountryCode.KR), anyString(), any(), any(),
-							eq(CurrencyType.LOCAL)))
+							eq(CountryCode.KR), anyString(), any(), any(), eq(CurrencyType.LOCAL)))
 					.thenReturn(Collections.emptyList());
 
 			// when
 			AccountBookAnalysisRes result =
-					service.getAnalysis(
-							USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
+					service.getAnalysis(USER_ID, ACCOUNT_BOOK_ID, CurrencyType.LOCAL, YEAR, MONTH);
 
 			// then
 			CompareWithAverageRes avg = result.compareWithAverage();

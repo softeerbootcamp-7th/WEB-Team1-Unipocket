@@ -13,7 +13,7 @@ const WidgetPicker = ({
   handleAddWidget,
 }: WidgetPickerProps) => {
   return (
-    <div className="rounded-modal-20 shadow-semantic-subtle bg-background-normal z-50 mb-8 flex h-full flex-col items-start justify-between rounded-b-none px-10 py-9 pb-30">
+    <div className="flex h-full flex-col items-start justify-around px-10">
       <div className="flex flex-col gap-2.75">
         <h3 className="title3-semibold text-label-normal">
           추가 가능한 위젯들

@@ -110,6 +110,14 @@ public class S3Service {
 		keys.forEach(key -> s3Template.deleteObject(bucketName, key));
 	}
 
+	public byte[] downloadFile(String key) {
+		try {
+			return s3Template.download(bucketName, key).getInputStream().readAllBytes();
+		} catch (java.io.IOException e) {
+			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	private String extractExtension(String fileName) {
 		if (fileName == null || fileName.isBlank() || !fileName.contains(".")) {
 			throw new IllegalArgumentException("fileName with extension is required");

@@ -3,8 +3,6 @@ package com.genesis.unipocket.tempexpense.command.application;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.GeminiParseResponse;
-import com.genesis.unipocket.global.infrastructure.gemini.GeminiService.ParsedExpenseItem;
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
@@ -33,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class TemporaryExpenseParsingService {
+	// ... (lines omitted)
 
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
@@ -40,7 +39,6 @@ public class TemporaryExpenseParsingService {
 	private final GeminiService geminiService;
 	private final S3Service s3Service;
 	private final ParsingProgressPublisher progressPublisher;
-	private final CsvParsingService csvParsingService;
 
 	/**
 	 * 파일 파싱 및 TemporaryExpense 생성
@@ -64,9 +62,17 @@ public class TemporaryExpenseParsingService {
 			throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
 		}
 
-		String s3Url =
-				s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
-		GeminiParseResponse geminiResponse = geminiService.parseReceiptImage(s3Url);
+		GeminiService.GeminiParseResponse geminiResponse;
+
+		if (file.getFileType() == File.FileType.IMAGE) {
+			String s3Url =
+					s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
+			geminiResponse = geminiService.parseReceiptImage(s3Url);
+		} else {
+			// Document Parsing (CSV, EXCEL)
+			String content = extractContent(file);
+			geminiResponse = geminiService.parseDocument(content);
+		}
 
 		if (!geminiResponse.success()) {
 			throw new RuntimeException("파싱 실패: " + geminiResponse.errorMessage());
@@ -76,7 +82,7 @@ public class TemporaryExpenseParsingService {
 		int normalCount = 0;
 		int incompleteCount = 0;
 
-		for (ParsedExpenseItem item : geminiResponse.items()) {
+		for (GeminiService.ParsedExpenseItem item : geminiResponse.items()) {
 			TemporaryExpenseStatus status = determineStatus(item);
 			if (status == TemporaryExpenseStatus.NORMAL) normalCount++;
 			else if (status == TemporaryExpenseStatus.INCOMPLETE) incompleteCount++;
@@ -89,13 +95,21 @@ public class TemporaryExpenseParsingService {
 							.localCountryCode(parseCurrencyCode(item.localCurrency()))
 							.localCurrencyAmount(item.localAmount())
 							.baseCountryCode(
-									parseCurrencyCode(item.localCurrency())) // same as local
-							.baseCurrencyAmount(item.localAmount()) // same as local
+									parseCurrencyCode(
+											item.baseCurrency() != null
+													? item.baseCurrency()
+													: item.localCurrency())) // baseCurrency가 없으면
+							// localCurrency 사용
+							.baseCurrencyAmount(
+									item.baseAmount() != null
+											? item.baseAmount()
+											: item.localAmount()) // baseAmount가 없으면 localAmount 사용
 							.paymentsMethod("카드") // default
 							.memo(item.memo())
 							.occurredAt(item.occurredAt())
 							.status(status)
 							.cardLastFourDigits(item.cardLastFourDigits())
+							.approvalNumber(item.approvalNumber())
 							.build();
 
 			createdExpenses.add(expense);
@@ -112,17 +126,119 @@ public class TemporaryExpenseParsingService {
 				savedExpenses);
 	}
 
+	private String extractContent(File file) {
+		byte[] fileBytes = s3Service.downloadFile(file.getS3Key());
+
+		if (file.getFileType() == File.FileType.CSV) {
+			return new String(fileBytes, java.nio.charset.StandardCharsets.UTF_8);
+		} else if (file.getFileType() == File.FileType.EXCEL) {
+			return extractExcelContent(fileBytes);
+		} else {
+			throw new IllegalArgumentException("지원하지 않는 파일 타입입니다: " + file.getFileType());
+		}
+	}
+
+	private String extractExcelContent(byte[] fileBytes) {
+		try (java.io.InputStream is = new java.io.ByteArrayInputStream(fileBytes);
+				org.apache.poi.ss.usermodel.Workbook workbook =
+						org.apache.poi.ss.usermodel.WorkbookFactory.create(is)) {
+
+			StringBuilder sb = new StringBuilder();
+			org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0); // 첫 번째 시트만 처리
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator =
+					workbook.getCreationHelper().createFormulaEvaluator();
+
+			for (org.apache.poi.ss.usermodel.Row row : sheet) {
+				List<String> cells = new ArrayList<>();
+				int lastColumn = row.getLastCellNum();
+				for (int cn = 0; cn < lastColumn; cn++) {
+					org.apache.poi.ss.usermodel.Cell cell =
+							row.getCell(
+									cn,
+									org.apache.poi.ss.usermodel.Row.MissingCellPolicy
+											.RETURN_BLANK_AS_NULL);
+					cells.add(getCellValue(cell, evaluator));
+				}
+				sb.append(String.join(",", cells)).append("\n");
+			}
+			return sb.toString();
+
+		} catch (java.io.IOException e) {
+			throw new RuntimeException("Excel 파일 읽기 실패", e);
+		}
+	}
+
+	private String getCellValue(
+			org.apache.poi.ss.usermodel.Cell cell,
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
+		if (cell == null) return "";
+		switch (cell.getCellType()) {
+			case STRING:
+				return cell.getStringCellValue();
+			case NUMERIC:
+				if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+					return cell.getLocalDateTimeCellValue().toString();
+				}
+				return String.valueOf(cell.getNumericCellValue());
+			case BOOLEAN:
+				return String.valueOf(cell.getBooleanCellValue());
+			case FORMULA:
+				return getFormulaCellValue(cell, evaluator);
+			default:
+				return "";
+		}
+	}
+
+	private String getFormulaCellValue(
+			org.apache.poi.ss.usermodel.Cell cell,
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
+		try {
+			org.apache.poi.ss.usermodel.CellValue evaluated = evaluator.evaluate(cell);
+			if (evaluated == null) {
+				return "";
+			}
+
+			switch (evaluated.getCellType()) {
+				case STRING:
+					return evaluated.getStringValue();
+				case NUMERIC:
+					if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+						return org.apache.poi.ss.usermodel.DateUtil.getLocalDateTime(
+										evaluated.getNumberValue())
+								.toString();
+					}
+					return String.valueOf(evaluated.getNumberValue());
+				case BOOLEAN:
+					return String.valueOf(evaluated.getBooleanValue());
+				case BLANK:
+					return "";
+				case ERROR:
+					log.warn(
+							"Formula evaluated to error for cell {}: {}",
+							cell.getAddress(),
+							evaluated.getErrorValue());
+					return "";
+				default:
+					return "";
+			}
+		} catch (Exception e) {
+			log.warn("Failed to evaluate formula for cell {}", cell.getAddress(), e);
+			return "";
+		}
+	}
+
 	/**
 	 * 파싱 항목의 상태 결정
 	 */
-	private TemporaryExpenseStatus determineStatus(ParsedExpenseItem item) {
+	private TemporaryExpenseStatus determineStatus(GeminiService.ParsedExpenseItem item) {
 		// 필수 필드 체크
 		if (item.merchantName() == null || item.localAmount() == null) {
 			return TemporaryExpenseStatus.INCOMPLETE;
 		}
 
-		// 선택 필드 누락 체크
-		if (item.category() == null || item.occurredAt() == null) {
+		// 선택 필드 누락 체크 (Category is now often null from document, so maybe rely less on
+		// it or default it?)
+		if (item.occurredAt() == null) {
 			return TemporaryExpenseStatus.INCOMPLETE;
 		}
 
@@ -133,7 +249,7 @@ public class TemporaryExpenseParsingService {
 	 * 카테고리 문자열 → Enum 변환
 	 */
 	private Category parseCategory(String categoryStr) {
-		if (categoryStr == null) return null;
+		if (categoryStr == null) return Category.UNCLASSIFIED;
 		try {
 			return Category.valueOf(categoryStr.toUpperCase());
 		} catch (IllegalArgumentException e) {
@@ -147,7 +263,9 @@ public class TemporaryExpenseParsingService {
 	private CurrencyCode parseCurrencyCode(String currencyStr) {
 		if (currencyStr == null) return CurrencyCode.KRW; // default
 		try {
-			return CurrencyCode.valueOf(currencyStr.toUpperCase());
+			// Clean up validation
+			String clean = currencyStr.replaceAll("[^A-Za-z]", "").toUpperCase();
+			return CurrencyCode.valueOf(clean);
 		} catch (IllegalArgumentException e) {
 			return CurrencyCode.KRW;
 		}

@@ -66,6 +66,9 @@ public class TemporaryExpense {
 	@Column(name = "card_last_four_digits", length = 4)
 	private String cardLastFourDigits;
 
+	@Column(name = "approval_number")
+	private String approvalNumber;
+
 	/**
 	 * 임시지출내역 상태 Enum
 	 */

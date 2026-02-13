@@ -21,7 +21,7 @@ public class ExchangeRate {
 	@Column(nullable = false, name = "exchange_rate_id")
 	Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "CHAR(3)")
 	@Enumerated(EnumType.STRING)
 	CurrencyCode currencyCode;
 

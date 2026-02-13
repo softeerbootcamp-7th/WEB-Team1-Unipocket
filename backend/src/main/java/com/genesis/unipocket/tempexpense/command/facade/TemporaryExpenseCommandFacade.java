@@ -15,6 +15,7 @@ import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershi
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseUpdateRequest;
 import java.util.List;
@@ -39,6 +40,7 @@ public class TemporaryExpenseCommandFacade {
 	private final TemporaryExpenseParsingService temporaryExpenseParsingService;
 	private final TemporaryExpenseConversionService temporaryExpenseConversionService;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
+	private final FileRepository fileRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public FileUploadResult createPresignedUrl(
@@ -55,6 +57,45 @@ public class TemporaryExpenseCommandFacade {
 
 	public String startParseAsync(Long accountBookId, List<String> s3Keys, UUID userId) {
 		validateOwnership(accountBookId, userId);
+
+		if (s3Keys.isEmpty()) {
+			throw new IllegalArgumentException("파일이 선택되지 않았습니다.");
+		}
+
+		// 파일 타입 확인을 위해 첫 번째 파일 조회 (모든 파일이 같은 타입이라고 가정하거나, 섞여있다면 정책 결정 필요)
+		// 여기서는 s3Keys에 해당하는 파일들의 타입을 확인하여 제한사항 적용
+		// 1. 모든 파일 정보를 조회
+		List<com.genesis.unipocket.tempexpense.command.persistence.entity.File> files =
+				s3Keys.stream()
+						.map(
+								key ->
+										fileRepository
+												.findByS3Key(key)
+												.orElseThrow(
+														() ->
+																new IllegalArgumentException(
+																		"파일을 찾을 수 없습니다: " + key)))
+						.toList();
+
+		boolean hasDocument =
+				files.stream()
+						.anyMatch(
+								f ->
+										f.getFileType() == FileType.CSV
+												|| f.getFileType() == FileType.EXCEL);
+
+		if (hasDocument) {
+			// 문서(엑셀/CSV)가 포함된 경우: 파일은 하나만 가능
+			if (s3Keys.size() > 1) {
+				throw new IllegalArgumentException("엑셀/CSV 파일은 한 번에 하나만 업로드 가능합니다.");
+			}
+		} else {
+			// 이미지만 있는 경우: 20개까지 가능
+			if (s3Keys.size() > 20) {
+				throw new IllegalArgumentException("이미지는 한 번에 최대 20장까지 업로드 가능합니다.");
+			}
+		}
+
 		String taskId = java.util.UUID.randomUUID().toString();
 		temporaryExpenseParsingService.parseBatchFilesAsync(accountBookId, s3Keys, taskId);
 		return taskId;

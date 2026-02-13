@@ -40,6 +40,7 @@ public class File {
 	 */
 	public enum FileType {
 		IMAGE, // 이미지 파일 (jpg, png 등)
-		CSV // CSV 파일
+		CSV, // CSV 파일
+		EXCEL // 엑셀 파일 (xls, xlsx)
 	}
 }

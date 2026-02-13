@@ -1,7 +1,7 @@
 package com.genesis.unipocket.travel.command.persistence.entity;
 
 import com.genesis.unipocket.global.common.entity.BaseEntity;
-import com.genesis.unipocket.travel.common.enums.WidgetType;
+import com.genesis.unipocket.global.common.enums.WidgetType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

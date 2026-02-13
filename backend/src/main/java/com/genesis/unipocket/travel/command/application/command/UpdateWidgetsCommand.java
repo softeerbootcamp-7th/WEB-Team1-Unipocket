@@ -1,7 +1,7 @@
 package com.genesis.unipocket.travel.command.application.command;
 
+import com.genesis.unipocket.global.common.enums.WidgetType;
 import com.genesis.unipocket.travel.command.presentation.request.WidgetRequest;
-import com.genesis.unipocket.travel.common.enums.WidgetType;
 import java.util.List;
 
 public record UpdateWidgetsCommand(Long travelId, List<Widget> widgets) {

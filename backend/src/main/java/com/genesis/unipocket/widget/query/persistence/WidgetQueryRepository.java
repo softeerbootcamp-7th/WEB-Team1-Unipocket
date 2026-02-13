@@ -5,8 +5,9 @@ import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -15,189 +16,259 @@ public class WidgetQueryRepository {
 
 	@PersistenceContext private EntityManager em;
 
-	// ── BUDGET ──────────────────────────────────────────
+	// ── 공통 헬퍼 ──────────────────────────────────────
+
+	private String amountExpr(CurrencyType type) {
+		return type == CurrencyType.LOCAL
+				? "e.exchangeInfo.localCurrencyAmount"
+				: "e.exchangeInfo.baseCurrencyAmount";
+	}
+
+	private String travelFilter(Long travelId) {
+		return travelId != null ? " AND e.travelId = :travelId" : "";
+	}
+
+	private String periodFilter(LocalDateTime periodStart, LocalDateTime periodEnd) {
+		StringBuilder sb = new StringBuilder();
+		if (periodStart != null) {
+			sb.append(" AND e.occurredAt >= :periodStart");
+		}
+		if (periodEnd != null) {
+			sb.append(" AND e.occurredAt < :periodEnd");
+		}
+		return sb.toString();
+	}
+
+	private void bindTravel(Query query, Long travelId) {
+		if (travelId != null) {
+			query.setParameter("travelId", travelId);
+		}
+	}
+
+	private void bindPeriod(Query query, LocalDateTime periodStart, LocalDateTime periodEnd) {
+		if (periodStart != null) {
+			query.setParameter("periodStart", periodStart);
+		}
+		if (periodEnd != null) {
+			query.setParameter("periodEnd", periodEnd);
+		}
+	}
+
+	// ── ACCOUNT BOOK 정보 ──────────────────────────────
 
 	public CountryCode getAccountBookCountryCode(Long accountBookId, CurrencyType type) {
-		String qlString = "";
-		if (type.equals(CurrencyType.BASE)) {
-			qlString += "SELECT ab.baseCountryCode ";
-		} else if (type.equals(CurrencyType.LOCAL)) {
-			qlString += "SELECT ab.localCountryCode ";
-		}
-		qlString += "FROM AccountBookEntity ab WHERE ab.id = :accountBookId";
-
-		return em.createQuery(qlString, CountryCode.class)
+		String field = type == CurrencyType.LOCAL ? "ab.localCountryCode" : "ab.baseCountryCode";
+		return em.createQuery(
+						"SELECT "
+								+ field
+								+ " FROM AccountBookEntity ab WHERE ab.id = :accountBookId",
+						CountryCode.class)
 				.setParameter("accountBookId", accountBookId)
 				.getSingleResult();
 	}
 
 	public BigDecimal getBudget(Long accountBookId) {
-		Long budget =
+		BigDecimal budget =
 				em.createQuery(
 								"SELECT ab.budget FROM AccountBookEntity ab"
 										+ " WHERE ab.id = :accountBookId",
-								Long.class)
+								BigDecimal.class)
 						.setParameter("accountBookId", accountBookId)
 						.getSingleResult();
-		return budget != null ? BigDecimal.valueOf(budget) : BigDecimal.ZERO;
+		return budget != null ? budget : BigDecimal.ZERO;
 	}
 
-	public BigDecimal getTotalSpentByAccountBookId(Long accountBookId, CurrencyType type) {
-		String qlString = "";
-		if (type.equals(CurrencyType.BASE)) {
-			qlString += "SELECT COALESCE(SUM(e.exchangeInfo.baseCurrencyAmount), 0) ";
-		} else if (type.equals(CurrencyType.LOCAL)) {
-			qlString += "SELECT COALESCE(SUM(e.exchangeInfo.localCurrencyAmount), 0) ";
-		}
-		qlString += "FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId";
-		return em.createQuery(qlString, BigDecimal.class)
-				.setParameter("accountBookId", accountBookId)
-				.getSingleResult();
+	// ── BUDGET ──────────────────────────────────────────
+
+	public BigDecimal getTotalSpentByAccountBookId(
+			Long accountBookId, Long travelId, CurrencyType type) {
+
+		String jpql =
+				"SELECT COALESCE(SUM("
+						+ amountExpr(type)
+						+ "), 0)"
+						+ " FROM ExpenseEntity e"
+						+ " WHERE e.accountBookId = :accountBookId"
+						+ travelFilter(travelId);
+
+		var query =
+				em.createQuery(jpql, BigDecimal.class).setParameter("accountBookId", accountBookId);
+		bindTravel(query, travelId);
+		return query.getSingleResult();
 	}
 
 	// ── PERIOD ──────────────────────────────────────────
 
-	public List<Object[]> findDailySpentByAccountBookId(Long accountBookId) {
-		List<Object[]> result =
-				em.createQuery(
-								"SELECT CAST(e.occurredAt AS DATE), "
-										+ "SUM(e.exchangeInfo.baseCurrencyAmount) "
-										+ "FROM ExpenseEntity e "
-										+ "WHERE e.accountBookId = :accountBookId "
-										+ "GROUP BY CAST(e.occurredAt AS DATE) "
-										+ "ORDER BY CAST(e.occurredAt AS DATE) DESC",
-								Object[].class)
+	public BigDecimal findSpentInRange(
+			Long accountBookId,
+			Long travelId,
+			CurrencyType type,
+			LocalDateTime start,
+			LocalDateTime end) {
+
+		String jpql =
+				"SELECT COALESCE(SUM("
+						+ amountExpr(type)
+						+ "), 0)"
+						+ " FROM ExpenseEntity e"
+						+ " WHERE e.accountBookId = :accountBookId"
+						+ " AND e.occurredAt >= :rangeStart"
+						+ " AND e.occurredAt < :rangeEnd"
+						+ travelFilter(travelId);
+
+		var query =
+				em.createQuery(jpql, BigDecimal.class)
 						.setParameter("accountBookId", accountBookId)
-						.setMaxResults(7)
-						.getResultList();
-
-		Collections.reverse(result);
-		return result;
-	}
-
-	public List<Object[]> findWeeklySpentByAccountBookId(Long accountBookId) {
-		List<Object[]> result =
-				em.createQuery(
-								"SELECT YEAR(e.occurredAt), MONTH(e.occurredAt), FUNCTION('WEEK',"
-									+ " e.occurredAt), SUM(e.exchangeInfo.baseCurrencyAmount) FROM"
-									+ " ExpenseEntity e WHERE e.accountBookId = :accountBookId"
-									+ " GROUP BY YEAR(e.occurredAt), MONTH(e.occurredAt),"
-									+ " FUNCTION('WEEK', e.occurredAt) ORDER BY YEAR(e.occurredAt)"
-									+ " DESC, FUNCTION('WEEK', e.occurredAt) DESC",
-								Object[].class)
-						.setParameter("accountBookId", accountBookId)
-						.setMaxResults(5)
-						.getResultList();
-
-		Collections.reverse(result);
-		return result;
-	}
-
-	public List<Object[]> findMonthlySpentByAccountBookId(Long accountBookId) {
-		String monthExpr =
-				"CONCAT(YEAR(e.occurredAt), '-', "
-						+ "CASE WHEN MONTH(e.occurredAt) < 10 "
-						+ "THEN CONCAT('0', MONTH(e.occurredAt)) "
-						+ "ELSE CAST(MONTH(e.occurredAt) AS STRING) END)";
-
-		List<Object[]> result =
-				em.createQuery(
-								"SELECT "
-										+ monthExpr
-										+ ", SUM(e.exchangeInfo.baseCurrencyAmount) "
-										+ "FROM ExpenseEntity e "
-										+ "WHERE e.accountBookId = :accountBookId "
-										+ "GROUP BY "
-										+ monthExpr
-										+ " "
-										+ "ORDER BY "
-										+ monthExpr
-										+ " DESC",
-								Object[].class)
-						.setParameter("accountBookId", accountBookId)
-						.setMaxResults(6)
-						.getResultList();
-
-		Collections.reverse(result);
-		return result;
+						.setParameter("rangeStart", start)
+						.setParameter("rangeEnd", end);
+		bindTravel(query, travelId);
+		return query.getSingleResult();
 	}
 
 	// ── CATEGORY ────────────────────────────────────────
 
-	public List<Object[]> findCategorySpentByAccountBookId(Long accountBookId) {
-		return em.createQuery(
-						"SELECT e.category, SUM(e.exchangeInfo.baseCurrencyAmount)"
-								+ " FROM ExpenseEntity e"
-								+ " WHERE e.accountBookId = :accountBookId"
-								+ " AND e.category <> :income"
-								+ " GROUP BY e.category"
-								+ " ORDER BY SUM(e.exchangeInfo.baseCurrencyAmount) DESC",
-						Object[].class)
-				.setParameter("accountBookId", accountBookId)
-				.setParameter("income", Category.INCOME)
-				.getResultList();
+	@SuppressWarnings("unchecked")
+	public List<Object[]> findCategorySpentByAccountBookId(
+			Long accountBookId,
+			Long travelId,
+			CurrencyType type,
+			LocalDateTime periodStart,
+			LocalDateTime periodEnd) {
+
+		String jpql =
+				"SELECT e.category, SUM("
+						+ amountExpr(type)
+						+ ")"
+						+ " FROM ExpenseEntity e"
+						+ " WHERE e.accountBookId = :accountBookId"
+						+ " AND e.category <> :income"
+						+ travelFilter(travelId)
+						+ periodFilter(periodStart, periodEnd)
+						+ " GROUP BY e.category"
+						+ " ORDER BY SUM("
+						+ amountExpr(type)
+						+ ") DESC";
+
+		var query =
+				em.createQuery(jpql, Object[].class)
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("income", Category.INCOME);
+		bindTravel(query, travelId);
+		bindPeriod(query, periodStart, periodEnd);
+		return query.getResultList();
 	}
 
-	// ── 웗별 지출내역 검색 메서드 ──────────────────────
+	// ── COMPARISON ──────────────────────────────────────
 
-	public BigDecimal findMonthlyTotalByAccountBookIdAndMonth(
-			Long accountBookId, int year, int month) {
-		return em.createQuery(
-						"SELECT COALESCE(SUM(e.exchangeInfo.baseCurrencyAmount), 0)"
-								+ " FROM ExpenseEntity e"
-								+ " WHERE e.accountBookId = :accountBookId"
-								+ " AND YEAR(e.occurredAt) = :year"
-								+ " AND MONTH(e.occurredAt) = :month",
-						BigDecimal.class)
-				.setParameter("accountBookId", accountBookId)
-				.setParameter("year", year)
-				.setParameter("month", month)
-				.getSingleResult();
+	public BigDecimal findMonthlyTotalByAccountBookId(
+			Long accountBookId,
+			Long travelId,
+			CurrencyType type,
+			LocalDateTime monthStart,
+			LocalDateTime monthEnd) {
+
+		String jpql =
+				"SELECT COALESCE(SUM("
+						+ amountExpr(type)
+						+ "), 0)"
+						+ " FROM ExpenseEntity e"
+						+ " WHERE e.accountBookId = :accountBookId"
+						+ " AND e.occurredAt >= :monthStart"
+						+ " AND e.occurredAt < :monthEnd"
+						+ travelFilter(travelId);
+
+		var query =
+				em.createQuery(jpql, BigDecimal.class)
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("monthStart", monthStart)
+						.setParameter("monthEnd", monthEnd);
+		bindTravel(query, travelId);
+		return query.getSingleResult();
 	}
 
-	public BigDecimal findAverageMonthlySpentByMonth(int year, int month) {
+	public BigDecimal findAverageMonthlySpentByCountryCode(
+			CountryCode localCountryCode,
+			CurrencyType type,
+			LocalDateTime monthStart,
+			LocalDateTime monthEnd) {
+
+		String amountCol =
+				type == CurrencyType.LOCAL ? "e.local_currency_amount" : "e.base_currency_amount";
+
 		Object result =
 				em.createNativeQuery(
 								"SELECT COALESCE(AVG(sub.total), 0) FROM ("
-										+ "SELECT SUM(e.base_currency_amount) AS total"
-										+ " FROM expenses e"
-										+ " WHERE YEAR(e.occurred_at) = :year"
-										+ " AND MONTH(e.occurred_at) = :month"
-										+ " GROUP BY e.account_book_id"
-										+ ") sub")
-						.setParameter("year", year)
-						.setParameter("month", month)
+										+ "SELECT SUM("
+										+ amountCol
+										+ ") AS total FROM expenses e JOIN account_book ab ON"
+										+ " ab.account_book_id = e.account_book_id WHERE"
+										+ " ab.local_country_code = :countryCode AND e.occurred_at"
+										+ " >= :monthStart AND e.occurred_at < :monthEnd GROUP BY"
+										+ " e.account_book_id) sub")
+						.setParameter("countryCode", localCountryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("monthEnd", monthEnd)
 						.getSingleResult();
 		return result instanceof BigDecimal bd ? bd : new BigDecimal(result.toString());
 	}
 
 	// ── PAYMENT ─────────────────────────────────────────
 
-	public List<Object[]> findPaymentMethodSpentByAccountBookId(Long accountBookId) {
-		return em.createQuery(
-						"SELECT e.paymentMethod, SUM(e.exchangeInfo.baseCurrencyAmount)"
-								+ " FROM ExpenseEntity e"
-								+ " WHERE e.accountBookId = :accountBookId"
-								+ " AND e.paymentMethod IS NOT NULL"
-								+ " GROUP BY e.paymentMethod"
-								+ " ORDER BY SUM(e.exchangeInfo.baseCurrencyAmount) DESC",
-						Object[].class)
-				.setParameter("accountBookId", accountBookId)
-				.getResultList();
+	@SuppressWarnings("unchecked")
+	public List<Object[]> findPaymentMethodSpentByAccountBookId(
+			Long accountBookId,
+			Long travelId,
+			CurrencyType type,
+			LocalDateTime periodStart,
+			LocalDateTime periodEnd) {
+
+		String jpql =
+				"SELECT e.paymentMethod, SUM("
+						+ amountExpr(type)
+						+ ")"
+						+ " FROM ExpenseEntity e"
+						+ " WHERE e.accountBookId = :accountBookId"
+						+ travelFilter(travelId)
+						+ periodFilter(periodStart, periodEnd)
+						+ " GROUP BY e.paymentMethod"
+						+ " ORDER BY SUM("
+						+ amountExpr(type)
+						+ ") DESC";
+
+		var query =
+				em.createQuery(jpql, Object[].class).setParameter("accountBookId", accountBookId);
+		bindTravel(query, travelId);
+		bindPeriod(query, periodStart, periodEnd);
+		return query.getResultList();
 	}
 
 	// ── CURRENCY ────────────────────────────────────────
 
-	public List<Object[]> findCurrencySpentByAccountBookId(Long accountBookId) {
-		return em.createQuery(
-						"SELECT e.exchangeInfo.localCurrencyCode,"
-								+ " SUM(e.exchangeInfo.baseCurrencyAmount)"
-								+ " FROM ExpenseEntity e"
-								+ " WHERE e.accountBookId = :accountBookId"
-								+ " GROUP BY e.exchangeInfo.localCurrencyCode"
-								+ " ORDER BY SUM(e.exchangeInfo.baseCurrencyAmount) DESC",
-						Object[].class)
-				.setParameter("accountBookId", accountBookId)
-				.getResultList();
+	@SuppressWarnings("unchecked")
+	public List<Object[]> findCurrencySpentByAccountBookId(
+			Long accountBookId,
+			Long travelId,
+			CurrencyType type,
+			LocalDateTime periodStart,
+			LocalDateTime periodEnd) {
+
+		String jpql =
+				"SELECT e.exchangeInfo.localCurrencyCode, SUM("
+						+ amountExpr(type)
+						+ ")"
+						+ " FROM ExpenseEntity e"
+						+ " WHERE e.accountBookId = :accountBookId"
+						+ travelFilter(travelId)
+						+ periodFilter(periodStart, periodEnd)
+						+ " GROUP BY e.exchangeInfo.localCurrencyCode"
+						+ " ORDER BY SUM("
+						+ amountExpr(type)
+						+ ") DESC";
+
+		var query =
+				em.createQuery(jpql, Object[].class).setParameter("accountBookId", accountBookId);
+		bindTravel(query, travelId);
+		bindPeriod(query, periodStart, periodEnd);
+		return query.getResultList();
 	}
 }

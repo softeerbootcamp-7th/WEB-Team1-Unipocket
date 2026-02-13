@@ -124,7 +124,12 @@ public enum ErrorCode {
 			"503_EXCHANGE_RATE_API_ERROR",
 			"환율 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요."),
 	EXCHANGE_RATE_NOT_FOUND(
-			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다.");
+			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다."),
+
+	// ========== Widget Errors ==========
+	WIDGET_ORDER_DUPLICATED(
+			HttpStatus.BAD_REQUEST, "400_WIDGET_ORDER_DUPLICATED", "위젯 순서가 중복되었습니다."),
+	WIDGET_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "400_WIDGET_SIZE_EXCEEDED", "위젯 크기 합이 5를 초과합니다.");
 
 	public static class CodeLiterals {
 		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =

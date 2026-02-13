@@ -163,7 +163,7 @@ class AccountBookQueryServiceTest {
 		assertThat(result.baseCountryCode()).isEqualTo(CountryCode.KR);
 		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
 		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
-		assertThat(result.budgetCreatedAt())
+		assertThat(result.quotedAt())
 				.isAfterOrEqualTo(before)
 				.isBeforeOrEqualTo(LocalDateTime.now().plusSeconds(1));
 	}
@@ -199,6 +199,6 @@ class AccountBookQueryServiceTest {
 		assertThat(result.baseCountryCode()).isEqualTo(CountryCode.KR);
 		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
 		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
-		assertThat(result.budgetCreatedAt()).isNotNull();
+		assertThat(result.quotedAt()).isNotNull();
 	}
 }

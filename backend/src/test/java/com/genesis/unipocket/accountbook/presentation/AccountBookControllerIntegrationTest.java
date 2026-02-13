@@ -496,7 +496,7 @@ class AccountBookControllerIntegrationTest {
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
-				.andExpect(jsonPath("$.budgetCreatedAt").exists());
+				.andExpect(jsonPath("$.quotedAt").exists());
 	}
 
 	// ========== Helper Methods ==========

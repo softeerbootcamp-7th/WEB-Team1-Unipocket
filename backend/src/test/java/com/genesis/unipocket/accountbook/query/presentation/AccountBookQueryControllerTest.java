@@ -108,14 +108,14 @@ class AccountBookQueryControllerTest {
 								quotedAt));
 		mockAuthentication(accessToken, userId);
 
-		mockMvc.perform(
-						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
-								.cookie(new Cookie("access_token", accessToken)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
-				.andExpect(jsonPath("$.localCountryCode").value("JP"))
-				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
-				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-12T11:30:00"));
+			mockMvc.perform(
+							get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+									.cookie(new Cookie("access_token", accessToken)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+					.andExpect(jsonPath("$.localCountryCode").value("JP"))
+					.andExpect(jsonPath("$.exchangeRate").value("0.11"))
+					.andExpect(jsonPath("$.quotedAt").value("2026-02-12T11:30:00"));
 	}
 
 	private void mockAuthentication(String accessToken, UUID userId) {

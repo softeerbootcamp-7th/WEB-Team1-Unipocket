@@ -12,4 +12,4 @@ public record AccountBookExchangeRateResponse(
 		CountryCode localCountryCode,
 		@JsonSerialize(using = FixedScaleDecimalStringSerializer.class) BigDecimal exchangeRate,
 		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-				LocalDateTime budgetCreatedAt) {}
+				LocalDateTime quotedAt) {}

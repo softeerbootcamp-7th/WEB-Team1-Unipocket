@@ -1,5 +1,6 @@
 package com.genesis.unipocket.global.common.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
@@ -22,8 +23,20 @@ public enum Category {
 		this.name = name;
 	}
 
+	// JSON으로 나갈 때 (Serialize): 0, 1, 2...
 	@JsonValue
 	public int getOrdinal() {
 		return this.ordinal();
+	}
+
+	// JSON에서 들어올 때 (Deserialize): 0, 1, 2... -> Enum 상수로 변환
+	@JsonCreator
+	public static Category fromOrdinal(int ordinal) {
+		for (Category category : Category.values()) {
+			if (category.ordinal() == ordinal) {
+				return category;
+			}
+		}
+		throw new IllegalArgumentException("Invalid Category ordinal: " + ordinal);
 	}
 }

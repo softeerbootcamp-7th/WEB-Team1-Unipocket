@@ -22,6 +22,7 @@ public class ExchangeRate {
 	Long id;
 
 	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	CurrencyCode currencyCode;
 
 	@Column(nullable = false)

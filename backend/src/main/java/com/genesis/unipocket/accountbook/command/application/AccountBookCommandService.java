@@ -8,7 +8,7 @@ import com.genesis.unipocket.accountbook.command.application.validator.AccountBo
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
-import com.genesis.unipocket.expense.command.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;

@@ -65,7 +65,7 @@ public class TemporaryExpenseConversionService {
 						meta.getAccountBookId(),
 						temp.getMerchantName(),
 						temp.getCategory(),
-						temp.getPaymentsMethod(),
+						null, // userCardId - 임시지출에서는 카드 정보 없음
 						temp.getOccurredAt(),
 						temp.getLocalCurrencyAmount(),
 						temp.getLocalCountryCode() != null

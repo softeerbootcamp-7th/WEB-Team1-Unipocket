@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.command.application;
+package com.genesis.unipocket.exchange.query.application;
 
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;

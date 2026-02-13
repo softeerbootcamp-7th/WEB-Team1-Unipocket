@@ -16,7 +16,7 @@ public record ExpenseCreateCommand(
 		Long accountBookId,
 		String merchantName,
 		Category category,
-		String paymentMethod,
+		Long userCardId,
 		LocalDateTime occurredAt,
 		BigDecimal localCurrencyAmount,
 		CurrencyCode localCurrencyCode,

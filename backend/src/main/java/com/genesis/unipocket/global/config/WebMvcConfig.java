@@ -1,7 +1,7 @@
 package com.genesis.unipocket.global.config;
 
 import com.genesis.unipocket.auth.common.resolver.LoginUserArgumentResolver;
-import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.converter.CategoryConverter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -22,9 +22,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addFormatters(FormatterRegistry registry) {
-		registry.addConverter(
-				String.class,
-				Category.class,
-				source -> Category.values()[Integer.parseInt(source)]);
+		registry.addConverter(new CategoryConverter());
 	}
 }

@@ -54,9 +54,7 @@ public class ExpenseEntity extends BaseEntity {
 
 	private Category category;
 
-	private String paymentMethod;
-	//	@ManyToOne(fetch = FetchType.LAZY)
-	//	private UserCardEntity userCardEntity;
+	private Long userCardId;
 
 	private Long travelId;
 
@@ -82,7 +80,7 @@ public class ExpenseEntity extends BaseEntity {
 				.merchant(Merchant.of(params.merchantName()))
 				.occurredAt(params.occurredAt())
 				.memo(params.memo())
-				.paymentMethod(params.paymentMethod())
+				.userCardId(params.userCardId())
 				.category(params.category())
 				.travelId(params.travelId())
 				.expenseSourceInfo(ExpenseSourceInfo.ofManual())
@@ -128,8 +126,8 @@ public class ExpenseEntity extends BaseEntity {
 		this.category = category;
 	}
 
-	public void updatePaymentMethod(String paymentMethod) {
-		this.paymentMethod = paymentMethod;
+	public void updateUserCardId(Long userCardId) {
+		this.userCardId = userCardId;
 	}
 
 	public void updateMemo(String memo) {

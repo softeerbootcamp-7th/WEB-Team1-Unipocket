@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.command.application;
 
+import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
@@ -52,7 +53,7 @@ public class ExpenseCommandService {
 		// 기본 필드 업데이트
 		entity.updateMerchantName(command.merchantName());
 		entity.updateCategory(command.category());
-		entity.updatePaymentMethod(command.paymentMethod());
+		entity.updateUserCardId(command.userCardId());
 		entity.updateMemo(command.memo());
 		entity.updateOccurredAt(command.occurredAt());
 		entity.updateTravelId(command.travelId());

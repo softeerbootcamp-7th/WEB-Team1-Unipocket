@@ -3,7 +3,7 @@ package com.genesis.unipocket.global.common.enums;
 /**
  * <b>화폐 코드 Enum</b>
  * <p>
- * 네이버 환율 표시 기준에 따라 작성한 화폐 코드 리스트 입니다. <br>
+ * 환율 도메인에서 사용하는 화폐 코드 리스트 입니다. <br>
  * </p>
  * @author bluefishez
  * @since 2026-01-30

@@ -5,11 +5,15 @@ import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCo
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
+import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
+import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class ExpenseCommandFacade {
 	private final ExpenseCommandService expenseService;
 	private final AccountBookInfoFetchService accountBookInfoFetchService;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final UserCardFetchService userCardFetchService;
 
 	@Transactional
 	public ExpenseResult createExpenseManual(
@@ -41,20 +46,24 @@ public class ExpenseCommandFacade {
 
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 
+		LocalDateTime occurredAt = LocalDateTime.ofInstant(request.occurredAt(), ZoneOffset.UTC);
+
 		ExpenseCreateCommand command =
 				new ExpenseCreateCommand(
 						accountBookId,
 						request.merchantName(),
 						request.category(),
-						request.paymentMethod(),
-						request.occurredAt(),
+						request.userCardId(),
+						occurredAt,
 						request.localCurrencyAmount(),
 						request.localCurrencyCode(),
 						baseCurrencyCode,
 						request.memo(),
 						request.travelId());
 
-		return expenseService.createExpenseManual(command);
+		ExpenseResult result = expenseService.createExpenseManual(command);
+
+		return enrichWithCardInfo(result);
 	}
 
 	@Transactional
@@ -68,26 +77,58 @@ public class ExpenseCommandFacade {
 
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 
+		LocalDateTime occurredAt = LocalDateTime.ofInstant(request.occurredAt(), ZoneOffset.UTC);
+
 		ExpenseUpdateCommand command =
 				new ExpenseUpdateCommand(
 						expenseId,
 						accountBookId,
 						request.merchantName(),
 						request.category(),
-						request.paymentMethod(),
+						request.userCardId(),
 						request.memo(),
-						request.occurredAt(),
+						occurredAt,
 						request.localCurrencyAmount(),
 						request.localCurrencyCode(),
 						request.travelId(),
 						baseCurrencyCode);
 
-		return expenseService.updateExpense(command);
+		ExpenseResult result = expenseService.updateExpense(command);
+
+		return enrichWithCardInfo(result);
 	}
 
 	@Transactional
 	public void deleteExpense(Long expenseId, Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 		expenseService.deleteExpense(expenseId, accountBookId);
+	}
+
+	private ExpenseResult enrichWithCardInfo(ExpenseResult result) {
+		if (result.userCardId() == null) {
+			return result;
+		}
+		UserCardInfo cardInfo = userCardFetchService.getUserCard(result.userCardId());
+		return new ExpenseResult(
+				result.expenseId(),
+				result.accountBookId(),
+				result.travelId(),
+				result.category(),
+				result.baseCurrencyCode(),
+				result.baseCurrencyAmount(),
+				result.localCurrencyCode(),
+				result.localCurrencyAmount(),
+				result.occurredAt(),
+				result.merchantName(),
+				result.displayMerchantName(),
+				result.approvalNumber(),
+				result.userCardId(),
+				cardInfo.cardCompany(),
+				cardInfo.nickName(),
+				cardInfo.cardNumber(),
+				result.expenseSource(),
+				result.fileLink(),
+				result.memo(),
+				result.cardNumber());
 	}
 }

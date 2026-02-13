@@ -53,7 +53,7 @@ public class ExpenseCommandService {
 		// 기본 필드 업데이트
 		entity.updateMerchantName(command.merchantName());
 		entity.updateCategory(command.category());
-		entity.updatePaymentMethod(command.paymentMethod());
+		entity.updateUserCardId(command.userCardId());
 		entity.updateMemo(command.memo());
 		entity.updateOccurredAt(command.occurredAt());
 		entity.updateTravelId(command.travelId());

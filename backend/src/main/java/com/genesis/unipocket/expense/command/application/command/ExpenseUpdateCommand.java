@@ -17,7 +17,7 @@ public record ExpenseUpdateCommand(
 		Long accountBookId,
 		String merchantName,
 		Category category,
-		String paymentMethod,
+		Long userCardId,
 		String memo,
 		LocalDateTime occurredAt,
 		BigDecimal localCurrencyAmount,

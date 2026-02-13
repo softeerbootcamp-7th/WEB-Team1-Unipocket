@@ -111,7 +111,7 @@ class ExpenseCommandServiceTest {
 		when(expenseEntity.getCategory()).thenReturn(Category.FOOD);
 		when(expenseEntity.getTravelId()).thenReturn(null);
 		when(expenseEntity.getApprovalNumber()).thenReturn(null);
-		when(expenseEntity.getPaymentMethod()).thenReturn("CARD");
+		when(expenseEntity.getUserCardId()).thenReturn(null);
 		when(expenseEntity.getMemo()).thenReturn("메모");
 		when(expenseEntity.getCardNumber()).thenReturn(null);
 
@@ -121,7 +121,7 @@ class ExpenseCommandServiceTest {
 						accountBookId,
 						"스타벅스",
 						Category.FOOD,
-						"CARD",
+						null,
 						"메모",
 						LocalDateTime.now(),
 						BigDecimal.valueOf(1500),
@@ -181,7 +181,7 @@ class ExpenseCommandServiceTest {
 		when(expenseEntity.getCategory()).thenReturn(Category.FOOD);
 		when(expenseEntity.getTravelId()).thenReturn(null);
 		when(expenseEntity.getApprovalNumber()).thenReturn(null);
-		when(expenseEntity.getPaymentMethod()).thenReturn("CARD");
+		when(expenseEntity.getUserCardId()).thenReturn(null);
 		when(expenseEntity.getMemo()).thenReturn("메모");
 		when(expenseEntity.getCardNumber()).thenReturn(null);
 
@@ -191,7 +191,7 @@ class ExpenseCommandServiceTest {
 						accountBookId,
 						"스타벅스",
 						Category.FOOD,
-						"CARD",
+						null,
 						"메모",
 						LocalDateTime.now(),
 						BigDecimal.valueOf(15000),

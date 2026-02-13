@@ -1,5 +1,7 @@
 package com.genesis.unipocket.expense.query.service;
 
+import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
+import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
@@ -35,11 +37,12 @@ public class ExpenseQueryService {
 
 	private final ExpenseRepository expenseRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final UserCardFetchService userCardFetchService;
 
 	public ExpenseResult getExpense(Long expenseId, Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
-		return ExpenseResult.from(entity);
+		return enrichWithCardInfo(entity);
 	}
 
 	public Page<ExpenseResult> getExpenses(
@@ -101,7 +104,15 @@ public class ExpenseQueryService {
 							refinedPageable);
 		}
 
-		return entities.map(ExpenseResult::from);
+		return entities.map(this::enrichWithCardInfo);
+	}
+
+	private ExpenseResult enrichWithCardInfo(ExpenseEntity entity) {
+		if (entity.getUserCardId() == null) {
+			return ExpenseResult.from(entity);
+		}
+		UserCardInfo cardInfo = userCardFetchService.getUserCard(entity.getUserCardId());
+		return ExpenseResult.from(entity, cardInfo);
 	}
 
 	private ExpenseEntity findAndVerifyOwnership(Long expenseId, Long accountBookId) {

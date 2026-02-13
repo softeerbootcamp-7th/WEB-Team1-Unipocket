@@ -1,13 +1,12 @@
 import { useState } from 'react';
 
 import DropDown from '@/components/common/dropdown/Dropdown';
+import Icon from '@/components/common/Icon';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-
-import { Icons } from '@/assets';
 
 const DROPDOWN_WIDTH_CLASS = 'w-24';
 
@@ -66,8 +65,13 @@ const SortDropdown = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="p-1">
-          <Icons.SwapVertical className="size-5 cursor-pointer" />
+        <button>
+          <Icon
+            color="text-label-neutral"
+            iconName="SwapVertical"
+            width={20}
+            height={20}
+          />
         </button>
       </PopoverTrigger>
       <PopoverContent

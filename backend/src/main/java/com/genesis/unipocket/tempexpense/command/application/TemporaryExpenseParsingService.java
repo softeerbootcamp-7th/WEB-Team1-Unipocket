@@ -1,5 +1,8 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
@@ -14,8 +17,17 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepo
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +48,8 @@ public class TemporaryExpenseParsingService {
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
+	private final AccountBookCommandRepository accountBookRepository;
+	private final ExchangeRateService exchangeRateService;
 	private final GeminiService geminiService;
 	private final S3Service s3Service;
 	private final ParsingProgressPublisher progressPublisher;
@@ -62,68 +76,145 @@ public class TemporaryExpenseParsingService {
 			throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
 		}
 
-		GeminiService.GeminiParseResponse geminiResponse;
+		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
+		return parseAndPersistExpenses(file, meta, rateContext);
+	}
 
-		if (file.getFileType() == File.FileType.IMAGE) {
-			String s3Url =
-					s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
-			geminiResponse = geminiService.parseReceiptImage(s3Url);
-		} else {
-			// Document Parsing (CSV, EXCEL)
-			String content = extractContent(file);
-			geminiResponse = geminiService.parseDocument(content);
-		}
-
+	private ParsingResult parseAndPersistExpenses(
+			File file, TempExpenseMeta meta, AccountBookRateContext rateContext) {
+		GeminiService.GeminiParseResponse geminiResponse = parseWithGemini(file);
 		if (!geminiResponse.success()) {
 			throw new RuntimeException("파싱 실패: " + geminiResponse.errorMessage());
 		}
+
+		List<NormalizedParsedExpenseItem> normalizedItems =
+				geminiResponse.items().stream()
+						.map(item -> normalizeParsedItem(item, rateContext.defaultLocalCurrencyCode()))
+						.toList();
+
+		Map<ExchangeRateKey, BigDecimal> exchangeRateMap =
+				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
 
 		List<TemporaryExpense> createdExpenses = new ArrayList<>();
 		int normalCount = 0;
 		int incompleteCount = 0;
 
-		for (GeminiService.ParsedExpenseItem item : geminiResponse.items()) {
+		for (NormalizedParsedExpenseItem item : normalizedItems) {
 			TemporaryExpenseStatus status = determineStatus(item);
-			if (status == TemporaryExpenseStatus.NORMAL) normalCount++;
-			else if (status == TemporaryExpenseStatus.INCOMPLETE) incompleteCount++;
+			if (status == TemporaryExpenseStatus.NORMAL) {
+				normalCount++;
+			} else if (status == TemporaryExpenseStatus.INCOMPLETE) {
+				incompleteCount++;
+			}
 
 			TemporaryExpense expense =
 					TemporaryExpense.builder()
-							.tempExpenseMetaId(tempExpenseMetaId)
+							.tempExpenseMetaId(meta.getTempExpenseMetaId())
 							.merchantName(item.merchantName())
-							.category(parseCategory(item.category()))
-							.localCountryCode(parseCurrencyCode(item.localCurrency()))
+							.category(item.category())
+							.localCountryCode(item.localCurrencyCode())
 							.localCurrencyAmount(item.localAmount())
-							.baseCountryCode(
-									parseCurrencyCode(
-											item.baseCurrency() != null
-													? item.baseCurrency()
-													: item.localCurrency())) // baseCurrency가 없으면
-							// localCurrency 사용
+							.baseCountryCode(rateContext.baseCurrencyCode())
 							.baseCurrencyAmount(
-									item.baseAmount() != null
-											? item.baseAmount()
-											: item.localAmount()) // baseAmount가 없으면 localAmount 사용
-							.paymentsMethod("카드") // default
+									calculateBaseAmount(
+											item,
+											rateContext.baseCurrencyCode(),
+											exchangeRateMap))
+							.paymentsMethod("카드")
 							.memo(item.memo())
 							.occurredAt(item.occurredAt())
 							.status(status)
 							.cardLastFourDigits(item.cardLastFourDigits())
 							.approvalNumber(item.approvalNumber())
 							.build();
-
 			createdExpenses.add(expense);
 		}
 
 		List<TemporaryExpense> savedExpenses = temporaryExpenseRepository.saveAll(createdExpenses);
-
 		return new ParsingResult(
 				meta.getTempExpenseMetaId(),
 				savedExpenses.size(),
 				normalCount,
 				incompleteCount,
-				0, // abnormalCount
+				0,
 				savedExpenses);
+	}
+
+	private GeminiService.GeminiParseResponse parseWithGemini(File file) {
+		if (file.getFileType() == File.FileType.IMAGE) {
+			String s3Url =
+					s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
+			return geminiService.parseReceiptImage(s3Url);
+		}
+		String content = extractContent(file);
+		return geminiService.parseDocument(content);
+	}
+
+	private AccountBookRateContext resolveRateContext(Long accountBookId) {
+		AccountBookEntity accountBook =
+				accountBookRepository
+						.findById(accountBookId)
+						.orElseThrow(() -> new IllegalArgumentException("가계부를 찾을 수 없습니다."));
+		return new AccountBookRateContext(
+				accountBook.getBaseCountryCode().getCurrencyCode(),
+				accountBook.getLocalCountryCode().getCurrencyCode());
+	}
+
+	private NormalizedParsedExpenseItem normalizeParsedItem(
+			GeminiService.ParsedExpenseItem item, CurrencyCode defaultLocalCurrencyCode) {
+		return new NormalizedParsedExpenseItem(
+				item.merchantName(),
+				parseCategory(item.category()),
+				parseCurrencyCode(item.localCurrency(), defaultLocalCurrencyCode),
+				item.localAmount(),
+				item.memo(),
+				item.occurredAt(),
+				item.cardLastFourDigits(),
+				item.approvalNumber());
+	}
+
+	private Map<ExchangeRateKey, BigDecimal> buildExchangeRateMap(
+			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
+		Set<ExchangeRateKey> lookupKeys =
+				items.stream()
+						.filter(item -> item.localAmount() != null && item.occurredAt() != null)
+						.map(
+								item ->
+										new ExchangeRateKey(
+												item.localCurrencyCode(),
+												baseCurrencyCode,
+												item.occurredAt().toLocalDate()))
+						.collect(Collectors.toSet());
+
+		Map<ExchangeRateKey, BigDecimal> rateMap = new HashMap<>();
+		for (ExchangeRateKey key : lookupKeys) {
+			if (key.fromCurrencyCode() == key.toCurrencyCode()) {
+				rateMap.put(key, BigDecimal.ONE);
+				continue;
+			}
+			BigDecimal rate =
+					exchangeRateService.getExchangeRate(
+							key.fromCurrencyCode(), key.toCurrencyCode(), key.date().atStartOfDay());
+			rateMap.put(key, rate);
+		}
+		return rateMap;
+	}
+
+	private BigDecimal calculateBaseAmount(
+			NormalizedParsedExpenseItem item,
+			CurrencyCode baseCurrencyCode,
+			Map<ExchangeRateKey, BigDecimal> exchangeRateMap) {
+		if (item.localAmount() == null || item.occurredAt() == null) {
+			return null;
+		}
+		ExchangeRateKey key =
+				new ExchangeRateKey(
+						item.localCurrencyCode(), baseCurrencyCode, item.occurredAt().toLocalDate());
+		BigDecimal rate = exchangeRateMap.get(key);
+		if (rate == null) {
+			return null;
+		}
+		return item.localAmount().multiply(rate).setScale(2, RoundingMode.HALF_UP);
 	}
 
 	private String extractContent(File file) {
@@ -230,7 +321,7 @@ public class TemporaryExpenseParsingService {
 	/**
 	 * 파싱 항목의 상태 결정
 	 */
-	private TemporaryExpenseStatus determineStatus(GeminiService.ParsedExpenseItem item) {
+	private TemporaryExpenseStatus determineStatus(NormalizedParsedExpenseItem item) {
 		// 필수 필드 체크
 		if (item.merchantName() == null || item.localAmount() == null) {
 			return TemporaryExpenseStatus.INCOMPLETE;
@@ -249,9 +340,34 @@ public class TemporaryExpenseParsingService {
 	 * 카테고리 문자열 → Enum 변환
 	 */
 	private Category parseCategory(String categoryStr) {
-		if (categoryStr == null) return Category.UNCLASSIFIED;
+		if (categoryStr == null || categoryStr.isBlank()) return Category.UNCLASSIFIED;
+		String trimmed = categoryStr.trim();
+		if (trimmed.matches("\\d+")) {
+			try {
+				return Category.fromOrdinal(Integer.parseInt(trimmed));
+			} catch (Exception e) {
+				return Category.UNCLASSIFIED;
+			}
+		}
+		String normalized =
+				trimmed.replaceAll("[\\s_-]", "").toUpperCase(Locale.ROOT);
+		switch (normalized) {
+			case "TRANSPORTATION":
+				return Category.TRANSPORT;
+			case "ACCOMMODATION":
+			case "HOUSING":
+			case "RESIDENCE":
+				return Category.RESIDENCE;
+			case "ENTERTAINMENT":
+				return Category.LEISURE;
+			case "EDUCATION":
+			case "SCHOOL":
+				return Category.ACADEMIC;
+			default:
+				break;
+		}
 		try {
-			return Category.valueOf(categoryStr.toUpperCase());
+			return Category.valueOf(normalized);
 		} catch (IllegalArgumentException e) {
 			return Category.UNCLASSIFIED;
 		}
@@ -261,13 +377,19 @@ public class TemporaryExpenseParsingService {
 	 * 통화 코드 문자열 → Enum 변환
 	 */
 	private CurrencyCode parseCurrencyCode(String currencyStr) {
-		if (currencyStr == null) return CurrencyCode.KRW; // default
+		return parseCurrencyCode(currencyStr, CurrencyCode.KRW);
+	}
+
+	private CurrencyCode parseCurrencyCode(String currencyStr, CurrencyCode defaultCurrency) {
+		if (currencyStr == null || currencyStr.isBlank()) return defaultCurrency;
 		try {
-			// Clean up validation
 			String clean = currencyStr.replaceAll("[^A-Za-z]", "").toUpperCase();
+			if (clean.isBlank()) {
+				return defaultCurrency;
+			}
 			return CurrencyCode.valueOf(clean);
 		} catch (IllegalArgumentException e) {
-			return CurrencyCode.KRW;
+			return defaultCurrency;
 		}
 	}
 
@@ -279,6 +401,23 @@ public class TemporaryExpenseParsingService {
 			Long accountBookId, List<String> s3Keys, String taskId) {
 		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());
 
+		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
+		Map<String, File> filesByS3Key =
+				fileRepository.findByS3KeyIn(s3Keys).stream()
+						.collect(Collectors.toMap(File::getS3Key, Function.identity(), (a, b) -> a));
+		Map<Long, TempExpenseMeta> metaById =
+				tempExpenseMetaRepository
+						.findAllById(
+								filesByS3Key.values().stream()
+										.map(File::getTempExpenseMetaId)
+										.distinct()
+										.toList())
+						.stream()
+						.collect(
+								Collectors.toMap(
+										TempExpenseMeta::getTempExpenseMetaId,
+										Function.identity()));
+
 		int totalFiles = s3Keys.size();
 		int completedFiles = 0;
 		int totalParsed = 0;
@@ -288,11 +427,20 @@ public class TemporaryExpenseParsingService {
 
 		for (String s3Key : s3Keys) {
 			try {
-				File file = fileRepository.findByS3Key(s3Key).orElse(null);
+				File file = filesByS3Key.get(s3Key);
 				if (file == null) {
 					log.warn("File not found: {}", s3Key);
 					completedFiles++;
 					continue;
+				}
+				TempExpenseMeta meta = metaById.get(file.getTempExpenseMetaId());
+				if (meta == null) {
+					log.warn("Meta not found for file: {}", s3Key);
+					completedFiles++;
+					continue;
+				}
+				if (!meta.getAccountBookId().equals(accountBookId)) {
+					throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
 				}
 
 				progressPublisher.publishProgress(
@@ -303,7 +451,7 @@ public class TemporaryExpenseParsingService {
 								file.getS3Key(),
 								(completedFiles * 100) / totalFiles));
 
-				ParsingResult result = parseFile(accountBookId, s3Key);
+				ParsingResult result = parseAndPersistExpenses(file, meta, rateContext);
 				if (firstMetaId == null) {
 					firstMetaId = result.metaId();
 				}
@@ -327,4 +475,20 @@ public class TemporaryExpenseParsingService {
 
 		return java.util.concurrent.CompletableFuture.completedFuture(finalResult);
 	}
+
+	private record AccountBookRateContext(
+			CurrencyCode baseCurrencyCode, CurrencyCode defaultLocalCurrencyCode) {}
+
+	private record ExchangeRateKey(
+			CurrencyCode fromCurrencyCode, CurrencyCode toCurrencyCode, LocalDate date) {}
+
+	private record NormalizedParsedExpenseItem(
+			String merchantName,
+			Category category,
+			CurrencyCode localCurrencyCode,
+			BigDecimal localAmount,
+			String memo,
+			java.time.LocalDateTime occurredAt,
+			String cardLastFourDigits,
+			String approvalNumber) {}
 }

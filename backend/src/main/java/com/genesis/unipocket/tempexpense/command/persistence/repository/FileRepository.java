@@ -24,6 +24,8 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
 	java.util.Optional<File> findByS3Key(String s3Key);
 
+	List<File> findByS3KeyIn(List<String> s3Keys);
+
 	@Query("SELECT f.s3Key FROM File f WHERE f.s3Key IS NOT NULL")
 	List<String> findAllS3Keys();
 

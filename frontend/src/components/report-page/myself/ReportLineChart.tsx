@@ -26,6 +26,7 @@ const ReportLineChart = ({
   const maxDay = Math.max(thisMonthCount, lastMonthCount);
 
   const thisPath = buildLinePath(thisMonth, width, height, maxValue, maxDay);
+  const lastLinePath = buildLinePath(lastMonth, width, height, maxValue, maxDay);
   const lastAreaPath = buildAreaPath(
     lastMonth,
     width,
@@ -49,7 +50,7 @@ const ReportLineChart = ({
       </defs>
       <path d={lastAreaPath} fill="url(#graphGradient)" stroke="none" />
       <path
-        d={buildLinePath(lastMonth, width, height, maxValue, maxDay)}
+        d={lastLinePath}
         fill="none"
         stroke="#C2C4C8"
         strokeWidth={2.5}

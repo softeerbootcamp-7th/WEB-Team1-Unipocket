@@ -1,5 +1,6 @@
 import ReportLineChart from '@/components/report-page/myself/ReportLineChart';
 import ReportLegend from '@/components/report-page/ReportLegend';
+import { type ChartItem } from '@/components/report-page/reportType';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 
 interface ReportLineGraphProps {
@@ -8,8 +9,8 @@ interface ReportLineGraphProps {
   thisMonthCount: number;
   lastMonthCount: number;
   maxValue: number;
-  thisMonthItem: { date: string; cumulatedAmount: string }[];
-  lastMonthItem: { date: string; cumulatedAmount: string }[];
+  thisMonthItem: ChartItem[];
+  lastMonthItem: ChartItem[];
 }
 const ReportLineGraph = ({
   thisMonthLabel,

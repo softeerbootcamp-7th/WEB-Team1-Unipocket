@@ -2,6 +2,7 @@ import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
+import { type ChartItem } from '@/components/report-page/reportType';
 
 import { type CountryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
@@ -18,8 +19,8 @@ interface ReportMyselfProps {
       thisMonthToDate: string;
       lastMonthTotal: string;
     };
-    thisMonthItem: { date: string; cumulatedAmount: string }[];
-    prevMonthItem: { date: string; cumulatedAmount: string }[];
+    thisMonthItem: ChartItem[];
+    prevMonthItem: ChartItem[];
   };
 }
 

@@ -1,8 +1,8 @@
 import {
   buildAreaPath,
   buildLinePath,
-  type ChartItem,
 } from '@/components/report-page/myself/buildPath';
+import { type ChartItem } from '@/components/report-page/reportType';
 
 interface ReportLineChartProps {
   thisMonth: ChartItem[];

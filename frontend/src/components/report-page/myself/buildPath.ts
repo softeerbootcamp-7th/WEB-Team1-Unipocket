@@ -1,7 +1,4 @@
-export interface ChartItem {
-  date: string;
-  cumulatedAmount: string;
-}
+import { type ChartItem } from '@/components/report-page/reportType';
 
 const buildLineSegments = (
   data: ChartItem[],

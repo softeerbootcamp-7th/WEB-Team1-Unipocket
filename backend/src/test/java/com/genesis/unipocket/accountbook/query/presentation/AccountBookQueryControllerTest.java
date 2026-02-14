@@ -97,7 +97,6 @@ class AccountBookQueryControllerTest {
 		UUID userId = UUID.randomUUID();
 		String accessToken = "valid_token";
 		Long accountBookId = 1L;
-		LocalDateTime quotedAt = LocalDateTime.of(2026, 2, 12, 11, 30, 0);
 
 		given(accountBookQueryService.getAccountBookExchangeRate(userId.toString(), accountBookId))
 				.willReturn(
@@ -105,7 +104,7 @@ class AccountBookQueryControllerTest {
 								CountryCode.KR,
 								CountryCode.JP,
 								BigDecimal.valueOf(0.11),
-								quotedAt));
+								LocalDateTime.of(2026, 2, 1, 9, 0, 0)));
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
@@ -115,7 +114,7 @@ class AccountBookQueryControllerTest {
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
-				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-12T11:30:00"));
+				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-01T09:00:00"));
 	}
 
 	private void mockAuthentication(String accessToken, UUID userId) {

@@ -485,15 +485,18 @@ class AccountBookControllerIntegrationTest {
 	// ========== GET /account-books/{id}/exchange-rate (환율 조회) ==========
 
 	@Test
-	@DisplayName("환율 조회 - 예산 미설정 시 400")
-	void 환율_조회_예산_미설정시_400() throws Exception {
+	@DisplayName("환율 조회 - 예산 미설정이어도 200")
+	void 환율_조회_예산_미설정시_200() throws Exception {
 		Long accountBookId = createAccountBook();
 
 		mockMvc.perform(
 						get("/account-books/{id}/exchange-rate", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId)))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.code").value("400_ACCOUNT_BOOK_BUDGET_NOT_SET"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
+				.andExpect(jsonPath("$.budgetCreatedAt").hasJsonPath());
 	}
 
 	// ========== Helper Methods ==========

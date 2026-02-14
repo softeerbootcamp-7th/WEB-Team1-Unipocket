@@ -71,7 +71,7 @@ public class OAuth2Properties {
 
 	public enum ProviderType {
 		GOOGLE(true),
-		KAKAO(false);
+		KAKAO(true);
 
 		private final boolean clientSecretRequired;
 

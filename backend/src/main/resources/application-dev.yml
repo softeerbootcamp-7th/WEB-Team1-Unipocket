@@ -49,7 +49,8 @@ oauth2:
       issuer: https://accounts.google.com
       scope: openid profile email
     - type: KAKAO
-      client-id: ${KAKAO_CLIENT_ID}
+      client-id: ${KAKAO_OAUTH_ID}
+      client-secret: ${KAKAO_OAUTH_SECRET}
       redirect-uri: ${KAKAO_REDIRECT_URI}
       authorization-uri: https://kauth.kakao.com/oauth/authorize
       token-uri: https://kauth.kakao.com/oauth/token

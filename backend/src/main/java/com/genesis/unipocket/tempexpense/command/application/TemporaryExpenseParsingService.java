@@ -59,19 +59,16 @@ public class TemporaryExpenseParsingService {
 	 */
 	@Transactional
 	public ParsingResult parseFile(Long accountBookId, String s3Key) {
-		File file =
-				fileRepository
-						.findByS3Key(s3Key)
-						.orElseThrow(
-								() ->
-										new IllegalArgumentException(
-												"파일을 찾을 수 없습니다. s3Key: " + s3Key));
+		File file = fileRepository
+				.findByS3Key(s3Key)
+				.orElseThrow(
+						() -> new IllegalArgumentException(
+								"파일을 찾을 수 없습니다. s3Key: " + s3Key));
 
 		Long tempExpenseMetaId = file.getTempExpenseMetaId();
-		TempExpenseMeta meta =
-				tempExpenseMetaRepository
-						.findById(tempExpenseMetaId)
-						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+		TempExpenseMeta meta = tempExpenseMetaRepository
+				.findById(tempExpenseMetaId)
+				.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
 		if (!meta.getAccountBookId().equals(accountBookId)) {
 			throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
 		}
@@ -87,16 +84,14 @@ public class TemporaryExpenseParsingService {
 			throw new RuntimeException("파싱 실패: " + geminiResponse.errorMessage());
 		}
 
-		List<NormalizedParsedExpenseItem> normalizedItems =
-				geminiResponse.items().stream()
-						.map(
-								item ->
-										normalizeParsedItem(
-												item, rateContext.defaultLocalCurrencyCode()))
-						.toList();
+		List<NormalizedParsedExpenseItem> normalizedItems = geminiResponse.items().stream()
+				.map(
+						item -> normalizeParsedItem(
+								item, rateContext.defaultLocalCurrencyCode()))
+				.toList();
 
-		Map<ExchangeRateKey, BigDecimal> exchangeRateMap =
-				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
+		Map<ExchangeRateKey, BigDecimal> exchangeRateMap = buildExchangeRateMap(normalizedItems,
+				rateContext.baseCurrencyCode());
 
 		List<TemporaryExpense> createdExpenses = new ArrayList<>();
 		int normalCount = 0;
@@ -110,24 +105,28 @@ public class TemporaryExpenseParsingService {
 				incompleteCount++;
 			}
 
-			TemporaryExpense expense =
-					TemporaryExpense.builder()
-							.tempExpenseMetaId(meta.getTempExpenseMetaId())
-							.merchantName(item.merchantName())
-							.category(item.category())
-							.localCountryCode(item.localCurrencyCode())
-							.localCurrencyAmount(item.localAmount())
-							.baseCountryCode(rateContext.baseCurrencyCode())
-							.baseCurrencyAmount(
-									calculateBaseAmount(
-											item, rateContext.baseCurrencyCode(), exchangeRateMap))
-							.paymentsMethod("카드")
-							.memo(item.memo())
-							.occurredAt(item.occurredAt())
-							.status(status)
-							.cardLastFourDigits(item.cardLastFourDigits())
-							.approvalNumber(item.approvalNumber())
-							.build();
+			// 파싱된 베이스 화폐가 있으면 사용, 없으면 가계부 기본값 사용
+			CurrencyCode baseCurrencyCode = item.baseCurrencyCode() != null
+					? item.baseCurrencyCode()
+					: rateContext.baseCurrencyCode();
+
+			BigDecimal baseCurrencyAmount = calculateBaseAmount(item, baseCurrencyCode, exchangeRateMap);
+
+			TemporaryExpense expense = TemporaryExpense.builder()
+					.tempExpenseMetaId(meta.getTempExpenseMetaId())
+					.merchantName(item.merchantName())
+					.category(item.category())
+					.localCountryCode(item.localCurrencyCode())
+					.localCurrencyAmount(item.localAmount())
+					.baseCountryCode(baseCurrencyCode)
+					.baseCurrencyAmount(baseCurrencyAmount)
+					.paymentsMethod("카드")
+					.memo(item.memo())
+					.occurredAt(item.occurredAt())
+					.status(status)
+					.cardLastFourDigits(item.cardLastFourDigits())
+					.approvalNumber(item.approvalNumber())
+					.build();
 			createdExpenses.add(expense);
 		}
 
@@ -143,8 +142,7 @@ public class TemporaryExpenseParsingService {
 
 	private GeminiService.GeminiParseResponse parseWithGemini(File file) {
 		if (file.getFileType() == File.FileType.IMAGE) {
-			String s3Url =
-					s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
+			String s3Url = s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
 			return geminiService.parseReceiptImage(s3Url);
 		}
 		String content = extractContent(file);
@@ -152,10 +150,9 @@ public class TemporaryExpenseParsingService {
 	}
 
 	private AccountBookRateContext resolveRateContext(Long accountBookId) {
-		AccountBookEntity accountBook =
-				accountBookRepository
-						.findById(accountBookId)
-						.orElseThrow(() -> new IllegalArgumentException("가계부를 찾을 수 없습니다."));
+		AccountBookEntity accountBook = accountBookRepository
+				.findById(accountBookId)
+				.orElseThrow(() -> new IllegalArgumentException("가계부를 찾을 수 없습니다."));
 		return new AccountBookRateContext(
 				accountBook.getBaseCountryCode().getCurrencyCode(),
 				accountBook.getLocalCountryCode().getCurrencyCode());
@@ -171,21 +168,21 @@ public class TemporaryExpenseParsingService {
 				item.memo(),
 				item.occurredAt(),
 				item.cardLastFourDigits(),
-				item.approvalNumber());
+				item.approvalNumber(),
+				item.baseAmount(),
+				parseCurrencyCode(item.baseCurrency(), null));
 	}
 
 	private Map<ExchangeRateKey, BigDecimal> buildExchangeRateMap(
 			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
-		Set<ExchangeRateKey> lookupKeys =
-				items.stream()
-						.filter(item -> item.localAmount() != null && item.occurredAt() != null)
-						.map(
-								item ->
-										new ExchangeRateKey(
-												item.localCurrencyCode(),
-												baseCurrencyCode,
-												item.occurredAt().toLocalDate()))
-						.collect(Collectors.toSet());
+		Set<ExchangeRateKey> lookupKeys = items.stream()
+				.filter(item -> item.localAmount() != null && item.occurredAt() != null)
+				.map(
+						item -> new ExchangeRateKey(
+								item.localCurrencyCode(),
+								baseCurrencyCode,
+								item.occurredAt().toLocalDate()))
+				.collect(Collectors.toSet());
 
 		Map<ExchangeRateKey, BigDecimal> rateMap = new HashMap<>();
 		for (ExchangeRateKey key : lookupKeys) {
@@ -193,11 +190,10 @@ public class TemporaryExpenseParsingService {
 				rateMap.put(key, BigDecimal.ONE);
 				continue;
 			}
-			BigDecimal rate =
-					exchangeRateService.getExchangeRate(
-							key.fromCurrencyCode(),
-							key.toCurrencyCode(),
-							key.date().atStartOfDay());
+			BigDecimal rate = exchangeRateService.getExchangeRate(
+					key.fromCurrencyCode(),
+					key.toCurrencyCode(),
+					key.date().atStartOfDay());
 			rateMap.put(key, rate);
 		}
 		return rateMap;
@@ -207,14 +203,19 @@ public class TemporaryExpenseParsingService {
 			NormalizedParsedExpenseItem item,
 			CurrencyCode baseCurrencyCode,
 			Map<ExchangeRateKey, BigDecimal> exchangeRateMap) {
+
+		// 파싱 결과에 이미 베이스 금액이 있다면 그대로 사용
+		if (item.baseAmount() != null) {
+			return item.baseAmount();
+		}
+
 		if (item.localAmount() == null || item.occurredAt() == null) {
 			return null;
 		}
-		ExchangeRateKey key =
-				new ExchangeRateKey(
-						item.localCurrencyCode(),
-						baseCurrencyCode,
-						item.occurredAt().toLocalDate());
+		ExchangeRateKey key = new ExchangeRateKey(
+				item.localCurrencyCode(),
+				baseCurrencyCode,
+				item.occurredAt().toLocalDate());
 		BigDecimal rate = exchangeRateMap.get(key);
 		if (rate == null) {
 			return null;
@@ -236,23 +237,21 @@ public class TemporaryExpenseParsingService {
 
 	private String extractExcelContent(byte[] fileBytes) {
 		try (java.io.InputStream is = new java.io.ByteArrayInputStream(fileBytes);
-				org.apache.poi.ss.usermodel.Workbook workbook =
-						org.apache.poi.ss.usermodel.WorkbookFactory.create(is)) {
+				org.apache.poi.ss.usermodel.Workbook workbook = org.apache.poi.ss.usermodel.WorkbookFactory
+						.create(is)) {
 
 			StringBuilder sb = new StringBuilder();
 			org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0); // 첫 번째 시트만 처리
-			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator =
-					workbook.getCreationHelper().createFormulaEvaluator();
+			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator = workbook.getCreationHelper()
+					.createFormulaEvaluator();
 
 			for (org.apache.poi.ss.usermodel.Row row : sheet) {
 				List<String> cells = new ArrayList<>();
 				int lastColumn = row.getLastCellNum();
 				for (int cn = 0; cn < lastColumn; cn++) {
-					org.apache.poi.ss.usermodel.Cell cell =
-							row.getCell(
-									cn,
-									org.apache.poi.ss.usermodel.Row.MissingCellPolicy
-											.RETURN_BLANK_AS_NULL);
+					org.apache.poi.ss.usermodel.Cell cell = row.getCell(
+							cn,
+							org.apache.poi.ss.usermodel.Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
 					cells.add(getCellValue(cell, evaluator));
 				}
 				sb.append(String.join(",", cells)).append("\n");
@@ -267,7 +266,8 @@ public class TemporaryExpenseParsingService {
 	private String getCellValue(
 			org.apache.poi.ss.usermodel.Cell cell,
 			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
-		if (cell == null) return "";
+		if (cell == null)
+			return "";
 		switch (cell.getCellType()) {
 			case STRING:
 				return cell.getStringCellValue();
@@ -300,7 +300,7 @@ public class TemporaryExpenseParsingService {
 				case NUMERIC:
 					if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
 						return org.apache.poi.ss.usermodel.DateUtil.getLocalDateTime(
-										evaluated.getNumberValue())
+								evaluated.getNumberValue())
 								.toString();
 					}
 					return String.valueOf(evaluated.getNumberValue());
@@ -345,7 +345,8 @@ public class TemporaryExpenseParsingService {
 	 * 카테고리 문자열 → Enum 변환
 	 */
 	private Category parseCategory(String categoryStr) {
-		if (categoryStr == null || categoryStr.isBlank()) return Category.UNCLASSIFIED;
+		if (categoryStr == null || categoryStr.isBlank())
+			return Category.UNCLASSIFIED;
 		String trimmed = categoryStr.trim();
 		if (trimmed.matches("\\d+")) {
 			int ordinal;
@@ -391,7 +392,8 @@ public class TemporaryExpenseParsingService {
 	}
 
 	private CurrencyCode parseCurrencyCode(String currencyStr, CurrencyCode defaultCurrency) {
-		if (currencyStr == null || currencyStr.isBlank()) return defaultCurrency;
+		if (currencyStr == null || currencyStr.isBlank())
+			return defaultCurrency;
 		try {
 			String clean = currencyStr.replaceAll("[^A-Za-z]", "").toUpperCase();
 			if (clean.isBlank()) {
@@ -412,21 +414,19 @@ public class TemporaryExpenseParsingService {
 		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());
 
 		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
-		Map<String, File> filesByS3Key =
-				fileRepository.findByS3KeyIn(s3Keys).stream()
-						.collect(Collectors.toMap(File::getS3Key, Function.identity()));
-		Map<Long, TempExpenseMeta> metaById =
-				tempExpenseMetaRepository
-						.findAllById(
-								filesByS3Key.values().stream()
-										.map(File::getTempExpenseMetaId)
-										.distinct()
-										.toList())
-						.stream()
-						.collect(
-								Collectors.toMap(
-										TempExpenseMeta::getTempExpenseMetaId,
-										Function.identity()));
+		Map<String, File> filesByS3Key = fileRepository.findByS3KeyIn(s3Keys).stream()
+				.collect(Collectors.toMap(File::getS3Key, Function.identity()));
+		Map<Long, TempExpenseMeta> metaById = tempExpenseMetaRepository
+				.findAllById(
+						filesByS3Key.values().stream()
+								.map(File::getTempExpenseMetaId)
+								.distinct()
+								.toList())
+				.stream()
+				.collect(
+						Collectors.toMap(
+								TempExpenseMeta::getTempExpenseMetaId,
+								Function.identity()));
 
 		int totalFiles = s3Keys.size();
 		int completedFiles = 0;
@@ -477,8 +477,8 @@ public class TemporaryExpenseParsingService {
 			}
 		}
 
-		BatchParsingResult finalResult =
-				new BatchParsingResult(firstMetaId, totalParsed, totalNormal, totalIncomplete, 0);
+		BatchParsingResult finalResult = new BatchParsingResult(firstMetaId, totalParsed, totalNormal, totalIncomplete,
+				0);
 
 		// 완료 이벤트 publish
 		progressPublisher.complete(taskId, finalResult);
@@ -487,10 +487,12 @@ public class TemporaryExpenseParsingService {
 	}
 
 	private record AccountBookRateContext(
-			CurrencyCode baseCurrencyCode, CurrencyCode defaultLocalCurrencyCode) {}
+			CurrencyCode baseCurrencyCode, CurrencyCode defaultLocalCurrencyCode) {
+	}
 
 	private record ExchangeRateKey(
-			CurrencyCode fromCurrencyCode, CurrencyCode toCurrencyCode, LocalDate date) {}
+			CurrencyCode fromCurrencyCode, CurrencyCode toCurrencyCode, LocalDate date) {
+	}
 
 	private record NormalizedParsedExpenseItem(
 			String merchantName,
@@ -500,5 +502,8 @@ public class TemporaryExpenseParsingService {
 			String memo,
 			java.time.LocalDateTime occurredAt,
 			String cardLastFourDigits,
-			String approvalNumber) {}
+			String approvalNumber,
+			BigDecimal baseAmount,
+			CurrencyCode baseCurrencyCode) {
+	}
 }

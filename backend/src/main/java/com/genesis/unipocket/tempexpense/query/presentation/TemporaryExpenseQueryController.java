@@ -1,7 +1,6 @@
 package com.genesis.unipocket.tempexpense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
-import com.genesis.unipocket.global.response.ApiResponse;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
@@ -45,7 +44,7 @@ public class TemporaryExpenseQueryController {
 	 */
 	@Operation(summary = "임시지출 목록 조회", description = "가계부의 임시지출 목록을 상태 조건과 함께 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expenses")
-	public ResponseEntity<ApiResponse<TemporaryExpenseListResponse>> getTemporaryExpenses(
+	public ResponseEntity<TemporaryExpenseListResponse> getTemporaryExpenses(
 			@PathVariable Long accountBookId,
 			@RequestParam(required = false) TemporaryExpense.TemporaryExpenseStatus status,
 			@LoginUser UUID userId) {
@@ -53,7 +52,7 @@ public class TemporaryExpenseQueryController {
 				temporaryExpenseQueryService.getTemporaryExpenses(accountBookId, status, userId);
 		TemporaryExpenseListResponse response = new TemporaryExpenseListResponse(items);
 
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(response);
 	}
 
 	/**
@@ -61,14 +60,14 @@ public class TemporaryExpenseQueryController {
 	 */
 	@Operation(summary = "임시지출 단건 조회", description = "가계부 내 임시지출 1건의 상세 정보를 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expenses/{tempExpenseId}")
-	public ResponseEntity<ApiResponse<TemporaryExpenseResponse>> getTemporaryExpense(
+	public ResponseEntity<TemporaryExpenseResponse> getTemporaryExpense(
 			@PathVariable Long accountBookId,
 			@PathVariable Long tempExpenseId,
 			@LoginUser UUID userId) {
 		TemporaryExpenseResponse response =
 				temporaryExpenseQueryService.getTemporaryExpense(
 						accountBookId, tempExpenseId, userId);
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(response);
 	}
 
 	/**
@@ -76,11 +75,11 @@ public class TemporaryExpenseQueryController {
 	 */
 	@Operation(summary = "파일 처리 현황 조회", description = "메타(업로드 파일) 단위의 임시지출 파싱 처리 현황을 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/summary")
-	public ResponseEntity<ApiResponse<FileProcessingSummaryResponse>> getFileProcessingSummary(
+	public ResponseEntity<FileProcessingSummaryResponse> getFileProcessingSummary(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
 		FileProcessingSummaryResponse response =
 				temporaryExpenseQueryService.getFileProcessingSummary(accountBookId, userId);
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(response);
 	}
 
 	/**
@@ -88,11 +87,11 @@ public class TemporaryExpenseQueryController {
 	 */
 	@Operation(summary = "이미지 처리 요약 조회", description = "가계부 전체 파일 처리 현황을 합산한 요약 정보를 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/image-processing-summary")
-	public ResponseEntity<ApiResponse<ImageProcessingSummaryResponse>> getImageProcessingSummary(
+	public ResponseEntity<ImageProcessingSummaryResponse> getImageProcessingSummary(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
 		ImageProcessingSummaryResponse response =
 				temporaryExpenseQueryService.getImageProcessingSummary(accountBookId, userId);
-		return ResponseEntity.ok(ApiResponse.success(response));
+		return ResponseEntity.ok(response);
 	}
 
 	/**

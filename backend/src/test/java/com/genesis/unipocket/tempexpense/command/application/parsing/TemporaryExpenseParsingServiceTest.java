@@ -1,26 +1,26 @@
-package com.genesis.unipocket.tempexpense.command.application;
+package com.genesis.unipocket.tempexpense.command.application.parsing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
-import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
+import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
+import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
@@ -48,10 +48,12 @@ class TemporaryExpenseParsingServiceTest {
 	@Mock private FileRepository fileRepository;
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
 	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
-	@Mock private AccountBookCommandRepository accountBookRepository;
-	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
+	@Mock private ExchangeRateProvider exchangeRateProvider;
 	@Mock private GeminiService geminiService;
 	@Mock private S3Service s3Service;
+	@Mock private TemporaryExpenseContentExtractor contentExtractor;
+	@Mock private TemporaryExpenseFieldParser fieldParser;
 	@Mock private ParsingProgressPublisher progressPublisher;
 
 	@InjectMocks private TemporaryExpenseParsingService service;
@@ -76,9 +78,11 @@ class TemporaryExpenseParsingServiceTest {
 
 		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
 		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.of(meta));
-		when(accountBookRepository.findById(accountBookId))
-				.thenReturn(
-						Optional.of(accountBook(accountBookId, CountryCode.KR, CountryCode.JP)));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
+		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
+		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 
 		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
 				.thenReturn("https://signed-url");
@@ -110,10 +114,8 @@ class TemporaryExpenseParsingServiceTest {
 												null,
 												null)),
 								null));
-		when(exchangeRateService.getExchangeRate(
-						CurrencyCode.JPY,
-						CurrencyCode.KRW,
-						LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
+		when(exchangeRateProvider.getExchangeRate(
+						CurrencyCode.JPY, CurrencyCode.KRW, LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
 				.thenReturn(new BigDecimal("9.50"));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
@@ -122,7 +124,7 @@ class TemporaryExpenseParsingServiceTest {
 
 		assertThat(result.totalCount()).isEqualTo(2);
 		assertThat(result.normalCount()).isEqualTo(2);
-		verify(exchangeRateService, times(1))
+		verify(exchangeRateProvider, times(1))
 				.getExchangeRate(
 						CurrencyCode.JPY,
 						CurrencyCode.KRW,
@@ -162,9 +164,11 @@ class TemporaryExpenseParsingServiceTest {
 
 		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
 		when(tempExpenseMetaRepository.findById(11L)).thenReturn(Optional.of(meta));
-		when(accountBookRepository.findById(accountBookId))
-				.thenReturn(
-						Optional.of(accountBook(accountBookId, CountryCode.KR, CountryCode.JP)));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
+		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
+		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 
 		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
 				.thenReturn("https://signed-url-2");
@@ -191,7 +195,7 @@ class TemporaryExpenseParsingServiceTest {
 		ParsingResult result = service.parseFile(accountBookId, s3Key);
 
 		assertThat(result.incompleteCount()).isEqualTo(1);
-		verifyNoInteractions(exchangeRateService);
+		verifyNoInteractions(exchangeRateProvider);
 
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
@@ -221,9 +225,11 @@ class TemporaryExpenseParsingServiceTest {
 
 		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
 		when(tempExpenseMetaRepository.findById(12L)).thenReturn(Optional.of(meta));
-		when(accountBookRepository.findById(accountBookId))
-				.thenReturn(
-						Optional.of(accountBook(accountBookId, CountryCode.KR, CountryCode.JP)));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
+		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
+		when(fieldParser.parseCurrencyCode(eq("KRW"), any())).thenReturn(CurrencyCode.KRW);
 
 		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
 				.thenReturn("https://signed-url-3");
@@ -254,8 +260,8 @@ class TemporaryExpenseParsingServiceTest {
 
 		assertThat(result.normalCount()).isEqualTo(1);
 
-		// Verify NO interaction with ExchangeRateService
-		verifyNoInteractions(exchangeRateService);
+		// Verify NO interaction with ExchangeRateProvider
+		verifyNoInteractions(exchangeRateProvider);
 
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
@@ -299,12 +305,11 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(accountBookRepository.findById(accountBookId))
-				.thenReturn(
-						Optional.of(accountBook(accountBookId, CountryCode.KR, CountryCode.JP)));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+		when(contentExtractor.extractContent(any())).thenReturn("h1,h2\nv1,v2");
 		when(fileRepository.findByS3KeyIn(s3Keys)).thenReturn(List.of(fileA, fileB));
 		when(tempExpenseMetaRepository.findAllById(any())).thenReturn(List.of(metaA, metaB));
-		when(s3Service.downloadFile(anyString())).thenReturn("h1,h2\nv1,v2".getBytes());
 		when(geminiService.parseDocument(anyString()))
 				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
 		when(temporaryExpenseRepository.saveAll(anyList()))
@@ -319,14 +324,5 @@ class TemporaryExpenseParsingServiceTest {
 		verify(fileRepository, never()).findByS3Key(anyString());
 		verify(tempExpenseMetaRepository, times(1)).findAllById(any());
 		verify(progressPublisher, times(1)).complete(eq("task-1"), any(BatchParsingResult.class));
-	}
-
-	private AccountBookEntity accountBook(
-			Long accountBookId, CountryCode baseCountryCode, CountryCode localCountryCode) {
-		return AccountBookEntity.builder()
-				.id(accountBookId)
-				.baseCountryCode(baseCountryCode)
-				.localCountryCode(localCountryCode)
-				.build();
 	}
 }

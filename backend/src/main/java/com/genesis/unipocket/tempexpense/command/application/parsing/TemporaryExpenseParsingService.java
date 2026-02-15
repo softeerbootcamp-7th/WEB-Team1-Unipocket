@@ -1,14 +1,18 @@
-package com.genesis.unipocket.tempexpense.command.application;
+package com.genesis.unipocket.tempexpense.command.application.parsing;
 
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
-import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
+import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
+import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
+import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
+import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
+import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
@@ -24,7 +28,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -44,16 +47,60 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class TemporaryExpenseParsingService {
-	// ... (lines omitted)
 
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
-	private final AccountBookCommandRepository accountBookRepository;
-	private final ExchangeRateService exchangeRateService;
+	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
+	private final ExchangeRateProvider exchangeRateProvider;
 	private final GeminiService geminiService;
 	private final S3Service s3Service;
+	private final TemporaryExpenseContentExtractor contentExtractor;
+	private final TemporaryExpenseFieldParser fieldParser;
 	private final ParsingProgressPublisher progressPublisher;
+
+	/**
+	 * 비동기 파싱 시작 전 입력 검증 및 taskId 생성
+	 */
+	public String startParseAsync(Long accountBookId, List<String> s3Keys) {
+		if (s3Keys == null || s3Keys.isEmpty()) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILES_REQUIRED);
+		}
+
+		List<File> files =
+				s3Keys.stream()
+						.map(
+								key ->
+										fileRepository
+												.findByS3Key(key)
+												.orElseThrow(
+														() ->
+																new BusinessException(
+																		ErrorCode
+																				.TEMP_EXPENSE_FILE_NOT_FOUND)))
+						.toList();
+
+		boolean hasDocument =
+				files.stream()
+						.anyMatch(
+								f ->
+										f.getFileType() == File.FileType.CSV
+												|| f.getFileType() == File.FileType.EXCEL);
+
+		if (hasDocument) {
+			if (s3Keys.size() > 1) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED);
+			}
+		} else {
+			if (s3Keys.size() > 20) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED);
+			}
+		}
+
+		String taskId = java.util.UUID.randomUUID().toString();
+		parseBatchFilesAsync(accountBookId, s3Keys, taskId);
+		return taskId;
+	}
 
 	/**
 	 * 파일 파싱 및 TemporaryExpense 생성
@@ -64,17 +111,16 @@ public class TemporaryExpenseParsingService {
 				fileRepository
 						.findByS3Key(s3Key)
 						.orElseThrow(
-								() ->
-										new IllegalArgumentException(
-												"파일을 찾을 수 없습니다. s3Key: " + s3Key));
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND));
 
 		Long tempExpenseMetaId = file.getTempExpenseMetaId();
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
 						.findById(tempExpenseMetaId)
-						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		if (!meta.getAccountBookId().equals(accountBookId)) {
-			throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
 
 		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
@@ -85,7 +131,11 @@ public class TemporaryExpenseParsingService {
 			File file, TempExpenseMeta meta, AccountBookRateContext rateContext) {
 		GeminiService.GeminiParseResponse geminiResponse = parseWithGemini(file);
 		if (!geminiResponse.success()) {
-			throw new RuntimeException("파싱 실패: " + geminiResponse.errorMessage());
+			log.error(
+					"Gemini parsing failed. fileId={}, reason={}",
+					file.getFileId(),
+					geminiResponse.errorMessage());
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
 		}
 
 		List<NormalizedParsedExpenseItem> normalizedItems =
@@ -96,7 +146,7 @@ public class TemporaryExpenseParsingService {
 												item, rateContext.defaultLocalCurrencyCode()))
 						.toList();
 
-		Map<ExchangeRateKey, BigDecimal> exchangeRateMap =
+		Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap =
 				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
 
 		List<TemporaryExpense> createdExpenses = new ArrayList<>();
@@ -122,8 +172,8 @@ public class TemporaryExpenseParsingService {
 					exchangeRate = baseAmount.divide(item.localAmount(), 4, RoundingMode.HALF_UP);
 				}
 			} else if (item.localAmount() != null && item.occurredAt() != null) {
-				ExchangeRateKey key =
-						new ExchangeRateKey(
+				ExchangeRateLookupCommand key =
+						new ExchangeRateLookupCommand(
 								item.localCurrencyCode(),
 								rateContext.baseCurrencyCode(),
 								item.occurredAt().toLocalDate());
@@ -177,23 +227,19 @@ public class TemporaryExpenseParsingService {
 	}
 
 	private AccountBookRateContext resolveRateContext(Long accountBookId) {
-		AccountBookEntity accountBook =
-				accountBookRepository
-						.findById(accountBookId)
-						.orElseThrow(() -> new IllegalArgumentException("가계부를 찾을 수 없습니다."));
+		AccountBookRateInfo accountBook = accountBookRateInfoProvider.getRateInfo(accountBookId);
 		return new AccountBookRateContext(
-				accountBook.getBaseCountryCode().getCurrencyCode(),
-				accountBook.getLocalCountryCode().getCurrencyCode());
+				accountBook.baseCurrencyCode(), accountBook.localCurrencyCode());
 	}
 
 	private NormalizedParsedExpenseItem normalizeParsedItem(
 			GeminiService.ParsedExpenseItem item, CurrencyCode defaultLocalCurrencyCode) {
 		return new NormalizedParsedExpenseItem(
 				item.merchantName(),
-				parseCategory(item.category()),
-				parseCurrencyCode(item.localCurrency(), defaultLocalCurrencyCode),
+				fieldParser.parseCategory(item.category()),
+				fieldParser.parseCurrencyCode(item.localCurrency(), defaultLocalCurrencyCode),
 				item.localAmount(),
-				parseCurrencyCode(item.baseCurrency(), null),
+				fieldParser.parseCurrencyCode(item.baseCurrency(), null),
 				item.baseAmount(),
 				item.memo(),
 				item.occurredAt(),
@@ -201,9 +247,9 @@ public class TemporaryExpenseParsingService {
 				item.approvalNumber());
 	}
 
-	private Map<ExchangeRateKey, BigDecimal> buildExchangeRateMap(
+	private Map<ExchangeRateLookupCommand, BigDecimal> buildExchangeRateMap(
 			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
-		Set<ExchangeRateKey> lookupKeys =
+		Set<ExchangeRateLookupCommand> lookupKeys =
 				items.stream()
 						.filter(
 								item ->
@@ -213,20 +259,20 @@ public class TemporaryExpenseParsingService {
 														== null) // baseAmount가 있으면 환율 조회 불필요
 						.map(
 								item ->
-										new ExchangeRateKey(
+										new ExchangeRateLookupCommand(
 												item.localCurrencyCode(),
 												baseCurrencyCode,
 												item.occurredAt().toLocalDate()))
 						.collect(Collectors.toSet());
 
-		Map<ExchangeRateKey, BigDecimal> rateMap = new HashMap<>();
-		for (ExchangeRateKey key : lookupKeys) {
+		Map<ExchangeRateLookupCommand, BigDecimal> rateMap = new HashMap<>();
+		for (ExchangeRateLookupCommand key : lookupKeys) {
 			if (key.fromCurrencyCode() == key.toCurrencyCode()) {
 				rateMap.put(key, BigDecimal.ONE);
 				continue;
 			}
 			BigDecimal rate =
-					exchangeRateService.getExchangeRate(
+					exchangeRateProvider.getExchangeRate(
 							key.fromCurrencyCode(),
 							key.toCurrencyCode(),
 							key.date().atStartOfDay().atOffset(ZoneOffset.UTC));
@@ -238,7 +284,7 @@ public class TemporaryExpenseParsingService {
 	private BigDecimal calculateBaseAmount(
 			NormalizedParsedExpenseItem item,
 			CurrencyCode baseCurrencyCode,
-			Map<ExchangeRateKey, BigDecimal> exchangeRateMap) {
+			Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap) {
 		if (item.baseAmount() != null
 				&& item.baseCurrencyCode() != null
 				&& item.baseCurrencyCode() == baseCurrencyCode) {
@@ -248,8 +294,8 @@ public class TemporaryExpenseParsingService {
 		if (item.localAmount() == null || item.occurredAt() == null) {
 			return null;
 		}
-		ExchangeRateKey key =
-				new ExchangeRateKey(
+		ExchangeRateLookupCommand key =
+				new ExchangeRateLookupCommand(
 						item.localCurrencyCode(),
 						baseCurrencyCode,
 						item.occurredAt().toLocalDate());
@@ -261,104 +307,7 @@ public class TemporaryExpenseParsingService {
 	}
 
 	private String extractContent(File file) {
-		byte[] fileBytes = s3Service.downloadFile(file.getS3Key());
-
-		if (file.getFileType() == File.FileType.CSV) {
-			return new String(fileBytes, java.nio.charset.StandardCharsets.UTF_8);
-		} else if (file.getFileType() == File.FileType.EXCEL) {
-			return extractExcelContent(fileBytes);
-		} else {
-			throw new IllegalArgumentException("지원하지 않는 파일 타입입니다: " + file.getFileType());
-		}
-	}
-
-	private String extractExcelContent(byte[] fileBytes) {
-		try (java.io.InputStream is = new java.io.ByteArrayInputStream(fileBytes);
-				org.apache.poi.ss.usermodel.Workbook workbook =
-						org.apache.poi.ss.usermodel.WorkbookFactory.create(is)) {
-
-			StringBuilder sb = new StringBuilder();
-			org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0); // 첫 번째 시트만 처리
-			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator =
-					workbook.getCreationHelper().createFormulaEvaluator();
-
-			for (org.apache.poi.ss.usermodel.Row row : sheet) {
-				List<String> cells = new ArrayList<>();
-				int lastColumn = row.getLastCellNum();
-				for (int cn = 0; cn < lastColumn; cn++) {
-					org.apache.poi.ss.usermodel.Cell cell =
-							row.getCell(
-									cn,
-									org.apache.poi.ss.usermodel.Row.MissingCellPolicy
-											.RETURN_BLANK_AS_NULL);
-					cells.add(getCellValue(cell, evaluator));
-				}
-				sb.append(String.join(",", cells)).append("\n");
-			}
-			return sb.toString();
-
-		} catch (java.io.IOException e) {
-			throw new RuntimeException("Excel 파일 읽기 실패", e);
-		}
-	}
-
-	private String getCellValue(
-			org.apache.poi.ss.usermodel.Cell cell,
-			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
-		if (cell == null) return "";
-		switch (cell.getCellType()) {
-			case STRING:
-				return cell.getStringCellValue();
-			case NUMERIC:
-				if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
-					return cell.getLocalDateTimeCellValue().toString();
-				}
-				return String.valueOf(cell.getNumericCellValue());
-			case BOOLEAN:
-				return String.valueOf(cell.getBooleanCellValue());
-			case FORMULA:
-				return getFormulaCellValue(cell, evaluator);
-			default:
-				return "";
-		}
-	}
-
-	private String getFormulaCellValue(
-			org.apache.poi.ss.usermodel.Cell cell,
-			org.apache.poi.ss.usermodel.FormulaEvaluator evaluator) {
-		try {
-			org.apache.poi.ss.usermodel.CellValue evaluated = evaluator.evaluate(cell);
-			if (evaluated == null) {
-				return "";
-			}
-
-			switch (evaluated.getCellType()) {
-				case STRING:
-					return evaluated.getStringValue();
-				case NUMERIC:
-					if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
-						return org.apache.poi.ss.usermodel.DateUtil.getLocalDateTime(
-										evaluated.getNumberValue())
-								.toString();
-					}
-					return String.valueOf(evaluated.getNumberValue());
-				case BOOLEAN:
-					return String.valueOf(evaluated.getBooleanValue());
-				case BLANK:
-					return "";
-				case ERROR:
-					log.warn(
-							"Formula evaluated to error for cell {}: {}",
-							cell.getAddress(),
-							evaluated.getErrorValue());
-					return "";
-				default:
-					return "";
-			}
-		} catch (Exception e) {
-			log.warn("Failed to evaluate formula for cell {}", cell.getAddress(), e);
-			return "";
-		}
+		return contentExtractor.extractContent(file);
 	}
 
 	/**
@@ -382,64 +331,6 @@ public class TemporaryExpenseParsingService {
 	/**
 	 * 카테고리 문자열 → Enum 변환
 	 */
-	private Category parseCategory(String categoryStr) {
-		if (categoryStr == null || categoryStr.isBlank()) return Category.UNCLASSIFIED;
-		String trimmed = categoryStr.trim();
-		if (trimmed.matches("\\d+")) {
-			int ordinal;
-			try {
-				ordinal = Integer.parseInt(trimmed);
-			} catch (NumberFormatException e) {
-				return Category.UNCLASSIFIED;
-			}
-			try {
-				return Category.fromOrdinal(ordinal);
-			} catch (IllegalArgumentException e) {
-				return Category.UNCLASSIFIED;
-			}
-		}
-		String normalized = trimmed.replaceAll("[\\s_-]", "").toUpperCase(Locale.ROOT);
-		switch (normalized) {
-			case "TRANSPORTATION":
-				return Category.TRANSPORT;
-			case "ACCOMMODATION":
-			case "HOUSING":
-			case "RESIDENCE":
-				return Category.RESIDENCE;
-			case "ENTERTAINMENT":
-				return Category.LEISURE;
-			case "EDUCATION":
-			case "SCHOOL":
-				return Category.ACADEMIC;
-			default:
-				break;
-		}
-		try {
-			return Category.valueOf(normalized);
-		} catch (IllegalArgumentException e) {
-			return Category.UNCLASSIFIED;
-		}
-	}
-
-	/**
-	 * 통화 코드 문자열 → Enum 변환
-	 */
-	private CurrencyCode parseCurrencyCode(String currencyStr) {
-		return parseCurrencyCode(currencyStr, CurrencyCode.KRW);
-	}
-
-	private CurrencyCode parseCurrencyCode(String currencyStr, CurrencyCode defaultCurrency) {
-		if (currencyStr == null || currencyStr.isBlank()) return defaultCurrency;
-		try {
-			String clean = currencyStr.replaceAll("[^A-Za-z]", "").toUpperCase();
-			if (clean.isBlank()) {
-				return defaultCurrency;
-			}
-			return CurrencyCode.valueOf(clean);
-		} catch (IllegalArgumentException e) {
-			return defaultCurrency;
-		}
-	}
 
 	/**
 	 * 여러 파일 비동기 파싱 (SSE 진행 상황 알림)
@@ -488,7 +379,7 @@ public class TemporaryExpenseParsingService {
 					continue;
 				}
 				if (!meta.getAccountBookId().equals(accountBookId)) {
-					throw new IllegalArgumentException("가계부와 파일 메타가 일치하지 않습니다.");
+					throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 				}
 
 				progressPublisher.publishProgress(
@@ -523,22 +414,4 @@ public class TemporaryExpenseParsingService {
 
 		return java.util.concurrent.CompletableFuture.completedFuture(finalResult);
 	}
-
-	private record AccountBookRateContext(
-			CurrencyCode baseCurrencyCode, CurrencyCode defaultLocalCurrencyCode) {}
-
-	private record ExchangeRateKey(
-			CurrencyCode fromCurrencyCode, CurrencyCode toCurrencyCode, LocalDate date) {}
-
-	private record NormalizedParsedExpenseItem(
-			String merchantName,
-			Category category,
-			CurrencyCode localCurrencyCode,
-			BigDecimal localAmount,
-			CurrencyCode baseCurrencyCode,
-			BigDecimal baseAmount,
-			String memo,
-			java.time.LocalDateTime occurredAt,
-			String cardLastFourDigits,
-			String approvalNumber) {}
 }

@@ -6,11 +6,13 @@ import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseCommandService;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TemporaryExpenseCommandServiceTest {
 
 	@Mock private TemporaryExpenseRepository repository;
+	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
 
 	@InjectMocks private TemporaryExpenseCommandService service;
 
@@ -81,8 +84,8 @@ class TemporaryExpenseCommandServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> service.findById(tempExpenseId))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("임시지출내역을 찾을 수 없습니다");
+				.isInstanceOf(BusinessException.class)
+				.hasMessageContaining("임시 지출 내역을 찾을 수 없습니다.");
 	}
 
 	@Test
@@ -140,7 +143,7 @@ class TemporaryExpenseCommandServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> service.deleteTemporaryExpense(tempExpenseId))
-				.isInstanceOf(IllegalArgumentException.class);
+				.isInstanceOf(BusinessException.class);
 	}
 
 	@Test

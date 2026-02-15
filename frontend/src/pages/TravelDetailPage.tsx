@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
@@ -16,24 +17,37 @@ import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { type Expense, getData } from '@/components/landing-page/dummy';
 import BottomSheet from '@/components/layout/BottomSheet';
 
+import { Icons } from '@/assets';
+
+const TripSummary = () => {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2.5">
+        <Link to="/travel">
+          <Icons.ChevronBack className="text-label-normal size-6" />
+        </Link>
+        <span className="heading2-bold text-label-normal">뉴욕 보스턴</span>
+      </div>
+      <div className="flex gap-1.5">
+        <span className="body1-normal-medium text-label-normal">
+          2026.01.21 - 2026.01.26
+        </span>
+        <span className="body1-normal-medium text-label-alternative">
+          5박 6일
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const TravelDetailPage = () => {
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   const data = getData();
   return (
-    <div className="flex flex-col px-30 pt-8">
+    <div className="flex h-full flex-col px-30 pt-8">
       <div className="mb-10 flex items-end gap-4">
-        <div className="flex flex-col gap-4">
-          <h2 className="heading2-bold text-label-normal">뉴욕 보스턴</h2>
-          <div className="flex gap-1.5">
-            <span className="body1-normal-medium text-label-normal">
-              2026.01.21 - 2026.01.26
-            </span>
-            <span className="body1-normal-medium text-label-alternative">
-              5박 6일
-            </span>
-          </div>
-        </div>
+        <TripSummary />
         <Divider style="vertical" className="h-15" />
         <ExpenseCard
           label="총 지출"
@@ -47,13 +61,8 @@ const TravelDetailPage = () => {
           위젯 편집하기
         </Button>
       </div>
-      {/* <div className="border-label-alternative mb-5 flex h-70 items-center justify-center rounded-lg border border-dashed">
-        Widget area
-        <br />
-        {title && `가계부 명: ${title}가계부`}
-      </div> */}
-      <div className="bg-background-normal relative rounded-2xl px-2 py-4 shadow">
-        {/* <Icons.ChevronBack className="text-label-alternative absolute left-1/2 z-50 size-12 -translate-x-1/2 rotate-90" /> */}
+
+      <div className="bg-background-normal rounded-modal-16 flex-1 rounded-b-none px-2 py-4 shadow">
         <DataTableProvider columns={columns} data={[]}>
           <DataTableFilterProvider>
             <DateFilter />

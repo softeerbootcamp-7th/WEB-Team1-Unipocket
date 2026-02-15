@@ -3,44 +3,45 @@ import ReportLegend from '@/components/report-page/ReportLegend';
 import { type ChartItem } from '@/components/report-page/reportType';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 
-interface ReportLineGraphProps {
-  thisMonthLabel: string;
-  lastMonthLabel: string;
-  thisMonthCount: number;
-  lastMonthCount: number;
-  maxValue: number;
-  thisMonthItem: ChartItem[];
-  lastMonthItem: ChartItem[];
-}
-const ReportLineGraph = ({
-  thisMonthLabel,
-  lastMonthLabel,
-  thisMonthCount,
-  lastMonthCount,
-  maxValue,
-  thisMonthItem,
-  lastMonthItem,
-}: ReportLineGraphProps) => {
-  const maxDays = Math.max(thisMonthCount, lastMonthCount);
+type MonthlyGraphData = {
+  label: string;
+  dayCount: number;
+  items: ChartItem[];
+};
 
-  const positions = [0, ((thisMonthCount - 1) / (maxDays - 1)) * 100, 100];
-  const labels = ['1일', `${thisMonthCount}일`, `${maxDays}일`];
+interface ReportLineGraphProps {
+  thisMonth: MonthlyGraphData;
+  lastMonth: MonthlyGraphData;
+  maxValue: number;
+}
+
+const ReportLineGraph = ({
+  thisMonth,
+  lastMonth,
+  maxValue,
+}: ReportLineGraphProps) => {
+  const maxDays = Math.max(thisMonth.dayCount, lastMonth.dayCount);
+
+  const positions = [0, ((thisMonth.dayCount - 1) / (maxDays - 1)) * 100, 100];
+  const labels = ['1일', `${thisMonth.dayCount}일`, `${maxDays}일`];
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end gap-4">
-        <ReportLegend label={thisMonthLabel} color="primary" variant="line" />
-        <ReportLegend label={lastMonthLabel} color="secondary" variant="line" />
+        <ReportLegend label={thisMonth.label} color="primary" variant="line" />
+        <ReportLegend
+          label={lastMonth.label}
+          color="secondary"
+          variant="line"
+        />
       </div>
       <div className="relative h-42 pl-3">
         <VerticalGrid positions={positions} labels={labels} className="pl-3" />
         <div className="relative z-10 pt-2">
           <ReportLineChart
-            thisMonthCount={thisMonthCount}
-            lastMonthCount={lastMonthCount}
+            thisMonth={thisMonth}
+            lastMonth={lastMonth}
             maxValue={maxValue}
-            thisMonth={thisMonthItem}
-            lastMonth={lastMonthItem}
           />
         </div>
       </div>

@@ -8,19 +8,18 @@ import { type CountryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
+type MonthlyData = {
+  label: string; // "1월"
+  dayCount: number; // 20
+  totalSpent: string; // 이번달은 toDate, 지난달은 전체
+  items: ChartItem[];
+};
+
 interface ReportMyselfProps {
   data: {
     diff: string;
-    thisMonth: string;
-    thisMonthCount: number;
-    lastMonth: string;
-    lastMonthCount: number;
-    totalSpent: {
-      thisMonthToDate: string;
-      lastMonthTotal: string;
-    };
-    thisMonthItem: ChartItem[];
-    prevMonthItem: ChartItem[];
+    thisMonth: MonthlyData;
+    lastMonth: MonthlyData;
   };
 }
 
@@ -35,8 +34,8 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
 
   const maxValue = Math.max(
-    Number(data.totalSpent.lastMonthTotal),
-    Number(data.totalSpent.thisMonthToDate),
+    Number(data.lastMonth.totalSpent),
+    Number(data.thisMonth.totalSpent),
   );
 
   return (
@@ -52,18 +51,14 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
             쓰는 중이에요
           </h3>
           <span className="body1-normal-medium text-label-alternative">
-            오늘까지 {data.totalSpent.thisMonthToDate}
+            오늘까지 {data.thisMonth.totalSpent}
             {unit} 썼어요
           </span>
         </div>
         <ReportLineGraph
-          thisMonthLabel={data.thisMonth}
-          lastMonthLabel={data.lastMonth}
-          thisMonthCount={data.thisMonthCount}
-          lastMonthCount={data.lastMonthCount}
+          thisMonth={data.thisMonth}
+          lastMonth={data.lastMonth}
           maxValue={maxValue}
-          thisMonthItem={data.thisMonthItem}
-          lastMonthItem={data.prevMonthItem}
         />
       </ReportContent>
     </ReportContainer>

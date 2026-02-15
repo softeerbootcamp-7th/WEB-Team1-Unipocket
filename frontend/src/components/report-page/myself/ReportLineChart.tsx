@@ -4,38 +4,51 @@ import {
 } from '@/components/report-page/myself/buildPath';
 import { type ChartItem } from '@/components/report-page/reportType';
 
+type MonthlyChartData = {
+  dayCount: number;
+  items: ChartItem[];
+};
+
 interface ReportLineChartProps {
-  thisMonth: ChartItem[];
-  lastMonth: ChartItem[];
-  thisMonthCount: number;
-  lastMonthCount: number;
+  thisMonth: MonthlyChartData;
+  lastMonth: MonthlyChartData;
   maxValue: number;
   width?: number;
   height?: number;
 }
 
 const ReportLineChart = ({
-  thisMonthCount,
-  lastMonthCount,
   thisMonth,
   lastMonth,
   maxValue,
   width = 348,
   height = 140,
 }: ReportLineChartProps) => {
-  const maxDay = Math.max(thisMonthCount, lastMonthCount);
+  const maxDay = Math.max(thisMonth.dayCount, lastMonth.dayCount);
 
-  const thisPath = buildLinePath(thisMonth, width, height, maxValue, maxDay);
-  const lastLinePath = buildLinePath(lastMonth, width, height, maxValue, maxDay);
+  const thisPath = buildLinePath(
+    thisMonth.items,
+    width,
+    height,
+    maxValue,
+    maxDay,
+  );
+  const lastLinePath = buildLinePath(
+    lastMonth.items,
+    width,
+    height,
+    maxValue,
+    maxDay,
+  );
   const lastAreaPath = buildAreaPath(
-    lastMonth,
+    lastMonth.items,
     width,
     height,
     maxValue,
     maxDay,
   );
 
-  const thisMonthWidth = (thisMonth.length / maxDay) * width;
+  const thisMonthWidth = (thisMonth.items.length / maxDay) * width;
 
   return (
     <svg width={width} height={height}>
@@ -49,12 +62,7 @@ const ReportLineChart = ({
         </linearGradient>
       </defs>
       <path d={lastAreaPath} fill="url(#graphGradient)" stroke="none" />
-      <path
-        d={lastLinePath}
-        fill="none"
-        stroke="#C2C4C8"
-        strokeWidth={2.5}
-      />
+      <path d={lastLinePath} fill="none" stroke="#C2C4C8" strokeWidth={2.5} />
       <path
         d={thisPath}
         fill="none"

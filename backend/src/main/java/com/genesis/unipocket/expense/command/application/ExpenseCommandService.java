@@ -105,11 +105,11 @@ public class ExpenseCommandService {
 		int pageNumber = 0;
 		Page<ExpenseEntity> page;
 
-		do {
-			page =
-					expenseRepository.findAllByAccountBookId(
-							accountBookId,
-							org.springframework.data.domain.PageRequest.of(pageNumber, pageSize));
+			do {
+				page =
+						expenseRepository.findByAccountBookId(
+								accountBookId,
+								org.springframework.data.domain.PageRequest.of(pageNumber, pageSize));
 			List<ExpenseEntity> expenses = page.getContent();
 
 			if (expenses.isEmpty()) {

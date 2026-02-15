@@ -16,8 +16,6 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 
 	Page<ExpenseEntity> findByAccountBookId(Long accountBookId, Pageable pageable);
 
-	Page<ExpenseEntity> findAllByAccountBookId(Long accountBookId, Pageable pageable);
-
 	java.util.List<ExpenseEntity> findAllByAccountBookId(Long accountBookId);
 
 	@Query(

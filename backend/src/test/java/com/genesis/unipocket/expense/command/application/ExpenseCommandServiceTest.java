@@ -247,9 +247,9 @@ class ExpenseCommandServiceTest {
 		when(expense2.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
 		when(expense2.getOccurredAt()).thenReturn(LocalDateTime.now().minusDays(1));
 
-		Page<ExpenseEntity> page = new PageImpl<>(java.util.List.of(expense1, expense2));
-		when(expenseRepository.findAllByAccountBookId(eq(accountBookId), any(Pageable.class)))
-				.thenReturn(page);
+			Page<ExpenseEntity> page = new PageImpl<>(java.util.List.of(expense1, expense2));
+			when(expenseRepository.findByAccountBookId(eq(accountBookId), any(Pageable.class)))
+					.thenReturn(page);
 
 		// Mock exchange rate service
 		when(exchangeRateService.getExchangeRate(eq(CurrencyCode.JPY), eq(newBaseCurrency), any()))

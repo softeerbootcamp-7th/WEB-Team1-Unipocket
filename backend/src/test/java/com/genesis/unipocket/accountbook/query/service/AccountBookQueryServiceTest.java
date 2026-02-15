@@ -22,6 +22,8 @@ import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepo
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -154,7 +156,7 @@ class AccountBookQueryServiceTest {
 						exchangeRateService.getExchangeRate(
 								eq(CurrencyCode.KRW),
 								eq(CurrencyCode.USD),
-								any(LocalDateTime.class)))
+								any(OffsetDateTime.class)))
 				.willReturn(BigDecimal.valueOf(0.00075));
 
 		AccountBookExchangeRateResponse result =
@@ -187,7 +189,9 @@ class AccountBookQueryServiceTest {
 				.willReturn(Optional.of(accountBookDetailResponse));
 		given(
 						exchangeRateService.getExchangeRate(
-								eq(CurrencyCode.KRW), eq(CurrencyCode.USD), eq(occurredAt)))
+								eq(CurrencyCode.KRW),
+								eq(CurrencyCode.USD),
+								eq(occurredAt.atOffset(ZoneOffset.UTC))))
 				.willReturn(BigDecimal.valueOf(0.00075));
 
 		AccountBookExchangeRateResponse result =
@@ -198,7 +202,9 @@ class AccountBookQueryServiceTest {
 		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
 		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
 		assertThat(result.budgetCreatedAt()).isEqualTo(LocalDateTime.of(2026, 2, 12, 8, 0, 0));
-		verify(exchangeRateService).getExchangeRate(CurrencyCode.KRW, CurrencyCode.USD, occurredAt);
+		verify(exchangeRateService)
+				.getExchangeRate(
+						CurrencyCode.KRW, CurrencyCode.USD, occurredAt.atOffset(ZoneOffset.UTC));
 	}
 
 	@Test
@@ -223,7 +229,7 @@ class AccountBookQueryServiceTest {
 						exchangeRateService.getExchangeRate(
 								eq(CurrencyCode.KRW),
 								eq(CurrencyCode.USD),
-								any(LocalDateTime.class)))
+								any(OffsetDateTime.class)))
 				.willReturn(BigDecimal.valueOf(0.00075));
 
 		AccountBookExchangeRateResponse result =

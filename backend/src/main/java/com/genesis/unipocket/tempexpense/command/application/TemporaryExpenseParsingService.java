@@ -20,6 +20,7 @@ import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPu
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -228,7 +229,7 @@ public class TemporaryExpenseParsingService {
 					exchangeRateService.getExchangeRate(
 							key.fromCurrencyCode(),
 							key.toCurrencyCode(),
-							key.date().atStartOfDay());
+							key.date().atStartOfDay().atOffset(ZoneOffset.UTC));
 			rateMap.put(key, rate);
 		}
 		return rateMap;

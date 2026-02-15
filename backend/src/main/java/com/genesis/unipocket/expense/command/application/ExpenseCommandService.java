@@ -37,7 +37,7 @@ public class ExpenseCommandService {
 				exchangeRateService.getExchangeRate(
 						command.localCurrencyCode(),
 						command.baseCurrencyCode(),
-						command.occurredAt().toLocalDateTime());
+						command.occurredAt());
 
 		BigDecimal baseCurrencyAmount =
 				command.localCurrencyAmount()
@@ -76,7 +76,7 @@ public class ExpenseCommandService {
 					exchangeRateService.getExchangeRate(
 							command.localCurrencyCode(),
 							command.baseCurrencyCode(),
-							command.occurredAt().toLocalDateTime());
+							command.occurredAt());
 
 			BigDecimal baseCurrencyAmount =
 					command.localCurrencyAmount()
@@ -123,16 +123,8 @@ public class ExpenseCommandService {
 				break;
 			}
 
-			// Local cache for exchange rates to avoid N+1 lookups within the chunk
-			// Key: CurrencyCode + Date (assuming daily rates or high reuse)
-			// Since ExchangeRateService uses LocalDateTime, we'll try to cache by that
-			// exact input
-			// OR optimally, we'd group by Date.
-			// Given the service signature, let's cache exact inputs for now.
-			// Improved Strategy:
-			// 1. Collect distinct (Currency, Date) pairs?
-			// 2. But we don't have a bulk fetch API.
-			// 3. So we just cache the result of getExchangeRate.
+			// Local cache for exchange rates to avoid N+1 lookups within the chunk.
+			// Keyed by source/target currency and occurred date (daily rate granularity).
 			java.util.Map<String, BigDecimal> rateCache = new java.util.HashMap<>();
 
 			for (ExpenseEntity expense : expenses) {
@@ -151,7 +143,7 @@ public class ExpenseCommandService {
 							exchangeRateService.getExchangeRate(
 									expense.getLocalCurrency(),
 									newBaseCurrencyCode,
-									expense.getOccurredAt().toLocalDateTime());
+									expense.getOccurredAt());
 					rateCache.put(cacheKey, exchangeRate);
 				}
 

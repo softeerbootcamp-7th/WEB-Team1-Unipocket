@@ -11,6 +11,8 @@ import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +47,8 @@ public class AccountBookQueryService {
 
 		CurrencyCode baseCurrencyCode = accountBookDetail.baseCountryCode().getCurrencyCode();
 		CurrencyCode localCurrencyCode = accountBookDetail.localCountryCode().getCurrencyCode();
-		LocalDateTime quotedAt = occurredAt != null ? occurredAt : LocalDateTime.now();
+		OffsetDateTime quotedAt =
+				(occurredAt != null ? occurredAt : LocalDateTime.now()).atOffset(ZoneOffset.UTC);
 		var exchangeRate =
 				exchangeRateService.getExchangeRate(baseCurrencyCode, localCurrencyCode, quotedAt);
 

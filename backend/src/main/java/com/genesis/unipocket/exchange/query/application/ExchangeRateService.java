@@ -2,7 +2,7 @@ package com.genesis.unipocket.exchange.query.application;
 
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * <b>환율 서비스 인터페이스</b>
@@ -21,7 +21,7 @@ public interface ExchangeRateService {
 	 * @param dateTime 환율 기준 시점
 	 * @return 환율 (from 1단위당 to 통화 가치)
 	 */
-	BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, LocalDateTime dateTime);
+	BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, OffsetDateTime dateTime);
 
 	/**
 	 * 금액 환전
@@ -33,5 +33,5 @@ public interface ExchangeRateService {
 	 * @return 환전된 금액
 	 */
 	BigDecimal convertAmount(
-			BigDecimal amount, CurrencyCode from, CurrencyCode to, LocalDateTime dateTime);
+			BigDecimal amount, CurrencyCode from, CurrencyCode to, OffsetDateTime dateTime);
 }

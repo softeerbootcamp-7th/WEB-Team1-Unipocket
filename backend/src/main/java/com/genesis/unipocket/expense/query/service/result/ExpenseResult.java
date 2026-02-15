@@ -38,12 +38,8 @@ public record ExpenseResult(
 				entity.getAccountBookId(),
 				entity.getTravelId(),
 				entity.getCategory(),
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyCode()
-						: null,
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyAmount()
-						: null,
+				entity.getDisplayBaseCurrency(),
+				entity.getDisplayBaseAmount(),
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getExchangeRate()
 						: null,
@@ -77,12 +73,8 @@ public record ExpenseResult(
 				entity.getAccountBookId(),
 				entity.getTravelId(),
 				entity.getCategory(),
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyCode()
-						: null,
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyAmount()
-						: null,
+				entity.getDisplayBaseCurrency(),
+				entity.getDisplayBaseAmount(),
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getExchangeRate()
 						: null,

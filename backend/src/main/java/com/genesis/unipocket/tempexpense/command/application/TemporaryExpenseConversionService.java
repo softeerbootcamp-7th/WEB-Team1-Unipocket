@@ -89,6 +89,8 @@ public class TemporaryExpenseConversionService {
 						temp.getBaseCountryCode() != null
 								? temp.getBaseCountryCode()
 								: com.genesis.unipocket.global.common.enums.CurrencyCode.KRW,
+						null,
+						null,
 						temp.getMemo(),
 						null,
 						exchangeRate);

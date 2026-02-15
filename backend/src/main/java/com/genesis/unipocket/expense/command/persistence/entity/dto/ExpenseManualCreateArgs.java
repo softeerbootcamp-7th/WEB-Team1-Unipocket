@@ -24,12 +24,18 @@ public record ExpenseManualCreateArgs(
 		CurrencyCode localCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
+		BigDecimal calculatedBaseCurrencyAmount,
+		CurrencyCode calculatedBaseCurrencyCode,
 		String memo,
 		Long travelId,
 		BigDecimal exchangeRate) {
 
 	public static ExpenseManualCreateArgs of(
-			ExpenseCreateCommand command, BigDecimal baseCurrencyAmount, BigDecimal exchangeRate) {
+			ExpenseCreateCommand command,
+			BigDecimal baseCurrencyAmount,
+			BigDecimal calculatedBaseCurrencyAmount,
+			CurrencyCode calculatedBaseCurrencyCode,
+			BigDecimal exchangeRate) {
 		return new ExpenseManualCreateArgs(
 				command.accountBookId(),
 				command.merchantName(),
@@ -40,6 +46,8 @@ public record ExpenseManualCreateArgs(
 				command.localCurrencyCode(),
 				baseCurrencyAmount,
 				command.baseCurrencyCode(),
+				calculatedBaseCurrencyAmount,
+				calculatedBaseCurrencyCode,
 				command.memo(),
 				command.travelId(),
 				exchangeRate);

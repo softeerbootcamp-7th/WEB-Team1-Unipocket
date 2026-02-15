@@ -90,6 +90,8 @@ public class ExpenseEntity extends BaseEntity {
 								params.baseCurrencyCode(),
 								params.localCurrencyAmount(),
 								params.baseCurrencyAmount(),
+								params.calculatedBaseCurrencyAmount(),
+								params.calculatedBaseCurrencyCode(),
 								params.exchangeRate()))
 				.build();
 	}
@@ -113,6 +115,32 @@ public class ExpenseEntity extends BaseEntity {
 	}
 
 	public BigDecimal getBaseAmount() {
+		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
+	}
+
+	public CurrencyCode getDisplayBaseCurrency() {
+		if (exchangeInfo == null) {
+			return null;
+		}
+		return exchangeInfo.getCalculatedBaseCurrencyCode() != null
+				? exchangeInfo.getCalculatedBaseCurrencyCode()
+				: exchangeInfo.getBaseCurrencyCode();
+	}
+
+	public BigDecimal getDisplayBaseAmount() {
+		if (exchangeInfo == null) {
+			return null;
+		}
+		return exchangeInfo.getCalculatedBaseCurrencyAmount() != null
+				? exchangeInfo.getCalculatedBaseCurrencyAmount()
+				: exchangeInfo.getBaseCurrencyAmount();
+	}
+
+	public CurrencyCode getOriginalBaseCurrency() {
+		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyCode() : null;
+	}
+
+	public BigDecimal getOriginalBaseAmount() {
 		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
 	}
 
@@ -155,6 +183,8 @@ public class ExpenseEntity extends BaseEntity {
 			BigDecimal localCurrencyAmount,
 			CurrencyCode baseCurrencyCode,
 			BigDecimal baseCurrencyAmount,
+			BigDecimal calculatedBaseCurrencyAmount,
+			CurrencyCode calculatedBaseCurrencyCode,
 			BigDecimal exchangeRate) {
 		// ExchangeInfo는 immutable이므로 전체 교체
 		this.exchangeInfo =
@@ -163,6 +193,8 @@ public class ExpenseEntity extends BaseEntity {
 						baseCurrencyCode,
 						localCurrencyAmount,
 						baseCurrencyAmount,
+						calculatedBaseCurrencyAmount,
+						calculatedBaseCurrencyCode,
 						exchangeRate);
 	}
 }

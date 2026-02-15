@@ -60,6 +60,10 @@ app:
     domain:
     secure: false
 
+analysis:
+  batch:
+    enabled: false
+
 # Swagger / OpenAPI
 springdoc:
   swagger-ui:

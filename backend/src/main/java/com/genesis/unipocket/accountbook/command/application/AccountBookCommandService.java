@@ -18,6 +18,7 @@ import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -103,7 +104,9 @@ public class AccountBookCommandService {
 		LocalDateTime budgetCreatedAt = entity.getBudgetCreatedAt();
 		BigDecimal exchangeRate =
 				exchangeRateService.getExchangeRate(
-						baseCurrencyCode, localCurrencyCode, budgetCreatedAt);
+						baseCurrencyCode,
+						localCurrencyCode,
+						budgetCreatedAt.atOffset(ZoneOffset.UTC));
 
 		return new AccountBookBudgetUpdateResult(
 				entity.getId(),

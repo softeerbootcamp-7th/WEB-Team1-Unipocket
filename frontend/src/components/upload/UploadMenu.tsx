@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import Button from '@/components/common/Button';
 import {
@@ -90,17 +90,20 @@ const UploadPopover = ({
 
 const UploadMenu = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
-  const [isFileUploadOpen, setIsFileUploadOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'image' | 'file' | null>(null);
   const handleOpenImageUpload = () => {
-    setIsImageUploadOpen(true);
+    setActiveModal('image');
     setIsPopoverOpen(false);
   };
 
   const handleOpenFileUpload = () => {
-    setIsFileUploadOpen(true);
+    setActiveModal('file');
     setIsPopoverOpen(false);
   };
+
+  const handleCloseModal = useCallback(() => {
+    setActiveModal(null);
+  }, []);
 
   return (
     <>
@@ -116,12 +119,12 @@ const UploadMenu = () => {
         />
       </Popover>
       <ImageUploadModal
-        isOpen={isImageUploadOpen}
-        onClose={() => setIsImageUploadOpen(false)}
+        isOpen={activeModal === 'image'}
+        onClose={handleCloseModal}
       />
       <FileUploadModal
-        isOpen={isFileUploadOpen}
-        onClose={() => setIsFileUploadOpen(false)}
+        isOpen={activeModal === 'file'}
+        onClose={handleCloseModal}
       />
     </>
   );

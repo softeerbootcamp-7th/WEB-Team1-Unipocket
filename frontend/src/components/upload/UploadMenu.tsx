@@ -1,9 +1,12 @@
+import { useState } from 'react';
+
 import Button from '@/components/common/Button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import ImageUploadModal from '@/components/upload/image-upload/ImageUploadModal';
 
 import { Icons } from '@/assets';
 
@@ -38,7 +41,11 @@ const UploadMenuItem = ({
   );
 };
 
-const UploadPopover = () => {
+interface UploadPopoverProps {
+  onOpenImageUpload: () => void;
+}
+
+const UploadPopover = ({ onOpenImageUpload }: UploadPopoverProps) => {
   return (
     <PopoverContent
       align="end"
@@ -56,7 +63,7 @@ const UploadPopover = () => {
         Icon={Icons.Camera}
         title="영수증 / 은행 앱 사진 업로드"
         subTitle="사진 속 결제 정보를 자동으로 인식해요."
-        onClick={() => console.log('영수증 업로드 클릭')}
+        onClick={onOpenImageUpload}
       />
 
       <UploadMenuItem
@@ -77,15 +84,29 @@ const UploadPopover = () => {
 };
 
 const UploadMenu = () => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
+
+  const handleOpenImageUpload = () => {
+    setIsImageUploadOpen(true);
+    setIsPopoverOpen(false);
+  };
+
   return (
-    <Popover modal={true}>
-      <PopoverTrigger asChild>
-        <Button variant="solid" size="md">
-          지출 내역 추가하기
-        </Button>
-      </PopoverTrigger>
-      <UploadPopover />
-    </Popover>
+    <>
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="solid" size="md">
+            지출 내역 추가하기
+          </Button>
+        </PopoverTrigger>
+        <UploadPopover onOpenImageUpload={handleOpenImageUpload} />
+      </Popover>
+      <ImageUploadModal
+        isOpen={isImageUploadOpen}
+        onClose={() => setIsImageUploadOpen(false)}
+      />
+    </>
   );
 };
 

@@ -1,10 +1,14 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
 import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemporaryExpenseCommandService {
 
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
+	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 
 	/**
 	 * 임시지출내역 단건 조회
@@ -29,10 +34,7 @@ public class TemporaryExpenseCommandService {
 	public TemporaryExpense findById(Long tempExpenseId) {
 		return temporaryExpenseRepository
 				.findById(tempExpenseId)
-				.orElseThrow(
-						() ->
-								new IllegalArgumentException(
-										"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
 	}
 
 	/**
@@ -113,6 +115,16 @@ public class TemporaryExpenseCommandService {
 	public void deleteTemporaryExpense(Long tempExpenseId) {
 		TemporaryExpense entity = findById(tempExpenseId);
 		temporaryExpenseRepository.delete(entity);
+	}
+
+	public Long findAccountBookIdByTempExpenseId(Long tempExpenseId) {
+		TemporaryExpense tempExpense = findById(tempExpenseId);
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(tempExpense.getTempExpenseMetaId())
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+		return meta.getAccountBookId();
 	}
 
 	/**

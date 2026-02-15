@@ -4,19 +4,15 @@ import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileRegisterResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
-import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
 import com.genesis.unipocket.tempexpense.command.facade.TemporaryExpenseCommandFacade;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.presentation.request.BatchConvertRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.BatchParseRequest;
-import com.genesis.unipocket.tempexpense.command.presentation.request.ParseFileRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.RegisterUploadedFileRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseUpdateRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.response.BatchConvertResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.BatchParseResponse;
-import com.genesis.unipocket.tempexpense.command.presentation.response.ParseFileResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.PresignedUrlResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.RegisterUploadedFileResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
@@ -192,47 +188,9 @@ public class TemporaryExpenseCommandController {
 	}
 
 	/**
-	 * 파일 파싱 실행
-	 */
-	@Operation(
-			summary = "(중복/AI 삭제 추천) 임시지출 동기 파싱",
-			description = "단건 동기 파싱 API입니다. 비동기 파싱+상태조회 흐름과 중복되어 삭제를 권장합니다.")
-	@PostMapping("/temporary-expenses/parse")
-	public ResponseEntity<ParseFileResponse> parseFile(
-			@PathVariable Long accountBookId,
-			@RequestBody @Valid ParseFileRequest request,
-			@LoginUser UUID userId) {
-		ParsingResult result =
-				temporaryExpenseCommandFacade.parseFile(accountBookId, request.s3Key(), userId);
-
-		// Response 생성
-		List<ParseFileResponse.ParsedItemSummary> items = new java.util.ArrayList<>();
-		for (TemporaryExpense expense : result.expenses()) {
-			items.add(
-					new ParseFileResponse.ParsedItemSummary(
-							expense.getTempExpenseId(),
-							expense.getMerchantName(),
-							expense.getStatus() != null ? expense.getStatus().name() : null));
-		}
-
-		ParseFileResponse response =
-				new ParseFileResponse(
-						result.metaId(),
-						result.totalCount(),
-						result.normalCount(),
-						result.incompleteCount(),
-						result.abnormalCount(),
-						items);
-
-		return ResponseEntity.ok(response);
-	}
-
-	/**
 	 * 임시지출내역 수정
 	 */
-	@Operation(
-			summary = "임시지출 수정",
-			description = "가계부 스코프에서 임시지출을 수정합니다.")
+	@Operation(summary = "임시지출 수정", description = "가계부 스코프에서 임시지출을 수정합니다.")
 	@PutMapping("/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<TemporaryExpenseResponse> updateTemporaryExpense(
 			@PathVariable Long accountBookId,
@@ -273,9 +231,7 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
-	@Operation(
-			summary = "임시지출 삭제",
-			description = "가계부 스코프에서 임시지출 단건을 삭제합니다.")
+	@Operation(summary = "임시지출 삭제", description = "가계부 스코프에서 임시지출 단건을 삭제합니다.")
 	@DeleteMapping("/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<Void> deleteTemporaryExpense(
 			@PathVariable Long accountBookId,

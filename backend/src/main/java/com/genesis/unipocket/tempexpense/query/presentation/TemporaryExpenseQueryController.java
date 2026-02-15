@@ -1,21 +1,18 @@
 package com.genesis.unipocket.tempexpense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
-import com.genesis.unipocket.global.exception.BusinessException;
-import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.tempexpense.query.facade.TemporaryExpenseQueryFacade;
 import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
-import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,9 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @AllArgsConstructor
 public class TemporaryExpenseQueryController {
 
-	private final TemporaryExpenseQueryService temporaryExpenseQueryService;
-	private final ParsingProgressPublisher progressPublisher;
-	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final TemporaryExpenseQueryFacade temporaryExpenseQueryFacade;
 
 	/**
 	 * 가계부별 임시지출내역 목록 조회 (상태 필터 선택)
@@ -54,7 +49,7 @@ public class TemporaryExpenseQueryController {
 			@RequestParam(required = false) TemporaryExpenseStatus status,
 			@LoginUser UUID userId) {
 		List<TemporaryExpenseResponse> items =
-				temporaryExpenseQueryService.getTemporaryExpenses(accountBookId, status, userId);
+				temporaryExpenseQueryFacade.getTemporaryExpenses(accountBookId, status, userId);
 		TemporaryExpenseListResponse response = new TemporaryExpenseListResponse(items);
 
 		return ResponseEntity.ok(response);
@@ -70,8 +65,7 @@ public class TemporaryExpenseQueryController {
 			@PathVariable Long tempExpenseId,
 			@LoginUser UUID userId) {
 		TemporaryExpenseResponse response =
-				temporaryExpenseQueryService.getTemporaryExpense(
-						accountBookId, tempExpenseId, userId);
+				temporaryExpenseQueryFacade.getTemporaryExpense(accountBookId, tempExpenseId, userId);
 		return ResponseEntity.ok(response);
 	}
 
@@ -83,7 +77,7 @@ public class TemporaryExpenseQueryController {
 	public ResponseEntity<FileProcessingSummaryResponse> getFileProcessingSummary(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
 		FileProcessingSummaryResponse response =
-				temporaryExpenseQueryService.getFileProcessingSummary(accountBookId, userId);
+				temporaryExpenseQueryFacade.getFileProcessingSummary(accountBookId, userId);
 		return ResponseEntity.ok(response);
 	}
 
@@ -96,7 +90,7 @@ public class TemporaryExpenseQueryController {
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
 
 		ImageProcessingSummaryResponse response =
-				temporaryExpenseQueryService.getImageProcessingSummary(accountBookId, userId);
+				temporaryExpenseQueryFacade.getImageProcessingSummary(accountBookId, userId);
 
 		return ResponseEntity.ok(response);
 	}
@@ -107,24 +101,9 @@ public class TemporaryExpenseQueryController {
 	@Operation(summary = "파싱 진행 상황 스트림", description = "비동기 파싱 작업의 진행/완료 이벤트를 SSE로 구독합니다.")
 	@GetMapping(
 			value = "/account-books/{accountBookId}/temporary-expenses/parse-status/{taskId}",
-			produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+			produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public SseEmitter streamParsingProgress(
 			@PathVariable Long accountBookId, @PathVariable String taskId, @LoginUser UUID userId) {
-
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-
-		if (!progressPublisher.isTaskOwnedBy(taskId, accountBookId)) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_TASK_NOT_FOUND);
-		}
-
-		SseEmitter emitter = new SseEmitter(60000L); // 60초
-
-		progressPublisher.addEmitter(taskId, emitter);
-
-		emitter.onCompletion(() -> progressPublisher.removeEmitter(taskId));
-		emitter.onTimeout(() -> progressPublisher.removeEmitter(taskId));
-		emitter.onError((e) -> progressPublisher.removeEmitter(taskId));
-
-		return emitter;
+		return temporaryExpenseQueryFacade.streamParsingProgress(accountBookId, taskId, userId);
 	}
 }

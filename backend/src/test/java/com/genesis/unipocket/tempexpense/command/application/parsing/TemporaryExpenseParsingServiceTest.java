@@ -19,7 +19,6 @@ import com.genesis.unipocket.tempexpense.command.application.result.BatchParsing
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
-import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
@@ -34,11 +33,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -50,13 +49,27 @@ class TemporaryExpenseParsingServiceTest {
 	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 	@Mock private ExchangeRateProvider exchangeRateProvider;
-	@Mock private GeminiService geminiService;
-	@Mock private TempExpenseMediaAccessService tempExpenseMediaAccessService;
-	@Mock private TemporaryExpenseContentExtractor contentExtractor;
+	@Mock private TemporaryExpenseParseClient temporaryExpenseParseClient;
 	@Mock private TemporaryExpenseFieldParser fieldParser;
 	@Mock private ParsingProgressPublisher progressPublisher;
 
-	@InjectMocks private TemporaryExpenseParsingService service;
+	private TemporaryExpenseParsingService service;
+
+	@BeforeEach
+	void setUp() {
+		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
+				new TemporaryExpensePersistenceService(temporaryExpenseRepository);
+		service =
+				new TemporaryExpenseParsingService(
+						fileRepository,
+						tempExpenseMetaRepository,
+						accountBookRateInfoProvider,
+						exchangeRateProvider,
+						fieldParser,
+						temporaryExpenseParseClient,
+						temporaryExpensePersistenceService,
+						progressPublisher);
+	}
 
 	@Test
 	@DisplayName("파싱 시 카테고리 숫자/별칭을 변환하고 환율 조회는 키별 1회만 수행")
@@ -84,9 +97,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 
-		when(tempExpenseMediaAccessService.issueGetPath(s3Key, java.time.Duration.ofMinutes(10)))
-				.thenReturn("https://signed-url");
-		when(geminiService.parseReceiptImage("https://signed-url"))
+		when(temporaryExpenseParseClient.parse(file))
 				.thenReturn(
 						new GeminiService.GeminiParseResponse(
 								true,
@@ -168,9 +179,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 
-		when(tempExpenseMediaAccessService.issueGetPath(s3Key, java.time.Duration.ofMinutes(10)))
-				.thenReturn("https://signed-url-2");
-		when(geminiService.parseReceiptImage("https://signed-url-2"))
+		when(temporaryExpenseParseClient.parse(file))
 				.thenReturn(
 						new GeminiService.GeminiParseResponse(
 								true,
@@ -229,11 +238,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(eq("KRW"), any())).thenReturn(CurrencyCode.KRW);
 
-		when(tempExpenseMediaAccessService.issueGetPath(s3Key, java.time.Duration.ofMinutes(10)))
-				.thenReturn("https://signed-url-3");
-
-		// Gemini response with baseAmount
-		when(geminiService.parseReceiptImage("https://signed-url-3"))
+		when(temporaryExpenseParseClient.parse(file))
 				.thenReturn(
 						new GeminiService.GeminiParseResponse(
 								true,
@@ -305,10 +310,9 @@ class TemporaryExpenseParsingServiceTest {
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
-		when(contentExtractor.extractContent(any())).thenReturn("h1,h2\nv1,v2");
 		when(fileRepository.findByS3KeyIn(s3Keys)).thenReturn(List.of(fileA, fileB));
 		when(tempExpenseMetaRepository.findAllById(any())).thenReturn(List.of(metaA, metaB));
-		when(geminiService.parseDocument(anyString()))
+		when(temporaryExpenseParseClient.parse(any(File.class)))
 				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));

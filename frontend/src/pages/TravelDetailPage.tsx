@@ -10,6 +10,7 @@ import CategoryFilter from '@/components/data-table/filters/CategoryFilter';
 import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
 import MethodFilter from '@/components/data-table/filters/MethodFilter';
+import SortDropdown from '@/components/data-table/filters/SortDropdown';
 import ImportToFolderBar from '@/components/data-table/ImportToFolderBar';
 import SelectionActionBar from '@/components/data-table/SelectionActionBar';
 import { columns } from '@/components/home-page/columns';
@@ -70,12 +71,13 @@ const TravelDetailPage = () => {
             <CategoryFilter />
             <MethodFilter />
             <div className="flex-1" />
+            <SortDropdown />
             <Button
               variant="solid"
               size="md"
               onClick={() => setBottomSheetOpen(true)}
             >
-              지출 내역 추가하기
+              지출 내역 불러오기
             </Button>
           </DataTableFilterProvider>
           <DataTable
@@ -102,6 +104,7 @@ const TravelDetailPage = () => {
             <CategoryFilter />
             <MethodFilter />
             <div className="flex-1" />
+            <SortDropdown />
           </DataTableFilterProvider>
           <DataTable
             groupBy={(row: Expense) =>

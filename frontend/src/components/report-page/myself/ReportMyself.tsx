@@ -9,9 +9,9 @@ import { getCountryInfo } from '@/lib/country';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 type MonthlyData = {
-  label: string; // "1월"
-  dayCount: number; // 20
-  totalSpent: string; // 이번달은 toDate, 지난달은 전체
+  label: string;
+  dayCount: number;
+  totalSpent: string;
   items: ChartItem[];
 };
 

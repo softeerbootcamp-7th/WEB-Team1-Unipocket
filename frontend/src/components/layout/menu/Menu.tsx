@@ -1,4 +1,4 @@
-import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { Link, useRouterState } from '@tanstack/react-router';
 
 import MenuItem from '@/components/layout/menu/MenuItem';
 
@@ -11,7 +11,6 @@ const menuItems = [
 ] as const;
 
 const Menu = () => {
-  const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
@@ -19,25 +18,24 @@ const Menu = () => {
   const isInitPath = pathname.includes('/init');
 
   return (
-    <div className="border-line-normal-normal bg-background-normal flex h-screen w-16 flex-col items-center gap-9 border-r px-4 py-3">
-      <Icons.Logo
-        className="h-8 w-8 cursor-pointer"
-        onClick={() => navigate({ to: '/home' })}
-      />
+    <nav className="border-line-normal-normal bg-background-normal sticky top-0 bottom-0 left-0 flex w-16 flex-col items-center gap-9 border-r px-4 py-3">
+      <Link to="/home">
+        <Icons.Logo className="size-8 cursor-pointer" />
+      </Link>
       {!isInitPath && (
         <div className="flex flex-col gap-6">
           {menuItems.map(({ to, Icon, label }) => (
-            <MenuItem
-              key={to}
-              logo={<Icon className="h-5 w-5" />}
-              label={label}
-              isActive={pathname === to}
-              onClick={() => navigate({ to })}
-            />
+            <Link key={to} to={to}>
+              <MenuItem
+                logo={<Icon className="size-5" />}
+                label={label}
+                isActive={pathname === to}
+              />
+            </Link>
           ))}
         </div>
       )}
-    </div>
+    </nav>
   );
 };
 export default Menu;

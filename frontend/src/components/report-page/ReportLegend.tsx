@@ -13,7 +13,7 @@ const SHAPE_STYLE = {
 interface ReportLegendProps {
   color: keyof typeof LEGEND_COLOR;
   label: string;
-  variant?: 'box' | 'line';
+  variant?: keyof typeof SHAPE_STYLE;
 }
 
 const ReportLegend = ({ color, label, variant = 'box' }: ReportLegendProps) => {

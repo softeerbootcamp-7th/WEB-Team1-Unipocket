@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import FileUploadModal from '@/components/upload/file-upload/FileUploadModal';
 import ImageUploadModal from '@/components/upload/image-upload/ImageUploadModal';
 
 import { Icons } from '@/assets';
@@ -43,9 +44,13 @@ const UploadMenuItem = ({
 
 interface UploadPopoverProps {
   onOpenImageUpload: () => void;
+  onOpenFileUpload: () => void;
 }
 
-const UploadPopover = ({ onOpenImageUpload }: UploadPopoverProps) => {
+const UploadPopover = ({
+  onOpenImageUpload,
+  onOpenFileUpload,
+}: UploadPopoverProps) => {
   return (
     <PopoverContent
       align="end"
@@ -70,7 +75,7 @@ const UploadPopover = ({ onOpenImageUpload }: UploadPopoverProps) => {
         Icon={Icons.FileBox}
         title="거래 내역 파일 업로드"
         subTitle="은행·카드사에서 받은 내역 파일을 올려주세요."
-        onClick={() => console.log('파일 업로드 클릭')}
+        onClick={onOpenFileUpload}
       />
 
       <UploadMenuItem
@@ -86,9 +91,14 @@ const UploadPopover = ({ onOpenImageUpload }: UploadPopoverProps) => {
 const UploadMenu = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
-
+  const [isFileUploadOpen, setIsFileUploadOpen] = useState(false);
   const handleOpenImageUpload = () => {
     setIsImageUploadOpen(true);
+    setIsPopoverOpen(false);
+  };
+
+  const handleOpenFileUpload = () => {
+    setIsFileUploadOpen(true);
     setIsPopoverOpen(false);
   };
 
@@ -100,11 +110,18 @@ const UploadMenu = () => {
             지출 내역 추가하기
           </Button>
         </PopoverTrigger>
-        <UploadPopover onOpenImageUpload={handleOpenImageUpload} />
+        <UploadPopover
+          onOpenImageUpload={handleOpenImageUpload}
+          onOpenFileUpload={handleOpenFileUpload}
+        />
       </Popover>
       <ImageUploadModal
         isOpen={isImageUploadOpen}
         onClose={() => setIsImageUploadOpen(false)}
+      />
+      <FileUploadModal
+        isOpen={isFileUploadOpen}
+        onClose={() => setIsFileUploadOpen(false)}
       />
     </>
   );

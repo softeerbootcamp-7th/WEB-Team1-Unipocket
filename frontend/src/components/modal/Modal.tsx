@@ -15,7 +15,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAction: () => void;
-  cancelButton?: ModalButton;
+  cancelButton?: ModalButton | null; // null로 전달 시 버튼 숨김
   confirmButton?: ModalButton;
 }
 
@@ -38,7 +38,7 @@ const Modal = ({
   const contextValue = useMemo(() => ({ setActionReady }), []);
 
   const { label: cancelText = '취소', variant: cancelVariant = 'outlined' } =
-    cancelButton ?? {};
+    cancelButton || {};
   const { label: confirmText = '확인', variant: confirmVariant = 'solid' } =
     confirmButton ?? {};
 
@@ -76,9 +76,11 @@ const Modal = ({
               {children}
 
               <div className="flex h-20 w-full flex-row items-center justify-end gap-3">
-                <Button variant={cancelVariant} size="lg" onClick={onClose}>
-                  {cancelText}
-                </Button>
+                {cancelButton !== null && (
+                  <Button variant={cancelVariant} size="lg" onClick={onClose}>
+                    {cancelText}
+                  </Button>
+                )}
                 <Button
                   variant={confirmVariant}
                   size="lg"

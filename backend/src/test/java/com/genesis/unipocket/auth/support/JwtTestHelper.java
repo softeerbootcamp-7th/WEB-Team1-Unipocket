@@ -1,6 +1,7 @@
 package com.genesis.unipocket.auth.support;
 
 import com.genesis.unipocket.auth.command.application.JwtProvider;
+import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import jakarta.servlet.http.Cookie;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class JwtTestHelper {
 	public RequestPostProcessor withJwtAuth(UUID userId) {
 		return request -> {
 			String accessToken = jwtProvider.createAccessToken(userId);
-			Cookie cookie = new Cookie("access_token", accessToken);
+			Cookie cookie = new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken);
 			cookie.setHttpOnly(true);
 			cookie.setPath("/");
 			request.setCookies(cookie);

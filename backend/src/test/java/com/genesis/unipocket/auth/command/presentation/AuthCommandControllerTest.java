@@ -12,6 +12,7 @@ import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.command.facade.UserLoginFacade;
 import com.genesis.unipocket.auth.common.config.JwtProperties;
+import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.auth.common.dto.AuthorizeResult;
 import com.genesis.unipocket.auth.common.dto.LoginResult;
 import com.genesis.unipocket.global.config.OAuth2Properties;
@@ -54,24 +55,38 @@ class AuthCommandControllerTest {
 		given(authService.reissue(refreshToken)).willReturn(tokenPair);
 
 		// when & then
-		mockMvc.perform(post("/auth/reissue").cookie(new Cookie("refresh_token", refreshToken)))
+		mockMvc.perform(
+						post("/auth/reissue")
+								.cookie(
+										new Cookie(
+												AuthCookieConstants.REFRESH_TOKEN, refreshToken)))
 				.andExpect(status().isOk());
 
 		verify(authService).reissue(refreshToken);
 		verify(cookieUtil)
 				.addCookie(
 						any(HttpServletResponse.class),
-						eq("access_token"),
+						eq(AuthCookieConstants.ACCESS_TOKEN),
 						eq(newAccessToken),
 						anyInt(),
 						eq("/"));
 		verify(cookieUtil)
 				.addCookie(
 						any(HttpServletResponse.class),
-						eq("refresh_token"),
+						eq(AuthCookieConstants.REFRESH_TOKEN),
 						eq(newRefreshToken),
 						anyInt(),
-						eq("/auth"));
+						eq("/"));
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 실패 - refresh_token 쿠키 누락")
+	void reissue_Fail_WhenRefreshTokenMissing() throws Exception {
+		mockMvc.perform(post("/auth/reissue"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_REFRESH_TOKEN_REQUIRED"));
+
+		verify(authService, never()).reissue(anyString());
 	}
 
 	@Test
@@ -84,15 +99,41 @@ class AuthCommandControllerTest {
 		// when & then
 		mockMvc.perform(
 						post("/auth/logout")
-								.cookie(new Cookie("access_token", accessToken))
-								.cookie(new Cookie("refresh_token", refreshToken)))
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken))
+								.cookie(
+										new Cookie(
+												AuthCookieConstants.REFRESH_TOKEN, refreshToken)))
 				.andExpect(status().isOk());
 
 		verify(authService).logout(accessToken, refreshToken);
 		verify(cookieUtil)
-				.deleteCookie(any(HttpServletResponse.class), eq("access_token"), eq("/"));
+				.deleteCookie(
+						any(HttpServletResponse.class),
+						eq(AuthCookieConstants.ACCESS_TOKEN),
+						eq("/"));
 		verify(cookieUtil)
-				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/auth"));
+				.deleteCookie(
+						any(HttpServletResponse.class),
+						eq(AuthCookieConstants.REFRESH_TOKEN),
+						eq("/"));
+	}
+
+	@Test
+	@DisplayName("로그아웃 성공 - 쿠키 누락 시에도 200")
+	void logout_Success_WhenCookiesMissing() throws Exception {
+		mockMvc.perform(post("/auth/logout")).andExpect(status().isOk());
+
+		verify(authService, never()).logout(anyString(), anyString());
+		verify(cookieUtil)
+				.deleteCookie(
+						any(HttpServletResponse.class),
+						eq(AuthCookieConstants.ACCESS_TOKEN),
+						eq("/"));
+		verify(cookieUtil)
+				.deleteCookie(
+						any(HttpServletResponse.class),
+						eq(AuthCookieConstants.REFRESH_TOKEN),
+						eq("/"));
 	}
 
 	@Test
@@ -149,7 +190,7 @@ class AuthCommandControllerTest {
 		verify(cookieUtil)
 				.addCookie(
 						any(HttpServletResponse.class),
-						eq("access_token"),
+						eq(AuthCookieConstants.ACCESS_TOKEN),
 						eq(accessToken),
 						eq(expiresIn.intValue()),
 						eq("/"));
@@ -157,9 +198,9 @@ class AuthCommandControllerTest {
 		verify(cookieUtil)
 				.addCookie(
 						any(HttpServletResponse.class),
-						eq("refresh_token"),
+						eq(AuthCookieConstants.REFRESH_TOKEN),
 						eq(refreshToken),
 						anyInt(),
-						eq("/auth"));
+						eq("/"));
 	}
 }

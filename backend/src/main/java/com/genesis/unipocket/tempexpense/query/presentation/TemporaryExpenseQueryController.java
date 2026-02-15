@@ -9,6 +9,7 @@ import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProces
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class TemporaryExpenseQueryController {
 	 * @param status        필터링할 상태 (선택, 없으면 전체 조회)
 	 * @return 임시지출내역 목록
 	 */
+	@Operation(summary = "임시지출 목록 조회", description = "가계부의 임시지출 목록을 상태 조건과 함께 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expenses")
 	public ResponseEntity<ApiResponse<TemporaryExpenseListResponse>> getTemporaryExpenses(
 			@PathVariable Long accountBookId,
@@ -57,6 +59,7 @@ public class TemporaryExpenseQueryController {
 	/**
 	 * 임시지출내역 단건 조회
 	 */
+	@Operation(summary = "임시지출 단건 조회", description = "가계부 내 임시지출 1건의 상세 정보를 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<ApiResponse<TemporaryExpenseResponse>> getTemporaryExpense(
 			@PathVariable Long accountBookId,
@@ -71,6 +74,7 @@ public class TemporaryExpenseQueryController {
 	/**
 	 * 파일(이미지) 단위 처리 현황 조회
 	 */
+	@Operation(summary = "파일 처리 현황 조회", description = "메타(업로드 파일) 단위의 임시지출 파싱 처리 현황을 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/summary")
 	public ResponseEntity<ApiResponse<FileProcessingSummaryResponse>> getFileProcessingSummary(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
@@ -82,6 +86,7 @@ public class TemporaryExpenseQueryController {
 	/**
 	 * 가계부 전체 이미지 처리 현황 요약 조회
 	 */
+	@Operation(summary = "이미지 처리 요약 조회", description = "가계부 전체 파일 처리 현황을 합산한 요약 정보를 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/image-processing-summary")
 	public ResponseEntity<ApiResponse<ImageProcessingSummaryResponse>> getImageProcessingSummary(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
@@ -93,6 +98,7 @@ public class TemporaryExpenseQueryController {
 	/**
 	 * SSE 진행 상황 스트림
 	 */
+	@Operation(summary = "파싱 진행 상황 스트림", description = "비동기 파싱 작업의 진행/완료 이벤트를 SSE로 구독합니다.")
 	@GetMapping(
 			value = "/account-books/{accountBookId}/temporary-expenses/parse-status/{taskId}",
 			produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)

@@ -16,6 +16,7 @@ public record ExpenseResult(
 		Category category,
 		CurrencyCode baseCurrencyCode,
 		BigDecimal baseCurrencyAmount,
+		BigDecimal exchangeRate,
 		CurrencyCode localCurrencyCode,
 		BigDecimal localCurrencyAmount,
 		LocalDateTime occurredAt,
@@ -42,6 +43,9 @@ public record ExpenseResult(
 						: null,
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getBaseCurrencyAmount()
+						: null,
+				entity.getExchangeInfo() != null
+						? entity.getExchangeInfo().getExchangeRate()
 						: null,
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getLocalCurrencyCode()
@@ -78,6 +82,9 @@ public record ExpenseResult(
 						: null,
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getBaseCurrencyAmount()
+						: null,
+				entity.getExchangeInfo() != null
+						? entity.getExchangeInfo().getExchangeRate()
 						: null,
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getLocalCurrencyCode()

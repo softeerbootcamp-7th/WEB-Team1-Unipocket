@@ -4,6 +4,7 @@ import com.genesis.unipocket.accountbook.command.application.command.CreateAccou
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
+import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
@@ -39,7 +40,7 @@ public class AccountBookCommandService {
 	private final ExchangeRateService exchangeRateService;
 
 	@Transactional
-	public Long create(CreateAccountBookCommand command) {
+	public AccountBookResult create(CreateAccountBookCommand command) {
 		UserEntity user =
 				userRepository
 						.findById(command.userId())
@@ -71,11 +72,11 @@ public class AccountBookCommandService {
 			user.updateMainBucketId(savedEntity.getId());
 		}
 
-		return savedEntity.getId();
+		return AccountBookResult.of(savedEntity);
 	}
 
 	@Transactional
-	public Long update(UpdateAccountBookCommand command) {
+	public AccountBookResult update(UpdateAccountBookCommand command) {
 
 		AccountBookEntity entity =
 				findAndVerifyOwnership(command.accountBookId(), command.userId());
@@ -87,7 +88,7 @@ public class AccountBookCommandService {
 
 		validator.validate(entity);
 
-		return entity.getId();
+		return AccountBookResult.of(entity);
 	}
 
 	@Transactional

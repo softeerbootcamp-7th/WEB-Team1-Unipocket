@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import com.genesis.unipocket.accountbook.command.application.command.CreateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
+import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
@@ -80,10 +81,10 @@ public class AccountBookCommandServiceTest {
 						});
 
 		// when
-		Long resultId = accountBookCommandService.create(command);
+		AccountBookResult result = accountBookCommandService.create(command);
 
 		// then
-		assertThat(resultId).isEqualTo(1L);
+		assertThat(result.accountBookId()).isEqualTo(1L);
 		verify(validator).validate(any(AccountBookEntity.class));
 		verify(repository).save(any(AccountBookEntity.class));
 		assertThat(user.getMainBucketId()).isEqualTo(1L);
@@ -124,10 +125,10 @@ public class AccountBookCommandServiceTest {
 						});
 
 		// when
-		Long resultId = accountBookCommandService.create(command);
+		AccountBookResult result = accountBookCommandService.create(command);
 
 		// then
-		assertThat(resultId).isEqualTo(1L);
+		assertThat(result.accountBookId()).isEqualTo(1L);
 		verify(repository).save(any(AccountBookEntity.class));
 	}
 
@@ -167,7 +168,7 @@ public class AccountBookCommandServiceTest {
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
 
 		// when
-		Long resultId = accountBookCommandService.update(command);
+		Long resultId = accountBookCommandService.update(command).accountBookId();
 
 		// then
 		assertThat(resultId).isEqualTo(accountBookId);

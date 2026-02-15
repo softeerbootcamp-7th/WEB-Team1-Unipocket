@@ -1,6 +1,7 @@
 package com.genesis.unipocket.accountbook.query.presentation;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,6 +12,7 @@ import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookS
 import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
+import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
@@ -52,7 +54,9 @@ class AccountBookQueryControllerTest {
 								new AccountBookSummaryResponse(2L, "보조 가계부", false)));
 		mockAuthentication(accessToken, userId);
 
-		mockMvc.perform(get("/account-books").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(
+						get("/account-books")
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1L))
 				.andExpect(jsonPath("$[0].title").value("메인 가계부"))
@@ -83,7 +87,7 @@ class AccountBookQueryControllerTest {
 
 		mockMvc.perform(
 						get("/account-books/{accountBookId}", accountBookId)
-								.cookie(new Cookie("access_token", accessToken)))
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("메인 가계부"))
@@ -97,25 +101,62 @@ class AccountBookQueryControllerTest {
 		UUID userId = UUID.randomUUID();
 		String accessToken = "valid_token";
 		Long accountBookId = 1L;
-		LocalDateTime quotedAt = LocalDateTime.of(2026, 2, 12, 11, 30, 0);
 
-		given(accountBookQueryService.getAccountBookExchangeRate(userId.toString(), accountBookId))
+		given(
+						accountBookQueryService.getAccountBookExchangeRate(
+								userId.toString(), accountBookId, null))
 				.willReturn(
 						new AccountBookExchangeRateResponse(
 								CountryCode.KR,
 								CountryCode.JP,
 								BigDecimal.valueOf(0.11),
-								quotedAt));
+								LocalDateTime.of(2026, 2, 1, 9, 0, 0)));
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
 						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
+				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-01T09:00:00"));
+
+		verify(accountBookQueryService)
+				.getAccountBookExchangeRate(userId.toString(), accountBookId, null);
+	}
+
+	@Test
+	@DisplayName("가계부 기준/상대 국가 환율 조회 성공 - occurredAt 지정")
+	void getAccountBookExchangeRate_Success_WithOccurredAt() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 1L;
+		LocalDateTime occurredAt = LocalDateTime.of(2026, 2, 13, 10, 30, 0);
+
+		given(
+						accountBookQueryService.getAccountBookExchangeRate(
+								userId.toString(), accountBookId, occurredAt))
+				.willReturn(
+						new AccountBookExchangeRateResponse(
+								CountryCode.KR,
+								CountryCode.JP,
+								BigDecimal.valueOf(0.11),
+								LocalDateTime.of(2026, 2, 1, 9, 0, 0)));
+		mockAuthentication(accessToken, userId);
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+								.param("occurredAt", "2026-02-13T10:30:00")
 								.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
-				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-12T11:30:00"));
+				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-01T09:00:00"));
+
+		verify(accountBookQueryService)
+				.getAccountBookExchangeRate(userId.toString(), accountBookId, occurredAt);
 	}
 
 	private void mockAuthentication(String accessToken, UUID userId) {

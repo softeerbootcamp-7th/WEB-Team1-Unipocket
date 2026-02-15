@@ -50,13 +50,21 @@ public class KakaoOAuthService implements OAuthProviderService {
 				params.add("client_secret", config.getClientSecret());
 			}
 
-			return restClient
-					.post()
-					.uri(config.getTokenUri())
-					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-					.body(params)
-					.retrieve()
-					.body(OAuthTokenResponse.class);
+			OAuthTokenResponse response =
+					restClient
+							.post()
+							.uri(config.getTokenUri())
+							.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+							.body(params)
+							.retrieve()
+							.body(OAuthTokenResponse.class);
+			if (response == null
+					|| response.getAccessToken() == null
+					|| response.getAccessToken().isBlank()) {
+				throw new OAuthCommunicationException(
+						OAuthCommunicationException.CommunicationType.TOKEN);
+			}
+			return response;
 
 		} catch (Exception e) {
 			log.error("Failed to get access token from Kakao", e);
@@ -68,13 +76,22 @@ public class KakaoOAuthService implements OAuthProviderService {
 	@Override
 	public OAuthUserInfo getUserInfo(String accessToken) {
 		try {
-			return restClient
-					.get()
-					.uri(config.getUserInfoUri())
-					.header("Authorization", "Bearer " + accessToken)
-					// .header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-					.retrieve()
-					.body(KakaoUserInfo.class);
+			OAuthUserInfo userInfo =
+					restClient
+							.get()
+							.uri(config.getUserInfoUri())
+							.header("Authorization", "Bearer " + accessToken)
+							// .header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+							.retrieve()
+							.body(KakaoUserInfo.class);
+			if (userInfo == null
+					|| userInfo.getProviderId() == null
+					|| userInfo.getProviderId().isBlank()
+					|| "null".equalsIgnoreCase(userInfo.getProviderId())) {
+				throw new OAuthCommunicationException(
+						OAuthCommunicationException.CommunicationType.USERINFO);
+			}
+			return userInfo;
 
 		} catch (Exception e) {
 			log.error("Failed to get user info from Kakao", e);

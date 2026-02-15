@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
+import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
 import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
@@ -62,7 +63,9 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getUserInfo(userId)).willReturn(response);
 
-		mockMvc.perform(get("/users/me").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(
+						get("/users/me")
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.email").value("test@example.com"))
 				.andExpect(jsonPath("$.name").value("Tester"));
@@ -84,7 +87,9 @@ class UserQueryControllerTest {
 
 		given(userQueryService.getCards(userId)).willReturn(response);
 
-		mockMvc.perform(get("/users/cards").cookie(new Cookie("access_token", accessToken)))
+		mockMvc.perform(
+						get("/users/cards")
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].nickName").value("Card 1"))
 				.andExpect(jsonPath("$[0].cardCompany").value("HYUNDAI"));

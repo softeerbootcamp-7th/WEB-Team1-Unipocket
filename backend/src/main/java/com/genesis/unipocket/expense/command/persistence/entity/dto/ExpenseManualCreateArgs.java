@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 /**
  * <b>지출내역 생성 - 수기 DTO</b>
- * <p>Application -> Persistence
+ * <p>
+ * Application -> Persistence
  *
  * @author codingbaraGo
  * @since 2026-02-03
@@ -24,10 +25,11 @@ public record ExpenseManualCreateArgs(
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
 		String memo,
-		Long travelId) {
+		Long travelId,
+		BigDecimal exchangeRate) {
 
 	public static ExpenseManualCreateArgs of(
-			ExpenseCreateCommand command, BigDecimal baseCurrencyAmount) {
+			ExpenseCreateCommand command, BigDecimal baseCurrencyAmount, BigDecimal exchangeRate) {
 		return new ExpenseManualCreateArgs(
 				command.accountBookId(),
 				command.merchantName(),
@@ -39,6 +41,7 @@ public record ExpenseManualCreateArgs(
 				baseCurrencyAmount,
 				command.baseCurrencyCode(),
 				command.memo(),
-				command.travelId());
+				command.travelId(),
+				exchangeRate);
 	}
 }

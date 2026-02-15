@@ -36,6 +36,10 @@ public class OAuthLoginStateService {
 	}
 
 	public void validateState(String state, ProviderType providerType) {
+		if (state == null || state.isBlank()) {
+			throw new OAuthException(ErrorCode.INVALID_OAUTH_STATE);
+		}
+
 		String value = redisTemplate.opsForValue().getAndDelete(KEY_PREFIX + state);
 
 		if (value == null) {

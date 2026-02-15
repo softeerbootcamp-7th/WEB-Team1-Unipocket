@@ -9,6 +9,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -60,6 +61,19 @@ public class TemporaryExpenseConversionService {
 		}
 
 		// 4. ExpenseManualCreateArgs 생성 (manual 팩토리 메서드 사용)
+		BigDecimal exchangeRate = temp.getExchangeRate();
+		if (exchangeRate == null
+				&& temp.getLocalCurrencyAmount() != null
+				&& temp.getBaseCurrencyAmount() != null
+				&& temp.getLocalCurrencyAmount().compareTo(BigDecimal.ZERO) > 0) {
+			exchangeRate =
+					temp.getBaseCurrencyAmount()
+							.divide(
+									temp.getLocalCurrencyAmount(),
+									4,
+									java.math.RoundingMode.HALF_UP);
+		}
+
 		ExpenseManualCreateArgs args =
 				new ExpenseManualCreateArgs(
 						meta.getAccountBookId(),
@@ -76,7 +90,8 @@ public class TemporaryExpenseConversionService {
 								? temp.getBaseCountryCode()
 								: com.genesis.unipocket.global.common.enums.CurrencyCode.KRW,
 						temp.getMemo(),
-						null);
+						null,
+						exchangeRate);
 
 		// 5. Expense 생성 (manual 메서드 사용)
 		ExpenseEntity expense = ExpenseEntity.manual(args);

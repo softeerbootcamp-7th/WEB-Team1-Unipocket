@@ -23,6 +23,7 @@ import com.genesis.unipocket.tempexpense.command.presentation.response.ParseFile
 import com.genesis.unipocket.tempexpense.command.presentation.response.PresignedUrlResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.RegisterUploadedFileResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -55,6 +56,9 @@ public class TemporaryExpenseCommandController {
 	 *
 	 * TODO: media 도메인 포트 연동 구현 시 controller -> facade 호출로 교체
 	 */
+	@Operation(
+			summary = "임시지출 업로드 URL 발급",
+			description = "임시지출 파일 업로드를 위한 presigned URL과 메타 정보를 발급합니다.")
 	@PostMapping("/account-books/{accountBookId}/temporary-expenses/uploads/presigned-url")
 	public ResponseEntity<ApiResponse<PresignedUrlResponse>> createPresignedUrl(
 			@PathVariable Long accountBookId,
@@ -71,6 +75,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * S3 업로드 파일 등록 (s3Key 기반)
 	 */
+	@Operation(summary = "임시지출 업로드 파일 등록", description = "업로드된 파일의 s3Key를 등록하고 파싱 대상 메타를 생성합니다.")
 	@PostMapping("/account-books/{accountBookId}/temporary-expenses/uploads/register")
 	public ResponseEntity<ApiResponse<RegisterUploadedFileResponse>> registerUploadedFile(
 			@PathVariable Long accountBookId,
@@ -89,6 +94,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 단일 임시지출내역 변환
 	 */
+	@Operation(summary = "임시지출 단건 변환", description = "임시지출 1건을 검증 후 expense 도메인의 정식 지출내역으로 변환합니다.")
 	@PostMapping("/account-books/{accountBookId}/temporary-expenses/{tempExpenseId}/convert")
 	public ResponseEntity<ApiResponse<ConvertTemporaryExpenseResponse>> convertToExpense(
 			@PathVariable Long accountBookId,
@@ -108,6 +114,9 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * Batch 변환
 	 */
+	@Operation(
+			summary = "(중복/AI 삭제 추천) 임시지출 일괄 변환",
+			description = "여러 임시지출을 일괄 변환합니다. 메타 confirm API와 역할이 중복되어 삭제를 권장합니다.")
 	@PostMapping("/account-books/{accountBookId}/temporary-expenses/convert-batch")
 	public ResponseEntity<ApiResponse<BatchConvertResponse>> convertBatch(
 			@PathVariable Long accountBookId,
@@ -138,6 +147,9 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}
 
+	@Operation(
+			summary = "메타 기준 변환 확정",
+			description = "파일 메타 단위로 임시지출을 확정 변환합니다. tempExpenseIds가 있으면 부분 확정이 가능합니다.")
 	@PostMapping(
 			"/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/confirm")
 	public ResponseEntity<ApiResponse<BatchConvertResponse>> confirmByMeta(
@@ -177,6 +189,9 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 비동기 파싱 시작
 	 */
+	@Operation(
+			summary = "임시지출 비동기 파싱 시작",
+			description = "파일 목록 파싱 작업을 비동기로 시작하고 진행 조회용 taskId를 반환합니다.")
 	@PostMapping("/account-books/{accountBookId}/temporary-expenses/parse-async")
 	public ResponseEntity<ApiResponse<BatchParseResponse>> parseAsync(
 			@PathVariable Long accountBookId,
@@ -201,6 +216,9 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 파일 파싱 실행
 	 */
+	@Operation(
+			summary = "(중복/AI 삭제 추천) 임시지출 동기 파싱",
+			description = "단건 동기 파싱 API입니다. 비동기 파싱+상태조회 흐름과 중복되어 삭제를 권장합니다.")
 	@PostMapping("/account-books/{accountBookId}/temporary-expenses/parse")
 	public ResponseEntity<ApiResponse<ParseFileResponse>> parseFile(
 			@PathVariable Long accountBookId,
@@ -234,6 +252,9 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 임시지출내역 수정
 	 */
+	@Operation(
+			summary = "(중복/AI 삭제 추천) 임시지출 수정(전역 경로)",
+			description = "accountBook 스코프 없는 전역 경로입니다. 경로 일관성 유지를 위해 스코프 경로로 통합을 권장합니다.")
 	@PutMapping("/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<ApiResponse<TemporaryExpenseResponse>> updateTemporaryExpense(
 			@PathVariable Long tempExpenseId,
@@ -263,6 +284,7 @@ public class TemporaryExpenseCommandController {
 	/**
 	 * 임시지출내역 삭제
 	 */
+	@Operation(summary = "임시지출 메타 삭제", description = "메타와 연결된 임시지출/파일을 함께 삭제합니다.")
 	@DeleteMapping("/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}")
 	public ResponseEntity<Void> deleteMeta(
 			@PathVariable Long accountBookId,
@@ -272,6 +294,9 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
+	@Operation(
+			summary = "(중복/AI 삭제 추천) 임시지출 삭제(전역 경로)",
+			description = "accountBook 스코프 없는 전역 경로입니다. 메타/가계부 스코프 경로로 통합을 권장합니다.")
 	@DeleteMapping("/temporary-expenses/{tempExpenseId}")
 	public ResponseEntity<Void> deleteTemporaryExpense(
 			@PathVariable Long tempExpenseId, @LoginUser UUID userId) {

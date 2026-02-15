@@ -30,7 +30,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -82,7 +81,7 @@ class AccountBookControllerIntegrationTest {
 	// ========== POST /account-books (가계부 생성) ==========
 
 	@Test
-	@DisplayName("가계부 생성 - 201 Created, Location 헤더, DB 저장 확인")
+	@DisplayName("가계부 생성 - 201 Created, 응답 바디/DB 저장 확인")
 	void 가계부_생성_성공() throws Exception {
 		String body =
 				"""
@@ -93,20 +92,18 @@ class AccountBookControllerIntegrationTest {
 			}
 			""";
 
-		MvcResult result =
-				mockMvc.perform(
-								post("/account-books")
-										.with(jwtTestHelper.withJwtAuth(userId))
-										.contentType(MediaType.APPLICATION_JSON)
-										.content(body))
-						.andExpect(status().isCreated())
-						.andExpect(header().exists("Location"))
-						.andReturn();
+		mockMvc.perform(
+						post("/account-books")
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").isNumber())
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.baseCurrencyCode").value("KR"));
 
 		List<AccountBookEntity> all = accountBookRepository.findAll();
 		assertThat(all).hasSize(1);
-		assertThat(result.getResponse().getHeader("Location"))
-				.isEqualTo("/account-books/" + all.get(0).getId());
 	}
 
 	@Test
@@ -207,7 +204,7 @@ class AccountBookControllerIntegrationTest {
 	// ========== PATCH /account-books/{id} (가계부 수정) ==========
 
 	@Test
-	@DisplayName("가계부 수정 - 204 No Content, DB 변경 확인")
+	@DisplayName("가계부 수정 - 200 OK, 응답 바디/DB 변경 확인")
 	void 가계부_수정_성공() throws Exception {
 		Long accountBookId = createAccountBook();
 
@@ -228,7 +225,9 @@ class AccountBookControllerIntegrationTest {
 								.with(jwtTestHelper.withJwtAuth(userId))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
-				.andExpect(status().isNoContent());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.title").value("수정된 가계부"));
 
 		AccountBookEntity updated = accountBookRepository.findById(accountBookId).orElseThrow();
 		assertThat(updated.getTitle()).isEqualTo("수정된 가계부");
@@ -485,15 +484,18 @@ class AccountBookControllerIntegrationTest {
 	// ========== GET /account-books/{id}/exchange-rate (환율 조회) ==========
 
 	@Test
-	@DisplayName("환율 조회 - 예산 미설정 시 400")
-	void 환율_조회_예산_미설정시_400() throws Exception {
+	@DisplayName("환율 조회 - 예산 미설정이어도 200")
+	void 환율_조회_예산_미설정시_200() throws Exception {
 		Long accountBookId = createAccountBook();
 
 		mockMvc.perform(
 						get("/account-books/{id}/exchange-rate", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId)))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.code").value("400_ACCOUNT_BOOK_BUDGET_NOT_SET"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
+				.andExpect(jsonPath("$.budgetCreatedAt").hasJsonPath());
 	}
 
 	// ========== Helper Methods ==========

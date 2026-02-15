@@ -48,13 +48,21 @@ public class GoogleOAuthService implements OAuthProviderService {
 			params.add("redirect_uri", config.getRedirectUri());
 			params.add("grant_type", "authorization_code");
 
-			return restClient
-					.post()
-					.uri(config.getTokenUri())
-					.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-					.body(params)
-					.retrieve()
-					.body(OAuthTokenResponse.class);
+			OAuthTokenResponse response =
+					restClient
+							.post()
+							.uri(config.getTokenUri())
+							.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+							.body(params)
+							.retrieve()
+							.body(OAuthTokenResponse.class);
+			if (response == null
+					|| response.getAccessToken() == null
+					|| response.getAccessToken().isBlank()) {
+				throw new OAuthCommunicationException(
+						OAuthCommunicationException.CommunicationType.TOKEN);
+			}
+			return response;
 
 		} catch (Exception e) {
 			log.error("Failed to get access token from Google", e);
@@ -66,12 +74,20 @@ public class GoogleOAuthService implements OAuthProviderService {
 	@Override
 	public OAuthUserInfo getUserInfo(String accessToken) {
 		try {
-			return restClient
-					.get()
-					.uri(config.getUserInfoUri())
-					.header("Authorization", "Bearer " + accessToken)
-					.retrieve()
-					.body(GoogleUserInfo.class);
+			OAuthUserInfo userInfo =
+					restClient
+							.get()
+							.uri(config.getUserInfoUri())
+							.header("Authorization", "Bearer " + accessToken)
+							.retrieve()
+							.body(GoogleUserInfo.class);
+			if (userInfo == null
+					|| userInfo.getProviderId() == null
+					|| userInfo.getProviderId().isBlank()) {
+				throw new OAuthCommunicationException(
+						OAuthCommunicationException.CommunicationType.USERINFO);
+			}
+			return userInfo;
 
 		} catch (Exception e) {
 			log.error("Failed to get user info from Google", e);

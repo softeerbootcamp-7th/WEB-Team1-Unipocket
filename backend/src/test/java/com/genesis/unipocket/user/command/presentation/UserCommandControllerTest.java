@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
+import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
@@ -59,7 +60,7 @@ class UserCommandControllerTest {
 						delete("/users/me")
 								.cookie(
 										new jakarta.servlet.http.Cookie(
-												"access_token", accessToken)))
+												AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
 	}
 
@@ -85,7 +86,7 @@ class UserCommandControllerTest {
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(
 										new jakarta.servlet.http.Cookie(
-												"access_token", accessToken)))
+												AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isCreated())
 				.andExpect(header().string("Location", "/users/cards/" + cardId));
 	}
@@ -109,7 +110,7 @@ class UserCommandControllerTest {
 						delete("/users/cards/{cardId}", cardId)
 								.cookie(
 										new jakarta.servlet.http.Cookie(
-												"access_token", accessToken)))
+												AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
 	}
 }

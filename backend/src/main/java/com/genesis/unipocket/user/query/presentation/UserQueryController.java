@@ -5,6 +5,7 @@ import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
 import com.genesis.unipocket.user.query.service.UserQueryService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -22,16 +23,19 @@ public class UserQueryController {
 
 	private final UserQueryService userQueryService;
 
+	@Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 기본 프로필 정보를 조회합니다.")
 	@GetMapping("/me")
 	public ResponseEntity<UserQueryResponse> getMyInfo(@LoginUser UUID userId) {
 		return ResponseEntity.ok(userQueryService.getUserInfo(userId));
 	}
 
+	@Operation(summary = "내 카드 목록 조회", description = "현재 로그인한 사용자의 등록 카드 목록을 조회합니다.")
 	@GetMapping("/cards")
 	public ResponseEntity<List<UserCardQueryResponse>> getCards(@LoginUser UUID userId) {
 		return ResponseEntity.ok(userQueryService.getCards(userId));
 	}
 
+	@Operation(summary = "카드사 목록 조회", description = "카드 등록에 사용되는 카드사 enum 목록을 조회합니다.")
 	@GetMapping("/cards/companies")
 	public ResponseEntity<List<CardCompany>> getCardCompanies() {
 		return ResponseEntity.ok(userQueryService.getCardCompanies());

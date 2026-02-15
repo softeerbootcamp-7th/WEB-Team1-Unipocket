@@ -3,8 +3,8 @@ package com.genesis.unipocket.auth.command.application.oauth;
 import com.genesis.unipocket.global.config.OAuth2Properties;
 import com.genesis.unipocket.global.config.OAuth2Properties.OidcProviderConfig;
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -20,7 +20,7 @@ public class OAuthProviderFactory {
 
 	private final OAuth2Properties oauthProperties;
 	private final RestClient restClient;
-	private final Map<ProviderType, OAuthProviderService> providers = new HashMap<>();
+	private final Map<ProviderType, OAuthProviderService> providers = new ConcurrentHashMap<>();
 
 	public OAuthProviderService getProvider(ProviderType type) {
 		return providers.computeIfAbsent(type, this::createProvider);

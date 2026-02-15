@@ -7,10 +7,14 @@ import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,17 +33,20 @@ public class ExpenseCommandService {
 
 	@Transactional
 	public ExpenseResult createExpenseManual(ExpenseCreateCommand command) {
-
-		// TODO: 환율 정보 바탕으로 기준 환율 값 계산
-		BigDecimal baseCurrencyAmount =
-				exchangeRateService.convertAmount(
-						command.localCurrencyAmount(),
+		BigDecimal exchangeRate =
+				exchangeRateService.getExchangeRate(
 						command.localCurrencyCode(),
 						command.baseCurrencyCode(),
 						command.occurredAt());
 
+		BigDecimal baseCurrencyAmount =
+				command.localCurrencyAmount()
+						.multiply(exchangeRate)
+						.setScale(2, BigDecimal.ROUND_HALF_UP);
+
 		ExpenseEntity expenseEntity =
-				ExpenseEntity.manual(ExpenseManualCreateArgs.of(command, baseCurrencyAmount));
+				ExpenseEntity.manual(
+						ExpenseManualCreateArgs.of(command, baseCurrencyAmount, exchangeRate));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
 
@@ -64,18 +71,23 @@ public class ExpenseCommandService {
 				entity.getLocalAmount().compareTo(command.localCurrencyAmount()) != 0;
 
 		if (currencyChanged || amountChanged) {
-			BigDecimal baseCurrencyAmount =
-					exchangeRateService.convertAmount(
-							command.localCurrencyAmount(),
+			BigDecimal exchangeRate =
+					exchangeRateService.getExchangeRate(
 							command.localCurrencyCode(),
 							command.baseCurrencyCode(),
 							command.occurredAt());
+
+			BigDecimal baseCurrencyAmount =
+					command.localCurrencyAmount()
+							.multiply(exchangeRate)
+							.setScale(2, BigDecimal.ROUND_HALF_UP);
 
 			entity.updateExchangeInfo(
 					command.localCurrencyCode(),
 					command.localCurrencyAmount(),
 					command.baseCurrencyCode(),
-					baseCurrencyAmount);
+					baseCurrencyAmount,
+					exchangeRate);
 		}
 
 		return ExpenseResult.from(entity);
@@ -85,6 +97,72 @@ public class ExpenseCommandService {
 	public void deleteExpense(Long expenseId, Long accountBookId) {
 		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
 		expenseRepository.delete(entity);
+	}
+
+	@Transactional
+	public void updateBaseCurrency(Long accountBookId, CurrencyCode newBaseCurrencyCode) {
+		int pageSize = 1000;
+		int pageNumber = 0;
+		Page<ExpenseEntity> page;
+
+		do {
+			page =
+					expenseRepository.findByAccountBookId(
+							accountBookId,
+							org.springframework.data.domain.PageRequest.of(pageNumber, pageSize));
+			List<ExpenseEntity> expenses = page.getContent();
+
+			if (expenses.isEmpty()) {
+				break;
+			}
+
+			// Local cache for exchange rates to avoid N+1 lookups within the chunk
+			// Key: CurrencyCode + Date (assuming daily rates or high reuse)
+			// Since ExchangeRateService uses LocalDateTime, we'll try to cache by that
+			// exact input
+			// OR optimally, we'd group by Date.
+			// Given the service signature, let's cache exact inputs for now.
+			// Improved Strategy:
+			// 1. Collect distinct (Currency, Date) pairs?
+			// 2. But we don't have a bulk fetch API.
+			// 3. So we just cache the result of getExchangeRate.
+			java.util.Map<String, BigDecimal> rateCache = new java.util.HashMap<>();
+
+			for (ExpenseEntity expense : expenses) {
+				String cacheKey =
+						expense.getLocalCurrency()
+								+ ":"
+								+ newBaseCurrencyCode
+								+ ":"
+								+ expense.getOccurredAt()
+										.toLocalDate(); // Assuming daily rate granularity
+
+				BigDecimal exchangeRate = rateCache.get(cacheKey);
+
+				if (exchangeRate == null) {
+					exchangeRate =
+							exchangeRateService.getExchangeRate(
+									expense.getLocalCurrency(),
+									newBaseCurrencyCode,
+									expense.getOccurredAt());
+					rateCache.put(cacheKey, exchangeRate);
+				}
+
+				BigDecimal baseCurrencyAmount =
+						expense.getLocalAmount()
+								.multiply(exchangeRate)
+								.setScale(2, RoundingMode.HALF_UP);
+
+				expense.updateExchangeInfo(
+						expense.getLocalCurrency(),
+						expense.getLocalAmount(),
+						newBaseCurrencyCode,
+						baseCurrencyAmount,
+						exchangeRate);
+			}
+			expenseRepository.saveAll(expenses);
+			pageNumber++;
+		} while (page.hasNext());
 	}
 
 	private ExpenseEntity findAndVerifyOwnership(Long expenseId, Long accountBookId) {

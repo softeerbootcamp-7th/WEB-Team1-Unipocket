@@ -37,7 +37,7 @@ public class ExpenseCommandService {
 				exchangeRateService.getExchangeRate(
 						command.localCurrencyCode(),
 						command.baseCurrencyCode(),
-						command.occurredAt());
+						command.occurredAt().toLocalDateTime());
 
 		BigDecimal baseCurrencyAmount =
 				command.localCurrencyAmount()
@@ -80,7 +80,7 @@ public class ExpenseCommandService {
 					exchangeRateService.getExchangeRate(
 							command.localCurrencyCode(),
 							command.baseCurrencyCode(),
-							command.occurredAt());
+							command.occurredAt().toLocalDateTime());
 
 			BigDecimal baseCurrencyAmount =
 					command.localCurrencyAmount()
@@ -151,7 +151,7 @@ public class ExpenseCommandService {
 							exchangeRateService.getExchangeRate(
 									expense.getLocalCurrency(),
 									newBaseCurrencyCode,
-									expense.getOccurredAt());
+									expense.getOccurredAt().toLocalDateTime());
 					rateCache.put(cacheKey, exchangeRate);
 				}
 

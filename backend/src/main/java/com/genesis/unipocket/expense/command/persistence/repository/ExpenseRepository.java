@@ -3,7 +3,7 @@ package com.genesis.unipocket.expense.command.persistence.repository;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.global.common.enums.Category;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,8 +30,8 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 					+ "AND (:travelId IS NULL OR e.travelId = :travelId)")
 	Page<ExpenseEntity> findByFilters(
 			@Param("accountBookId") Long accountBookId,
-			@Param("startDate") LocalDateTime startDate,
-			@Param("endDate") LocalDateTime endDate,
+			@Param("startDate") OffsetDateTime startDate,
+			@Param("endDate") OffsetDateTime endDate,
 			@Param("category") Category category,
 			@Param("minAmount") BigDecimal minAmount,
 			@Param("maxAmount") BigDecimal maxAmount,

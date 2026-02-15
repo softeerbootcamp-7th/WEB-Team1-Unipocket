@@ -11,5 +11,4 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TrackTime {
-}
+public @interface TrackTime {}

@@ -4,7 +4,9 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
+import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ public class AccountBookValidationProvider
 		implements com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator,
 				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
 				AccountBookInfoFetchService,
+				AccountBookRateInfoProvider,
 				UserAccountBookValidator {
 
 	private final com.genesis.unipocket.accountbook.command.persistence.repository
@@ -45,6 +48,17 @@ public class AccountBookValidationProvider
 	@Override
 	public void validateUserAccountBook(String userId, Long accountBookId) {
 		findAndValidate(accountBookId, userId);
+	}
+
+	@Override
+	public AccountBookRateInfo getRateInfo(Long accountBookId) {
+		var accountBook =
+				accountBookRepository
+						.findById(accountBookId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+		return new AccountBookRateInfo(
+				accountBook.getBaseCountryCode().getCurrencyCode(),
+				accountBook.getLocalCountryCode().getCurrencyCode());
 	}
 
 	private AccountBookEntity findAndValidate(Long accountBookId, String userId) {

@@ -6,6 +6,7 @@ import com.genesis.unipocket.travel.command.application.command.PatchTravelComma
 import com.genesis.unipocket.travel.command.application.command.UpdateTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.UpdateWidgetsCommand;
 import com.genesis.unipocket.travel.command.application.result.CreateTravelResult;
+import com.genesis.unipocket.travel.command.facade.port.TravelDefaultWidgetPort;
 import com.genesis.unipocket.travel.command.presentation.request.TravelRequest;
 import com.genesis.unipocket.travel.command.presentation.request.TravelUpdateRequest;
 import com.genesis.unipocket.travel.command.presentation.request.WidgetRequest;
@@ -21,13 +22,17 @@ public class TravelCommandFacade {
 
 	private final TravelCommandService travelCommandService;
 	private final UserAccountBookValidator userAccountBookValidator;
+	private final TravelDefaultWidgetPort travelDefaultWidgetPort;
 
 	public Long createTravel(TravelRequest request, UUID userId) {
 		userAccountBookValidator.validateUserAccountBook(
 				userId.toString(), request.accountBookId());
 		CreateTravelCommand command = CreateTravelCommand.from(request);
 		CreateTravelResult result = travelCommandService.createTravel(command);
-		return result.travelId();
+
+		Long travelId = result.travelId();
+		travelDefaultWidgetPort.setDefaultWidget(travelId);
+		return travelId;
 	}
 
 	public void updateTravel(Long travelId, TravelRequest request, UUID userId) {

@@ -2,6 +2,7 @@ package com.genesis.unipocket.global.controller;
 
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -21,6 +22,9 @@ class LocalImageTestController {
 
 	private final S3Service s3Service;
 
+	@Operation(
+			summary = "로컬 Presigned URL 발급",
+			description = "로컬 프로필에서 테스트용 presigned URL과 object key를 발급합니다.")
 	@PostMapping("/presigned-url")
 	public ResponseEntity<LocalPresignedIssueResponse> issuePresignedUrl(
 			@RequestParam(defaultValue = "local-test") String prefix,
@@ -36,6 +40,9 @@ class LocalImageTestController {
 						response.presignedUrl(), response.imageKey(), null));
 	}
 
+	@Operation(
+			summary = "로컬 객체 존재 확인",
+			description = "전달한 object key가 스토리지에 존재하는지 검사합니다.")
 	@GetMapping("/exists")
 	public ResponseEntity<LocalObjectExistsResponse> checkObjectExists(@RequestParam String key) {
 		if (key == null || key.isBlank()) {

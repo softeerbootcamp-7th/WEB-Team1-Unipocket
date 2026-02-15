@@ -71,7 +71,17 @@ class AuthCommandControllerTest {
 						eq("refresh_token"),
 						eq(newRefreshToken),
 						anyInt(),
-						eq("/auth"));
+						eq("/"));
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 실패 - refresh_token 쿠키 누락")
+	void reissue_Fail_WhenRefreshTokenMissing() throws Exception {
+		mockMvc.perform(post("/auth/reissue"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_REFRESH_TOKEN_REQUIRED"));
+
+		verify(authService, never()).reissue(anyString());
 	}
 
 	@Test
@@ -92,7 +102,7 @@ class AuthCommandControllerTest {
 		verify(cookieUtil)
 				.deleteCookie(any(HttpServletResponse.class), eq("access_token"), eq("/"));
 		verify(cookieUtil)
-				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/auth"));
+				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/"));
 	}
 
 	@Test
@@ -160,6 +170,6 @@ class AuthCommandControllerTest {
 						eq("refresh_token"),
 						eq(refreshToken),
 						anyInt(),
-						eq("/auth"));
+						eq("/"));
 	}
 }

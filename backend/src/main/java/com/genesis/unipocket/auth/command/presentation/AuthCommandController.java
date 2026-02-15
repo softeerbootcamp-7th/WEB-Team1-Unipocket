@@ -41,7 +41,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AuthCommandController {
 
 	private static final String ACCESS_TOKEN_COOKIE_PATH = "/";
-	private static final String REFRESH_TOKEN_COOKIE_PATH = "/auth";
+	private static final String REFRESH_TOKEN_COOKIE_PATH = "/";
 
 	private final AuthService authService;
 	private final CookieUtil cookieUtil;
@@ -57,9 +57,14 @@ public class AuthCommandController {
 	 */
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissue(
-			@Parameter(hidden = true) @CookieValue("refresh_token") String refreshToken,
+			@Parameter(hidden = true)
+					@CookieValue(value = "refresh_token", required = false)
+					String refreshToken,
 			HttpServletResponse response) {
 		log.info("토큰 재발급 요청");
+		if (refreshToken == null || refreshToken.isBlank()) {
+			throw new BusinessException(ErrorCode.REFRESH_TOKEN_REQUIRED);
+		}
 
 		AuthService.TokenPair tokenPair = authService.reissue(refreshToken);
 

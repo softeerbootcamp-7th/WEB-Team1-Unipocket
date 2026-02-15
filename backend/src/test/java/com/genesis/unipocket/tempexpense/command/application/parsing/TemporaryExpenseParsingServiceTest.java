@@ -115,7 +115,9 @@ class TemporaryExpenseParsingServiceTest {
 												null)),
 								null));
 		when(exchangeRateProvider.getExchangeRate(
-						CurrencyCode.JPY, CurrencyCode.KRW, LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
+						CurrencyCode.JPY,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
 				.thenReturn(new BigDecimal("9.50"));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));

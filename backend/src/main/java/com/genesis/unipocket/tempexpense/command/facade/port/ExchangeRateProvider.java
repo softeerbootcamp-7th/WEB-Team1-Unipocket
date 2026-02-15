@@ -2,7 +2,6 @@ package com.genesis.unipocket.tempexpense.command.facade.port;
 
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**

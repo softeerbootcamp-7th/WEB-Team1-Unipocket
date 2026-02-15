@@ -23,7 +23,6 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.Temporar
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;

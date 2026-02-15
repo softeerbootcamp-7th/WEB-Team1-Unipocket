@@ -47,11 +47,7 @@ public class ExpenseCommandService {
 		ExpenseEntity expenseEntity =
 				ExpenseEntity.manual(
 						ExpenseManualCreateArgs.of(
-								command,
-								baseCurrencyAmount,
-								null,
-								null,
-								exchangeRate));
+								command, baseCurrencyAmount, null, null, exchangeRate));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
 

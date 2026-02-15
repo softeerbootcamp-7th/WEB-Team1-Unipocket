@@ -19,14 +19,13 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 	java.util.List<ExpenseEntity> findAllByAccountBookId(Long accountBookId);
 
 	@Query(
-			"SELECT e FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId "
-					+ "AND (:startDate IS NULL OR e.occurredAt >= :startDate) "
-					+ "AND (:endDate IS NULL OR e.occurredAt <= :endDate) "
-					+ "AND (:category IS NULL OR e.category = :category) "
-					+ "AND (:minAmount IS NULL OR e.exchangeInfo.baseCurrencyAmount >= :minAmount) "
-					+ "AND (:maxAmount IS NULL OR e.exchangeInfo.baseCurrencyAmount <= :maxAmount) "
-					+ "AND (:merchantName IS NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) "
-					+ "AND (:travelId IS NULL OR e.travelId = :travelId)")
+			"SELECT e FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId AND (:startDate"
+				+ " IS NULL OR e.occurredAt >= :startDate) AND (:endDate IS NULL OR e.occurredAt <="
+				+ " :endDate) AND (:category IS NULL OR e.category = :category) AND (:minAmount IS"
+				+ " NULL OR e.exchangeInfo.baseCurrencyAmount >= :minAmount) AND (:maxAmount IS"
+				+ " NULL OR e.exchangeInfo.baseCurrencyAmount <= :maxAmount) AND (:merchantName IS"
+				+ " NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) AND (:travelId IS"
+				+ " NULL OR e.travelId = :travelId)")
 	Page<ExpenseEntity> findByFilters(
 			@Param("accountBookId") Long accountBookId,
 			@Param("startDate") OffsetDateTime startDate,

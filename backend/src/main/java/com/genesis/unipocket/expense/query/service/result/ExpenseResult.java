@@ -50,12 +50,8 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant() != null
-						? entity.getMerchant().getDisplayMerchantName()
-						: null,
-				entity.getMerchant() != null
-						? entity.getMerchant().getDisplayMerchantName()
-						: null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),
 				null,
@@ -89,12 +85,8 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant() != null
-						? entity.getMerchant().getDisplayMerchantName()
-						: null,
-				entity.getMerchant() != null
-						? entity.getMerchant().getDisplayMerchantName()
-						: null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),
 				cardInfo != null ? cardInfo.cardCompany() : null,

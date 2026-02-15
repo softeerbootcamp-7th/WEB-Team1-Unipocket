@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.query.presentation.response;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -46,6 +47,23 @@ public record TemporaryExpenseResponse(
 				entity.getOccurredAt(),
 				entity.getStatus() != null ? entity.getStatus().name() : null,
 				entity.getCardLastFourDigits());
+	}
+
+	public static TemporaryExpenseResponse from(TemporaryExpenseResult result) {
+		return new TemporaryExpenseResponse(
+				result.tempExpenseId(),
+				result.tempExpenseMetaId(),
+				result.merchantName(),
+				result.category(),
+				result.localCountryCode(),
+				result.localCurrencyAmount(),
+				result.baseCountryCode(),
+				result.baseCurrencyAmount(),
+				result.paymentsMethod(),
+				result.memo(),
+				result.occurredAt(),
+				result.status(),
+				result.cardLastFourDigits());
 	}
 
 	/**

@@ -23,16 +23,14 @@ const WidgetList = ({
       className="rounded-modal-20 flex w-full items-center justify-between transition-colors"
       {...dropZoneProps}
     >
-      {displayWidgets
-        .sort((a, b) => a.order - b.order)
-        .map((widget) => (
-          <WidgetListItem
-            key={widget.order}
-            widget={widget}
-            isWidgetEditMode={isWidgetEditMode}
-            handleRemoveWidget={handleRemoveWidget}
-          />
-        ))}
+      {displayWidgets.map((widget) => (
+        <WidgetListItem
+          key={widget.order}
+          widget={widget}
+          isWidgetEditMode={isWidgetEditMode}
+          handleRemoveWidget={handleRemoveWidget}
+        />
+      ))}
     </div>
   );
 };
@@ -68,7 +66,7 @@ const WidgetListItem = ({
 
   return (
     <WidgetItemContext.Provider value={value}>
-      <div>{renderWidget(widget)}</div>
+      {renderWidget(widget)}
     </WidgetItemContext.Provider>
   );
 };

@@ -55,7 +55,7 @@ const WidgetPickerItem = ({ widgetType }: { widgetType: WidgetType }) => {
 
   return (
     <WidgetItemContext.Provider value={value}>
-      <div>{renderWidget({ order: -1, widgetType }, { isPreview: true })}</div>
+      {renderWidget({ order: -1, widgetType }, { isPreview: true })}
     </WidgetItemContext.Provider>
   );
 };

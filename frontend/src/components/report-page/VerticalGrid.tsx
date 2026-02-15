@@ -1,10 +1,10 @@
+import type { ComponentPropsWithoutRef } from 'react';
 import { clsx } from 'clsx';
 
-interface VerticalGridProps {
+interface VerticalGridProps extends ComponentPropsWithoutRef<'div'> {
   steps?: number;
   labels: (number | string)[];
   positions?: number[]; // 커스텀 위치 배열
-  className?: string;
 }
 
 const VerticalGrid = ({

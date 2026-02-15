@@ -23,21 +23,8 @@ const normalizeOrders = (widgets: WidgetItem[]): WidgetItem[] =>
     .sort((a, b) => a.order - b.order)
     .map((w, i) => ({ ...w, order: i }));
 
-export const useWidgetManager = () => {
-  const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
-  const [maxWidgets, setMaxWidgets] = useState(MIN_WIDGET_SLOTS);
-
-  useEffect(() => {
-    const updateLayout = () => {
-      const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
-      setMaxWidgets(isDesktop ? MAX_WIDGET_SLOTS : MIN_WIDGET_SLOTS);
-    };
-
-    updateLayout();
-    window.addEventListener('resize', updateLayout);
-    return () => window.removeEventListener('resize', updateLayout);
-  }, []);
-
+// 위젯 CRUD + 표시 로직
+const useWidgetCRUD = (maxWidgets: number) => {
   // TODO: 추가된 위젯 목록 (API 연동 전까지 mock 활용)
   const [addedWidgets, setAddedWidgets] =
     useState<WidgetItem[]>(MOCK_WIDGET_DATA);
@@ -92,9 +79,41 @@ export const useWidgetManager = () => {
     );
   }, []);
 
-  const toggleEditMode = useCallback(() => {
-    setIsWidgetEditMode((prev) => !prev);
+  return {
+    displayWidgets,
+    availableWidgets,
+    handleAddWidget,
+    handleRemoveWidget,
+  };
+};
+
+// 조합 레이어
+export const useWidgetManager = () => {
+  const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
+  const [maxWidgets, setMaxWidgets] = useState(MIN_WIDGET_SLOTS);
+
+  useEffect(() => {
+    const updateLayout = () => {
+      const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+      setMaxWidgets(isDesktop ? MAX_WIDGET_SLOTS : MIN_WIDGET_SLOTS);
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
   }, []);
+
+  const toggleEditMode = useCallback(
+    () => setIsWidgetEditMode((prev) => !prev),
+    [],
+  );
+
+  const {
+    displayWidgets,
+    availableWidgets,
+    handleAddWidget,
+    handleRemoveWidget,
+  } = useWidgetCRUD(maxWidgets);
 
   const listDropZone = useDropZone({
     zone: 'list',

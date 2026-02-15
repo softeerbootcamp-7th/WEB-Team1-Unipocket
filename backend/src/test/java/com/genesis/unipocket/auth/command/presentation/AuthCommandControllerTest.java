@@ -106,6 +106,18 @@ class AuthCommandControllerTest {
 	}
 
 	@Test
+	@DisplayName("로그아웃 성공 - 쿠키 누락 시에도 200")
+	void logout_Success_WhenCookiesMissing() throws Exception {
+		mockMvc.perform(post("/auth/logout")).andExpect(status().isOk());
+
+		verify(authService, never()).logout(anyString(), anyString());
+		verify(cookieUtil)
+				.deleteCookie(any(HttpServletResponse.class), eq("access_token"), eq("/"));
+		verify(cookieUtil)
+				.deleteCookie(any(HttpServletResponse.class), eq("refresh_token"), eq("/"));
+	}
+
+	@Test
 	@DisplayName("OAuth2 인증 요청 리다이렉트 성공")
 	void authorize_Success() throws Exception {
 		// given

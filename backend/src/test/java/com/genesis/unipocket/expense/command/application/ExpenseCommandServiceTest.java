@@ -17,7 +17,7 @@ import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -108,7 +108,7 @@ class ExpenseCommandServiceTest {
 		when(expenseEntity.getExpenseSourceInfo()).thenReturn(sourceInfo);
 
 		// Mock other required methods
-		when(expenseEntity.getOccurredAt()).thenReturn(LocalDateTime.now());
+		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
 		when(expenseEntity.getCategory()).thenReturn(Category.FOOD);
 		when(expenseEntity.getTravelId()).thenReturn(null);
 		when(expenseEntity.getApprovalNumber()).thenReturn(null);
@@ -124,7 +124,7 @@ class ExpenseCommandServiceTest {
 						Category.FOOD,
 						null,
 						"메모",
-						LocalDateTime.now(),
+						OffsetDateTime.now(),
 						BigDecimal.valueOf(1500),
 						CurrencyCode.JPY,
 						null,
@@ -175,7 +175,7 @@ class ExpenseCommandServiceTest {
 		when(expenseEntity.getExpenseSourceInfo()).thenReturn(sourceInfo);
 
 		// Mock other required methods
-		when(expenseEntity.getOccurredAt()).thenReturn(LocalDateTime.now());
+		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
 		when(expenseEntity.getCategory()).thenReturn(Category.FOOD);
 		when(expenseEntity.getTravelId()).thenReturn(null);
 		when(expenseEntity.getApprovalNumber()).thenReturn(null);
@@ -191,7 +191,7 @@ class ExpenseCommandServiceTest {
 						Category.FOOD,
 						null,
 						"메모",
-						LocalDateTime.now(),
+						OffsetDateTime.now(),
 						BigDecimal.valueOf(15000),
 						CurrencyCode.KRW,
 						null,
@@ -235,14 +235,14 @@ class ExpenseCommandServiceTest {
 		ExpenseEntity expense1 = mock(ExpenseEntity.class);
 		when(expense1.getLocalCurrency()).thenReturn(CurrencyCode.JPY);
 		when(expense1.getLocalAmount()).thenReturn(BigDecimal.valueOf(1000));
-		when(expense1.getOccurredAt()).thenReturn(LocalDateTime.now());
+		when(expense1.getOccurredAt()).thenReturn(OffsetDateTime.now());
 		when(expense1.getOriginalBaseCurrency()).thenReturn(CurrencyCode.KRW);
 		when(expense1.getOriginalBaseAmount()).thenReturn(BigDecimal.valueOf(9500));
 
 		ExpenseEntity expense2 = mock(ExpenseEntity.class);
 		when(expense2.getLocalCurrency()).thenReturn(CurrencyCode.KRW);
 		when(expense2.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
-		when(expense2.getOccurredAt()).thenReturn(LocalDateTime.now().minusDays(1));
+		when(expense2.getOccurredAt()).thenReturn(OffsetDateTime.now().minusDays(1));
 		when(expense2.getOriginalBaseCurrency()).thenReturn(CurrencyCode.KRW);
 		when(expense2.getOriginalBaseAmount()).thenReturn(BigDecimal.valueOf(10000));
 

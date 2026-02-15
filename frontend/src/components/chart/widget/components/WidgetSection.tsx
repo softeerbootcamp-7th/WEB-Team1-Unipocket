@@ -10,7 +10,6 @@ const WidgetSection = () => {
   const {
     isWidgetEditMode,
     toggleEditMode,
-    width,
     maxWidgets,
     displayWidgets,
     availableWidgets,
@@ -27,9 +26,8 @@ const WidgetSection = () => {
   return (
     <WidgetContext.Provider value={{ isEditMode: isWidgetEditMode }}>
       <div
-        className="flex flex-col gap-4"
+        className="flex w-full flex-col gap-4"
         style={{
-          width: `${width}px`,
           height: isWidgetEditMode ? '100dvh' : '100%',
         }}
       >

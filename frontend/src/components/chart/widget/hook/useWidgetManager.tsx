@@ -7,21 +7,16 @@ import {
   type WidgetType,
 } from '@/components/chart/widget/type';
 
-const DESKTOP_BREAKPOINT = 1800;
-const MIN_WIDGET_SLOTS = 5;
+const DESKTOP_BREAKPOINT = 1500;
+const MIN_WIDGET_SLOTS = 4;
 const MAX_WIDGET_SLOTS = 5;
-const MIN_WIDTH = 1420;
-const MAX_WIDTH = 1620;
 
-/** 위젯이 차지하는 슬롯 수 */
 const getWidgetSpan = (widgetType: WidgetType | 'BLANK') =>
   widgetType === 'CATEGORY' ? 2 : 1;
 
-/** 위젯 목록이 차지하는 총 슬롯 수 */
 const getTotalSlots = (widgets: WidgetItem[]) =>
   widgets.reduce((sum, w) => sum + getWidgetSpan(w.widgetType), 0);
 
-/** order를 0부터 연속된 정수로 정규화 */
 const normalizeOrders = (widgets: WidgetItem[]): WidgetItem[] =>
   [...widgets]
     .sort((a, b) => a.order - b.order)
@@ -30,13 +25,11 @@ const normalizeOrders = (widgets: WidgetItem[]): WidgetItem[] =>
 export const useWidgetManager = () => {
   const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
   const [maxWidgets, setMaxWidgets] = useState(MIN_WIDGET_SLOTS);
-  const [width, setWidth] = useState(MIN_WIDTH);
 
   useEffect(() => {
     const updateLayout = () => {
       const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
       setMaxWidgets(isDesktop ? MAX_WIDGET_SLOTS : MIN_WIDGET_SLOTS);
-      setWidth(isDesktop ? MAX_WIDTH : MIN_WIDTH);
     };
 
     updateLayout();
@@ -48,7 +41,7 @@ export const useWidgetManager = () => {
   const [addedWidgets, setAddedWidgets] =
     useState<WidgetItem[]>(MOCK_WIDGET_DATA);
 
-  /** 표시용 위젯 목록: 실제 위젯 + 남은 슬롯만큼 BLANK 채우기 */
+  // 표시용 위젯 (실제 위젯 + 남은 슬롯은 BLANK로 채움)
   const displayWidgets: WidgetItem[] = useMemo(() => {
     let used = 0;
     const visible: WidgetItem[] = [];
@@ -72,13 +65,13 @@ export const useWidgetManager = () => {
     return [...visible, ...blanks];
   }, [addedWidgets, maxWidgets]);
 
-  /** 추가 가능한 위젯 타입 목록 */
+  // 추가 가능한 위젯 타입 목록
   const availableWidgets = useMemo(() => {
     const addedTypes = new Set(addedWidgets.map((w) => w.widgetType));
     return WIDGET_TYPES.filter((type) => !addedTypes.has(type));
   }, [addedWidgets]);
 
-  /** 위젯을 맨 뒤에 추가 */
+  // 위젯을 맨 뒤에 추가
   const handleAddWidget = useCallback(
     (widgetType: WidgetType) => {
       setAddedWidgets((prev) => {
@@ -92,7 +85,6 @@ export const useWidgetManager = () => {
     [maxWidgets],
   );
 
-  /** 위젯 제거 */
   const handleRemoveWidget = useCallback((order: number) => {
     setAddedWidgets((prev) =>
       normalizeOrders(prev.filter((w) => w.order !== order)),
@@ -106,7 +98,7 @@ export const useWidgetManager = () => {
   return {
     isWidgetEditMode,
     toggleEditMode,
-    width,
+    // width,
     maxWidgets,
     displayWidgets,
     availableWidgets,

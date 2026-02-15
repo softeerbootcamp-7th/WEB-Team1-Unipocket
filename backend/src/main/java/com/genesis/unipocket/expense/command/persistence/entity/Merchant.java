@@ -13,11 +13,8 @@ import lombok.Setter;
 public class Merchant {
 
 	@Column(nullable = false, length = 40)
-	private String merchantName; // 거래내역 명(원본)
-
-	@Column(length = 40)
 	@Setter
-	private String displayMerchantName; // 거래내역 명(유저 수정)
+	private String displayMerchantName; // 거래내역 표시명
 
 	public static Merchant of(String merchantName) {
 		if (merchantName == null || merchantName.trim().isEmpty()) {
@@ -27,8 +24,12 @@ public class Merchant {
 		String normalized = merchantName.trim();
 
 		Merchant merchant = new Merchant();
-		merchant.merchantName = normalized;
 		merchant.displayMerchantName = normalized;
 		return merchant;
+	}
+
+	// Backward compatibility: 도메인 내부에서 기존 getter 호출 시 표시명을 반환
+	public String getMerchantName() {
+		return displayMerchantName;
 	}
 }

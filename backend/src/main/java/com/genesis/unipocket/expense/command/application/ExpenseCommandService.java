@@ -37,7 +37,7 @@ public class ExpenseCommandService {
 				exchangeRateService.getExchangeRate(
 						command.localCurrencyCode(),
 						command.baseCurrencyCode(),
-						command.occurredAt());
+						command.occurredAt().toLocalDateTime());
 
 		BigDecimal baseCurrencyAmount =
 				command.localCurrencyAmount()
@@ -46,7 +46,8 @@ public class ExpenseCommandService {
 
 		ExpenseEntity expenseEntity =
 				ExpenseEntity.manual(
-						ExpenseManualCreateArgs.of(command, baseCurrencyAmount, exchangeRate));
+						ExpenseManualCreateArgs.of(
+								command, baseCurrencyAmount, null, null, exchangeRate));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
 
@@ -75,18 +76,24 @@ public class ExpenseCommandService {
 					exchangeRateService.getExchangeRate(
 							command.localCurrencyCode(),
 							command.baseCurrencyCode(),
-							command.occurredAt());
+							command.occurredAt().toLocalDateTime());
 
 			BigDecimal baseCurrencyAmount =
 					command.localCurrencyAmount()
 							.multiply(exchangeRate)
 							.setScale(2, BigDecimal.ROUND_HALF_UP);
 
+			boolean convertedMode =
+					entity.getExchangeInfo() != null
+							&& entity.getExchangeInfo().getCalculatedBaseCurrencyAmount() != null;
+
 			entity.updateExchangeInfo(
 					command.localCurrencyCode(),
 					command.localCurrencyAmount(),
-					command.baseCurrencyCode(),
-					baseCurrencyAmount,
+					entity.getOriginalBaseCurrency(),
+					convertedMode ? entity.getOriginalBaseAmount() : baseCurrencyAmount,
+					convertedMode ? baseCurrencyAmount : null,
+					convertedMode ? command.baseCurrencyCode() : null,
 					exchangeRate);
 		}
 
@@ -144,7 +151,7 @@ public class ExpenseCommandService {
 							exchangeRateService.getExchangeRate(
 									expense.getLocalCurrency(),
 									newBaseCurrencyCode,
-									expense.getOccurredAt());
+									expense.getOccurredAt().toLocalDateTime());
 					rateCache.put(cacheKey, exchangeRate);
 				}
 
@@ -156,8 +163,10 @@ public class ExpenseCommandService {
 				expense.updateExchangeInfo(
 						expense.getLocalCurrency(),
 						expense.getLocalAmount(),
-						newBaseCurrencyCode,
+						expense.getOriginalBaseCurrency(),
+						expense.getOriginalBaseAmount(),
 						baseCurrencyAmount,
+						newBaseCurrencyCode,
 						exchangeRate);
 			}
 			expenseRepository.saveAll(expenses);

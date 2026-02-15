@@ -9,7 +9,7 @@ import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Set;
 import java.util.UUID;
@@ -80,16 +80,12 @@ public class ExpenseQueryService {
 		} else {
 			var startDate =
 					filter.startDate() != null
-							? filter.startDate()
-									.withOffsetSameInstant(ZoneOffset.UTC)
-									.toLocalDateTime()
+							? filter.startDate().withOffsetSameInstant(ZoneOffset.UTC)
 							: null;
 			var endDate =
 					filter.endDate() != null
-							? filter.endDate()
-									.withOffsetSameInstant(ZoneOffset.UTC)
-									.toLocalDateTime()
-							: LocalDateTime.now();
+							? filter.endDate().withOffsetSameInstant(ZoneOffset.UTC)
+							: OffsetDateTime.now(ZoneOffset.UTC);
 
 			entities =
 					expenseRepository.findByFilters(

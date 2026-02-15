@@ -6,7 +6,7 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.*;
 
 /**
@@ -62,7 +62,7 @@ public class ExpenseEntity extends BaseEntity {
 	private String memo;
 
 	@Column(nullable = false)
-	private LocalDateTime occurredAt;
+	private OffsetDateTime occurredAt;
 
 	@Embedded private Merchant merchant;
 
@@ -90,14 +90,14 @@ public class ExpenseEntity extends BaseEntity {
 								params.baseCurrencyCode(),
 								params.localCurrencyAmount(),
 								params.baseCurrencyAmount(),
+								params.calculatedBaseCurrencyAmount(),
+								params.calculatedBaseCurrencyCode(),
 								params.exchangeRate()))
 				.build();
 	}
 
 	public String getMerchantName() {
-		return merchant.getDisplayMerchantName() != null
-				? merchant.getDisplayMerchantName()
-				: merchant.getMerchantName();
+		return merchant.getDisplayMerchantName();
 	}
 
 	public CurrencyCode getLocalCurrency() {
@@ -113,6 +113,32 @@ public class ExpenseEntity extends BaseEntity {
 	}
 
 	public BigDecimal getBaseAmount() {
+		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
+	}
+
+	public CurrencyCode getDisplayBaseCurrency() {
+		if (exchangeInfo == null) {
+			return null;
+		}
+		return exchangeInfo.getCalculatedBaseCurrencyCode() != null
+				? exchangeInfo.getCalculatedBaseCurrencyCode()
+				: exchangeInfo.getBaseCurrencyCode();
+	}
+
+	public BigDecimal getDisplayBaseAmount() {
+		if (exchangeInfo == null) {
+			return null;
+		}
+		return exchangeInfo.getCalculatedBaseCurrencyAmount() != null
+				? exchangeInfo.getCalculatedBaseCurrencyAmount()
+				: exchangeInfo.getBaseCurrencyAmount();
+	}
+
+	public CurrencyCode getOriginalBaseCurrency() {
+		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyCode() : null;
+	}
+
+	public BigDecimal getOriginalBaseAmount() {
 		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
 	}
 
@@ -139,7 +165,7 @@ public class ExpenseEntity extends BaseEntity {
 		this.memo = memo;
 	}
 
-	public void updateOccurredAt(LocalDateTime occurredAt) {
+	public void updateOccurredAt(OffsetDateTime occurredAt) {
 		if (occurredAt == null) {
 			throw new IllegalArgumentException("occurredAt must not be null");
 		}
@@ -155,6 +181,8 @@ public class ExpenseEntity extends BaseEntity {
 			BigDecimal localCurrencyAmount,
 			CurrencyCode baseCurrencyCode,
 			BigDecimal baseCurrencyAmount,
+			BigDecimal calculatedBaseCurrencyAmount,
+			CurrencyCode calculatedBaseCurrencyCode,
 			BigDecimal exchangeRate) {
 		// ExchangeInfo는 immutable이므로 전체 교체
 		this.exchangeInfo =
@@ -163,6 +191,8 @@ public class ExpenseEntity extends BaseEntity {
 						baseCurrencyCode,
 						localCurrencyAmount,
 						baseCurrencyAmount,
+						calculatedBaseCurrencyAmount,
+						calculatedBaseCurrencyCode,
 						exchangeRate);
 	}
 }

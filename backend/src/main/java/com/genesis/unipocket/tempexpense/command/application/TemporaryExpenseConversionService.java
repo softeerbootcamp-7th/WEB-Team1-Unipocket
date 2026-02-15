@@ -10,6 +10,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExp
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import java.math.BigDecimal;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -80,7 +81,7 @@ public class TemporaryExpenseConversionService {
 						temp.getMerchantName(),
 						temp.getCategory(),
 						null, // userCardId - 임시지출에서는 카드 정보 없음
-						temp.getOccurredAt(),
+						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
 						temp.getLocalCurrencyAmount(),
 						temp.getLocalCountryCode() != null
 								? temp.getLocalCountryCode()
@@ -89,6 +90,8 @@ public class TemporaryExpenseConversionService {
 						temp.getBaseCountryCode() != null
 								? temp.getBaseCountryCode()
 								: com.genesis.unipocket.global.common.enums.CurrencyCode.KRW,
+						null,
+						null,
 						temp.getMemo(),
 						null,
 						exchangeRate);

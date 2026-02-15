@@ -3,7 +3,7 @@ package com.genesis.unipocket.expense.command.persistence.repository;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.global.common.enums.Category;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,19 +19,17 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 	java.util.List<ExpenseEntity> findAllByAccountBookId(Long accountBookId);
 
 	@Query(
-			"SELECT e FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId "
-					+ "AND (:startDate IS NULL OR e.occurredAt >= :startDate) "
-					+ "AND (:endDate IS NULL OR e.occurredAt <= :endDate) "
-					+ "AND (:category IS NULL OR e.category = :category) "
-					+ "AND (:minAmount IS NULL OR e.exchangeInfo.baseCurrencyAmount >= :minAmount) "
-					+ "AND (:maxAmount IS NULL OR e.exchangeInfo.baseCurrencyAmount <= :maxAmount) "
-					+ "AND (:merchantName IS NULL OR e.merchant.merchantName LIKE %:merchantName% "
-					+ "     OR e.merchant.displayMerchantName LIKE %:merchantName%) "
-					+ "AND (:travelId IS NULL OR e.travelId = :travelId)")
+			"SELECT e FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId AND (:startDate"
+				+ " IS NULL OR e.occurredAt >= :startDate) AND (:endDate IS NULL OR e.occurredAt <="
+				+ " :endDate) AND (:category IS NULL OR e.category = :category) AND (:minAmount IS"
+				+ " NULL OR e.exchangeInfo.baseCurrencyAmount >= :minAmount) AND (:maxAmount IS"
+				+ " NULL OR e.exchangeInfo.baseCurrencyAmount <= :maxAmount) AND (:merchantName IS"
+				+ " NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) AND (:travelId IS"
+				+ " NULL OR e.travelId = :travelId)")
 	Page<ExpenseEntity> findByFilters(
 			@Param("accountBookId") Long accountBookId,
-			@Param("startDate") LocalDateTime startDate,
-			@Param("endDate") LocalDateTime endDate,
+			@Param("startDate") OffsetDateTime startDate,
+			@Param("endDate") OffsetDateTime endDate,
 			@Param("category") Category category,
 			@Param("minAmount") BigDecimal minAmount,
 			@Param("maxAmount") BigDecimal maxAmount,

@@ -30,6 +30,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.Temporar
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -114,7 +115,9 @@ class TemporaryExpenseParsingServiceTest {
 												null)),
 								null));
 		when(exchangeRateProvider.getExchangeRate(
-						CurrencyCode.JPY, CurrencyCode.KRW, LocalDateTime.of(2026, 2, 1, 0, 0)))
+						CurrencyCode.JPY,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
 				.thenReturn(new BigDecimal("9.50"));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
@@ -125,7 +128,9 @@ class TemporaryExpenseParsingServiceTest {
 		assertThat(result.normalCount()).isEqualTo(2);
 		verify(exchangeRateProvider, times(1))
 				.getExchangeRate(
-						CurrencyCode.JPY, CurrencyCode.KRW, LocalDateTime.of(2026, 2, 1, 0, 0));
+						CurrencyCode.JPY,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC));
 
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);

@@ -4,7 +4,7 @@ import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class ExchangeRateProviderImpl implements ExchangeRateProvider {
 	private final ExchangeRateService exchangeRateService;
 
 	@Override
-	public BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, LocalDateTime dateTime) {
+	public BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, OffsetDateTime dateTime) {
 		return exchangeRateService.getExchangeRate(from, to, dateTime);
 	}
 }

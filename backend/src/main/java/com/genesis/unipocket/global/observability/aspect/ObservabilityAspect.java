@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class ObservabilityAspect {
 
 	private final MeterRegistry meterRegistry;
 	private final ObjectMapper objectMapper;
+	private final Map<MetricTimerKey, Timer> timerCache = new ConcurrentHashMap<>();
 
 	@Pointcut("within(@org.springframework.stereotype.Service *)")
 	public void servicePointcut() {}
@@ -73,7 +75,7 @@ public class ObservabilityAspect {
 
 	private void recordMetricsAndLog(
 			ProceedingJoinPoint joinPoint,
-			long durationNaos,
+			long durationNanos,
 			boolean success,
 			Throwable exception) {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -83,7 +85,7 @@ public class ObservabilityAspect {
 		Map<String, Object> logData = new HashMap<>();
 		logData.put("className", className);
 		logData.put("methodName", methodName);
-		logData.put("durationMs", TimeUnit.NANOSECONDS.toMillis(durationNaos));
+		logData.put("durationMs", TimeUnit.NANOSECONDS.toMillis(durationNanos));
 		logData.put("success", success);
 
 		String userId = getUserId();
@@ -112,13 +114,20 @@ public class ObservabilityAspect {
 			log.error("Failed to log observability data", e);
 		}
 
-		Timer.builder("method.execution.time")
-				.tag("class", className)
-				.tag("method", methodName)
-				.tag("success", String.valueOf(success))
-				.tag("exception", exception != null ? exception.getClass().getSimpleName() : "none")
-				.register(meterRegistry)
-				.record(durationNaos, TimeUnit.NANOSECONDS);
+		String exceptionName = exception != null ? exception.getClass().getSimpleName() : "none";
+		MetricTimerKey metricTimerKey =
+				new MetricTimerKey(className, methodName, String.valueOf(success), exceptionName);
+		Timer timer =
+				timerCache.computeIfAbsent(
+						metricTimerKey,
+						key ->
+								Timer.builder("method.execution.time")
+										.tag("class", key.className())
+										.tag("method", key.methodName())
+										.tag("success", key.success())
+										.tag("exception", key.exceptionName())
+										.register(meterRegistry));
+		timer.record(durationNanos, TimeUnit.NANOSECONDS);
 	}
 
 	private String getUserId() {
@@ -135,8 +144,11 @@ public class ObservabilityAspect {
 				return attributes.getRequest().getRequestURI();
 			}
 		} catch (Exception e) {
-			// ignore
+			log.trace("Could not get endpoint, not in a request context.", e);
 		}
 		return null;
 	}
+
+	private record MetricTimerKey(
+			String className, String methodName, String success, String exceptionName) {}
 }

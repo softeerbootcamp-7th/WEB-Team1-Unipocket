@@ -18,6 +18,8 @@ import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,7 +41,7 @@ class ExchangeRateServiceImplTest {
 	void getExchangeRate_sameCurrency_returnsOne() {
 		BigDecimal rate =
 				exchangeRateService.getExchangeRate(
-						CurrencyCode.KRW, CurrencyCode.KRW, LocalDateTime.now());
+						CurrencyCode.KRW, CurrencyCode.KRW, OffsetDateTime.now());
 
 		assertThat(rate).isEqualTo(BigDecimal.ONE);
 		verifyNoInteractions(exchangeRateQueryService, exchangeRateCommandService);
@@ -48,11 +50,13 @@ class ExchangeRateServiceImplTest {
 	@Test
 	@DisplayName("조회 데이터가 있으면 query만 사용")
 	void getExchangeRate_usesQueryWhenExists() {
-		LocalDateTime dateTime = LocalDateTime.of(2026, 2, 12, 10, 0);
+		OffsetDateTime dateTime = OffsetDateTime.of(2026, 2, 12, 10, 0, 0, 0, ZoneOffset.UTC);
 		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), any(LocalDate.class)))
-				.thenReturn(Optional.of(rate(CurrencyCode.KRW, dateTime, "1300.00")));
+				.thenReturn(
+						Optional.of(rate(CurrencyCode.KRW, dateTime.toLocalDateTime(), "1300.00")));
 		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.GBP), any(LocalDate.class)))
-				.thenReturn(Optional.of(rate(CurrencyCode.GBP, dateTime, "0.79")));
+				.thenReturn(
+						Optional.of(rate(CurrencyCode.GBP, dateTime.toLocalDateTime(), "0.79")));
 
 		BigDecimal result =
 				exchangeRateService.getExchangeRate(CurrencyCode.KRW, CurrencyCode.GBP, dateTime);
@@ -71,7 +75,7 @@ class ExchangeRateServiceImplTest {
 	@Test
 	@DisplayName("조회 데이터가 없으면 command로 보정 후 계산")
 	void getExchangeRate_usesCommandWhenMissing() {
-		LocalDateTime dateTime = LocalDateTime.of(2026, 2, 12, 10, 0);
+		OffsetDateTime dateTime = OffsetDateTime.of(2026, 2, 12, 10, 0, 0, 0, ZoneOffset.UTC);
 		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), any(LocalDate.class)))
 				.thenReturn(Optional.empty());
 		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.GBP), any(LocalDate.class)))
@@ -108,7 +112,7 @@ class ExchangeRateServiceImplTest {
 										BigDecimal.ZERO,
 										CurrencyCode.KRW,
 										CurrencyCode.USD,
-										LocalDateTime.now()))
+										OffsetDateTime.now()))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.EXPENSE_INVALID_AMOUNT);
 	}

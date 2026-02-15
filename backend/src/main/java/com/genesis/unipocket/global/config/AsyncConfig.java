@@ -1,6 +1,7 @@
 package com.genesis.unipocket.global.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -26,6 +27,20 @@ public class AsyncConfig {
 		executor.setMaxPoolSize(10);
 		executor.setQueueCapacity(100);
 		executor.setThreadNamePrefix("parsing-");
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(60);
+		executor.initialize();
+		return executor;
+	}
+
+	@Bean(name = "analysisBatchExecutor")
+	public Executor analysisBatchExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() * 2);
+		executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 4);
+		executor.setQueueCapacity(200);
+		executor.setThreadNamePrefix("analysis-batch-");
+		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 		executor.setWaitForTasksToCompleteOnShutdown(true);
 		executor.setAwaitTerminationSeconds(60);
 		executor.initialize();

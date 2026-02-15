@@ -9,7 +9,7 @@ import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 	private final ExchangeRateCommandService exchangeRateCommandService;
 
 	@Override
-	public BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, LocalDateTime dateTime) {
+	public BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, OffsetDateTime dateTime) {
 		if (from == to) {
 			return BigDecimal.ONE;
 		}
@@ -43,7 +43,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
 	@Override
 	public BigDecimal convertAmount(
-			BigDecimal amount, CurrencyCode from, CurrencyCode to, LocalDateTime dateTime) {
+			BigDecimal amount, CurrencyCode from, CurrencyCode to, OffsetDateTime dateTime) {
 		if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new BusinessException(ErrorCode.EXPENSE_INVALID_AMOUNT);
 		}
@@ -52,7 +52,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 		return amount.multiply(rate).setScale(2, RoundingMode.HALF_UP);
 	}
 
-	private BigDecimal getUsdRelativeRate(CurrencyCode currencyCode, LocalDateTime dateTime) {
+	private BigDecimal getUsdRelativeRate(CurrencyCode currencyCode, OffsetDateTime dateTime) {
 		if (currencyCode == CurrencyCode.USD) {
 			return BigDecimal.ONE;
 		}

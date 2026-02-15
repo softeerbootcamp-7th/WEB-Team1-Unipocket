@@ -49,7 +49,7 @@ const WidgetSection = () => {
         {isWidgetEditMode && (
           <BottomSheet
             isOpen={isWidgetEditMode}
-            className="shadow-semantic-subtle max-h-[47vh]"
+            className="shadow-semantic-subtle max-h-[45vh]"
             backdrop={false}
           >
             <WidgetPicker

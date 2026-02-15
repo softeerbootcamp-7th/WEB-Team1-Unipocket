@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
@@ -163,6 +164,41 @@ class AccountBookQueryServiceTest {
 		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
 		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
 		assertThat(result.budgetCreatedAt()).isEqualTo(LocalDateTime.of(2026, 2, 12, 8, 0, 0));
+	}
+
+	@Test
+	@DisplayName("가계부 기준/상대 국가 환율 조회 - occurredAt 지정")
+	void getAccountBookExchangeRate_Success_WithOccurredAt() {
+		Long accountBookId = 1L;
+		LocalDateTime occurredAt = LocalDateTime.of(2026, 2, 13, 10, 30, 0);
+		AccountBookDetailResponse accountBookDetailResponse =
+				new AccountBookDetailResponse(
+						accountBookId,
+						"Title",
+						CountryCode.US,
+						CountryCode.KR,
+						BigDecimal.valueOf(10000),
+						LocalDateTime.of(2026, 2, 12, 8, 0, 0),
+						List.of(),
+						LocalDate.now(),
+						LocalDate.now());
+
+		given(repository.findDetailById(UUID.fromString(userId), accountBookId))
+				.willReturn(Optional.of(accountBookDetailResponse));
+		given(
+						exchangeRateService.getExchangeRate(
+								eq(CurrencyCode.KRW), eq(CurrencyCode.USD), eq(occurredAt)))
+				.willReturn(BigDecimal.valueOf(0.00075));
+
+		AccountBookExchangeRateResponse result =
+				accountBookQueryService.getAccountBookExchangeRate(
+						userId, accountBookId, occurredAt);
+
+		assertThat(result.baseCountryCode()).isEqualTo(CountryCode.KR);
+		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
+		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
+		assertThat(result.budgetCreatedAt()).isEqualTo(LocalDateTime.of(2026, 2, 12, 8, 0, 0));
+		verify(exchangeRateService).getExchangeRate(CurrencyCode.KRW, CurrencyCode.USD, occurredAt);
 	}
 
 	@Test

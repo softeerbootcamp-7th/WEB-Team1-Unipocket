@@ -1,6 +1,7 @@
 package com.genesis.unipocket.accountbook.query.presentation;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -117,6 +118,42 @@ class AccountBookQueryControllerTest {
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
 				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-01T09:00:00"));
+
+		verify(accountBookQueryService)
+				.getAccountBookExchangeRate(userId.toString(), accountBookId, null);
+	}
+
+	@Test
+	@DisplayName("가계부 기준/상대 국가 환율 조회 성공 - occurredAt 지정")
+	void getAccountBookExchangeRate_Success_WithOccurredAt() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 1L;
+		LocalDateTime occurredAt = LocalDateTime.of(2026, 2, 13, 10, 30, 0);
+
+		given(
+						accountBookQueryService.getAccountBookExchangeRate(
+								userId.toString(), accountBookId, occurredAt))
+				.willReturn(
+						new AccountBookExchangeRateResponse(
+								CountryCode.KR,
+								CountryCode.JP,
+								BigDecimal.valueOf(0.11),
+								LocalDateTime.of(2026, 2, 1, 9, 0, 0)));
+		mockAuthentication(accessToken, userId);
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+								.param("occurredAt", "2026-02-13T10:30:00")
+								.cookie(new Cookie("access_token", accessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.exchangeRate").value("0.11"))
+				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-02-01T09:00:00"));
+
+		verify(accountBookQueryService)
+				.getAccountBookExchangeRate(userId.toString(), accountBookId, occurredAt);
 	}
 
 	private void mockAuthentication(String accessToken, UUID userId) {

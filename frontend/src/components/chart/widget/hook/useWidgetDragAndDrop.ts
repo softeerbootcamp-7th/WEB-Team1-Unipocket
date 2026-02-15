@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-import type { WidgetItem, WidgetType } from '@/components/chart/widget/type';
+import type { WidgetType } from '@/components/chart/widget/type';
 
 export interface DragData {
   widgetType: WidgetType;
@@ -119,48 +119,5 @@ export const useDropZone = ({ zone, onDropWidget }: UseDropZoneOptions) => {
       onDragLeave,
       onDrop,
     },
-  };
-};
-
-interface UseWidgetDragAndDropOptions {
-  handleAddWidget: (widgetType: WidgetType) => void;
-  handleRemoveWidget: (order: number) => void;
-  displayWidgets: WidgetItem[];
-}
-
-export const useWidgetDragAndDrop = ({
-  handleAddWidget,
-  handleRemoveWidget,
-}: UseWidgetDragAndDropOptions) => {
-  const onDropToList = useCallback(
-    (data: DragData) => {
-      if (data.source === 'picker') {
-        handleAddWidget(data.widgetType);
-      }
-    },
-    [handleAddWidget],
-  );
-
-  const onDropToPicker = useCallback(
-    (data: DragData) => {
-      if (data.source === 'list' && data.order !== undefined) {
-        handleRemoveWidget(data.order);
-      }
-    },
-    [handleRemoveWidget],
-  );
-
-  const listDropZone = useDropZone({
-    zone: 'list',
-    onDropWidget: onDropToList,
-  });
-  const pickerDropZone = useDropZone({
-    zone: 'picker',
-    onDropWidget: onDropToPicker,
-  });
-
-  return {
-    listDropZone,
-    pickerDropZone,
   };
 };

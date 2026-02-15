@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useDropZone } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { MOCK_WIDGET_DATA } from '@/components/chart/widget/mock';
 import {
   WIDGET_TYPES,
@@ -95,14 +96,27 @@ export const useWidgetManager = () => {
     setIsWidgetEditMode((prev) => !prev);
   }, []);
 
+  const listDropZone = useDropZone({
+    zone: 'list',
+    onDropWidget: (data) => handleAddWidget(data.widgetType),
+  });
+
+  const pickerDropZone = useDropZone({
+    zone: 'picker',
+    onDropWidget: (data) => {
+      if (data.order !== undefined) handleRemoveWidget(data.order);
+    },
+  });
+
   return {
     isWidgetEditMode,
     toggleEditMode,
-    // width,
     maxWidgets,
     displayWidgets,
     availableWidgets,
     handleAddWidget,
     handleRemoveWidget,
+    listDropZone,
+    pickerDropZone,
   };
 };

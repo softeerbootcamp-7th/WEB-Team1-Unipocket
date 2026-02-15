@@ -1,7 +1,6 @@
 import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
 import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
-import { useWidgetDragAndDrop } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
 import BottomSheet from '@/components/layout/BottomSheet';
@@ -13,15 +12,10 @@ const WidgetSection = () => {
     maxWidgets,
     displayWidgets,
     availableWidgets,
-    handleAddWidget,
     handleRemoveWidget,
+    listDropZone,
+    pickerDropZone,
   } = useWidgetManager();
-
-  const { listDropZone, pickerDropZone } = useWidgetDragAndDrop({
-    handleAddWidget,
-    handleRemoveWidget,
-    displayWidgets,
-  });
 
   return (
     <WidgetContext.Provider value={{ isEditMode: isWidgetEditMode }}>

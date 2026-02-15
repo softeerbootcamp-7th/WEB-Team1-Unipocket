@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.command.persistence.entity;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -71,13 +72,4 @@ public class TemporaryExpense {
 
 	@Column(name = "approval_number")
 	private String approvalNumber;
-
-	/**
-	 * 임시지출내역 상태 Enum
-	 */
-	public enum TemporaryExpenseStatus {
-		NORMAL, // 정상
-		INCOMPLETE, // 미완성
-		ABNORMAL // 이상거래
-	}
 }

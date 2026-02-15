@@ -4,22 +4,20 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.global.common.enums.Category;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,12 +36,10 @@ class TemporaryExpenseQueryServiceTest {
 	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Mock private FileRepository fileRepository;
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
-	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	@InjectMocks private TemporaryExpenseQueryService service;
 
 	private static final Long ACCOUNT_BOOK_ID = 1L;
-	private static final UUID USER_ID = UUID.randomUUID();
 
 	@Test
 	@DisplayName("파일별 처리 현황 조회 - 모든 항목이 NORMAL이면 processed=true")
@@ -79,8 +75,7 @@ class TemporaryExpenseQueryServiceTest {
 				.thenReturn(List.of(expense));
 
 		// when
-		FileProcessingSummaryResponse result =
-				service.getFileProcessingSummary(ACCOUNT_BOOK_ID, USER_ID);
+		FileProcessingSummaryResponse result = service.getFileProcessingSummary(ACCOUNT_BOOK_ID);
 
 		// then
 		assertThat(result.totalFiles()).isEqualTo(1);
@@ -129,8 +124,7 @@ class TemporaryExpenseQueryServiceTest {
 				.thenReturn(List.of(normalExpense, incompleteExpense));
 
 		// when
-		FileProcessingSummaryResponse result =
-				service.getFileProcessingSummary(ACCOUNT_BOOK_ID, USER_ID);
+		FileProcessingSummaryResponse result = service.getFileProcessingSummary(ACCOUNT_BOOK_ID);
 
 		// then
 		assertThat(result.processedFiles()).isEqualTo(0);
@@ -147,8 +141,7 @@ class TemporaryExpenseQueryServiceTest {
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID)).thenReturn(List.of());
 
 		// when
-		FileProcessingSummaryResponse result =
-				service.getFileProcessingSummary(ACCOUNT_BOOK_ID, USER_ID);
+		FileProcessingSummaryResponse result = service.getFileProcessingSummary(ACCOUNT_BOOK_ID);
 
 		// then
 		assertThat(result.totalFiles()).isEqualTo(0);
@@ -215,8 +208,7 @@ class TemporaryExpenseQueryServiceTest {
 				.thenReturn(List.of(normal1, normal2, incomplete));
 
 		// when
-		ImageProcessingSummaryResponse result =
-				service.getImageProcessingSummary(ACCOUNT_BOOK_ID, USER_ID);
+		ImageProcessingSummaryResponse result = service.getImageProcessingSummary(ACCOUNT_BOOK_ID);
 
 		// then
 		assertThat(result.totalImages()).isEqualTo(2);
@@ -235,8 +227,7 @@ class TemporaryExpenseQueryServiceTest {
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID)).thenReturn(List.of());
 
 		// when
-		ImageProcessingSummaryResponse result =
-				service.getImageProcessingSummary(ACCOUNT_BOOK_ID, USER_ID);
+		ImageProcessingSummaryResponse result = service.getImageProcessingSummary(ACCOUNT_BOOK_ID);
 
 		// then
 		assertThat(result.totalImages()).isEqualTo(0);

@@ -1,6 +1,7 @@
 package com.genesis.unipocket.tempexpense.command.persistence.repository;
 
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,7 +40,7 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 					+ "AND te.status = :status")
 	List<TemporaryExpense> findByAccountBookIdAndStatus(
 			@Param("accountBookId") Long accountBookId,
-			@Param("status") TemporaryExpense.TemporaryExpenseStatus status);
+			@Param("status") TemporaryExpenseStatus status);
 
 	List<TemporaryExpense> findByTempExpenseMetaIdIn(List<Long> tempExpenseMetaIds);
 }

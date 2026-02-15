@@ -2,7 +2,7 @@ package com.genesis.unipocket.tempexpense.command.application.parsing;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
+import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,10 +27,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TemporaryExpenseContentExtractor {
 
-	private final S3Service s3Service;
+	private final TempExpenseMediaAccessService tempExpenseMediaAccessService;
 
 	public String extractContent(File file) {
-		byte[] fileBytes = s3Service.downloadFile(file.getS3Key());
+		byte[] fileBytes = tempExpenseMediaAccessService.download(file.getS3Key());
 		if (file.getFileType() == File.FileType.CSV) {
 			return new String(fileBytes, StandardCharsets.UTF_8);
 		}

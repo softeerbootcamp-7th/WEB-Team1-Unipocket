@@ -4,7 +4,6 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
@@ -15,24 +14,22 @@ import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvide
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,13 +46,11 @@ public class TemporaryExpenseParsingService {
 
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
-	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final ExchangeRateProvider exchangeRateProvider;
-	private final GeminiService geminiService;
-	private final S3Service s3Service;
-	private final TemporaryExpenseContentExtractor contentExtractor;
 	private final TemporaryExpenseFieldParser fieldParser;
+	private final TemporaryExpenseParseClient temporaryExpenseParseClient;
+	private final TemporaryExpensePersistenceService temporaryExpensePersistenceService;
 	private final ParsingProgressPublisher progressPublisher;
 
 	/**
@@ -96,7 +91,8 @@ public class TemporaryExpenseParsingService {
 			}
 		}
 
-		String taskId = java.util.UUID.randomUUID().toString();
+		String taskId = UUID.randomUUID().toString();
+		progressPublisher.registerTask(taskId, accountBookId);
 		parseBatchFilesAsync(accountBookId, s3Keys, taskId);
 		return taskId;
 	}
@@ -128,7 +124,7 @@ public class TemporaryExpenseParsingService {
 
 	private ParsingResult parseAndPersistExpenses(
 			File file, TempExpenseMeta meta, AccountBookRateContext rateContext) {
-		GeminiService.GeminiParseResponse geminiResponse = parseWithGemini(file);
+		var geminiResponse = temporaryExpenseParseClient.parse(file);
 		if (!geminiResponse.success()) {
 			log.error(
 					"Gemini parsing failed. fileId={}, reason={}",
@@ -147,82 +143,8 @@ public class TemporaryExpenseParsingService {
 
 		Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap =
 				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
-
-		List<TemporaryExpense> createdExpenses = new ArrayList<>();
-		int normalCount = 0;
-		int incompleteCount = 0;
-
-		for (NormalizedParsedExpenseItem item : normalizedItems) {
-			TemporaryExpenseStatus status = determineStatus(item);
-			if (status == TemporaryExpenseStatus.NORMAL) {
-				normalCount++;
-			} else if (status == TemporaryExpenseStatus.INCOMPLETE) {
-				incompleteCount++;
-			}
-
-			BigDecimal baseAmount = null;
-			BigDecimal exchangeRate = null;
-
-			if (item.baseAmount() != null
-					&& item.baseCurrencyCode() == rateContext.baseCurrencyCode()) {
-				baseAmount = item.baseAmount();
-				if (item.localAmount() != null
-						&& item.localAmount().compareTo(BigDecimal.ZERO) > 0) {
-					exchangeRate = baseAmount.divide(item.localAmount(), 4, RoundingMode.HALF_UP);
-				}
-			} else if (item.localAmount() != null && item.occurredAt() != null) {
-				ExchangeRateLookupCommand key =
-						new ExchangeRateLookupCommand(
-								item.localCurrencyCode(),
-								rateContext.baseCurrencyCode(),
-								item.occurredAt().toLocalDate());
-				exchangeRate = exchangeRateMap.get(key);
-				if (exchangeRate != null) {
-					baseAmount =
-							item.localAmount()
-									.multiply(exchangeRate)
-									.setScale(2, RoundingMode.HALF_UP);
-				}
-			}
-
-			TemporaryExpense expense =
-					TemporaryExpense.builder()
-							.tempExpenseMetaId(meta.getTempExpenseMetaId())
-							.merchantName(item.merchantName())
-							.category(item.category())
-							.localCountryCode(item.localCurrencyCode())
-							.localCurrencyAmount(item.localAmount())
-							.baseCountryCode(rateContext.baseCurrencyCode())
-							.baseCurrencyAmount(baseAmount)
-							.exchangeRate(exchangeRate)
-							.paymentsMethod("카드")
-							.memo(item.memo())
-							.occurredAt(item.occurredAt())
-							.status(status)
-							.cardLastFourDigits(item.cardLastFourDigits())
-							.approvalNumber(item.approvalNumber())
-							.build();
-			createdExpenses.add(expense);
-		}
-
-		List<TemporaryExpense> savedExpenses = temporaryExpenseRepository.saveAll(createdExpenses);
-		return new ParsingResult(
-				meta.getTempExpenseMetaId(),
-				savedExpenses.size(),
-				normalCount,
-				incompleteCount,
-				0,
-				savedExpenses);
-	}
-
-	private GeminiService.GeminiParseResponse parseWithGemini(File file) {
-		if (file.getFileType() == File.FileType.IMAGE) {
-			String s3Url =
-					s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
-			return geminiService.parseReceiptImage(s3Url);
-		}
-		String content = extractContent(file);
-		return geminiService.parseDocument(content);
+		return temporaryExpensePersistenceService.persist(
+				meta, normalizedItems, rateContext, exchangeRateMap);
 	}
 
 	private AccountBookRateContext resolveRateContext(Long accountBookId) {
@@ -280,69 +202,20 @@ public class TemporaryExpenseParsingService {
 		return rateMap;
 	}
 
-	private BigDecimal calculateBaseAmount(
-			NormalizedParsedExpenseItem item,
-			CurrencyCode baseCurrencyCode,
-			Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap) {
-		if (item.baseAmount() != null
-				&& item.baseCurrencyCode() != null
-				&& item.baseCurrencyCode() == baseCurrencyCode) {
-			return item.baseAmount();
-		}
-
-		if (item.localAmount() == null || item.occurredAt() == null) {
-			return null;
-		}
-		ExchangeRateLookupCommand key =
-				new ExchangeRateLookupCommand(
-						item.localCurrencyCode(),
-						baseCurrencyCode,
-						item.occurredAt().toLocalDate());
-		BigDecimal rate = exchangeRateMap.get(key);
-		if (rate == null) {
-			return null;
-		}
-		return item.localAmount().multiply(rate).setScale(2, RoundingMode.HALF_UP);
-	}
-
-	private String extractContent(File file) {
-		return contentExtractor.extractContent(file);
-	}
-
-	/**
-	 * 파싱 항목의 상태 결정
-	 */
-	private TemporaryExpenseStatus determineStatus(NormalizedParsedExpenseItem item) {
-		// 필수 필드 체크
-		if (item.merchantName() == null || item.localAmount() == null) {
-			return TemporaryExpenseStatus.INCOMPLETE;
-		}
-
-		// 선택 필드 누락 체크 (Category is now often null from document, so maybe rely less on
-		// it or default it?)
-		if (item.occurredAt() == null) {
-			return TemporaryExpenseStatus.INCOMPLETE;
-		}
-
-		return TemporaryExpenseStatus.NORMAL;
-	}
-
-	/**
-	 * 카테고리 문자열 → Enum 변환
-	 */
-
 	/**
 	 * 여러 파일 비동기 파싱 (SSE 진행 상황 알림)
 	 */
-	@org.springframework.scheduling.annotation.Async("parsingExecutor")
-	public java.util.concurrent.CompletableFuture<BatchParsingResult> parseBatchFilesAsync(
+	@Async("parsingExecutor")
+	public CompletableFuture<BatchParsingResult> parseBatchFilesAsync(
 			Long accountBookId, List<String> s3Keys, String taskId) {
 		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());
 
 		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
+
 		Map<String, File> filesByS3Key =
 				fileRepository.findByS3KeyIn(s3Keys).stream()
 						.collect(Collectors.toMap(File::getS3Key, Function.identity()));
+
 		Map<Long, TempExpenseMeta> metaById =
 				tempExpenseMetaRepository
 						.findAllById(

@@ -1,20 +1,20 @@
 package com.genesis.unipocket.tempexpense.query.service;
 
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,12 +34,9 @@ public class TemporaryExpenseQueryService {
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
-	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public List<TemporaryExpenseResponse> getTemporaryExpenses(
-			Long accountBookId, TemporaryExpense.TemporaryExpenseStatus status, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-
+			Long accountBookId, TemporaryExpenseStatus status) {
 		List<TemporaryExpense> entities =
 				status != null
 						? temporaryExpenseRepository.findByAccountBookIdAndStatus(
@@ -49,13 +46,11 @@ public class TemporaryExpenseQueryService {
 		return TemporaryExpenseResponse.fromList(entities);
 	}
 
-	public TemporaryExpenseResponse getTemporaryExpense(
-			Long accountBookId, Long tempExpenseId, UUID userId) {
+	public TemporaryExpenseResponse getTemporaryExpense(Long accountBookId, Long tempExpenseId) {
 		TemporaryExpense tempExpense = findById(tempExpenseId);
 		Long resourceAccountBookId = getAccountBookIdFromTempExpense(tempExpense);
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 		if (!accountBookId.equals(resourceAccountBookId)) {
-			throw new IllegalArgumentException("가계부와 임시지출내역이 일치하지 않습니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
 
 		return TemporaryExpenseResponse.from(tempExpense);
@@ -64,9 +59,7 @@ public class TemporaryExpenseQueryService {
 	/**
 	 * 파일(이미지) 단위 처리 현황 조회
 	 */
-	public FileProcessingSummaryResponse getFileProcessingSummary(Long accountBookId, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-
+	public FileProcessingSummaryResponse getFileProcessingSummary(Long accountBookId) {
 		// 1. 가계부에 속한 메타 조회
 		List<TempExpenseMeta> metas = tempExpenseMetaRepository.findByAccountBookId(accountBookId);
 		if (metas.isEmpty()) {
@@ -136,10 +129,8 @@ public class TemporaryExpenseQueryService {
 	/**
 	 * 가계부 전체 이미지 처리 현황 요약 조회
 	 */
-	public ImageProcessingSummaryResponse getImageProcessingSummary(
-			Long accountBookId, UUID userId) {
-		// getFileProcessingSummary는 내부적으로 ownership 검증을 수행하므로, 여기서 중복으로 호출할 필요가 없습니다.
-		FileProcessingSummaryResponse fileSummary = getFileProcessingSummary(accountBookId, userId);
+	public ImageProcessingSummaryResponse getImageProcessingSummary(Long accountBookId) {
+		FileProcessingSummaryResponse fileSummary = getFileProcessingSummary(accountBookId);
 
 		if (fileSummary.files().isEmpty()) {
 			return new ImageProcessingSummaryResponse(0, 0, 0, 0, 0, 0, 0);
@@ -175,17 +166,15 @@ public class TemporaryExpenseQueryService {
 	private TemporaryExpense findById(Long tempExpenseId) {
 		return temporaryExpenseRepository
 				.findById(tempExpenseId)
-				.orElseThrow(
-						() ->
-								new IllegalArgumentException(
-										"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
 	}
 
 	private Long getAccountBookIdFromTempExpense(TemporaryExpense tempExpense) {
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
 						.findById(tempExpense.getTempExpenseMetaId())
-						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		return meta.getAccountBookId();
 	}
 }

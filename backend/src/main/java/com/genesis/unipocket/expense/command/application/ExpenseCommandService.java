@@ -48,9 +48,9 @@ public class ExpenseCommandService {
 				ExpenseEntity.manual(
 						ExpenseManualCreateArgs.of(
 								command,
-								null,
 								baseCurrencyAmount,
-								command.baseCurrencyCode(),
+								null,
+								null,
 								exchangeRate));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
@@ -87,13 +87,17 @@ public class ExpenseCommandService {
 							.multiply(exchangeRate)
 							.setScale(2, BigDecimal.ROUND_HALF_UP);
 
+			boolean convertedMode =
+					entity.getExchangeInfo() != null
+							&& entity.getExchangeInfo().getCalculatedBaseCurrencyAmount() != null;
+
 			entity.updateExchangeInfo(
 					command.localCurrencyCode(),
 					command.localCurrencyAmount(),
 					entity.getOriginalBaseCurrency(),
-					entity.getOriginalBaseAmount(),
-					baseCurrencyAmount,
-					command.baseCurrencyCode(),
+					convertedMode ? entity.getOriginalBaseAmount() : baseCurrencyAmount,
+					convertedMode ? baseCurrencyAmount : null,
+					convertedMode ? command.baseCurrencyCode() : null,
 					exchangeRate);
 		}
 

@@ -65,7 +65,8 @@ public class TemporaryExpenseQueryController {
 			@PathVariable Long tempExpenseId,
 			@LoginUser UUID userId) {
 		TemporaryExpenseResponse response =
-				temporaryExpenseQueryFacade.getTemporaryExpense(accountBookId, tempExpenseId, userId);
+				temporaryExpenseQueryFacade.getTemporaryExpense(
+						accountBookId, tempExpenseId, userId);
 		return ResponseEntity.ok(response);
 	}
 

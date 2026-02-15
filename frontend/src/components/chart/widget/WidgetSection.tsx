@@ -1,8 +1,10 @@
+import { useWidgetDragAndDrop } from '@/components/chart/widget/useWidgetDragAndDrop';
 import { useWidgetManager } from '@/components/chart/widget/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
 import WidgetHeader from '@/components/chart/widget/WidgetHeader';
 import WidgetList from '@/components/chart/widget/WidgetList';
 import WidgetPicker from '@/components/chart/widget/WidgetPicker';
+import BottomSheet from '@/components/layout/BottomSheet';
 
 const WidgetSection = () => {
   const {
@@ -15,6 +17,12 @@ const WidgetSection = () => {
     handleAddWidget,
     handleRemoveWidget,
   } = useWidgetManager();
+
+  const { listDropZone, pickerDropZone } = useWidgetDragAndDrop({
+    handleAddWidget,
+    handleRemoveWidget,
+    displayWidgets,
+  });
 
   return (
     <WidgetContext.Provider value={{ isEditMode: isWidgetEditMode }}>
@@ -34,15 +42,24 @@ const WidgetSection = () => {
             displayWidgets={displayWidgets}
             isWidgetEditMode={isWidgetEditMode}
             handleRemoveWidget={handleRemoveWidget}
+            dropZoneProps={
+              isWidgetEditMode ? listDropZone.dropZoneProps : undefined
+            }
           />
         </div>
 
         {isWidgetEditMode && (
-          <WidgetPicker
-            maxWidgets={maxWidgets}
-            availableWidgets={availableWidgets}
-            handleAddWidget={handleAddWidget}
-          />
+          <BottomSheet
+            isOpen={isWidgetEditMode}
+            className="shadow-semantic-subtle max-h-[47vh]"
+            backdrop={false}
+          >
+            <WidgetPicker
+              maxWidgets={maxWidgets}
+              availableWidgets={availableWidgets}
+              dropZoneProps={pickerDropZone.dropZoneProps}
+            />
+          </BottomSheet>
         )}
       </div>
     </WidgetContext.Provider>

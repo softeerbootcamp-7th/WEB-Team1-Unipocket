@@ -37,9 +37,7 @@ public class TemporaryExpenseQueryService {
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public List<TemporaryExpenseResponse> getTemporaryExpenses(
-			Long accountBookId, TemporaryExpense.TemporaryExpenseStatus status, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-
+			Long accountBookId, TemporaryExpenseStatus status) {
 		List<TemporaryExpense> entities =
 				status != null
 						? temporaryExpenseRepository.findByAccountBookIdAndStatus(

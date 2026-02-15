@@ -25,7 +25,7 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
             </span>
           </div>
         </div>
-        <div className="flex h-121.5 items-center justify-center">
+        <div className="mb-2.5 flex h-121.5 items-center justify-center">
           <UploadBox type="image" />
         </div>
       </div>

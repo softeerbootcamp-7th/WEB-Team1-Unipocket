@@ -91,8 +91,6 @@ class ExpenseCommandServiceTest {
 
 		// Mock ExchangeInfo for ExpenseDto.from()
 		ExchangeInfo exchangeInfo = mock(ExchangeInfo.class);
-		when(exchangeInfo.getBaseCurrencyCode()).thenReturn(CurrencyCode.KRW);
-		when(exchangeInfo.getBaseCurrencyAmount()).thenReturn(BigDecimal.valueOf(10000));
 		when(exchangeInfo.getLocalCurrencyCode()).thenReturn(CurrencyCode.JPY);
 		when(exchangeInfo.getLocalCurrencyAmount()).thenReturn(BigDecimal.valueOf(1500));
 		when(expenseEntity.getExchangeInfo()).thenReturn(exchangeInfo);
@@ -141,7 +139,8 @@ class ExpenseCommandServiceTest {
 		// then
 		verify(exchangeRateService, times(1)).getExchangeRate(any(), any(), any()); // 환율 조회 호출 확인
 		verify(expenseEntity, times(1))
-				.updateExchangeInfo(any(), any(), any(), any(), any()); // 환율 정보 업데이트 확인
+				.updateExchangeInfo(
+						any(), any(), any(), any(), any(), any(), any()); // 환율 정보 업데이트 확인
 	}
 
 	@Test
@@ -159,8 +158,6 @@ class ExpenseCommandServiceTest {
 
 		// Mock ExchangeInfo for ExpenseDto.from()
 		ExchangeInfo exchangeInfo = mock(ExchangeInfo.class);
-		when(exchangeInfo.getBaseCurrencyCode()).thenReturn(CurrencyCode.KRW);
-		when(exchangeInfo.getBaseCurrencyAmount()).thenReturn(BigDecimal.valueOf(15000));
 		when(exchangeInfo.getLocalCurrencyCode()).thenReturn(CurrencyCode.KRW);
 		when(exchangeInfo.getLocalCurrencyAmount()).thenReturn(BigDecimal.valueOf(15000));
 		when(expenseEntity.getExchangeInfo()).thenReturn(exchangeInfo);
@@ -234,18 +231,20 @@ class ExpenseCommandServiceTest {
 		// given
 		Long accountBookId = 7L;
 		CurrencyCode newBaseCurrency = CurrencyCode.USD;
-		CurrencyCode oldBaseCurrency = CurrencyCode.KRW;
-
 		// Mock existing expenses
 		ExpenseEntity expense1 = mock(ExpenseEntity.class);
 		when(expense1.getLocalCurrency()).thenReturn(CurrencyCode.JPY);
 		when(expense1.getLocalAmount()).thenReturn(BigDecimal.valueOf(1000));
 		when(expense1.getOccurredAt()).thenReturn(LocalDateTime.now());
+		when(expense1.getOriginalBaseCurrency()).thenReturn(CurrencyCode.KRW);
+		when(expense1.getOriginalBaseAmount()).thenReturn(BigDecimal.valueOf(9500));
 
 		ExpenseEntity expense2 = mock(ExpenseEntity.class);
 		when(expense2.getLocalCurrency()).thenReturn(CurrencyCode.KRW);
 		when(expense2.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
 		when(expense2.getOccurredAt()).thenReturn(LocalDateTime.now().minusDays(1));
+		when(expense2.getOriginalBaseCurrency()).thenReturn(CurrencyCode.KRW);
+		when(expense2.getOriginalBaseAmount()).thenReturn(BigDecimal.valueOf(10000));
 
 		Page<ExpenseEntity> page = new PageImpl<>(java.util.List.of(expense1, expense2));
 		when(expenseRepository.findByAccountBookId(eq(accountBookId), any(Pageable.class)))
@@ -267,8 +266,10 @@ class ExpenseCommandServiceTest {
 				.updateExchangeInfo(
 						eq(CurrencyCode.JPY),
 						eq(BigDecimal.valueOf(1000)),
-						eq(newBaseCurrency),
+						eq(CurrencyCode.KRW),
+						eq(BigDecimal.valueOf(9500)),
 						eq(BigDecimal.valueOf(7.50).setScale(2)),
+						eq(newBaseCurrency),
 						eq(BigDecimal.valueOf(0.0075)));
 
 		// Verify expense2 update
@@ -276,8 +277,10 @@ class ExpenseCommandServiceTest {
 				.updateExchangeInfo(
 						eq(CurrencyCode.KRW),
 						eq(BigDecimal.valueOf(10000)),
-						eq(newBaseCurrency),
+						eq(CurrencyCode.KRW),
+						eq(BigDecimal.valueOf(10000)),
 						eq(BigDecimal.valueOf(8.00).setScale(2)),
+						eq(newBaseCurrency),
 						eq(BigDecimal.valueOf(0.0008)));
 
 		// Verify saveAll called

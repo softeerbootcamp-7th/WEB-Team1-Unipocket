@@ -4,7 +4,7 @@ import { Icons } from '@/assets';
 
 const Divider = () => <div className="bg-line-solid-normal/30 h-6 w-px" />;
 
-const SelectionActionProvider = () => {
+const ImportToFolderBar = () => {
   const { table, tableState } = useDataTable();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
@@ -29,4 +29,4 @@ const SelectionActionProvider = () => {
   );
 };
 
-export default SelectionActionProvider;
+export default ImportToFolderBar;

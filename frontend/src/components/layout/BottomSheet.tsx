@@ -36,10 +36,10 @@ const BottomSheet = ({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={cn(
-              `bg-background-normal scrollbar fixed right-[12vh] bottom-0 left-[18vh] z-50 h-[80vh] overflow-y-auto rounded-t-2xl px-2 ${className}`,
+              `bg-background-normal fixed right-[12vh] bottom-0 left-[18vh] z-50 flex h-[80vh] flex-col rounded-t-2xl px-2 ${className}`,
             )}
           >
-            <div className="bg-cool-neutral-95 mx-auto my-2 h-1.5 w-12 rounded-full" />
+            <div className="bg-cool-neutral-95 mx-auto my-2 h-1.5 w-12 shrink-0 rounded-full" />
             {children}
           </motion.div>
         </>

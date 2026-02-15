@@ -5,12 +5,13 @@ import com.genesis.unipocket.accountbook.command.presentation.request.AccountBoo
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.response.AccountBookBudgetUpdateResponse;
+import com.genesis.unipocket.accountbook.command.presentation.response.AccountBookResponse;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,19 +30,19 @@ public class AccountBookCommandController {
 	private final AccountBookCommandFacade accountBookCommandFacade;
 
 	@PostMapping
-	public ResponseEntity<Void> createAccountBook(
+	public ResponseEntity<AccountBookResponse> createAccountBook(
 			@LoginUser UUID userId, @RequestBody @Valid AccountBookCreateRequest req) {
-		Long id = accountBookCommandFacade.createAccountBook(userId, req);
-		return ResponseEntity.created(URI.create("/account-books/" + id)).build();
+		var response = accountBookCommandFacade.createAccountBook(userId, req);
+		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
 	@PatchMapping("/{accountBookId}")
-	public ResponseEntity<Void> updateAccountBook(
+	public ResponseEntity<AccountBookResponse> updateAccountBook(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
 			@RequestBody @Valid AccountBookUpdateRequest req) {
-		accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
-		return ResponseEntity.noContent().build();
+		var result = accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
+		return ResponseEntity.ok(result);
 	}
 
 	@PatchMapping("/{accountBookId}/budget")

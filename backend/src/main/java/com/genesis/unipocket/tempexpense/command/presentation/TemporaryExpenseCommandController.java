@@ -60,7 +60,7 @@ public class TemporaryExpenseCommandController {
 				temporaryExpenseCommandFacade.createPresignedUrl(
 						accountBookId, request.fileName(), request.fileType(), userId);
 
-		return ResponseEntity.ok(toPresignedUrlResponse(result));
+		return ResponseEntity.ok(PresignedUrlResponse.from(result));
 	}
 
 	@Operation(
@@ -150,13 +150,5 @@ public class TemporaryExpenseCommandController {
 			@LoginUser UUID userId) {
 		temporaryExpenseCommandFacade.deleteMeta(accountBookId, tempExpenseMetaId, userId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-	}
-
-	private PresignedUrlResponse toPresignedUrlResponse(FileUploadResult result) {
-		return new PresignedUrlResponse(
-				result.tempExpenseMetaId(),
-				result.presignedUrl(),
-				result.s3Key(),
-				result.expiresIn());
 	}
 }

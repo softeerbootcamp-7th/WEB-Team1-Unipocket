@@ -97,9 +97,7 @@ public class ExpenseEntity extends BaseEntity {
 	}
 
 	public String getMerchantName() {
-		return merchant.getDisplayMerchantName() != null
-				? merchant.getDisplayMerchantName()
-				: merchant.getMerchantName();
+		return merchant.getDisplayMerchantName();
 	}
 
 	public CurrencyCode getLocalCurrency() {

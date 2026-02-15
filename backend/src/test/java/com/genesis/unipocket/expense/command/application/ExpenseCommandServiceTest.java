@@ -97,7 +97,6 @@ class ExpenseCommandServiceTest {
 
 		// Mock Merchant for ExpenseDto.from()
 		Merchant merchant = mock(Merchant.class);
-		when(merchant.getMerchantName()).thenReturn("스타벅스");
 		when(merchant.getDisplayMerchantName()).thenReturn("스타벅스");
 		when(expenseEntity.getMerchant()).thenReturn(merchant);
 
@@ -164,7 +163,6 @@ class ExpenseCommandServiceTest {
 
 		// Mock Merchant for ExpenseDto.from()
 		Merchant merchant = mock(Merchant.class);
-		when(merchant.getMerchantName()).thenReturn("스타벅스");
 		when(merchant.getDisplayMerchantName()).thenReturn("스타벅스");
 		when(expenseEntity.getMerchant()).thenReturn(merchant);
 

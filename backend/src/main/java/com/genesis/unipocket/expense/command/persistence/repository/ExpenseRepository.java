@@ -25,8 +25,7 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 					+ "AND (:category IS NULL OR e.category = :category) "
 					+ "AND (:minAmount IS NULL OR e.exchangeInfo.baseCurrencyAmount >= :minAmount) "
 					+ "AND (:maxAmount IS NULL OR e.exchangeInfo.baseCurrencyAmount <= :maxAmount) "
-					+ "AND (:merchantName IS NULL OR e.merchant.merchantName LIKE %:merchantName% "
-					+ "     OR e.merchant.displayMerchantName LIKE %:merchantName%) "
+					+ "AND (:merchantName IS NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) "
 					+ "AND (:travelId IS NULL OR e.travelId = :travelId)")
 	Page<ExpenseEntity> findByFilters(
 			@Param("accountBookId") Long accountBookId,

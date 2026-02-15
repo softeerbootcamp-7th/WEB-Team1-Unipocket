@@ -15,11 +15,11 @@ import static org.mockito.Mockito.when;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
+import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
@@ -27,6 +27,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExp
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -50,7 +51,7 @@ class TemporaryExpenseParsingServiceTest {
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 	@Mock private ExchangeRateProvider exchangeRateProvider;
 	@Mock private GeminiService geminiService;
-	@Mock private S3Service s3Service;
+	@Mock private TempExpenseMediaAccessService tempExpenseMediaAccessService;
 	@Mock private TemporaryExpenseContentExtractor contentExtractor;
 	@Mock private TemporaryExpenseFieldParser fieldParser;
 	@Mock private ParsingProgressPublisher progressPublisher;
@@ -83,7 +84,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 
-		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
+		when(tempExpenseMediaAccessService.issueGetPath(s3Key, java.time.Duration.ofMinutes(10)))
 				.thenReturn("https://signed-url");
 		when(geminiService.parseReceiptImage("https://signed-url"))
 				.thenReturn(
@@ -167,7 +168,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 
-		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
+		when(tempExpenseMediaAccessService.issueGetPath(s3Key, java.time.Duration.ofMinutes(10)))
 				.thenReturn("https://signed-url-2");
 		when(geminiService.parseReceiptImage("https://signed-url-2"))
 				.thenReturn(
@@ -198,7 +199,7 @@ class TemporaryExpenseParsingServiceTest {
 		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
 		verify(temporaryExpenseRepository).saveAll(captor.capture());
 		TemporaryExpense saved = captor.getValue().get(0);
-		assertThat(saved.getStatus()).isEqualTo(TemporaryExpense.TemporaryExpenseStatus.INCOMPLETE);
+		assertThat(saved.getStatus()).isEqualTo(TemporaryExpenseStatus.INCOMPLETE);
 		assertThat(saved.getBaseCurrencyAmount()).isNull();
 	}
 
@@ -228,7 +229,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(eq("KRW"), any())).thenReturn(CurrencyCode.KRW);
 
-		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
+		when(tempExpenseMediaAccessService.issueGetPath(s3Key, java.time.Duration.ofMinutes(10)))
 				.thenReturn("https://signed-url-3");
 
 		// Gemini response with baseAmount

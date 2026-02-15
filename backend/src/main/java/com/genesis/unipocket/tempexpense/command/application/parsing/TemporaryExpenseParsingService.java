@@ -4,7 +4,6 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
@@ -12,14 +11,15 @@ import com.genesis.unipocket.tempexpense.command.application.result.BatchParsing
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
+import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -52,7 +53,7 @@ public class TemporaryExpenseParsingService {
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final ExchangeRateProvider exchangeRateProvider;
 	private final GeminiService geminiService;
-	private final S3Service s3Service;
+	private final TempExpenseMediaAccessService tempExpenseMediaAccessService;
 	private final TemporaryExpenseContentExtractor contentExtractor;
 	private final TemporaryExpenseFieldParser fieldParser;
 	private final ParsingProgressPublisher progressPublisher;
@@ -95,7 +96,8 @@ public class TemporaryExpenseParsingService {
 			}
 		}
 
-		String taskId = java.util.UUID.randomUUID().toString();
+		String taskId = UUID.randomUUID().toString();
+		progressPublisher.registerTask(taskId, accountBookId);
 		parseBatchFilesAsync(accountBookId, s3Keys, taskId);
 		return taskId;
 	}
@@ -217,7 +219,8 @@ public class TemporaryExpenseParsingService {
 	private GeminiService.GeminiParseResponse parseWithGemini(File file) {
 		if (file.getFileType() == File.FileType.IMAGE) {
 			String s3Url =
-					s3Service.getPresignedGetUrl(file.getS3Key(), java.time.Duration.ofMinutes(10));
+					tempExpenseMediaAccessService.issueGetPath(
+							file.getS3Key(), java.time.Duration.ofMinutes(10));
 			return geminiService.parseReceiptImage(s3Url);
 		}
 		String content = extractContent(file);
@@ -339,9 +342,11 @@ public class TemporaryExpenseParsingService {
 		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());
 
 		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
+
 		Map<String, File> filesByS3Key =
 				fileRepository.findByS3KeyIn(s3Keys).stream()
 						.collect(Collectors.toMap(File::getS3Key, Function.identity()));
+
 		Map<Long, TempExpenseMeta> metaById =
 				tempExpenseMetaRepository
 						.findAllById(

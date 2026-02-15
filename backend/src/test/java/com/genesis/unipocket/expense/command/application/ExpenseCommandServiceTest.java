@@ -227,4 +227,65 @@ class ExpenseCommandServiceTest {
 		// then
 		verify(expenseRepository, times(1)).delete(expenseEntity);
 	}
+
+	@Test
+	@DisplayName("가계부 기준 통화 변경 시 모든 지출 내역의 기준 금액 재계산")
+	void updateBaseCurrency_recalculatesAllExpenses() {
+		// given
+		Long accountBookId = 7L;
+		CurrencyCode newBaseCurrency = CurrencyCode.USD;
+		CurrencyCode oldBaseCurrency = CurrencyCode.KRW;
+
+		// Mock existing expenses
+		ExpenseEntity expense1 = mock(ExpenseEntity.class);
+		when(expense1.getLocalCurrency()).thenReturn(CurrencyCode.JPY);
+		when(expense1.getLocalAmount()).thenReturn(BigDecimal.valueOf(1000));
+		when(expense1.getOccurredAt()).thenReturn(LocalDateTime.now());
+
+		ExpenseEntity expense2 = mock(ExpenseEntity.class);
+		when(expense2.getLocalCurrency()).thenReturn(CurrencyCode.KRW);
+		when(expense2.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
+		when(expense2.getOccurredAt()).thenReturn(LocalDateTime.now().minusDays(1));
+
+		when(expenseRepository.findAllByAccountBookId(accountBookId))
+				.thenReturn(java.util.List.of(expense1, expense2));
+
+		// Mock exchange rate service
+		when(exchangeRateService.convertAmount(
+						eq(BigDecimal.valueOf(1000)),
+						eq(CurrencyCode.JPY),
+						eq(newBaseCurrency),
+						any()))
+				.thenReturn(BigDecimal.valueOf(7.5)); // 1000 JPY -> 7.5 USD
+
+		when(exchangeRateService.convertAmount(
+						eq(BigDecimal.valueOf(10000)),
+						eq(CurrencyCode.KRW),
+						eq(newBaseCurrency),
+						any()))
+				.thenReturn(BigDecimal.valueOf(8.0)); // 10000 KRW -> 8.0 USD
+
+		// when
+		expenseService.updateBaseCurrency(accountBookId, newBaseCurrency);
+
+		// then
+		// Verify expense1 update
+		verify(expense1)
+				.updateExchangeInfo(
+						eq(CurrencyCode.JPY),
+						eq(BigDecimal.valueOf(1000)),
+						eq(newBaseCurrency),
+						eq(BigDecimal.valueOf(7.5)));
+
+		// Verify expense2 update
+		verify(expense2)
+				.updateExchangeInfo(
+						eq(CurrencyCode.KRW),
+						eq(BigDecimal.valueOf(10000)),
+						eq(newBaseCurrency),
+						eq(BigDecimal.valueOf(8.0)));
+
+		// Verify saveAll called
+		verify(expenseRepository).saveAll(anyList());
+	}
 }

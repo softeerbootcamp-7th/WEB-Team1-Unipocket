@@ -23,6 +23,10 @@ public class AccountBookCommandFacade {
 	private final AccountBookCommandService accountBookCommandService;
 	private final UserQueryService userQueryService;
 	private final AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
+	private final com.genesis.unipocket.expense.command.application.ExpenseCommandService
+			expenseCommandService;
+	private final com.genesis.unipocket.accountbook.query.service.AccountBookQueryService
+			accountBookQueryService;
 
 	@Transactional
 	public Long createAccountBook(UUID userId, AccountBookCreateRequest req) {
@@ -38,9 +42,18 @@ public class AccountBookCommandFacade {
 
 	@Transactional
 	public Long updateAccountBook(UUID userId, Long accountBookId, AccountBookUpdateRequest req) {
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		var currentAccountBook = accountBookQueryService.getAccountBook(accountBookId);
+		boolean baseCountryChanged = currentAccountBook.baseCountryCode() != req.baseCountryCode();
 
-		return accountBookCommandService.update(command);
+		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		Long updatedId = accountBookCommandService.update(command);
+
+		if (baseCountryChanged) {
+			expenseCommandService.updateBaseCurrency(
+					accountBookId, req.baseCountryCode().getCurrencyCode());
+		}
+
+		return updatedId;
 	}
 
 	@Transactional

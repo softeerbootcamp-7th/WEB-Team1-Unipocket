@@ -7,9 +7,11 @@ import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,6 +87,27 @@ public class ExpenseCommandService {
 	public void deleteExpense(Long expenseId, Long accountBookId) {
 		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
 		expenseRepository.delete(entity);
+	}
+
+	@Transactional
+	public void updateBaseCurrency(Long accountBookId, CurrencyCode newBaseCurrencyCode) {
+		List<ExpenseEntity> expenses = expenseRepository.findAllByAccountBookId(accountBookId);
+
+		for (ExpenseEntity expense : expenses) {
+			BigDecimal baseCurrencyAmount =
+					exchangeRateService.convertAmount(
+							expense.getLocalAmount(),
+							expense.getLocalCurrency(),
+							newBaseCurrencyCode,
+							expense.getOccurredAt());
+
+			expense.updateExchangeInfo(
+					expense.getLocalCurrency(),
+					expense.getLocalAmount(),
+					newBaseCurrencyCode,
+					baseCurrencyAmount);
+		}
+		expenseRepository.saveAll(expenses);
 	}
 
 	private ExpenseEntity findAndVerifyOwnership(Long expenseId, Long accountBookId) {

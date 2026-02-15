@@ -18,6 +18,16 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class ParsingProgressPublisher {
 
 	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+	private final Map<String, Long> taskAccountBookMap = new ConcurrentHashMap<>();
+
+	public void registerTask(String taskId, Long accountBookId) {
+		taskAccountBookMap.put(taskId, accountBookId);
+	}
+
+	public boolean isTaskOwnedBy(String taskId, Long accountBookId) {
+		Long ownerAccountBookId = taskAccountBookMap.get(taskId);
+		return ownerAccountBookId != null && ownerAccountBookId.equals(accountBookId);
+	}
 
 	/**
 	 * SSE Emitter 등록

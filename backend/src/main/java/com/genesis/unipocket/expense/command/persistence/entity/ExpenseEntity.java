@@ -6,7 +6,7 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.*;
 
 /**
@@ -62,7 +62,7 @@ public class ExpenseEntity extends BaseEntity {
 	private String memo;
 
 	@Column(nullable = false)
-	private LocalDateTime occurredAt;
+	private OffsetDateTime occurredAt;
 
 	@Embedded private Merchant merchant;
 
@@ -167,7 +167,7 @@ public class ExpenseEntity extends BaseEntity {
 		this.memo = memo;
 	}
 
-	public void updateOccurredAt(LocalDateTime occurredAt) {
+	public void updateOccurredAt(OffsetDateTime occurredAt) {
 		if (occurredAt == null) {
 			throw new IllegalArgumentException("occurredAt must not be null");
 		}

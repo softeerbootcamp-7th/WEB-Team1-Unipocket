@@ -2,16 +2,15 @@ package com.genesis.unipocket.tempexpense.command.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * <b>임시지출내역 수정 요청 DTO</b>
- *
- * @author 김동균
- * @since 2026-02-08
+ * <b>메타 단위 임시지출 수정 항목</b>
  */
-public record TemporaryExpenseUpdateRequest(
+public record TemporaryExpenseMetaBulkUpdateItemRequest(
+		@NotNull Long tempExpenseId,
 		String merchantName,
 		Category category,
 		CurrencyCode localCountryCode,

@@ -1,9 +1,9 @@
-import { useWidgetDragAndDrop } from '@/components/chart/widget/useWidgetDragAndDrop';
-import { useWidgetManager } from '@/components/chart/widget/useWidgetManager';
+import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
+import WidgetList from '@/components/chart/widget/components/WidgetList';
+import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
+import { useWidgetDragAndDrop } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
+import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
-import WidgetHeader from '@/components/chart/widget/WidgetHeader';
-import WidgetList from '@/components/chart/widget/WidgetList';
-import WidgetPicker from '@/components/chart/widget/WidgetPicker';
 import BottomSheet from '@/components/layout/BottomSheet';
 
 const WidgetSection = () => {

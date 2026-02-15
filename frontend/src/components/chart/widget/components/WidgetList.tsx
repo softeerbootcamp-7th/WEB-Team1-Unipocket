@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
+import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { renderWidget } from '@/components/chart/widget/renderWidget';
 import type { WidgetItem } from '@/components/chart/widget/type';
-import type { DragData } from '@/components/chart/widget/useWidgetDragAndDrop';
 import { WidgetItemContext } from '@/components/chart/widget/WidgetContext';
 
 interface WidgetListProps {

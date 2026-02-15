@@ -1,6 +1,5 @@
+import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { createContext, useContext } from 'react';
-
-import type { DragData } from '@/components/chart/widget/useWidgetDragAndDrop';
 
 interface WidgetContextType {
   isEditMode: boolean;

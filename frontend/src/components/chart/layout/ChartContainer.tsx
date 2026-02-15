@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 
-import { useDraggable } from '@/components/chart/widget/useWidgetDragAndDrop';
+import { useDraggable } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import {
   useWidgetContext,
   useWidgetItemContext,

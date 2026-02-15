@@ -1,4 +1,4 @@
-import WidgetSection from '@/components/chart/widget/WidgetSection';
+import WidgetSection from '@/components/chart/widget/components/WidgetSection';
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableFilterProvider } from '@/components/data-table/DataTableFilter';
 import DataTableProvider from '@/components/data-table/DataTableProvider';

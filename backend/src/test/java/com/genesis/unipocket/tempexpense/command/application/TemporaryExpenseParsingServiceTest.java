@@ -197,6 +197,74 @@ class TemporaryExpenseParsingServiceTest {
 	}
 
 	@Test
+	@DisplayName("파싱 결과에 기본 통화 금액(BaseAmount)이 있으면 환율 조회를 건너뛰고 해당 값을 사용")
+	void parseFile_usesProvidedBaseAmount_skipsExchangeLookup() {
+		Long accountBookId = 1L;
+		String s3Key = "temp/image-base-amount.jpg";
+		File file =
+				File.builder()
+						.fileId(3L)
+						.tempExpenseMetaId(12L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(12L)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
+		when(tempExpenseMetaRepository.findById(12L)).thenReturn(Optional.of(meta));
+		when(accountBookRepository.findById(accountBookId))
+				.thenReturn(
+						Optional.of(accountBook(accountBookId, CountryCode.KR, CountryCode.JP)));
+
+		when(s3Service.getPresignedGetUrl(s3Key, java.time.Duration.ofMinutes(10)))
+				.thenReturn("https://signed-url-3");
+
+		// Gemini response with baseAmount
+		when(geminiService.parseReceiptImage("https://signed-url-3"))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								true,
+								List.of(
+										new GeminiService.ParsedExpenseItem(
+												"Global Store",
+												"SHOPPING",
+												new BigDecimal("100.00"),
+												"USD",
+												new BigDecimal("135000"), // Provided Base Amount
+												"KRW", // Base Currency matches AccountBook
+												LocalDateTime.of(2026, 2, 15, 12, 0),
+												null,
+												null,
+												null)),
+								null));
+
+		when(temporaryExpenseRepository.saveAll(anyList()))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		ParsingResult result = service.parseFile(accountBookId, s3Key);
+
+		assertThat(result.normalCount()).isEqualTo(1);
+
+		// Verify NO interaction with ExchangeRateService
+		verifyNoInteractions(exchangeRateService);
+
+		@SuppressWarnings("unchecked")
+		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
+		verify(temporaryExpenseRepository).saveAll(captor.capture());
+		TemporaryExpense saved = captor.getValue().get(0);
+
+		assertThat(saved.getLocalCurrencyAmount()).isEqualByComparingTo("100.00");
+		assertThat(saved.getLocalCountryCode()).isEqualTo(CurrencyCode.USD);
+		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
+		assertThat(saved.getBaseCurrencyAmount())
+				.isEqualByComparingTo("135000"); // Should use the provided value
+	}
+
+	@Test
 	@DisplayName("배치 파싱은 s3Key 단건 조회 대신 일괄 조회를 사용")
 	void parseBatchFilesAsync_usesBulkLookups() {
 		Long accountBookId = 1L;

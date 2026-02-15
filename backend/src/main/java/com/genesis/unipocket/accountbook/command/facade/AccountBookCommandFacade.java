@@ -10,6 +10,8 @@ import com.genesis.unipocket.accountbook.command.presentation.request.AccountBoo
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.response.AccountBookResponse;
+import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
+import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
 import com.genesis.unipocket.user.query.service.UserQueryService;
 import java.util.UUID;
@@ -24,6 +26,8 @@ public class AccountBookCommandFacade {
 	private final AccountBookCommandService accountBookCommandService;
 	private final UserQueryService userQueryService;
 	private final AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
+	private final ExpenseCommandService expenseCommandService;
+	private final AccountBookQueryService accountBookQueryService;
 
 	@Transactional
 	public AccountBookResponse createAccountBook(UUID userId, AccountBookCreateRequest req) {
@@ -40,9 +44,20 @@ public class AccountBookCommandFacade {
 	@Transactional
 	public AccountBookResponse updateAccountBook(
 			UUID userId, Long accountBookId, AccountBookUpdateRequest req) {
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 
-		return AccountBookResponse.of(accountBookCommandService.update(command));
+		var currentAccountBook = accountBookQueryService.getAccountBook(accountBookId);
+		boolean baseCountryChanged =
+				!currentAccountBook.baseCountryCode().equals(req.baseCountryCode());
+
+		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		var result = accountBookCommandService.update(command);
+
+		if (baseCountryChanged) {
+			expenseCommandService.updateBaseCurrency(
+					accountBookId, req.baseCountryCode().getCurrencyCode());
+		}
+
+		return AccountBookResponse.of(result);
 	}
 
 	@Transactional

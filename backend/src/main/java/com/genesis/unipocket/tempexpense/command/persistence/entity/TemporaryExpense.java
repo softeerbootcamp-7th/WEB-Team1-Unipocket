@@ -50,6 +50,9 @@ public class TemporaryExpense {
 	@Column(name = "base_currency_amount", precision = 10, scale = 2)
 	private BigDecimal baseCurrencyAmount;
 
+	@Column(name = "exchange_rate", precision = 10, scale = 4)
+	private BigDecimal exchangeRate;
+
 	@Column(name = "payments_method")
 	private String paymentsMethod;
 

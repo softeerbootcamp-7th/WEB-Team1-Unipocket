@@ -89,7 +89,8 @@ public class ExpenseEntity extends BaseEntity {
 								params.localCurrencyCode(),
 								params.baseCurrencyCode(),
 								params.localCurrencyAmount(),
-								params.baseCurrencyAmount()))
+								params.baseCurrencyAmount(),
+								params.exchangeRate()))
 				.build();
 	}
 
@@ -113,6 +114,10 @@ public class ExpenseEntity extends BaseEntity {
 
 	public BigDecimal getBaseAmount() {
 		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
+	}
+
+	public BigDecimal getExchangeRate() {
+		return exchangeInfo != null ? exchangeInfo.getExchangeRate() : null;
 	}
 
 	public void updateMerchantName(String merchantName) {
@@ -149,13 +154,15 @@ public class ExpenseEntity extends BaseEntity {
 			CurrencyCode localCurrencyCode,
 			BigDecimal localCurrencyAmount,
 			CurrencyCode baseCurrencyCode,
-			BigDecimal baseCurrencyAmount) {
+			BigDecimal baseCurrencyAmount,
+			BigDecimal exchangeRate) {
 		// ExchangeInfo는 immutable이므로 전체 교체
 		this.exchangeInfo =
 				ExchangeInfo.of(
 						localCurrencyCode,
 						baseCurrencyCode,
 						localCurrencyAmount,
-						baseCurrencyAmount);
+						baseCurrencyAmount,
+						exchangeRate);
 	}
 }

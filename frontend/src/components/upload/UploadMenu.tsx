@@ -1,9 +1,13 @@
+import { useCallback, useState } from 'react';
+
 import Button from '@/components/common/Button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import FileUploadModal from '@/components/upload/file-upload/FileUploadModal';
+import ImageUploadModal from '@/components/upload/image-upload/ImageUploadModal';
 
 import { Icons } from '@/assets';
 
@@ -38,7 +42,15 @@ const UploadMenuItem = ({
   );
 };
 
-const UploadPopover = () => {
+interface UploadPopoverProps {
+  onOpenImageUpload: () => void;
+  onOpenFileUpload: () => void;
+}
+
+const UploadPopover = ({
+  onOpenImageUpload,
+  onOpenFileUpload,
+}: UploadPopoverProps) => {
   return (
     <PopoverContent
       align="end"
@@ -56,14 +68,14 @@ const UploadPopover = () => {
         Icon={Icons.Camera}
         title="영수증 / 은행 앱 사진 업로드"
         subTitle="사진 속 결제 정보를 자동으로 인식해요."
-        onClick={() => console.log('영수증 업로드 클릭')}
+        onClick={onOpenImageUpload}
       />
 
       <UploadMenuItem
         Icon={Icons.FileBox}
         title="거래 내역 파일 업로드"
         subTitle="은행·카드사에서 받은 내역 파일을 올려주세요."
-        onClick={() => console.log('파일 업로드 클릭')}
+        onClick={onOpenFileUpload}
       />
 
       <UploadMenuItem
@@ -77,15 +89,44 @@ const UploadPopover = () => {
 };
 
 const UploadMenu = () => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'image' | 'file' | null>(null);
+  const handleOpenImageUpload = () => {
+    setActiveModal('image');
+    setIsPopoverOpen(false);
+  };
+
+  const handleOpenFileUpload = () => {
+    setActiveModal('file');
+    setIsPopoverOpen(false);
+  };
+
+  const handleCloseModal = useCallback(() => {
+    setActiveModal(null);
+  }, []);
+
   return (
-    <Popover modal={true}>
-      <PopoverTrigger asChild>
-        <Button variant="solid" size="md">
-          지출 내역 추가하기
-        </Button>
-      </PopoverTrigger>
-      <UploadPopover />
-    </Popover>
+    <>
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="solid" size="md">
+            지출 내역 추가하기
+          </Button>
+        </PopoverTrigger>
+        <UploadPopover
+          onOpenImageUpload={handleOpenImageUpload}
+          onOpenFileUpload={handleOpenFileUpload}
+        />
+      </Popover>
+      <ImageUploadModal
+        isOpen={activeModal === 'image'}
+        onClose={handleCloseModal}
+      />
+      <FileUploadModal
+        isOpen={activeModal === 'file'}
+        onClose={handleCloseModal}
+      />
+    </>
   );
 };
 

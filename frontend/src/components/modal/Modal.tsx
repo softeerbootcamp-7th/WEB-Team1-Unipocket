@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Button, { type ButtonProps } from '@/components/common/Button';
@@ -22,6 +23,7 @@ export interface ModalProps {
   onClose: () => void;
   onAction: () => void;
   actionType?: ActionType;
+  className?: string;
 }
 
 /**
@@ -38,6 +40,7 @@ const Modal = ({
   onClose,
   onAction,
   actionType = 'confirm',
+  className,
 }: ModalProps) => {
   // 모달의 확인 버튼 활성화 여부 (기본값 true: 단순 알림 모달 등을 위해)
   const [isActionReady, setActionReady] = useState(true);
@@ -67,7 +70,10 @@ const Modal = ({
           >
             {/* Modal Content */}
             <motion.div
-              className="rounded-modal-16 bg-background-normal relative z-51 flex h-fit w-fit flex-col items-center justify-center px-4 pt-5"
+              className={clsx(
+                'rounded-modal-16 bg-background-normal relative z-51 flex h-fit w-fit flex-col items-center justify-center px-4 pt-5',
+                className,
+              )}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}

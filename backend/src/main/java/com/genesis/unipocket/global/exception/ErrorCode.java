@@ -138,9 +138,7 @@ public enum ErrorCode {
 			"400_TEMP_EXPENSE_SCOPE_MISMATCH",
 			"요청한 가계부와 임시 지출 리소스의 소속이 일치하지 않습니다."),
 	TEMP_EXPENSE_PARSE_FILES_REQUIRED(
-			HttpStatus.BAD_REQUEST,
-			"400_TEMP_EXPENSE_PARSE_FILES_REQUIRED",
-			"파싱할 파일이 선택되지 않았습니다."),
+			HttpStatus.BAD_REQUEST, "400_TEMP_EXPENSE_PARSE_FILES_REQUIRED", "파싱할 파일이 선택되지 않았습니다."),
 	TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED(
 			HttpStatus.BAD_REQUEST,
 			"400_TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED",

@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router';
+
 import Button from '@/components/common/Button';
 import FolderCard from '@/components/travel-page/FolderCard';
 
@@ -6,6 +8,7 @@ import { COUNTRY_CODE } from '@/data/countryCode';
 
 const folderMap = [
   {
+    travelId: 0,
     label: '뉴욕 보스턴',
     dateRange: '2026.01.21 - 2026.01.26',
     localCountryCode: COUNTRY_CODE.US,
@@ -15,6 +18,7 @@ const folderMap = [
     imageUrl: SeoulImage,
   },
   {
+    travelId: 1,
     label: '뉴욕 보스턴',
     dateRange: '2026.01.21 - 2026.01.26',
     localCountryCode: COUNTRY_CODE.KR,
@@ -41,17 +45,22 @@ const TravelPage = () => {
         </Button>
       </div>
       <div className="bg-background-normal rounded-modal-8 shadow-semantic-subtle flex min-h-0 flex-1 flex-wrap gap-9 overflow-y-auto p-16">
-        {folderMap.map((folder, index) => (
-          <FolderCard
-            key={index}
-            label={folder.label}
-            dateRange={folder.dateRange}
-            localCountryCode={folder.localCountryCode}
-            localCountryAmount={folder.localCountryAmount}
-            baseCountryCode={folder.baseCountryCode}
-            baseCountryAmount={folder.baseCountryAmount}
-            imageUrl={folder.imageUrl}
-          />
+        {folderMap.map((folder) => (
+          <Link
+            to={`/travel/$travelId`}
+            key={folder.travelId}
+            params={{ travelId: folder.travelId.toString() }}
+          >
+            <FolderCard
+              label={folder.label}
+              dateRange={folder.dateRange}
+              localCountryCode={folder.localCountryCode}
+              localCountryAmount={folder.localCountryAmount}
+              baseCountryCode={folder.baseCountryCode}
+              baseCountryAmount={folder.baseCountryAmount}
+              imageUrl={folder.imageUrl}
+            />
+          </Link>
         ))}
       </div>
     </div>

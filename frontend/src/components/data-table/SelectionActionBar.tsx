@@ -19,7 +19,7 @@ const SelectionActionButton = ({
   );
 };
 
-const SelectionActionProvider = () => {
+const SelectionActionBar = () => {
   const { table, tableState } = useDataTable();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
@@ -57,4 +57,4 @@ const SelectionActionProvider = () => {
   );
 };
 
-export default SelectionActionProvider;
+export default SelectionActionBar;

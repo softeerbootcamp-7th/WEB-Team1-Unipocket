@@ -7,7 +7,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * <b>지출내역 결과 DTO</b>
@@ -25,7 +25,7 @@ public record ExpenseResult(
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		BigDecimal localCurrencyAmount,
-		LocalDateTime occurredAt,
+		OffsetDateTime occurredAt,
 		String merchantName,
 		String displayMerchantName,
 		String approvalNumber,

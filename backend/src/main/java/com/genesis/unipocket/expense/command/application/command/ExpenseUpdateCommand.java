@@ -3,7 +3,7 @@ package com.genesis.unipocket.expense.command.application.command;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * <b>지출내역 수정 Command</b>
@@ -19,7 +19,7 @@ public record ExpenseUpdateCommand(
 		Category category,
 		Long userCardId,
 		String memo,
-		LocalDateTime occurredAt,
+		OffsetDateTime occurredAt,
 		BigDecimal localCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		Long travelId,

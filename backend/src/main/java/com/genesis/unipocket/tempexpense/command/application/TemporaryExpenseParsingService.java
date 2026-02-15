@@ -168,6 +168,8 @@ public class TemporaryExpenseParsingService {
 				parseCategory(item.category()),
 				parseCurrencyCode(item.localCurrency(), defaultLocalCurrencyCode),
 				item.localAmount(),
+				parseCurrencyCode(item.baseCurrency(), null),
+				item.baseAmount(),
 				item.memo(),
 				item.occurredAt(),
 				item.cardLastFourDigits(),
@@ -178,7 +180,12 @@ public class TemporaryExpenseParsingService {
 			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
 		Set<ExchangeRateKey> lookupKeys =
 				items.stream()
-						.filter(item -> item.localAmount() != null && item.occurredAt() != null)
+						.filter(
+								item ->
+										item.localAmount() != null
+												&& item.occurredAt() != null
+												&& item.baseAmount()
+														== null) // baseAmount가 있으면 환율 조회 불필요
 						.map(
 								item ->
 										new ExchangeRateKey(
@@ -207,6 +214,12 @@ public class TemporaryExpenseParsingService {
 			NormalizedParsedExpenseItem item,
 			CurrencyCode baseCurrencyCode,
 			Map<ExchangeRateKey, BigDecimal> exchangeRateMap) {
+		if (item.baseAmount() != null
+				&& item.baseCurrencyCode() != null
+				&& item.baseCurrencyCode() == baseCurrencyCode) {
+			return item.baseAmount();
+		}
+
 		if (item.localAmount() == null || item.occurredAt() == null) {
 			return null;
 		}
@@ -497,6 +510,8 @@ public class TemporaryExpenseParsingService {
 			Category category,
 			CurrencyCode localCurrencyCode,
 			BigDecimal localAmount,
+			CurrencyCode baseCurrencyCode,
+			BigDecimal baseAmount,
 			String memo,
 			java.time.LocalDateTime occurredAt,
 			String cardLastFourDigits,

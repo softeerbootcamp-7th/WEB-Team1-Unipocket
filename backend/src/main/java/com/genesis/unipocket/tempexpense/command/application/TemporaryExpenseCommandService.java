@@ -7,9 +7,9 @@ import com.genesis.unipocket.tempexpense.command.application.command.TemporaryEx
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,6 +125,11 @@ public class TemporaryExpenseCommandService {
 						.orElseThrow(
 								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		return meta.getAccountBookId();
+	}
+
+	public Long findMetaIdByTempExpenseId(Long tempExpenseId) {
+		TemporaryExpense tempExpense = findById(tempExpenseId);
+		return tempExpense.getTempExpenseMetaId();
 	}
 
 	/**

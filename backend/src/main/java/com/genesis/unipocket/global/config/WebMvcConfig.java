@@ -1,10 +1,12 @@
 package com.genesis.unipocket.global.config;
 
-import com.genesis.unipocket.auth.resolver.LoginUserArgumentResolver;
+import com.genesis.unipocket.auth.common.resolver.LoginUserArgumentResolver;
+import com.genesis.unipocket.global.common.converter.CategoryConverter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -36,5 +38,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 				.allowedHeaders("*")
 				.allowCredentials(true)
 				.maxAge(3600); // 브라우저에 CORS 결과 캐싱 시간 추가 (성능 향상)
+	}
+
+	@Override
+	public void addFormatters(FormatterRegistry registry) {
+		registry.addConverter(new CategoryConverter());
 	}
 }

@@ -25,17 +25,15 @@ spring:
     aws:
       region:
         static: ${AWS_REGION}
-      credentials:
-        access-key: ${AWS_ACCESS_KEY}
-        secret-key: ${AWS_SECRET_KEY}
       s3:
         bucket: ${AWS_S3_BUCKET_NAME}
 
 # JWT Configuration (기본값 없음)
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: 180000000
-  refresh-token-expiration: 86400000000
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+  oauth-state-ttl: ${JWT_OAUTH_STATE_TTL}
 
 # OAuth2 Configuration (기본값 없음)
 oauth2:
@@ -51,15 +49,19 @@ oauth2:
       issuer: https://accounts.google.com
       scope: openid profile email
     - type: KAKAO
-      client-id: ${KAKAO_CLIENT_ID}
+      client-id: ${KAKAO_OAUTH_ID}
+      client-secret: ${KAKAO_OAUTH_SECRET}
       redirect-uri: ${KAKAO_REDIRECT_URI}
       authorization-uri: https://kauth.kakao.com/oauth/authorize
       token-uri: https://kauth.kakao.com/oauth/token
       user-info-uri: https://kapi.kakao.com/v2/user/me
-      scope: profile_nickname,profile_image,account_email
+      scope: profile_nickname,profile_image
 
 # Application Configuration (기본값 없음)
 app:
+  media:
+    presigned-get-expiration-seconds: ${MEDIA_GET_EXPIRATION}
+    presigned-put-expiration-seconds: ${MEDIA_PUT_EXPIRATION}
   frontend:
     url: ${FRONTEND_URL}
     allowed-origins: ${FRONTEND_ALLOWED_ORIGINS}

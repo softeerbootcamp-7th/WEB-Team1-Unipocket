@@ -21,15 +21,16 @@ spring:
 
 jwt:
   secret: test-secret-key-must-be-at-least-32-characters-long
-  access-token-expiration: 1800000
-  refresh-token-expiration: 864000000
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:30m}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:10d}
+  oauth-state-ttl: ${JWT_OAUTH_STATE_TTL:10m}
 
 oauth2:
   providers:
     - type: GOOGLE
       client-id: test-google-client-id
       client-secret: test-google-client-secret
-      redirect-uri: http://localhost:5173/api/auth/oauth2/callback/google
+      redirect-uri: http://localhost:5173/auth/oauth2/callback/google
       authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
       token-uri: https://oauth2.googleapis.com/token
       user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
@@ -38,13 +39,16 @@ oauth2:
       scope: openid profile email
     - type: KAKAO
       client-id: test-kakao-client-id
-      redirect-uri: http://localhost:5173/api/auth/oauth2/callback/kakao
+      redirect-uri: http://localhost:5173/auth/oauth2/callback/kakao
       authorization-uri: https://kauth.kakao.com/oauth/authorize
       token-uri: https://kauth.kakao.com/oauth/token
       user-info-uri: https://kapi.kakao.com/v2/user/me
       scope: profile_nickname,profile_image,account_email
 
 app:
+  media:
+    presigned-get-expiration-seconds: 100
+    presigned-put-expiration-seconds: 100
   frontend:
     url: http://localhost:5173
     allowed-origins: http://localhost:5173

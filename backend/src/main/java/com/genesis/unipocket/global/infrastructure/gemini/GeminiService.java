@@ -103,10 +103,22 @@ public class GeminiService {
 	 * @param csvContent CSV 문자열
 	 * @return 파싱 결과
 	 */
-	public GeminiParseResponse parseCsv(String csvContent) {
-		log.info("Parsing CSV content (length: {})", csvContent.length());
+	/**
+	 * 문서 샘플을 기반으로 스키마 추론
+	 *
+	 * @param sampleContent 문서 샘플 (헤더 + 3개 행)
+	 * @return 추론된 스키마
+	 */
+	/**
+	 * 문서 내용 파싱 (CSV, Excel 변환 텍스트 등)
+	 *
+	 * @param content 문서 텍스트 내용
+	 * @return 파싱 결과
+	 */
+	public GeminiParseResponse parseDocument(String content) {
+		log.info("Parsing document content (length: {})", content.length());
 
-		String prompt = buildCsvParsingPrompt() + "\n\nCSV Content:\n" + csvContent;
+		String prompt = buildDocumentParsingPrompt() + "\n\nDocument Content:\n" + content;
 
 		try {
 			String url = endpoint + "/models/" + model + ":generateContent?key=" + apiKey;
@@ -134,9 +146,45 @@ public class GeminiService {
 			log.error("Failed to call Gemini API", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
 		} catch (Exception e) {
-			log.error("Unexpected error during CSV parsing", e);
+			log.error("Unexpected error during document parsing", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
 		}
+	}
+
+	/**
+	 * 문서(CSV/Excel 텍스트) 파싱 프롬프트 생성
+	 */
+	private String buildDocumentParsingPrompt() {
+		return """
+				You are an expert at parsing expense documents (CSV, Excel text).
+
+				Parse the provided text content and convert each row/item to the following JSON format:
+
+				{
+				"items": [
+					{
+					"merchantName": "가맹점명 (필수)",
+					"category": "FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
+					"localAmount": "현지 금액 (필수, 숫자만)",
+					"localCurrency": "현지 통화 코드 (필수, KRW, USD, etc)",
+					"baseAmount": "청구(본국) 금액 (있는 경우 작성, 숫자만)",
+					"baseCurrency": "청구(본국) 통화 코드 (있는 경우 작성, KRW, USD, etc)",
+					"occurredAt": "거래일시 (ISO 8601: YYYY-MM-DDTHH:mm:ss)",
+					"cardLastFourDigits": "카드번호 뒷4자리",
+					"approvalNumber": "승인번호 (있는 경우 작성)",
+					"memo": "메모/적요"
+					}
+				]
+				}
+
+				Rules:
+				- Auto-detect headers/columns from the text
+				- Map columns intelligently (e.g., 'Store' -> merchantName, 'Cost' -> localAmount)
+				- Handle various date formats and convert to ISO 8601
+				- If currency is missing, infer from context or default to KRW
+				- Ignore header rows or summary rows (total, etc.)
+				- Return ONLY the JSON, no additional text
+				""";
 	}
 
 	/**
@@ -185,12 +233,17 @@ public class GeminiService {
 										? new BigDecimal(item.path("localAmount").asText())
 										: null,
 								item.path("localCurrency").asText(null),
+								item.has("baseAmount")
+										? new BigDecimal(item.path("baseAmount").asText())
+										: null,
+								item.path("baseCurrency").asText(null),
 								item.has("occurredAt")
 										? LocalDateTime.parse(
 												item.path("occurredAt").asText(),
 												DateTimeFormatter.ISO_DATE_TIME)
 										: null,
 								item.path("cardLastFourDigits").asText(null),
+								item.path("approvalNumber").asText(null),
 								item.path("memo").asText(null));
 
 				expenseItems.add(expenseItem);
@@ -221,8 +274,11 @@ public class GeminiService {
 					"category": "one of: FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
 					"localAmount": "결제 금액 (숫자만)",
 					"localCurrency": "통화 코드 (KRW, USD, JPY 등)",
+					"baseAmount": "청구 금액 (있는 경우 작성, 숫자만)",
+					"baseCurrency": "청구 통화 코드 (있는 경우 작성, KRW 등)",
 					"occurredAt": "결제 일시 (ISO 8601 format: YYYY-MM-DDTHH:mm:ss)",
 					"cardLastFourDigits": "카드 뒷 4자리 (없으면 null)",
+					"approvalNumber": "승인번호 (있는 경우 작성)",
 					"memo": "추가 메모 (없으면 null)"
 					}
 				]
@@ -239,39 +295,7 @@ public class GeminiService {
 	}
 
 	/**
-	 * CSV 파싱 프롬프트 생성
-	 */
-	private String buildCsvParsingPrompt() {
-		return """
-				You are an expert at parsing expense CSV files.
-
-				Parse the provided CSV content and convert each row to the following JSON format:
-
-				{
-				"items": [
-					{
-					"merchantName": "가맹점명",
-					"category": "FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
-					"localAmount": "금액",
-					"localCurrency": "통화 코드",
-					"occurredAt": "거래일시 (ISO 8601)",
-					"cardLastFourDigits": "카드번호 뒷자리",
-					"memo": "메모"
-					}
-				]
-				}
-
-				Rules:
-				- Auto-detect CSV headers
-				- Map columns to appropriate fields intelligently
-				- Handle different date/currency formats
-				- Default missing fields to null
-				- Return ONLY the JSON, no additional text
-				""";
-	}
-
-	/**
-	 * Gemini API 파싱 응답
+	 * Gemini API 파싱 응답 (영수증)
 	 */
 	public record GeminiParseResponse(
 			boolean success, List<ParsedExpenseItem> items, String errorMessage) {}
@@ -284,7 +308,10 @@ public class GeminiService {
 			String category,
 			BigDecimal localAmount,
 			String localCurrency,
+			BigDecimal baseAmount,
+			String baseCurrency,
 			LocalDateTime occurredAt,
 			String cardLastFourDigits,
+			String approvalNumber,
 			String memo) {}
 }

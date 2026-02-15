@@ -1,0 +1,140 @@
+package com.genesis.unipocket.expense.query.service;
+
+import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
+import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
+import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
+import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Set;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * <b>지출내역 조회 서비스</b>
+ *
+ * @author codingbaraGo
+ * @since 2026-02-03
+ */
+@Service
+@AllArgsConstructor
+@Transactional(readOnly = true)
+public class ExpenseQueryService {
+
+	private static final Set<String> ALLOWED_SORT_PROPERTIES =
+			Set.of("occurredAt", "baseCurrencyAmount");
+
+	private final ExpenseRepository expenseRepository;
+	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final UserCardFetchService userCardFetchService;
+
+	public ExpenseResult getExpense(Long expenseId, Long accountBookId, UUID userId) {
+		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
+		return enrichWithCardInfo(entity);
+	}
+
+	public Page<ExpenseResult> getExpenses(
+			Long accountBookId, UUID userId, ExpenseSearchFilter filter, Pageable pageable) {
+
+		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+
+		Sort refinedSort =
+				Sort.by(
+						pageable.getSort().stream()
+								.map(
+										order -> {
+											if (!ALLOWED_SORT_PROPERTIES.contains(
+													order.getProperty())) {
+												throw new BusinessException(
+														ErrorCode.EXPENSE_INVALID_SORT);
+											}
+
+											if ("baseCurrencyAmount".equals(order.getProperty())) {
+												return new Sort.Order(
+														order.getDirection(),
+														"exchangeInfo.baseCurrencyAmount");
+											}
+											return order;
+										})
+								.toList());
+
+		Pageable refinedPageable =
+				PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), refinedSort);
+
+		Page<ExpenseEntity> entities;
+
+		if (filter == null || isFilterEmpty(filter)) {
+			entities = expenseRepository.findByAccountBookId(accountBookId, refinedPageable);
+		} else {
+			var startDate =
+					filter.startDate() != null
+							? filter.startDate()
+									.withOffsetSameInstant(ZoneOffset.UTC)
+									.toLocalDateTime()
+							: null;
+			var endDate =
+					filter.endDate() != null
+							? filter.endDate()
+									.withOffsetSameInstant(ZoneOffset.UTC)
+									.toLocalDateTime()
+							: LocalDateTime.now();
+
+			entities =
+					expenseRepository.findByFilters(
+							accountBookId,
+							startDate,
+							endDate,
+							filter.category(),
+							filter.minAmount(),
+							filter.maxAmount(),
+							filter.merchantName(),
+							filter.travelId(),
+							refinedPageable);
+		}
+
+		return entities.map(this::enrichWithCardInfo);
+	}
+
+	private ExpenseResult enrichWithCardInfo(ExpenseEntity entity) {
+		if (entity.getUserCardId() == null) {
+			return ExpenseResult.from(entity);
+		}
+		UserCardInfo cardInfo = userCardFetchService.getUserCard(entity.getUserCardId());
+		return ExpenseResult.from(entity, cardInfo);
+	}
+
+	private ExpenseEntity findAndVerifyOwnership(Long expenseId, Long accountBookId) {
+		ExpenseEntity entity =
+				expenseRepository
+						.findById(expenseId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.EXPENSE_NOT_FOUND));
+
+		if (!entity.getAccountBookId().equals(accountBookId)) {
+			throw new BusinessException(ErrorCode.EXPENSE_UNAUTHORIZED_ACCESS);
+		}
+
+		return entity;
+	}
+
+	private boolean isFilterEmpty(ExpenseSearchFilter filter) {
+		return filter.startDate() == null
+				&& filter.endDate() == null
+				&& filter.category() == null
+				&& filter.minAmount() == null
+				&& filter.maxAmount() == null
+				&& filter.merchantName() == null
+				&& filter.travelId() == null;
+	}
+}

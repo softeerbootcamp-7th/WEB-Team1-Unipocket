@@ -7,7 +7,7 @@ import {
 interface PeriodMonthlyViewProps {
   data: PeriodData[];
   animate?: boolean;
-  isLoading?: boolean;
+  isPreview?: boolean;
 }
 
 /**
@@ -16,12 +16,12 @@ interface PeriodMonthlyViewProps {
 const PeriodMonthlyView = ({
   data,
   animate = true,
-  isLoading = false,
+  isPreview = false,
 }: PeriodMonthlyViewProps) => {
   const values = data.map((d) => d.value);
 
-  const dotColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
-  const lineColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
+  const dotColor = isPreview ? PERIOD_SKELETON_COLOR : undefined;
+  const lineColor = isPreview ? PERIOD_SKELETON_COLOR : undefined;
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -30,13 +30,13 @@ const PeriodMonthlyView = ({
         values={values}
         lineColor={lineColor}
         dotColor={dotColor}
-        animate={!isLoading && animate}
+        animate={!isPreview && animate}
       />
 
       {/* X축 라벨 */}
       <div className="flex w-full justify-between">
         {data.map((item) =>
-          isLoading ? (
+          isPreview ? (
             <div
               key={item.label}
               className="bg-fill-normal h-3 w-3.5 animate-pulse rounded"

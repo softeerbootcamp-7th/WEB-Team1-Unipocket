@@ -11,7 +11,7 @@ interface PeriodWeeklyViewProps {
   data: PeriodData[];
   countryCode?: CountryCode;
   animate?: boolean;
-  isLoading?: boolean;
+  isPreview?: boolean;
 }
 
 /**
@@ -21,11 +21,11 @@ const PeriodWeeklyView = ({
   data,
   countryCode = 'KR',
   animate = true,
-  isLoading = false,
+  isPreview = false,
 }: PeriodWeeklyViewProps) => {
   const maxValue = Math.max(1, ...data.map((d) => d.value));
 
-  const barColor = isLoading ? PERIOD_SKELETON_COLOR : undefined;
+  const barColor = isPreview ? PERIOD_SKELETON_COLOR : undefined;
 
   return (
     <div className="flex flex-col items-center gap-9.5">
@@ -34,7 +34,7 @@ const PeriodWeeklyView = ({
           <div key={item.label} className="flex items-center gap-4">
             {/* 라벨 영역 */}
             <div className="flex shrink-0 flex-col">
-              {isLoading ? (
+              {isPreview ? (
                 <div className="bg-fill-normal h-3 w-8 animate-pulse rounded" />
               ) : (
                 <span className="caption2-medium text-label-normal whitespace-nowrap">
@@ -49,11 +49,11 @@ const PeriodWeeklyView = ({
                 value={item.value}
                 maxValue={maxValue}
                 barColor={barColor}
-                animate={!isLoading && animate}
+                animate={!isPreview && animate}
               />
 
               {/* 금액 영역 */}
-              {isLoading ? (
+              {isPreview ? (
                 <div className="bg-fill-normal h-4 w-14.5 animate-pulse rounded" />
               ) : (
                 <CurrencyAmountDisplay

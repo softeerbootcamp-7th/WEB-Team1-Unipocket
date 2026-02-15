@@ -166,7 +166,7 @@ const DataTableSearchFilter = <T extends string>({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <PopoverTrigger asChild>
         <Filter
           size="md"
@@ -217,39 +217,44 @@ const DataTableSearchFilter = <T extends string>({
         </div>
 
         {/* --- 리스트 && footer 영역 --- */}
-        <div ref={listRef} className="scrollbar max-h-85 overflow-y-auto p-3">
-          {!searchTerm && renderEmptyState ? (
-            renderEmptyState()
-          ) : (
-            <>
-              {filteredOptions.length > 0 ? (
-                filteredOptions.map((option, index) => (
-                  <label
-                    key={option}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    className={clsx(
-                      'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',
-                      activeIndex === index && 'bg-background-alternative',
-                    )}
-                  >
-                    <Checkbox
-                      checked={selectedOptions.includes(option)}
-                      onCheckedChange={() => toggleOption(option)}
-                    />
+        <div
+          ref={listRef}
+          className="flex max-h-85 min-h-42 flex-col justify-between p-3"
+        >
+          <div className="scrollbar overflow-y-auto">
+            {!searchTerm && renderEmptyState ? (
+              renderEmptyState()
+            ) : (
+              <>
+                {filteredOptions.length > 0 ? (
+                  filteredOptions.map((option, index) => (
+                    <label
+                      key={option}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      className={clsx(
+                        'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',
+                        activeIndex === index && 'bg-background-alternative',
+                      )}
+                    >
+                      <Checkbox
+                        checked={selectedOptions.includes(option)}
+                        onCheckedChange={() => toggleOption(option)}
+                      />
 
-                    {/* 옵션 텍스트/컴포넌트 */}
-                    <div className="text-label-neutral flex-1 truncate text-sm">
-                      {renderOption(option, searchTerm)}
-                    </div>
-                  </label>
-                ))
-              ) : (
-                <div className="text-label-assistive p-4 text-center text-sm">
-                  검색 결과가 없습니다.
-                </div>
-              )}
-            </>
-          )}
+                      {/* 옵션 텍스트/컴포넌트 */}
+                      <div className="text-label-neutral flex-1 truncate text-sm">
+                        {renderOption(option, searchTerm)}
+                      </div>
+                    </label>
+                  ))
+                ) : (
+                  <div className="text-label-assistive p-4 text-center text-sm">
+                    검색 결과가 없습니다.
+                  </div>
+                )}
+              </>
+            )}
+          </div>
           {/* Search All Trigger */}
           {searchTerm &&
             filteredOptions.length > 0 &&

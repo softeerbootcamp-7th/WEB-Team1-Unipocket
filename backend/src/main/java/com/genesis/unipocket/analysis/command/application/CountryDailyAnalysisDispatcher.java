@@ -25,7 +25,6 @@ public class CountryDailyAnalysisDispatcher {
 
 	private static final List<AnalysisBatchJobStatus> CLAIMABLE_STATUSES =
 			List.of(AnalysisBatchJobStatus.PENDING, AnalysisBatchJobStatus.RETRY);
-	private static final int LEASE_MINUTES = 30;
 
 	private final CountryDailyAnalysisJobRepository jobRepository;
 	private final CountryDailyAnalysisWorker worker;
@@ -61,7 +60,8 @@ public class CountryDailyAnalysisDispatcher {
 												CLAIMABLE_STATUSES,
 												workerId,
 												claimTime,
-												claimTime.plusMinutes(LEASE_MINUTES));
+												claimTime.plusMinutes(
+														properties.getLeaseMinutes()));
 								return updated == 1;
 							});
 

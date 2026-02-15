@@ -41,6 +41,9 @@ public class CountryBatchScheduleEntity extends BaseEntity {
 	@Column(name = "last_success_local_date")
 	private LocalDate lastSuccessLocalDate;
 
+	@Column(name = "last_success_at_utc")
+	private LocalDateTime lastSuccessAtUtc;
+
 	public static CountryBatchScheduleEntity create(
 			CountryCode countryCode,
 			ZoneId zoneId,
@@ -55,13 +58,24 @@ public class CountryBatchScheduleEntity extends BaseEntity {
 				.build();
 	}
 
-	public void markSuccess(LocalDate runLocalDate) {
+	public void markSuccess(LocalDate runLocalDate, LocalDateTime successAtUtc) {
 		this.lastSuccessLocalDate = runLocalDate;
+		this.lastSuccessAtUtc = successAtUtc;
 	}
 
-	public void moveNextRun(int runHour, int runMinute, LocalDateTime nowUtc) {
+	public void moveNextRun(int runHour, int runMinute) {
 		ZoneId zoneId = ZoneId.of(timezone);
-		this.nextRunAtUtc = computeNextRunUtc(zoneId, runHour, runMinute, nowUtc);
+		ZonedDateTime currentScheduledLocal =
+				nextRunAtUtc.atZone(ZoneOffset.UTC).withZoneSameInstant(zoneId);
+		ZonedDateTime nextScheduledLocal =
+				currentScheduledLocal
+						.plusDays(1)
+						.withHour(runHour)
+						.withMinute(runMinute)
+						.withSecond(0)
+						.withNano(0);
+		this.nextRunAtUtc =
+				nextScheduledLocal.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
 	}
 
 	private static LocalDateTime computeNextRunUtc(

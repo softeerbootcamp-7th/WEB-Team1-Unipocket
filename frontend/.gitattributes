@@ -1,0 +1,2 @@
+# 자동 생성되는 라우트 트리 파일의 줄바꿈을 LF로 고정
+src/routeTree.gen.ts text eol=lf

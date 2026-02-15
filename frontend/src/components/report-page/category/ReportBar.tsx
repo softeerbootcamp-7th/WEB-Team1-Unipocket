@@ -6,7 +6,6 @@ import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
-import { type CountryCode } from '@/data/countryCode';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 interface ReportBarProps {
@@ -30,8 +29,10 @@ const VARIANT_STYLES = {
 
 const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
   const { currencyType } = useReportContext();
-  const countryCode = useAccountBookStore((state) => state.accountBook?.localCountryCode) as CountryCode;
-  
+  const countryCode = useAccountBookStore(
+    (state) => state.accountBook?.localCountryCode,
+  );
+
   const styles = VARIANT_STYLES[variant];
   const percentage = (value / maxValue) * 100;
   const [showAmount, setShowAmount] = useState(false);
@@ -45,6 +46,8 @@ const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  if (!countryCode) return null;
 
   return (
     <div className="flex flex-1 items-center gap-2">

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import TravelDetailPage from '@/pages/TravelDetailPage';
 
-export const Route = createFileRoute('/_app/travel/$id')({
+export const Route = createFileRoute('/_app/travel/$travelId')({
   component: RouteComponent,
 });
 

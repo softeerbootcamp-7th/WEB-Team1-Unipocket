@@ -4,9 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
+import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
+import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
+import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +43,8 @@ class UserQueryServiceTest {
 	private com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository
 			userQueryRepository;
 
+	@Mock private AccountBookCountService accountBookCountService;
+
 	@InjectMocks private UserQueryService userQueryService;
 
 	private UUID userId;
@@ -63,5 +70,45 @@ class UserQueryServiceTest {
 		// Then
 		assertThat(result).hasSize(1);
 		verify(userQueryRepository).findAllCardsByUserId(userId);
+	}
+
+	@Test
+	@DisplayName("getUserInfo - 가계부가 없으면 온보딩 필요(true)")
+	void getUserInfo_NeedsOnboardingTrue() {
+		UserQueryResponse baseResponse =
+				new UserQueryResponse(
+						userId,
+						"test@example.com",
+						"Tester",
+						"img.jpg",
+						UserRole.ROLE_USER,
+						UserStatus.ACTIVE);
+		when(userQueryRepository.findById(userId)).thenReturn(Optional.of(baseResponse));
+		when(accountBookCountService.countByUserId(userId)).thenReturn(0L);
+
+		UserQueryResponse result = userQueryService.getUserInfo(userId);
+
+		assertThat(result.needsOnboarding()).isTrue();
+		verify(accountBookCountService).countByUserId(userId);
+	}
+
+	@Test
+	@DisplayName("getUserInfo - 가계부가 있으면 온보딩 불필요(false)")
+	void getUserInfo_NeedsOnboardingFalse() {
+		UserQueryResponse baseResponse =
+				new UserQueryResponse(
+						userId,
+						"test@example.com",
+						"Tester",
+						"img.jpg",
+						UserRole.ROLE_USER,
+						UserStatus.ACTIVE);
+		when(userQueryRepository.findById(userId)).thenReturn(Optional.of(baseResponse));
+		when(accountBookCountService.countByUserId(userId)).thenReturn(2L);
+
+		UserQueryResponse result = userQueryService.getUserInfo(userId);
+
+		assertThat(result.needsOnboarding()).isFalse();
+		verify(accountBookCountService).countByUserId(userId);
 	}
 }

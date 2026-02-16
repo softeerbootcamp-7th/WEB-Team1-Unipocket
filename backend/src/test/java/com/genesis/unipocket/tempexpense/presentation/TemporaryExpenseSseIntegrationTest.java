@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
@@ -16,16 +18,14 @@ import com.genesis.unipocket.auth.support.JwtTestHelper;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
+import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
-import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -137,7 +137,9 @@ class TemporaryExpenseSseIntegrationTest {
 		String parseBody = objectMapper.writeValueAsString(new ParseRequest(List.of(s3Key)));
 		MvcResult parseResult =
 				mockMvc.perform(
-								post("/account-books/{accountBookId}/temporary-expenses/parse", accountBookId)
+								post(
+												"/account-books/{accountBookId}/temporary-expenses/parse",
+												accountBookId)
 										.with(jwtTestHelper.withJwtAuth(userId))
 										.contentType(MediaType.APPLICATION_JSON)
 										.content(parseBody))
@@ -169,7 +171,8 @@ class TemporaryExpenseSseIntegrationTest {
 		assertThat(sseBody).contains("\"status\":\"SUCCESS\"");
 		assertThat(sseBody).contains(s3Key);
 
-		assertThat(temporaryExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId)).hasSize(1);
+		assertThat(temporaryExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId))
+				.hasSize(1);
 	}
 
 	private record ParseRequest(List<String> s3Keys) {}

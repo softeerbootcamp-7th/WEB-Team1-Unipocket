@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
@@ -25,7 +26,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,9 +125,13 @@ class AnalysisQueryControllerTest {
 						analysisQueryRepository.getAccountBookCountryCodes(accountBookId))
 				.willReturn(new Object[] {CountryCode.US, CountryCode.KR});
 		org.mockito.BDDMockito.given(
-						monthlyDirtyRepository.findByAccountBookIdAndTargetYearMonth(
-								eq(accountBookId), eq(LocalDate.of(2025, 12, 1))))
-				.willReturn(Optional.empty());
+						monthlyDirtyRepository
+								.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+										eq(CountryCode.US),
+										eq(accountBookId),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisBatchJobStatus.SUCCESS)))
+				.willReturn(false);
 		org.mockito.BDDMockito.given(
 						aggregationRepository.hasAccountMonthlyAggregate(
 								eq(accountBookId),

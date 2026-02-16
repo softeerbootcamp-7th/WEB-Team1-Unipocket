@@ -17,6 +17,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.ExpenseRow;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
+import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
@@ -28,7 +29,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -206,18 +207,9 @@ public class CountryMonthlyDirtyAggregationService {
 			}
 		}
 
-		Map<Integer, Bounds> localBoundsByCategory = new HashMap<>(localAmountsByCategory.size());
-		for (Map.Entry<Integer, List<BigDecimal>> entry : localAmountsByCategory.entrySet()) {
-			List<BigDecimal> sorted = new ArrayList<>(entry.getValue());
-			Collections.sort(sorted);
-			localBoundsByCategory.put(entry.getKey(), computeBounds(sorted));
-		}
-		Map<Integer, Bounds> baseBoundsByCategory = new HashMap<>(baseAmountsByCategory.size());
-		for (Map.Entry<Integer, List<BigDecimal>> entry : baseAmountsByCategory.entrySet()) {
-			List<BigDecimal> sorted = new ArrayList<>(entry.getValue());
-			Collections.sort(sorted);
-			baseBoundsByCategory.put(entry.getKey(), computeBounds(sorted));
-		}
+		Map<Integer, Bounds> localBoundsByCategory =
+				computeBoundsForCategories(localAmountsByCategory);
+		Map<Integer, Bounds> baseBoundsByCategory = computeBoundsForCategories(baseAmountsByCategory);
 
 		BigDecimal totalLocalAmount = BigDecimal.ZERO;
 		BigDecimal totalBaseAmount = BigDecimal.ZERO;
@@ -234,15 +226,16 @@ public class CountryMonthlyDirtyAggregationService {
 						applyBounds(
 								baseBoundsByCategory.get(row.categoryOrdinal()), cleanedBaseAmount);
 			}
+			BigDecimal boundedBaseAmount = cleanedBaseAmount;
 
 			totalLocalAmount = totalLocalAmount.add(cleanedLocalAmount);
-			totalBaseAmount = totalBaseAmount.add(cleanedBaseAmount);
+			totalBaseAmount = totalBaseAmount.add(boundedBaseAmount);
 			expenseCount += 1L;
-			CategoryAccumulator current =
-					categoryMap.computeIfAbsent(
-							row.categoryOrdinal(), unused -> new CategoryAccumulator());
-			categoryMap.put(
-					row.categoryOrdinal(), current.add(cleanedLocalAmount, cleanedBaseAmount, 1L));
+			categoryMap.compute(
+					row.categoryOrdinal(),
+					(unused, current) ->
+							(current == null ? new CategoryAccumulator() : current)
+									.add(cleanedLocalAmount, boundedBaseAmount, 1L));
 		}
 
 		List<CategoryAmountPairCount> categoryRows = new ArrayList<>(categoryMap.size());
@@ -276,6 +269,17 @@ public class CountryMonthlyDirtyAggregationService {
 			return Bounds.notApplicable();
 		}
 		return Bounds.applicable(lower, upper);
+	}
+
+	private Map<Integer, Bounds> computeBoundsForCategories(
+			Map<Integer, List<BigDecimal>> amountsByCategory) {
+		Map<Integer, Bounds> boundsByCategory = new HashMap<>(amountsByCategory.size());
+		for (Map.Entry<Integer, List<BigDecimal>> entry : amountsByCategory.entrySet()) {
+			List<BigDecimal> sorted = new ArrayList<>(entry.getValue());
+			sorted.sort(Comparator.naturalOrder());
+			boundsByCategory.put(entry.getKey(), computeBounds(sorted));
+		}
+		return boundsByCategory;
 	}
 
 	private BigDecimal applyBounds(Bounds bounds, BigDecimal amount) {
@@ -414,24 +418,7 @@ public class CountryMonthlyDirtyAggregationService {
 	}
 
 	private Integer parseCategoryOrdinal(Object value) {
-		if (value == null) {
-			return null;
-		}
-		int ordinal;
-		if (value instanceof Number number) {
-			ordinal = number.intValue();
-		} else {
-			try {
-				ordinal = Integer.parseInt(value.toString());
-			} catch (NumberFormatException e) {
-				try {
-					ordinal = Category.valueOf(value.toString()).ordinal();
-				} catch (IllegalArgumentException ignored) {
-					return null;
-				}
-			}
-		}
-		return ordinal < 0 || ordinal >= Category.values().length ? null : ordinal;
+		return CategoryOrdinalParser.parse(value);
 	}
 
 	private Category toCategory(Integer ordinal) {

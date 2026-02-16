@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 public class TemporaryExpenseQueryFacade {
 
+	private static final long PARSING_SSE_TIMEOUT_MS = 10 * 60 * 1000L;
+
 	private final TemporaryExpenseQueryService temporaryExpenseQueryService;
 	private final ParsingProgressPublisher progressPublisher;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
@@ -53,7 +55,7 @@ public class TemporaryExpenseQueryFacade {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_TASK_NOT_FOUND);
 		}
 
-		SseEmitter emitter = new SseEmitter(60000L);
+		SseEmitter emitter = new SseEmitter(PARSING_SSE_TIMEOUT_MS);
 
 		progressPublisher.addEmitter(taskId, emitter);
 		emitter.onCompletion(() -> progressPublisher.removeEmitter(taskId));

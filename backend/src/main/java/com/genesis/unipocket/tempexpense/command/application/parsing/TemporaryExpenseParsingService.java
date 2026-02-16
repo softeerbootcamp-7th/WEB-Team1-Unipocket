@@ -8,6 +8,7 @@ import com.genesis.unipocket.tempexpense.command.application.parsing.command.Exc
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
+import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult.FileParsingOutcome;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
@@ -20,6 +21,7 @@ import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPu
 import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -210,91 +212,137 @@ public class TemporaryExpenseParsingService {
 			Long accountBookId, List<String> s3Keys, String taskId) {
 		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());
 
-		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
+		try {
+			AccountBookRateContext rateContext = resolveRateContext(accountBookId);
 
-		Map<String, File> filesByS3Key =
-				fileRepository.findByS3KeyIn(s3Keys).stream()
-						.collect(Collectors.toMap(File::getS3Key, Function.identity()));
+			Map<String, File> filesByS3Key =
+					fileRepository.findByS3KeyIn(s3Keys).stream()
+							.collect(Collectors.toMap(File::getS3Key, Function.identity()));
 
-		Map<Long, TempExpenseMeta> metaById =
-				tempExpenseMetaRepository
-						.findAllById(
-								filesByS3Key.values().stream()
-										.map(File::getTempExpenseMetaId)
-										.distinct()
-										.toList())
-						.stream()
-						.collect(
-								Collectors.toMap(
-										TempExpenseMeta::getTempExpenseMetaId,
-										Function.identity()));
+			Map<Long, TempExpenseMeta> metaById =
+					tempExpenseMetaRepository
+							.findAllById(
+									filesByS3Key.values().stream()
+											.map(File::getTempExpenseMetaId)
+											.distinct()
+											.toList())
+							.stream()
+							.collect(
+									Collectors.toMap(
+											TempExpenseMeta::getTempExpenseMetaId,
+											Function.identity()));
 
-		int totalFiles = s3Keys.size();
-		int completedFiles = 0;
-		int totalParsed = 0;
-		int totalNormal = 0;
-		int totalIncomplete = 0;
-		int failedFiles = 0;
-		Long firstMetaId = null;
+			int totalFiles = s3Keys.size();
+			int completedFiles = 0;
+			int totalParsed = 0;
+			int totalNormal = 0;
+			int totalIncomplete = 0;
+			int failedFiles = 0;
+			Long firstMetaId = null;
+			List<FileParsingOutcome> fileResults = new LinkedList<>();
 
-		for (String s3Key : s3Keys) {
-			try {
-				File file = filesByS3Key.get(s3Key);
-				if (file == null) {
-					log.warn("File not found: {}", s3Key);
+			for (String s3Key : s3Keys) {
+				try {
+					File file = filesByS3Key.get(s3Key);
+					if (file == null) {
+						log.warn("File not found: {}", s3Key);
+						completedFiles++;
+						failedFiles++;
+						String message = ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND.getMessage();
+						fileResults.add(new FileParsingOutcome(null, s3Key, "FAILED", message));
+						progressPublisher.publishFileError(
+								taskId,
+								new ParsingProgressPublisher.FileErrorEvent(
+										completedFiles,
+										totalFiles,
+										s3Key,
+										(completedFiles * 100) / totalFiles,
+										message));
+						continue;
+					}
+					TempExpenseMeta meta = metaById.get(file.getTempExpenseMetaId());
+					if (meta == null) {
+						log.warn("Meta not found for file: {}", s3Key);
+						completedFiles++;
+						failedFiles++;
+						String message = ErrorCode.TEMP_EXPENSE_META_NOT_FOUND.getMessage();
+						fileResults.add(
+								new FileParsingOutcome(file.getFileId(), s3Key, "FAILED", message));
+						progressPublisher.publishFileError(
+								taskId,
+								new ParsingProgressPublisher.FileErrorEvent(
+										completedFiles,
+										totalFiles,
+										s3Key,
+										(completedFiles * 100) / totalFiles,
+										message));
+						continue;
+					}
+					if (!meta.getAccountBookId().equals(accountBookId)) {
+						throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+					}
+
+					progressPublisher.publishProgress(
+							taskId,
+							new ParsingProgressPublisher.ParsingProgressEvent(
+									completedFiles,
+									totalFiles,
+									file.getS3Key(),
+									(completedFiles * 100) / totalFiles));
+
+					ParsingResult result = parseAndPersistExpenses(file, meta, rateContext);
+					if (firstMetaId == null) {
+						firstMetaId = result.metaId();
+					}
+					totalParsed += result.totalCount();
+					totalNormal += result.normalCount();
+					totalIncomplete += result.incompleteCount();
 					completedFiles++;
-					continue;
-				}
-				TempExpenseMeta meta = metaById.get(file.getTempExpenseMetaId());
-				if (meta == null) {
-					log.warn("Meta not found for file: {}", s3Key);
+					fileResults.add(new FileParsingOutcome(file.getFileId(), s3Key, "SUCCESS", null));
+
+				} catch (Exception e) {
+					log.error("Failed to parse file: {}", s3Key, e);
 					completedFiles++;
-					continue;
+					failedFiles++;
+					String errorMessage = e.getMessage();
+					File failedFile = filesByS3Key.get(s3Key);
+					fileResults.add(
+							new FileParsingOutcome(
+									failedFile != null ? failedFile.getFileId() : null,
+									s3Key,
+									"FAILED",
+									errorMessage));
+					progressPublisher.publishFileError(
+							taskId,
+							new ParsingProgressPublisher.FileErrorEvent(
+									completedFiles,
+									totalFiles,
+									s3Key,
+									(completedFiles * 100) / totalFiles,
+									errorMessage));
 				}
-				if (!meta.getAccountBookId().equals(accountBookId)) {
-					throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-				}
-
-				progressPublisher.publishProgress(
-						taskId,
-						new ParsingProgressPublisher.ParsingProgressEvent(
-								completedFiles,
-								totalFiles,
-								file.getS3Key(),
-								(completedFiles * 100) / totalFiles));
-
-				ParsingResult result = parseAndPersistExpenses(file, meta, rateContext);
-				if (firstMetaId == null) {
-					firstMetaId = result.metaId();
-				}
-				totalParsed += result.totalCount();
-				totalNormal += result.normalCount();
-				totalIncomplete += result.incompleteCount();
-
-				completedFiles++;
-
-			} catch (Exception e) {
-				log.error("Failed to parse file: {}", s3Key, e);
-				completedFiles++;
-				failedFiles++;
-				progressPublisher.publishFileError(
-						taskId,
-						new ParsingProgressPublisher.FileErrorEvent(
-								completedFiles,
-								totalFiles,
-								s3Key,
-								(completedFiles * 100) / totalFiles,
-								e.getMessage()));
 			}
+
+			BatchParsingResult finalResult =
+					new BatchParsingResult(
+							firstMetaId,
+							totalParsed,
+							totalNormal,
+							totalIncomplete,
+							failedFiles,
+							List.copyOf(fileResults));
+
+			progressPublisher.complete(taskId, finalResult);
+			return CompletableFuture.completedFuture(finalResult);
+
+		} catch (Exception e) {
+			log.error("Batch parsing failed before completion. taskId={}", taskId, e);
+			String errorMessage =
+					(e instanceof BusinessException businessException)
+							? businessException.getMessage()
+							: ErrorCode.TEMP_EXPENSE_PARSE_FAILED.getMessage();
+			progressPublisher.publishError(taskId, errorMessage);
+			return CompletableFuture.failedFuture(e);
 		}
-
-		BatchParsingResult finalResult =
-				new BatchParsingResult(
-						firstMetaId, totalParsed, totalNormal, totalIncomplete, failedFiles);
-
-		// 완료 이벤트 publish
-		progressPublisher.complete(taskId, finalResult);
-
-		return java.util.concurrent.CompletableFuture.completedFuture(finalResult);
 	}
 }

@@ -53,8 +53,7 @@ public class TemporaryExpenseConversionService {
 		TemporaryExpense temp =
 				tempExpenseRepository
 						.findById(tempExpenseId)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
+						.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
 
 		// 2. 필수 필드 검증
 		validateRequiredFields(temp);
@@ -63,7 +62,8 @@ public class TemporaryExpenseConversionService {
 		TempExpenseMeta meta =
 				metaRepository
 						.findById(temp.getTempExpenseMetaId())
-						.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		if (!meta.getAccountBookId().equals(accountBookId)) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
@@ -161,7 +161,8 @@ public class TemporaryExpenseConversionService {
 		TempExpenseMeta meta =
 				metaRepository
 						.findById(tempExpenseMetaId)
-						.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		if (!meta.getAccountBookId().equals(accountBookId)) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
@@ -175,7 +176,8 @@ public class TemporaryExpenseConversionService {
 
 		// tempExpenseIds가 주어졌을 때, 전부 존재하는지 + 전부 해당 tempExpenseMetaId 소속인지 검증.
 		if (tempExpenseIds != null && !tempExpenseIds.isEmpty()) {
-			List<TemporaryExpense> targetExpenses = tempExpenseRepository.findAllById(tempExpenseIds);
+			List<TemporaryExpense> targetExpenses =
+					tempExpenseRepository.findAllById(tempExpenseIds);
 			if (targetExpenses.size() != tempExpenseIds.size()) {
 				throw new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND);
 			}
@@ -184,7 +186,8 @@ public class TemporaryExpenseConversionService {
 					targetExpenses.stream()
 							.anyMatch(
 									tempExpense ->
-											!tempExpenseMetaId.equals(tempExpense.getTempExpenseMetaId()));
+											!tempExpenseMetaId.equals(
+													tempExpense.getTempExpenseMetaId()));
 			if (hasOutOfScopeMeta) {
 				throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 			}

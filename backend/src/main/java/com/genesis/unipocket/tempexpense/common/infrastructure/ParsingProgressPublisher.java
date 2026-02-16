@@ -187,7 +187,10 @@ public class ParsingProgressPublisher {
 
 	/** terminal complete/error 전송 후 task 정리 */
 	private void flushTerminalEvent(
-			String taskId, TaskContext taskContext, SseEmitter emitter, TerminalSsePayload terminal) {
+			String taskId,
+			TaskContext taskContext,
+			SseEmitter emitter,
+			TerminalSsePayload terminal) {
 		if (!sendEvent(emitter, taskId, terminal.name(), terminal.data())) {
 			taskContext.detachEmitter();
 			return;

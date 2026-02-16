@@ -57,8 +57,7 @@ public class TemporaryExpenseParsingService {
 	private final ParsingProgressPublisher progressPublisher;
 
 	// AsyncConfig 에서 지정해준 이미지 파싱 작업을 지정된 비동기 스레드풀에서 돌려줌.
-	@Qualifier("parsingExecutor")
-	private final Executor parsingExecutor;
+	@Qualifier("parsingExecutor") private final Executor parsingExecutor;
 
 	/**
 	 * 비동기 파싱 시작 전 입력 검증 및 taskId 생성
@@ -305,7 +304,8 @@ public class TemporaryExpenseParsingService {
 					totalNormal += result.normalCount();
 					totalIncomplete += result.incompleteCount();
 					completedFiles++;
-					fileResults.add(new FileParsingOutcome(file.getFileId(), s3Key, "SUCCESS", null));
+					fileResults.add(
+							new FileParsingOutcome(file.getFileId(), s3Key, "SUCCESS", null));
 
 				} catch (Exception e) {
 					log.error("Failed to parse file: {}", s3Key, e);

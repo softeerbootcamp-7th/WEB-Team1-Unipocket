@@ -56,6 +56,7 @@ public class CountryDailyAnalysisWorker {
 	private final AnalysisOutlierAuditRepository outlierAuditRepository;
 	private final AnalysisBatchAggregationRepository aggregationRepository;
 	private final CountryDailyOutlierAggregationService outlierAggregationService;
+	private final CountryMonthlyDirtyAggregationService monthlyDirtyAggregationService;
 	private final AnalysisBatchProperties properties;
 	private final PlatformTransactionManager transactionManager;
 
@@ -77,6 +78,7 @@ public class CountryDailyAnalysisWorker {
 								processDailyAggregation(
 										context.countryCode(), context.zoneId(), processingDate));
 			}
+			monthlyDirtyAggregationService.processCountryDirtyRows(context.countryCode());
 
 			txTemplate.executeWithoutResult(
 					status -> markSuccess(jobId, context.countryCode(), context.runLocalDate()));

@@ -69,8 +69,7 @@ public class TemporaryExpenseQueryService {
 				fileRepository.countFilesByTempExpenseMetaIdIn(metaIds).stream()
 						.collect(
 								Collectors.toMap(
-										row -> (Long) row[0],
-										row -> ((Long) row[1]).intValue()));
+										row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
 
 		Map<Long, List<TemporaryExpense>> expensesByMetaId =
 				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds).stream()

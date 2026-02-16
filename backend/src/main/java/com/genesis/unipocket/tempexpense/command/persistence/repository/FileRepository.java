@@ -36,7 +36,6 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
 	void deleteByTempExpenseMetaId(Long tempExpenseMetaId);
 
-
 	@Query(
 			"SELECT f.tempExpenseMetaId, COUNT(f.fileId) "
 					+ "FROM File f "

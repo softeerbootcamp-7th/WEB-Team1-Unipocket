@@ -3,6 +3,7 @@ package com.genesis.unipocket.expense.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResponse;
+import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
 import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
 import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -70,5 +72,18 @@ public class ExpenseQueryController {
 						pageable.getPageSize());
 
 		return ResponseEntity.ok(response);
+	}
+
+	@Operation(summary = "거래처명 자동완성 검색 API", description = "가계부 내 지출내역의 거래처명을 prefix 기준으로 검색합니다.")
+	@GetMapping("/account-books/{accountBookId}/expenses/merchant-names")
+	public ResponseEntity<ExpenseMerchantSearchResponse> searchMerchantNames(
+			@LoginUser UUID userId,
+			@PathVariable Long accountBookId,
+			@RequestParam("q") String query,
+			@RequestParam(name = "limit", required = false) Integer limit) {
+
+		List<String> merchantNames =
+				expenseQueryService.searchMerchantNames(accountBookId, userId, query, limit);
+		return ResponseEntity.ok(new ExpenseMerchantSearchResponse(merchantNames));
 	}
 }

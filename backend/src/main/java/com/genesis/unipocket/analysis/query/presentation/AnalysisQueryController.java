@@ -27,12 +27,12 @@ public class AnalysisQueryController {
 	public ResponseEntity<MonthlySpendSummaryRes> getMonthlySpendSummary(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
-			@RequestParam int year,
+			@RequestParam String year,
 			@RequestParam String month,
-			@RequestParam(name = "currencyView", defaultValue = "BASE") CurrencyType currencyView) {
+			@RequestParam(name = "currencyType", defaultValue = "BASE") CurrencyType currencyType) {
 		return ResponseEntity.ok(
 				analysisMonthlySummaryQueryService.getMonthlySpendSummary(
-						userId, accountBookId, year, month, currencyView));
+						userId, accountBookId, year, month, currencyType));
 	}
 
 	@Operation(summary = "카테고리 지출 분해 조회", description = "카테고리별 내 지출/남들 평균/차이를 조회합니다.")
@@ -40,11 +40,11 @@ public class AnalysisQueryController {
 	public ResponseEntity<CategoryBreakdownRes> getCategoryBreakdown(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
-			@RequestParam int year,
+			@RequestParam String year,
 			@RequestParam String month,
-			@RequestParam(name = "currencyView", defaultValue = "BASE") CurrencyType currencyView) {
+			@RequestParam(name = "currencyType", defaultValue = "BASE") CurrencyType currencyType) {
 		return ResponseEntity.ok(
 				analysisMonthlySummaryQueryService.getCategoryBreakdown(
-						userId, accountBookId, year, month, currencyView));
+						userId, accountBookId, year, month, currencyType));
 	}
 }

@@ -5,9 +5,9 @@ import java.util.List;
 
 public record MonthlySpendSummaryRes(
 		Long accountBookId,
-		int year,
+		String year,
 		String month,
-		CurrencyType currencyView,
+		CurrencyType currencyType,
 		MonthSection thisMonth,
 		PrevMonthSection prevMonth,
 		Comparison comparison) {
@@ -16,7 +16,7 @@ public record MonthlySpendSummaryRes(
 			String startDate, String endDate, List<DailyItem> daily, String total) {}
 
 	public record PrevMonthSection(
-			int year,
+			String year,
 			String month,
 			String startDate,
 			String endDate,

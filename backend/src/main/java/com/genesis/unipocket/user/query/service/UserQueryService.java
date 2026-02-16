@@ -6,6 +6,7 @@ import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
+import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -19,11 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserQueryService {
 
 	private final UserQueryRepository userQueryRepository;
+	private final AccountBookCountService accountBookCountService;
 
 	public UserQueryResponse getUserInfo(UUID userId) {
-		return userQueryRepository
+		UserQueryResponse userInfo =
+				userQueryRepository
 				.findById(userId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		boolean needsOnboarding = accountBookCountService.countByUserId(userId) == 0L;
+		return userInfo.withNeedsOnboarding(needsOnboarding);
 	}
 
 	public List<UserCardQueryResponse> getCards(UUID userId) {

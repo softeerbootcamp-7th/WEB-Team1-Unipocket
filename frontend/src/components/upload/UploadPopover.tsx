@@ -1,4 +1,5 @@
 import { PopoverContent } from '@/components/ui/popover';
+import { type ModalType } from '@/components/upload/UploadMenu';
 
 import { Icons } from '@/assets';
 
@@ -62,20 +63,16 @@ const UploadMenuItem = ({
 };
 
 interface UploadPopoverProps {
-  onOpenImageUpload: () => void;
-  onOpenFileUpload: () => void;
+  onOpenUpload: (type: Exclude<ModalType, null>) => void;
 }
 
-const UploadPopover = ({
-  onOpenImageUpload,
-  onOpenFileUpload,
-}: UploadPopoverProps) => {
+const UploadPopover = ({ onOpenUpload }: UploadPopoverProps) => {
   const getMenuItemClick = (key: (typeof UPLOAD_MENU_ITEMS)[number]['key']) => {
     switch (key) {
       case 'image':
-        return onOpenImageUpload;
+        return () => onOpenUpload('image');
       case 'file':
-        return onOpenFileUpload;
+        return () => onOpenUpload('file');
       case 'mobile':
         return () => console.log('모바일 업로드 클릭');
       case 'manual':

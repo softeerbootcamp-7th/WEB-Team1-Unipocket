@@ -6,16 +6,13 @@ import FileUploadModal from '@/components/upload/file-upload/FileUploadModal';
 import ImageUploadModal from '@/components/upload/image-upload/ImageUploadModal';
 import UploadPopover from '@/components/upload/UploadPopover';
 
+export type ModalType = 'image' | 'file' | null;
+
 const UploadMenu = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState<'image' | 'file' | null>(null);
-  const handleOpenImageUpload = () => {
-    setActiveModal('image');
-    setIsPopoverOpen(false);
-  };
-
-  const handleOpenFileUpload = () => {
-    setActiveModal('file');
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const handleOpenModal = (type: Exclude<ModalType, null>) => {
+    setActiveModal(type);
     setIsPopoverOpen(false);
   };
 
@@ -31,10 +28,7 @@ const UploadMenu = () => {
             지출 내역 추가하기
           </Button>
         </PopoverTrigger>
-        <UploadPopover
-          onOpenImageUpload={handleOpenImageUpload}
-          onOpenFileUpload={handleOpenFileUpload}
-        />
+        <UploadPopover onOpenUpload={handleOpenModal} />
       </Popover>
       <ImageUploadModal
         isOpen={activeModal === 'image'}

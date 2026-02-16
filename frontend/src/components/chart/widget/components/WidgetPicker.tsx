@@ -17,11 +17,11 @@ const WidgetPicker = ({
 }: WidgetPickerProps) => {
   return (
     <div
-      className="rounded-modal-20 flex h-full flex-col items-start justify-around px-10 transition-colors"
+      className="rounded-modal-20 flex h-full w-full min-w-0 flex-col justify-start gap-5 px-10 py-9 transition-colors"
       {...dropZoneProps}
     >
       <WidgetPickerHeader maxWidgets={maxWidgets} />
-      <div className="w-full min-w-0 overflow-x-auto">
+      <div className="w-px min-w-full overflow-x-auto">
         <div className="flex w-max gap-8 p-1">
           {availableWidgets.map((widgetType) => (
             <WidgetPickerItem key={widgetType} widgetType={widgetType} />

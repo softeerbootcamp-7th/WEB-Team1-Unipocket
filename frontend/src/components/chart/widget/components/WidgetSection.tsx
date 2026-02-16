@@ -3,7 +3,7 @@ import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
-import BottomSheet from '@/components/layout/BottomSheet';
+import AnimatedPanel from '@/components/layout/AnimatedPanel';
 
 const WidgetSection = () => {
   const {
@@ -20,7 +20,7 @@ const WidgetSection = () => {
   return (
     <WidgetContext.Provider value={{ isWidgetEditMode, toggleEditMode }}>
       <div
-        className="flex w-full flex-col gap-4"
+        className="flex h-full w-full min-w-0 flex-col gap-4"
         style={{
           height: isWidgetEditMode ? '100dvh' : '100%',
         }}
@@ -41,17 +41,16 @@ const WidgetSection = () => {
         </div>
 
         {isWidgetEditMode && (
-          <BottomSheet
+          <AnimatedPanel
             isOpen={isWidgetEditMode}
-            className="shadow-semantic-subtle max-h-[45vh]"
-            backdrop={false}
+            className="shadow-semantic-subtle max-h-140"
           >
             <WidgetPicker
               maxWidgets={maxWidgets}
               availableWidgets={availableWidgets}
               dropZoneProps={pickerDropZone.dropZoneProps}
             />
-          </BottomSheet>
+          </AnimatedPanel>
         )}
       </div>
     </WidgetContext.Provider>

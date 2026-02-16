@@ -3,8 +3,8 @@ package com.genesis.unipocket.tempexpense.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.facade.TemporaryExpenseQueryFacade;
-import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
-import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,28 +71,31 @@ public class TemporaryExpenseQueryController {
 	}
 
 	/**
-	 * 파일(이미지) 단위 처리 현황 조회
+	 * 메타 목록 조회
 	 */
-	@Operation(summary = "파일 처리 현황 조회", description = "메타(업로드 파일) 단위의 임시지출 파싱 처리 현황을 조회합니다.")
-	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/summary")
-	public ResponseEntity<FileProcessingSummaryResponse> getFileProcessingSummary(
+	@Operation(summary = "임시지출 메타 목록 조회", description = "가계부에 속한 임시지출 메타 목록을 조회합니다.")
+	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas")
+	public ResponseEntity<TemporaryExpenseMetaListResponse> getTemporaryExpenseMetas(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
-		FileProcessingSummaryResponse response =
-				temporaryExpenseQueryFacade.getFileProcessingSummary(accountBookId, userId);
+		TemporaryExpenseMetaListResponse response =
+				temporaryExpenseQueryFacade.getTemporaryExpenseMetas(accountBookId, userId);
 		return ResponseEntity.ok(response);
 	}
 
 	/**
-	 * 가계부 전체 이미지 처리 현황 요약 조회
+	 * 메타 내부 파일별 임시지출 조회
 	 */
-	@Operation(summary = "이미지 처리 요약 조회", description = "가계부 전체 파일 처리 현황을 합산한 요약 정보를 조회합니다.")
-	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/image-processing-summary")
-	public ResponseEntity<ImageProcessingSummaryResponse> getImageProcessingSummary(
-			@PathVariable Long accountBookId, @LoginUser UUID userId) {
-
-		ImageProcessingSummaryResponse response =
-				temporaryExpenseQueryFacade.getImageProcessingSummary(accountBookId, userId);
-
+	@Operation(
+			summary = "메타 내부 파일별 임시지출 조회",
+			description = "메타 1건에 속한 파일별 임시지출 목록을 조회합니다.")
+	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files")
+	public ResponseEntity<TemporaryExpenseMetaFilesResponse> getTemporaryExpenseMetaFiles(
+			@PathVariable Long accountBookId,
+			@PathVariable Long tempExpenseMetaId,
+			@LoginUser UUID userId) {
+		TemporaryExpenseMetaFilesResponse response =
+				temporaryExpenseQueryFacade.getTemporaryExpenseMetaFiles(
+						accountBookId, tempExpenseMetaId, userId);
 		return ResponseEntity.ok(response);
 	}
 

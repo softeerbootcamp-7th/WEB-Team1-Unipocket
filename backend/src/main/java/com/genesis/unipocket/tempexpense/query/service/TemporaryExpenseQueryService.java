@@ -9,10 +9,9 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepo
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
-import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,110 +56,101 @@ public class TemporaryExpenseQueryService {
 	}
 
 	/**
-	 * 파일(이미지) 단위 처리 현황 조회
+	 * 가계부에 속한 메타 목록 조회
 	 */
-	public FileProcessingSummaryResponse getFileProcessingSummary(Long accountBookId) {
-		// 1. 가계부에 속한 메타 조회
+	public TemporaryExpenseMetaListResponse getTemporaryExpenseMetas(Long accountBookId) {
 		List<TempExpenseMeta> metas = tempExpenseMetaRepository.findByAccountBookId(accountBookId);
 		if (metas.isEmpty()) {
-			return new FileProcessingSummaryResponse(List.of(), 0, 0, 0);
+			return new TemporaryExpenseMetaListResponse(List.of());
 		}
 
-		// 2. 메타에 속한 파일 조회
 		List<Long> metaIds = metas.stream().map(TempExpenseMeta::getTempExpenseMetaId).toList();
-		List<File> files = fileRepository.findByTempExpenseMetaIdIn(metaIds);
-		Map<Long, File> fileByMetaId =
-				files.stream()
+		Map<Long, Integer> fileCountByMetaId =
+				fileRepository.findByTempExpenseMetaIdIn(metaIds).stream()
 						.collect(
-								Collectors.toMap(
-										File::getTempExpenseMetaId,
-										f -> f,
-										(existing, replacement) -> existing));
+								Collectors.groupingBy(
+										File::getTempExpenseMetaId, Collectors.summingInt(file -> 1)));
 
-		// 3. 메타별 임시지출내역 조회
-		List<TemporaryExpense> allExpenses =
-				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds);
-
-		// 4. tempExpenseMetaId 기준으로 그룹핑
-		Map<Long, List<TemporaryExpense>> expensesByFile =
-				allExpenses.stream()
+		Map<Long, List<TemporaryExpense>> expensesByMetaId =
+				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds).stream()
 						.collect(Collectors.groupingBy(TemporaryExpense::getTempExpenseMetaId));
 
-		// 5. 파일별 요약 생성
-		List<FileProcessingSummaryResponse.FileSummary> metaSummaries = new ArrayList<>();
-		int processedCount = 0;
+		List<TemporaryExpenseMetaListResponse.MetaSummary> summaries =
+				metas.stream()
+						.map(
+								meta -> {
+									List<TemporaryExpense> expenses =
+											expensesByMetaId.getOrDefault(
+													meta.getTempExpenseMetaId(), List.of());
+									Map<TemporaryExpenseStatus, Long> counts =
+											expenses.stream()
+													.collect(
+															Collectors.groupingBy(
+																	TemporaryExpense::getStatus,
+																	Collectors.counting()));
+									return new TemporaryExpenseMetaListResponse.MetaSummary(
+											meta.getTempExpenseMetaId(),
+											meta.getCreatedAt(),
+											fileCountByMetaId.getOrDefault(
+													meta.getTempExpenseMetaId(), 0),
+											expenses.size(),
+											counts.getOrDefault(TemporaryExpenseStatus.NORMAL, 0L).intValue(),
+											counts.getOrDefault(
+															TemporaryExpenseStatus.INCOMPLETE, 0L)
+													.intValue(),
+											counts.getOrDefault(TemporaryExpenseStatus.ABNORMAL, 0L)
+													.intValue());
+								})
+						.toList();
 
-		for (Long metaId : metaIds) {
-			File file = fileByMetaId.get(metaId);
-			List<TemporaryExpense> fileExpenses = expensesByFile.getOrDefault(metaId, List.of());
-
-			Map<TemporaryExpenseStatus, Long> counts =
-					fileExpenses.stream()
-							.collect(
-									Collectors.groupingBy(
-											TemporaryExpense::getStatus, Collectors.counting()));
-			int normalCount = counts.getOrDefault(TemporaryExpenseStatus.NORMAL, 0L).intValue();
-			int incompleteCount =
-					counts.getOrDefault(TemporaryExpenseStatus.INCOMPLETE, 0L).intValue();
-			int abnormalCount = counts.getOrDefault(TemporaryExpenseStatus.ABNORMAL, 0L).intValue();
-
-			boolean processed =
-					!fileExpenses.isEmpty() && incompleteCount == 0 && abnormalCount == 0;
-			if (processed) processedCount++;
-
-			metaSummaries.add(
-					new FileProcessingSummaryResponse.FileSummary(
-							metaId,
-							file != null ? file.getS3Key() : null,
-							file != null && file.getFileType() != null
-									? file.getFileType().name()
-									: null,
-							fileExpenses.size(),
-							normalCount,
-							incompleteCount,
-							abnormalCount,
-							processed));
-		}
-
-		return new FileProcessingSummaryResponse(
-				metaSummaries, metaIds.size(), processedCount, metaIds.size() - processedCount);
+		return new TemporaryExpenseMetaListResponse(summaries);
 	}
 
 	/**
-	 * 가계부 전체 이미지 처리 현황 요약 조회
+	 * 메타 내부 파일별 임시지출 상세 조회
 	 */
-	public ImageProcessingSummaryResponse getImageProcessingSummary(Long accountBookId) {
-		FileProcessingSummaryResponse fileSummary = getFileProcessingSummary(accountBookId);
-
-		if (fileSummary.files().isEmpty()) {
-			return new ImageProcessingSummaryResponse(0, 0, 0, 0, 0, 0, 0);
+	public TemporaryExpenseMetaFilesResponse getTemporaryExpenseMetaFiles(
+			Long accountBookId, Long tempExpenseMetaId) {
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(tempExpenseMetaId)
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+		if (!accountBookId.equals(meta.getAccountBookId())) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
 
-		int totalExpenses =
-				fileSummary.files().stream()
-						.mapToInt(FileProcessingSummaryResponse.FileSummary::totalExpenses)
-						.sum();
-		int normalExpenses =
-				fileSummary.files().stream()
-						.mapToInt(FileProcessingSummaryResponse.FileSummary::normalCount)
-						.sum();
-		int incompleteExpenses =
-				fileSummary.files().stream()
-						.mapToInt(FileProcessingSummaryResponse.FileSummary::incompleteCount)
-						.sum();
-		int abnormalExpenses =
-				fileSummary.files().stream()
-						.mapToInt(FileProcessingSummaryResponse.FileSummary::abnormalCount)
-						.sum();
+		List<File> files = fileRepository.findByTempExpenseMetaId(tempExpenseMetaId);
+		if (files.isEmpty()) {
+			return new TemporaryExpenseMetaFilesResponse(
+					tempExpenseMetaId, meta.getCreatedAt(), List.of());
+		}
 
-		return new ImageProcessingSummaryResponse(
-				fileSummary.totalFiles(),
-				fileSummary.processedFiles(),
-				fileSummary.unprocessedFiles(),
-				totalExpenses,
-				normalExpenses,
-				incompleteExpenses,
-				abnormalExpenses);
+		Map<Long, List<TemporaryExpense>> expensesByFileId =
+				temporaryExpenseRepository
+						.findByFileIdIn(files.stream().map(File::getFileId).toList())
+						.stream()
+						.collect(Collectors.groupingBy(TemporaryExpense::getFileId));
+
+		List<TemporaryExpenseMetaFilesResponse.FileExpenses> fileExpenses =
+				files.stream()
+						.map(
+								file ->
+										new TemporaryExpenseMetaFilesResponse.FileExpenses(
+												file.getFileId(),
+												file.getS3Key(),
+												file.getFileType() != null
+														? file.getFileType().name()
+														: null,
+												expensesByFileId
+														.getOrDefault(file.getFileId(), List.of())
+														.stream()
+														.map(TemporaryExpenseResponse::from)
+														.toList()))
+						.toList();
+
+		return new TemporaryExpenseMetaFilesResponse(
+				tempExpenseMetaId, meta.getCreatedAt(), fileExpenses);
 	}
 
 	private TemporaryExpense findById(Long tempExpenseId) {

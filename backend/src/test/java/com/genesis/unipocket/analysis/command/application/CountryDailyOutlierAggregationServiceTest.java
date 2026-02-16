@@ -123,6 +123,7 @@ class CountryDailyOutlierAggregationServiceTest {
 				accountBookId,
 				category,
 				amount,
+				amount,
 				currencyCode,
 				occurredAtUtc,
 				"KR",

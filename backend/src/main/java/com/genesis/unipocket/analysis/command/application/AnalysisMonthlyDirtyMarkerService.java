@@ -47,7 +47,11 @@ public class AnalysisMonthlyDirtyMarkerService {
 		markDirty(accountBookId, occurredAts);
 	}
 
-	private void markDirty(Long accountBookId, Set<OffsetDateTime> occurredAts) {
+	@Transactional
+	public void markDirty(Long accountBookId, Set<OffsetDateTime> occurredAts) {
+		if (occurredAts == null || occurredAts.isEmpty()) {
+			return;
+		}
 		AccountBookEntity accountBook =
 				accountBookRepository
 						.findById(accountBookId)
@@ -58,16 +62,14 @@ public class AnalysisMonthlyDirtyMarkerService {
 														+ accountBookId));
 
 		CountryCode localCountry = accountBook.getLocalCountryCode();
-		CountryCode baseCountry = accountBook.getBaseCountryCode();
-		if (localCountry == null || baseCountry == null || localCountry != baseCountry) {
-			return;
-		}
-
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountry);
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
+		Set<LocalDate> targetYearMonths = new LinkedHashSet<>();
 		for (OffsetDateTime occurredAt : occurredAts) {
-			LocalDate targetYearMonth =
-					occurredAt.atZoneSameInstant(zoneId).toLocalDate().withDayOfMonth(1);
+			targetYearMonths.add(
+					occurredAt.atZoneSameInstant(zoneId).toLocalDate().withDayOfMonth(1));
+		}
+		for (LocalDate targetYearMonth : targetYearMonths) {
 			AnalysisMonthlyDirtyEntity dirty =
 					monthlyDirtyRepository
 							.findByCountryCodeAndAccountBookIdAndTargetYearMonth(

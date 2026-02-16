@@ -19,8 +19,8 @@ public class AnalysisBatchProperties {
 
 	private boolean enabled = true;
 	private int lookbackMonths = 3;
-	private int runHour = 0;
-	private int runMinute = 10;
+	private int runHour = 3;
+	private int runMinute = 0;
 	private int dispatchBatchSize = 20;
 	private int leaseMinutes = 30;
 	private int maxRetry = 7;

@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.command.application;
 
+import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExpenseCommandService {
 	private final ExpenseRepository expenseRepository;
 	private final ExchangeRateService exchangeRateService;
+	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 
 	@Transactional
 	public ExpenseResult createExpenseManual(ExpenseCreateCommand command) {
@@ -50,6 +52,8 @@ public class ExpenseCommandService {
 								command, baseCurrencyAmount, null, null, exchangeRate));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
+		analysisMonthlyDirtyMarkerService.markDirty(
+				savedEntity.getAccountBookId(), savedEntity.getOccurredAt());
 
 		return ExpenseResult.from(savedEntity);
 	}
@@ -57,6 +61,7 @@ public class ExpenseCommandService {
 	@Transactional
 	public ExpenseResult updateExpense(ExpenseUpdateCommand command) {
 		ExpenseEntity entity = findAndVerifyOwnership(command.expenseId(), command.accountBookId());
+		var previousOccurredAt = entity.getOccurredAt();
 
 		// 기본 필드 업데이트
 		entity.updateMerchantName(command.merchantName());
@@ -96,6 +101,8 @@ public class ExpenseCommandService {
 					convertedMode ? command.baseCurrencyCode() : null,
 					exchangeRate);
 		}
+		analysisMonthlyDirtyMarkerService.markDirty(
+				entity.getAccountBookId(), previousOccurredAt, entity.getOccurredAt());
 
 		return ExpenseResult.from(entity);
 	}
@@ -103,7 +110,9 @@ public class ExpenseCommandService {
 	@Transactional
 	public void deleteExpense(Long expenseId, Long accountBookId) {
 		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
+		var occurredAt = entity.getOccurredAt();
 		expenseRepository.delete(entity);
+		analysisMonthlyDirtyMarkerService.markDirty(accountBookId, occurredAt);
 	}
 
 	@Transactional

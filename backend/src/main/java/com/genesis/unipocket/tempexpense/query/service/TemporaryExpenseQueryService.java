@@ -34,27 +34,6 @@ public class TemporaryExpenseQueryService {
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 
-	public List<TemporaryExpenseResponse> getTemporaryExpenses(
-			Long accountBookId, TemporaryExpenseStatus status) {
-		List<TemporaryExpense> entities =
-				status != null
-						? temporaryExpenseRepository.findByAccountBookIdAndStatus(
-								accountBookId, status)
-						: temporaryExpenseRepository.findByAccountBookId(accountBookId);
-
-		return TemporaryExpenseResponse.fromList(entities);
-	}
-
-	public TemporaryExpenseResponse getTemporaryExpense(Long accountBookId, Long tempExpenseId) {
-		TemporaryExpense tempExpense = findById(tempExpenseId);
-		Long resourceAccountBookId = getAccountBookIdFromTempExpense(tempExpense);
-		if (!accountBookId.equals(resourceAccountBookId)) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
-
-		return TemporaryExpenseResponse.from(tempExpense);
-	}
-
 	/**
 	 * 가계부에 속한 메타 목록 조회
 	 */
@@ -154,18 +133,38 @@ public class TemporaryExpenseQueryService {
 				tempExpenseMetaId, meta.getCreatedAt(), fileExpenses);
 	}
 
-	private TemporaryExpense findById(Long tempExpenseId) {
-		return temporaryExpenseRepository
-				.findById(tempExpenseId)
-				.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
-	}
-
-	private Long getAccountBookIdFromTempExpense(TemporaryExpense tempExpense) {
+	/**
+	 * 메타 내부 파일 단건 임시지출 상세 조회
+	 */
+	public TemporaryExpenseMetaFilesResponse.FileExpenses getTemporaryExpenseMetaFile(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId) {
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
-						.findById(tempExpense.getTempExpenseMetaId())
+						.findById(tempExpenseMetaId)
 						.orElseThrow(
 								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		return meta.getAccountBookId();
+		if (!accountBookId.equals(meta.getAccountBookId())) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+		}
+
+		File file =
+				fileRepository
+						.findById(fileId)
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND));
+		if (!tempExpenseMetaId.equals(file.getTempExpenseMetaId())) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+		}
+
+		List<TemporaryExpenseResponse> expenses =
+				temporaryExpenseRepository.findByFileIdIn(List.of(fileId)).stream()
+						.map(TemporaryExpenseResponse::from)
+						.toList();
+
+		return new TemporaryExpenseMetaFilesResponse.FileExpenses(
+				file.getFileId(),
+				file.getS3Key(),
+				file.getFileType() != null ? file.getFileType().name() : null,
+				expenses);
 	}
 }

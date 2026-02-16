@@ -3,13 +3,10 @@ package com.genesis.unipocket.tempexpense.query.facade;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
-import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,18 +22,6 @@ public class TemporaryExpenseQueryFacade {
 	private final ParsingProgressPublisher progressPublisher;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
-	public List<TemporaryExpenseResponse> getTemporaryExpenses(
-			Long accountBookId, TemporaryExpenseStatus status, UUID userId) {
-		validateOwnership(accountBookId, userId);
-		return temporaryExpenseQueryService.getTemporaryExpenses(accountBookId, status);
-	}
-
-	public TemporaryExpenseResponse getTemporaryExpense(
-			Long accountBookId, Long tempExpenseId, UUID userId) {
-		validateOwnership(accountBookId, userId);
-		return temporaryExpenseQueryService.getTemporaryExpense(accountBookId, tempExpenseId);
-	}
-
 	public TemporaryExpenseMetaListResponse getTemporaryExpenseMetas(
 			Long accountBookId, UUID userId) {
 		validateOwnership(accountBookId, userId);
@@ -48,6 +33,13 @@ public class TemporaryExpenseQueryFacade {
 		validateOwnership(accountBookId, userId);
 		return temporaryExpenseQueryService.getTemporaryExpenseMetaFiles(
 				accountBookId, tempExpenseMetaId);
+	}
+
+	public TemporaryExpenseMetaFilesResponse.FileExpenses getTemporaryExpenseMetaFile(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId, UUID userId) {
+		validateOwnership(accountBookId, userId);
+		return temporaryExpenseQueryService.getTemporaryExpenseMetaFile(
+				accountBookId, tempExpenseMetaId, fileId);
 	}
 
 	public SseEmitter streamParsingProgress(Long accountBookId, String taskId, UUID userId) {

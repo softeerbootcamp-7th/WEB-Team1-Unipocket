@@ -7,6 +7,7 @@ import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseRat
 import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryExpenseParsingService;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
+import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
@@ -50,12 +51,14 @@ public class TemporaryExpenseCommandFacade {
 				accountBookId, fileName, fileType, tempExpenseMetaId);
 	}
 
-	public String startParseAsync(Long accountBookId, List<String> s3Keys, UUID userId) {
+	public ParseStartResult startParseAsync(
+			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys, UUID userId) {
 		validateOwnership(accountBookId, userId);
 		temporaryExpenseRateLimitService.validateParseRequest(userId);
 
 		// 비동기 파싱(SSE 기반 파싱) 시작
-		return temporaryExpenseParsingService.startParseAsync(accountBookId, s3Keys);
+		return temporaryExpenseParsingService.startParseAsync(
+				accountBookId, tempExpenseMetaId, s3Keys);
 	}
 
 	public BatchConversionResult confirm(
@@ -75,17 +78,18 @@ public class TemporaryExpenseCommandFacade {
 	/**
 	 * 임시지출내역 리스트 단위 수정 API
 	 */
-	public TemporaryExpenseMetaBulkUpdateResponse updateTemporaryExpensesByMeta(
+	public TemporaryExpenseMetaBulkUpdateResponse updateTemporaryExpensesByFile(
 			Long accountBookId,
 			Long tempExpenseMetaId,
+			Long fileId,
 			TemporaryExpenseMetaBulkUpdateRequest request,
 			UUID userId) {
 
 		validateOwnership(accountBookId, userId);
 
 		return TemporaryExpenseMetaBulkUpdateResponse.from(
-				temporaryExpenseBulkUpdateService.updateByMeta(
-						accountBookId, tempExpenseMetaId, request));
+				temporaryExpenseBulkUpdateService.updateByFile(
+						accountBookId, tempExpenseMetaId, fileId, request));
 	}
 
 	private void validateOwnership(Long accountBookId, UUID userId) {

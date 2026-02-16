@@ -26,7 +26,7 @@ public class MediaOrphanedFileCleanWorker {
 	private final MediaObjectStorage mediaObjectStorage;
 	private final List<MediaUsedPathProvider> mediaUsedPathProviders;
 
-	@Scheduled(cron = "${media.cleanup.cron:0 * * * * *}")
+	@Scheduled(cron = "${media.cleanup.cron}")
 	public void clean() {
 		List<String> allKeys = mediaObjectStorage.listAllKeys();
 		Set<String> usedKeys =

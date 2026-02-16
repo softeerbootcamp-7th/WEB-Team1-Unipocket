@@ -72,4 +72,12 @@ public class AccountBookQueryRepository {
 				.setParameter("mainId", mainAccountBookId)
 				.getResultList();
 	}
+
+	public long countByUserId(UUID userId) {
+		return em.createQuery(
+						"SELECT COUNT(a.id) FROM AccountBookEntity a WHERE a.user.id = :userId",
+						Long.class)
+				.setParameter("userId", userId)
+				.getSingleResult();
+	}
 }

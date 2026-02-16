@@ -54,7 +54,8 @@ class UserQueryControllerTest {
 						"Tester",
 						"img.jpg",
 						UserRole.ROLE_USER,
-						UserStatus.ACTIVE);
+						UserStatus.ACTIVE,
+						true);
 
 		given(jwtProvider.validateToken(accessToken)).willReturn(true);
 		given(jwtProvider.getJti(accessToken)).willReturn("jti");
@@ -68,7 +69,8 @@ class UserQueryControllerTest {
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.email").value("test@example.com"))
-				.andExpect(jsonPath("$.name").value("Tester"));
+				.andExpect(jsonPath("$.name").value("Tester"))
+				.andExpect(jsonPath("$.needsOnboarding").value(true));
 	}
 
 	@Test

@@ -17,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -72,9 +74,11 @@ class UserQueryServiceTest {
 		verify(userQueryRepository).findAllCardsByUserId(userId);
 	}
 
-	@Test
-	@DisplayName("getUserInfo - 가계부가 없으면 온보딩 필요(true)")
-	void getUserInfo_NeedsOnboardingTrue() {
+	@DisplayName("getUserInfo - 가계부 개수에 따른 온보딩 필요 여부 반환")
+	@ParameterizedTest
+	@CsvSource({"0, true", "1, false", "10, false"})
+	void getUserInfo_needsOnboarding_BasedOnAccountBookCount(
+			long accountBookCount, boolean expectedNeedsOnboarding) {
 		UserQueryResponse baseResponse =
 				new UserQueryResponse(
 						userId,
@@ -84,31 +88,11 @@ class UserQueryServiceTest {
 						UserRole.ROLE_USER,
 						UserStatus.ACTIVE);
 		when(userQueryRepository.findById(userId)).thenReturn(Optional.of(baseResponse));
-		when(accountBookCountService.countByUserId(userId)).thenReturn(0L);
+		when(accountBookCountService.countByUserId(userId)).thenReturn(accountBookCount);
 
 		UserQueryResponse result = userQueryService.getUserInfo(userId);
 
-		assertThat(result.needsOnboarding()).isTrue();
-		verify(accountBookCountService).countByUserId(userId);
-	}
-
-	@Test
-	@DisplayName("getUserInfo - 가계부가 있으면 온보딩 불필요(false)")
-	void getUserInfo_NeedsOnboardingFalse() {
-		UserQueryResponse baseResponse =
-				new UserQueryResponse(
-						userId,
-						"test@example.com",
-						"Tester",
-						"img.jpg",
-						UserRole.ROLE_USER,
-						UserStatus.ACTIVE);
-		when(userQueryRepository.findById(userId)).thenReturn(Optional.of(baseResponse));
-		when(accountBookCountService.countByUserId(userId)).thenReturn(2L);
-
-		UserQueryResponse result = userQueryService.getUserInfo(userId);
-
-		assertThat(result.needsOnboarding()).isFalse();
+		assertThat(result.needsOnboarding()).isEqualTo(expectedNeedsOnboarding);
 		verify(accountBookCountService).countByUserId(userId);
 	}
 }

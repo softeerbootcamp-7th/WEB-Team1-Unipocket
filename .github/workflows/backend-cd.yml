@@ -30,26 +30,29 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      # jar를 EC2로 전송 및 배포 스크립트 실행
       - name: Deploy to EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          # 전체 내용을 환경 변수로 안전하게 담음
+          RAW_ENV_FILE: ${{ secrets.ENV_FILE }}
+          SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
         run: |
-          set -x
+          set -e # 오류 발생 시 즉시 중단
+          
+          # 1. SSH 설정
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
-          rm -f $SSH_AUTH_SOCK
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' | ssh-add -
+          ssh-keyscan -H -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
           
-          echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' | ssh-add - || { echo "SSH Key Add Failed"; exit 1; }
+          # 2. .env 파일 생성 (가장 안전한 방식)
+          cat <<EOF > .env
+          $RAW_ENV_FILE
+          SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
+          EOF
           
-          ssh-keyscan -H -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || \
-          (echo "::error::EC2 접속 실패: ssh-keyscan을 수행할 수 없습니다. 호스트 주소와 포트를 확인하세요." && exit 1)
-          
-          echo "${{ secrets.ENV_FILE }}" > .env
-          echo "SPRING_PROFILES_ACTIVE=${{ vars.SPRING_PROFILES_ACTIVE }}" >> .env
-          
+          # 3. 파일 전송 및 실행
           scp -P ${{ secrets.EC2_PORT }} .env ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.DEPLOY_DIR }}/.env
           scp -P ${{ secrets.EC2_PORT }} ./build/libs/app.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.DEPLOY_DIR }}/app.jar
           ssh -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ${{ secrets.DEPLOY_DIR }}/deploy.sh && ${{ secrets.DEPLOY_DIR }}/deploy.sh"

@@ -88,8 +88,8 @@ class TemporaryExpenseQueryServiceTest {
 
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
 				.thenReturn(List.of(meta1, meta2));
-		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
-				.thenReturn(List.of(file1, file2, file3));
+		when(fileRepository.countFilesByTempExpenseMetaIdIn(List.of(10L, 11L)))
+				.thenReturn(List.of(new Object[] {10L, 2L}, new Object[] {11L, 1L}));
 		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
 				.thenReturn(List.of(normal, incomplete, abnormal));
 

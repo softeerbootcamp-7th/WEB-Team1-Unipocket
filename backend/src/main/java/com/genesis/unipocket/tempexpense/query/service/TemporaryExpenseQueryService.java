@@ -66,11 +66,11 @@ public class TemporaryExpenseQueryService {
 
 		List<Long> metaIds = metas.stream().map(TempExpenseMeta::getTempExpenseMetaId).toList();
 		Map<Long, Integer> fileCountByMetaId =
-				fileRepository.findByTempExpenseMetaIdIn(metaIds).stream()
+				fileRepository.countFilesByTempExpenseMetaIdIn(metaIds).stream()
 						.collect(
-								Collectors.groupingBy(
-										File::getTempExpenseMetaId,
-										Collectors.summingInt(file -> 1)));
+								Collectors.toMap(
+										row -> (Long) row[0],
+										row -> ((Long) row[1]).intValue()));
 
 		Map<Long, List<TemporaryExpense>> expensesByMetaId =
 				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds).stream()

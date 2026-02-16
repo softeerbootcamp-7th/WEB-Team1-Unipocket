@@ -100,11 +100,13 @@ public class TemporaryExpenseCommandService {
 						.localCurrencyAmount(resolvedLocalCurrencyAmount)
 						.baseCountryCode(resolvedBaseCountryCode)
 						.baseCurrencyAmount(resolvedBaseCurrencyAmount)
+						.exchangeRate(entity.getExchangeRate())
 						.paymentsMethod(resolvedPaymentsMethod)
 						.memo(resolvedMemo)
 						.occurredAt(resolvedOccurredAt)
 						.status(resolvedStatus)
 						.cardLastFourDigits(resolvedCardLastFourDigits)
+						.approvalNumber(entity.getApprovalNumber())
 						.build();
 
 		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(updated));

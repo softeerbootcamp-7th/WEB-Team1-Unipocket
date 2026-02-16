@@ -43,4 +43,6 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 			@Param("status") TemporaryExpenseStatus status);
 
 	List<TemporaryExpense> findByTempExpenseMetaIdIn(List<Long> tempExpenseMetaIds);
+
+	List<TemporaryExpense> findByFileIdIn(List<Long> fileIds);
 }

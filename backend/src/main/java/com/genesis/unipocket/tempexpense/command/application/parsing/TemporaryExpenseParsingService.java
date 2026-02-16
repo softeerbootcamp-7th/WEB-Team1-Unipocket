@@ -153,7 +153,7 @@ public class TemporaryExpenseParsingService {
 		Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap =
 				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
 		return temporaryExpensePersistenceService.persist(
-				meta, normalizedItems, rateContext, exchangeRateMap);
+				file, meta, normalizedItems, rateContext, exchangeRateMap);
 	}
 
 	private AccountBookRateContext resolveRateContext(Long accountBookId) {

@@ -30,6 +30,9 @@ public class TemporaryExpense {
 	@Column(name = "temp_expense_meta_id", nullable = false)
 	private Long tempExpenseMetaId;
 
+	@Column(name = "file_id")
+	private Long fileId;
+
 	@Column(name = "merchant_name", nullable = false)
 	private String merchantName;
 

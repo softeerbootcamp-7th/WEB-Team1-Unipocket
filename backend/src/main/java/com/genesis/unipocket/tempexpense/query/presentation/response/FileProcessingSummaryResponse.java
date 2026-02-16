@@ -12,6 +12,7 @@ public record FileProcessingSummaryResponse(
 		List<FileSummary> files, int totalFiles, int processedFiles, int unprocessedFiles) {
 
 	public record FileSummary(
+			Long fileId,
 			Long tempExpenseMetaId,
 			String s3Key,
 			String fileType,

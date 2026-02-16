@@ -69,7 +69,8 @@ public class TemporaryExpenseQueryService {
 				fileRepository.findByTempExpenseMetaIdIn(metaIds).stream()
 						.collect(
 								Collectors.groupingBy(
-										File::getTempExpenseMetaId, Collectors.summingInt(file -> 1)));
+										File::getTempExpenseMetaId,
+										Collectors.summingInt(file -> 1)));
 
 		Map<Long, List<TemporaryExpense>> expensesByMetaId =
 				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds).stream()
@@ -94,7 +95,8 @@ public class TemporaryExpenseQueryService {
 											fileCountByMetaId.getOrDefault(
 													meta.getTempExpenseMetaId(), 0),
 											expenses.size(),
-											counts.getOrDefault(TemporaryExpenseStatus.NORMAL, 0L).intValue(),
+											counts.getOrDefault(TemporaryExpenseStatus.NORMAL, 0L)
+													.intValue(),
 											counts.getOrDefault(
 															TemporaryExpenseStatus.INCOMPLETE, 0L)
 													.intValue(),

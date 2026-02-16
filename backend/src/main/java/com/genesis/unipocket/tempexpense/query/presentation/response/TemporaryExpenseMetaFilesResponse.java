@@ -12,4 +12,3 @@ public record TemporaryExpenseMetaFilesResponse(
 	public record FileExpenses(
 			Long fileId, String s3Key, String fileType, List<TemporaryExpenseResponse> expenses) {}
 }
-

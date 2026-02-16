@@ -148,4 +148,3 @@ class TemporaryExpenseQueryControllerIntegrationTest {
 				.andExpect(jsonPath("$.files[0].expenses[0].fileId").value(fileId));
 	}
 }
-

@@ -17,4 +17,3 @@ public record TemporaryExpenseMetaListResponse(List<MetaSummary> metas) {
 			int incompleteCount,
 			int abnormalCount) {}
 }
-

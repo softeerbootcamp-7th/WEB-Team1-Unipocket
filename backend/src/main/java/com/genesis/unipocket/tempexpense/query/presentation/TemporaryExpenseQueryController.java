@@ -3,9 +3,9 @@ package com.genesis.unipocket.tempexpense.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.facade.TemporaryExpenseQueryFacade;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
-import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -85,9 +85,7 @@ public class TemporaryExpenseQueryController {
 	/**
 	 * 메타 내부 파일별 임시지출 조회
 	 */
-	@Operation(
-			summary = "메타 내부 파일별 임시지출 조회",
-			description = "메타 1건에 속한 파일별 임시지출 목록을 조회합니다.")
+	@Operation(summary = "메타 내부 파일별 임시지출 조회", description = "메타 1건에 속한 파일별 임시지출 목록을 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files")
 	public ResponseEntity<TemporaryExpenseMetaFilesResponse> getTemporaryExpenseMetaFiles(
 			@PathVariable Long accountBookId,

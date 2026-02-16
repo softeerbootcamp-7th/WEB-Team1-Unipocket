@@ -3,7 +3,6 @@ package com.genesis.unipocket.expense.query.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
@@ -17,7 +16,6 @@ import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -150,7 +148,8 @@ class TemporaryExpenseQueryServiceTest {
 
 		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.of(meta));
 		when(fileRepository.findByTempExpenseMetaId(10L)).thenReturn(List.of(file1, file2));
-		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L, 101L))).thenReturn(List.of(e1, e2));
+		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L, 101L)))
+				.thenReturn(List.of(e1, e2));
 
 		TemporaryExpenseMetaFilesResponse result =
 				service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L);

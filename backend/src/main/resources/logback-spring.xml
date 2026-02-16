@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<springProperty scope="context" name="LOG_PATH" source="LOG_PATH" defaultValue="./logs"/>
+	<springProperty scope="context" name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
+	<springProperty scope="context" name="APP_LOG" source="logging.file.name" defaultValue="./logs/application.log"/>
+	<springProperty scope="context" name="ARCHIVE_APP" source="logging.logback.rollingpolicy.file-name-pattern" defaultValue="./logs/archived/application.%d{yyyy-MM-dd}.%i.log.gz"/>
+	<springProperty scope="context" name="MAX_FILE_SIZE" source="logging.logback.rollingpolicy.max-file-size" defaultValue="10MB"/>
+	<springProperty scope="context" name="MAX_HISTORY" source="logging.logback.rollingpolicy.max-history" defaultValue="30"/>
+	<springProperty scope="context" name="TOTAL_SIZE_CAP" source="logging.logback.rollingpolicy.total-size-cap" defaultValue="1GB"/>
+
+	<property name="ERROR_LOG" value="${LOG_PATH}/error.log"/>
+	<property name="ARCHIVE_ERROR" value="${LOG_PATH}/archived/error.%d{yyyy-MM-dd}.%i.log.gz"/>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %pid --- [%thread] %logger{36} : %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${APP_LOG}</file>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %pid --- [%thread] %logger{36} : %msg%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${ARCHIVE_APP}</fileNamePattern>
+			<maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+			<maxHistory>${MAX_HISTORY}</maxHistory>
+			<totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+		</rollingPolicy>
+	</appender>
+
+	<appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${ERROR_LOG}</file>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %pid --- [%thread] %logger{36} : %msg%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${ARCHIVE_ERROR}</fileNamePattern>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>1GB</totalSizeCap>
+		</rollingPolicy>
+	</appender>
+
+	<root level="${LOG_LEVEL}">
+		<appender-ref ref="CONSOLE"/>
+		<appender-ref ref="APP_FILE"/>
+		<appender-ref ref="ERROR_FILE"/>
+	</root>
+</configuration>

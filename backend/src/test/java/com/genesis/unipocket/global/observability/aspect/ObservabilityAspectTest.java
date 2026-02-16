@@ -27,7 +27,7 @@ class ObservabilityAspectTest {
 	}
 
 	@Test
-		@DisplayName("메서드 실행 시간을 측정하고 메트릭을 남긴다")
+	@DisplayName("메서드 실행 시간을 측정하고 메트릭을 남긴다")
 	void measuresExecutionTime() throws Throwable {
 		// given
 		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
@@ -47,6 +47,5 @@ class ObservabilityAspectTest {
 		// Verify Metric
 		assertThat(meterRegistry.find("method.execution.time").timer()).isNotNull();
 		assertThat(meterRegistry.find("method.execution.time").timer().count()).isEqualTo(1);
-
 	}
 }

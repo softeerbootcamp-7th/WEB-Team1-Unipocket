@@ -234,6 +234,7 @@ public class TemporaryExpenseParsingService {
 		int totalParsed = 0;
 		int totalNormal = 0;
 		int totalIncomplete = 0;
+		int failedFiles = 0;
 		Long firstMetaId = null;
 
 		for (String s3Key : s3Keys) {
@@ -275,11 +276,21 @@ public class TemporaryExpenseParsingService {
 			} catch (Exception e) {
 				log.error("Failed to parse file: {}", s3Key, e);
 				completedFiles++;
+				failedFiles++;
+				progressPublisher.publishFileError(
+						taskId,
+						new ParsingProgressPublisher.FileErrorEvent(
+								completedFiles,
+								totalFiles,
+								s3Key,
+								(completedFiles * 100) / totalFiles,
+								e.getMessage()));
 			}
 		}
 
 		BatchParsingResult finalResult =
-				new BatchParsingResult(firstMetaId, totalParsed, totalNormal, totalIncomplete, 0);
+				new BatchParsingResult(
+						firstMetaId, totalParsed, totalNormal, totalIncomplete, failedFiles);
 
 		// 완료 이벤트 publish
 		progressPublisher.complete(taskId, finalResult);

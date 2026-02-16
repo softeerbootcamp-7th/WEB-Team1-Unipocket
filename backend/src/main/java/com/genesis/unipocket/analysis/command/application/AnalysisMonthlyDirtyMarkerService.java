@@ -65,13 +65,9 @@ public class AnalysisMonthlyDirtyMarkerService {
 
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountry);
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
-		Set<LocalDate> targetYearMonths = new LinkedHashSet<>();
 		for (OffsetDateTime occurredAt : occurredAts) {
-			targetYearMonths.add(
-					occurredAt.atZoneSameInstant(zoneId).toLocalDate().withDayOfMonth(1));
-		}
-
-		for (LocalDate targetYearMonth : targetYearMonths) {
+			LocalDate targetYearMonth =
+					occurredAt.atZoneSameInstant(zoneId).toLocalDate().withDayOfMonth(1);
 			AnalysisMonthlyDirtyEntity dirty =
 					monthlyDirtyRepository
 							.findByCountryCodeAndAccountBookIdAndTargetYearMonth(

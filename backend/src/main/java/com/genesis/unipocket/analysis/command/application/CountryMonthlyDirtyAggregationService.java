@@ -16,7 +16,6 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.ExpenseRow;
-import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
@@ -189,7 +188,7 @@ public class CountryMonthlyDirtyAggregationService {
 			if (amount.compareTo(properties.getCleanedMaxAmount()) > 0) {
 				continue;
 			}
-			Integer categoryOrdinal = CategoryOrdinalParser.parse(row.categoryValue());
+			Integer categoryOrdinal = parseCategoryOrdinal(row.categoryValue());
 			if (categoryOrdinal == null) {
 				continue;
 			}
@@ -222,12 +221,10 @@ public class CountryMonthlyDirtyAggregationService {
 
 			totalAmount = totalAmount.add(cleanedAmount);
 			expenseCount += 1L;
-			BigDecimal finalCleanedAmount = cleanedAmount;
-			categoryMap.compute(
-					row.categoryOrdinal(),
-					(key, current) ->
-							(current == null ? new CategoryAccumulator() : current)
-									.add(finalCleanedAmount, 1L));
+			CategoryAccumulator current =
+					categoryMap.computeIfAbsent(
+							row.categoryOrdinal(), unused -> new CategoryAccumulator());
+			categoryMap.put(row.categoryOrdinal(), current.add(cleanedAmount, 1L));
 		}
 
 		List<CategoryAmountCount> categoryRows = new ArrayList<>(categoryMap.size());
@@ -358,6 +355,27 @@ public class CountryMonthlyDirtyAggregationService {
 									exception.getClass().getSimpleName(),
 									exception.getMessage());
 						});
+	}
+
+	private Integer parseCategoryOrdinal(Object value) {
+		if (value == null) {
+			return null;
+		}
+		int ordinal;
+		if (value instanceof Number number) {
+			ordinal = number.intValue();
+		} else {
+			try {
+				ordinal = Integer.parseInt(value.toString());
+			} catch (NumberFormatException e) {
+				try {
+					ordinal = Category.valueOf(value.toString()).ordinal();
+				} catch (IllegalArgumentException ignored) {
+					return null;
+				}
+			}
+		}
+		return ordinal < 0 || ordinal >= Category.values().length ? null : ordinal;
 	}
 
 	private Category toCategory(Integer ordinal) {

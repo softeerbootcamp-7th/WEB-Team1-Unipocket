@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 		indexes = {
 			@Index(
 					name = "idx_analysis_monthly_dirty_status_retry",
-					columnList = "country_code,status,target_year_month,id")
+					columnList = "status,next_retry_at_utc,country_code")
 		},
 		uniqueConstraints = {
 			@UniqueConstraint(

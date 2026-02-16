@@ -5,13 +5,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
+import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
+import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
+import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,6 +45,8 @@ class UserQueryServiceTest {
 	private com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository
 			userQueryRepository;
 
+	@Mock private AccountBookCountService accountBookCountService;
+
 	@InjectMocks private UserQueryService userQueryService;
 
 	private UUID userId;
@@ -63,5 +72,27 @@ class UserQueryServiceTest {
 		// Then
 		assertThat(result).hasSize(1);
 		verify(userQueryRepository).findAllCardsByUserId(userId);
+	}
+
+	@DisplayName("getUserInfo - 가계부 개수에 따른 온보딩 필요 여부 반환")
+	@ParameterizedTest
+	@CsvSource({"0, true", "1, false", "10, false"})
+	void getUserInfo_needsOnboarding_BasedOnAccountBookCount(
+			long accountBookCount, boolean expectedNeedsOnboarding) {
+		UserQueryResponse baseResponse =
+				new UserQueryResponse(
+						userId,
+						"test@example.com",
+						"Tester",
+						"img.jpg",
+						UserRole.ROLE_USER,
+						UserStatus.ACTIVE);
+		when(userQueryRepository.findById(userId)).thenReturn(Optional.of(baseResponse));
+		when(accountBookCountService.countByUserId(userId)).thenReturn(accountBookCount);
+
+		UserQueryResponse result = userQueryService.getUserInfo(userId);
+
+		assertThat(result.needsOnboarding()).isEqualTo(expectedNeedsOnboarding);
+		verify(accountBookCountService).countByUserId(userId);
 	}
 }

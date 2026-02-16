@@ -32,8 +32,14 @@ public class ExchangeInfo {
 	@Column(nullable = false)
 	private BigDecimal localCurrencyAmount;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private BigDecimal baseCurrencyAmount;
+
+	@Column(nullable = true)
+	private BigDecimal calculatedBaseCurrencyAmount;
+
+	@Column(nullable = true)
+	private CurrencyCode calculatedBaseCurrencyCode;
 
 	@Column(precision = 10, scale = 4)
 	private BigDecimal exchangeRate;
@@ -43,17 +49,32 @@ public class ExchangeInfo {
 			CurrencyCode billingCurrency,
 			BigDecimal localAmount,
 			BigDecimal billingAmount,
+			BigDecimal calculatedBillingAmount,
+			CurrencyCode calculatedBillingCurrency,
 			BigDecimal exchangeRate) {
 		if (localCurrency == null || billingCurrency == null) {
 			throw new IllegalArgumentException("currency must not be null");
 		}
-		if (localAmount == null
-				|| billingAmount == null
-				|| localAmount.signum() < 0
-				|| billingAmount.signum() < 0) {
+		if (localAmount == null || localAmount.signum() < 0) {
 			throw new IllegalArgumentException("amount must be positive");
 		}
-		if (localCurrency == billingCurrency && localAmount.compareTo(billingAmount) != 0) {
+		if (billingAmount == null && calculatedBillingAmount == null) {
+			throw new IllegalArgumentException(
+					"baseCurrencyAmount or calculatedBaseCurrencyAmount is required");
+		}
+		if (billingAmount != null && billingAmount.signum() < 0) {
+			throw new IllegalArgumentException("baseCurrencyAmount must be positive");
+		}
+		if (calculatedBillingAmount != null && calculatedBillingAmount.signum() < 0) {
+			throw new IllegalArgumentException("calculatedBaseCurrencyAmount must be positive");
+		}
+		if (calculatedBillingAmount != null && calculatedBillingCurrency == null) {
+			throw new IllegalArgumentException(
+					"calculatedBaseCurrencyCode is required when calculated amount exists");
+		}
+		if (localCurrency == billingCurrency
+				&& billingAmount != null
+				&& localAmount.compareTo(billingAmount) != 0) {
 			throw new IllegalArgumentException("same currency must have same amount");
 		}
 
@@ -62,6 +83,8 @@ public class ExchangeInfo {
 		info.baseCurrencyCode = billingCurrency;
 		info.localCurrencyAmount = localAmount;
 		info.baseCurrencyAmount = billingAmount;
+		info.calculatedBaseCurrencyAmount = calculatedBillingAmount;
+		info.calculatedBaseCurrencyCode = calculatedBillingCurrency;
 		info.exchangeRate = exchangeRate;
 		return info;
 	}

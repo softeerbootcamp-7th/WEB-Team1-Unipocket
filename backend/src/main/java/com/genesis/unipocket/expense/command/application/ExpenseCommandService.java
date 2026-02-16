@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.command.application;
 
+import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
@@ -12,7 +13,10 @@ import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExpenseCommandService {
 	private final ExpenseRepository expenseRepository;
 	private final ExchangeRateService exchangeRateService;
+	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 
 	@Transactional
 	public ExpenseResult createExpenseManual(ExpenseCreateCommand command) {
@@ -46,9 +51,12 @@ public class ExpenseCommandService {
 
 		ExpenseEntity expenseEntity =
 				ExpenseEntity.manual(
-						ExpenseManualCreateArgs.of(command, baseCurrencyAmount, exchangeRate));
+						ExpenseManualCreateArgs.of(
+								command, baseCurrencyAmount, null, null, exchangeRate));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
+		analysisMonthlyDirtyMarkerService.markDirty(
+				savedEntity.getAccountBookId(), savedEntity.getOccurredAt());
 
 		return ExpenseResult.from(savedEntity);
 	}
@@ -56,6 +64,7 @@ public class ExpenseCommandService {
 	@Transactional
 	public ExpenseResult updateExpense(ExpenseUpdateCommand command) {
 		ExpenseEntity entity = findAndVerifyOwnership(command.expenseId(), command.accountBookId());
+		var previousOccurredAt = entity.getOccurredAt();
 
 		// 기본 필드 업데이트
 		entity.updateMerchantName(command.merchantName());
@@ -82,13 +91,21 @@ public class ExpenseCommandService {
 							.multiply(exchangeRate)
 							.setScale(2, BigDecimal.ROUND_HALF_UP);
 
+			boolean convertedMode =
+					entity.getExchangeInfo() != null
+							&& entity.getExchangeInfo().getCalculatedBaseCurrencyAmount() != null;
+
 			entity.updateExchangeInfo(
 					command.localCurrencyCode(),
 					command.localCurrencyAmount(),
-					command.baseCurrencyCode(),
-					baseCurrencyAmount,
+					entity.getOriginalBaseCurrency(),
+					convertedMode ? entity.getOriginalBaseAmount() : baseCurrencyAmount,
+					convertedMode ? baseCurrencyAmount : null,
+					convertedMode ? command.baseCurrencyCode() : null,
 					exchangeRate);
 		}
+		analysisMonthlyDirtyMarkerService.markDirty(
+				entity.getAccountBookId(), previousOccurredAt, entity.getOccurredAt());
 
 		return ExpenseResult.from(entity);
 	}
@@ -96,7 +113,9 @@ public class ExpenseCommandService {
 	@Transactional
 	public void deleteExpense(Long expenseId, Long accountBookId) {
 		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
+		var occurredAt = entity.getOccurredAt();
 		expenseRepository.delete(entity);
+		analysisMonthlyDirtyMarkerService.markDirty(accountBookId, occurredAt);
 	}
 
 	@Transactional
@@ -116,19 +135,13 @@ public class ExpenseCommandService {
 				break;
 			}
 
-			// Local cache for exchange rates to avoid N+1 lookups within the chunk
-			// Key: CurrencyCode + Date (assuming daily rates or high reuse)
-			// Since ExchangeRateService uses LocalDateTime, we'll try to cache by that
-			// exact input
-			// OR optimally, we'd group by Date.
-			// Given the service signature, let's cache exact inputs for now.
-			// Improved Strategy:
-			// 1. Collect distinct (Currency, Date) pairs?
-			// 2. But we don't have a bulk fetch API.
-			// 3. So we just cache the result of getExchangeRate.
+			// Local cache for exchange rates to avoid N+1 lookups within the chunk.
+			// Keyed by source/target currency and occurred date (daily rate granularity).
 			java.util.Map<String, BigDecimal> rateCache = new java.util.HashMap<>();
+			Set<OffsetDateTime> occurredAts = new LinkedHashSet<>();
 
 			for (ExpenseEntity expense : expenses) {
+				occurredAts.add(expense.getOccurredAt());
 				String cacheKey =
 						expense.getLocalCurrency()
 								+ ":"
@@ -156,11 +169,14 @@ public class ExpenseCommandService {
 				expense.updateExchangeInfo(
 						expense.getLocalCurrency(),
 						expense.getLocalAmount(),
-						newBaseCurrencyCode,
+						expense.getOriginalBaseCurrency(),
+						expense.getOriginalBaseAmount(),
 						baseCurrencyAmount,
+						newBaseCurrencyCode,
 						exchangeRate);
 			}
 			expenseRepository.saveAll(expenses);
+			analysisMonthlyDirtyMarkerService.markDirty(accountBookId, occurredAts);
 			pageNumber++;
 		} while (page.hasNext());
 	}

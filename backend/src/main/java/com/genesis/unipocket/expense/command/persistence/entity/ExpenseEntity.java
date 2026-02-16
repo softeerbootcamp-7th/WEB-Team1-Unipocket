@@ -4,9 +4,10 @@ import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManua
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import lombok.*;
 
 /**
@@ -33,7 +34,12 @@ import lombok.*;
 			@Index(name = "idx_expenses_category", columnList = "category"),
 
 			// 선택: 여행별 조회
-			@Index(name = "idx_expenses_travel_id", columnList = "travelId")
+			@Index(name = "idx_expenses_travel_id", columnList = "travelId"),
+
+			// 거래처명 prefix 검색 최적화
+			@Index(
+					name = "idx_expenses_account_book_merchant_name",
+					columnList = "accountBookId, displayMerchantName")
 		})
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -62,7 +68,7 @@ public class ExpenseEntity extends BaseEntity {
 	private String memo;
 
 	@Column(nullable = false)
-	private LocalDateTime occurredAt;
+	private OffsetDateTime occurredAt;
 
 	@Embedded private Merchant merchant;
 
@@ -90,14 +96,50 @@ public class ExpenseEntity extends BaseEntity {
 								params.baseCurrencyCode(),
 								params.localCurrencyAmount(),
 								params.baseCurrencyAmount(),
+								params.calculatedBaseCurrencyAmount(),
+								params.calculatedBaseCurrencyCode(),
+								params.exchangeRate()))
+				.build();
+	}
+
+	public static ExpenseEntity convertedFromTemporary(
+			ExpenseManualCreateArgs params,
+			ExpenseSource source,
+			String fileLink,
+			String approvalNumber,
+			String cardNumber) {
+		if (params == null) {
+			throw new IllegalArgumentException("params must not be null");
+		}
+		if (source == null) {
+			throw new IllegalArgumentException("source must not be null");
+		}
+
+		return ExpenseEntity.builder()
+				.accountBookId(params.accountBookId())
+				.merchant(Merchant.of(params.merchantName()))
+				.occurredAt(params.occurredAt())
+				.memo(params.memo())
+				.userCardId(params.userCardId())
+				.category(params.category())
+				.travelId(params.travelId())
+				.approvalNumber(approvalNumber)
+				.cardNumber(cardNumber)
+				.expenseSourceInfo(ExpenseSourceInfo.of(source, fileLink))
+				.exchangeInfo(
+						ExchangeInfo.of(
+								params.localCurrencyCode(),
+								params.baseCurrencyCode(),
+								params.localCurrencyAmount(),
+								params.baseCurrencyAmount(),
+								params.calculatedBaseCurrencyAmount(),
+								params.calculatedBaseCurrencyCode(),
 								params.exchangeRate()))
 				.build();
 	}
 
 	public String getMerchantName() {
-		return merchant.getDisplayMerchantName() != null
-				? merchant.getDisplayMerchantName()
-				: merchant.getMerchantName();
+		return merchant.getDisplayMerchantName();
 	}
 
 	public CurrencyCode getLocalCurrency() {
@@ -113,6 +155,32 @@ public class ExpenseEntity extends BaseEntity {
 	}
 
 	public BigDecimal getBaseAmount() {
+		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
+	}
+
+	public CurrencyCode getDisplayBaseCurrency() {
+		if (exchangeInfo == null) {
+			return null;
+		}
+		return exchangeInfo.getCalculatedBaseCurrencyCode() != null
+				? exchangeInfo.getCalculatedBaseCurrencyCode()
+				: exchangeInfo.getBaseCurrencyCode();
+	}
+
+	public BigDecimal getDisplayBaseAmount() {
+		if (exchangeInfo == null) {
+			return null;
+		}
+		return exchangeInfo.getCalculatedBaseCurrencyAmount() != null
+				? exchangeInfo.getCalculatedBaseCurrencyAmount()
+				: exchangeInfo.getBaseCurrencyAmount();
+	}
+
+	public CurrencyCode getOriginalBaseCurrency() {
+		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyCode() : null;
+	}
+
+	public BigDecimal getOriginalBaseAmount() {
 		return exchangeInfo != null ? exchangeInfo.getBaseCurrencyAmount() : null;
 	}
 
@@ -139,7 +207,7 @@ public class ExpenseEntity extends BaseEntity {
 		this.memo = memo;
 	}
 
-	public void updateOccurredAt(LocalDateTime occurredAt) {
+	public void updateOccurredAt(OffsetDateTime occurredAt) {
 		if (occurredAt == null) {
 			throw new IllegalArgumentException("occurredAt must not be null");
 		}
@@ -155,6 +223,8 @@ public class ExpenseEntity extends BaseEntity {
 			BigDecimal localCurrencyAmount,
 			CurrencyCode baseCurrencyCode,
 			BigDecimal baseCurrencyAmount,
+			BigDecimal calculatedBaseCurrencyAmount,
+			CurrencyCode calculatedBaseCurrencyCode,
 			BigDecimal exchangeRate) {
 		// ExchangeInfo는 immutable이므로 전체 교체
 		this.exchangeInfo =
@@ -163,6 +233,8 @@ public class ExpenseEntity extends BaseEntity {
 						baseCurrencyCode,
 						localCurrencyAmount,
 						baseCurrencyAmount,
+						calculatedBaseCurrencyAmount,
+						calculatedBaseCurrencyCode,
 						exchangeRate);
 	}
 }

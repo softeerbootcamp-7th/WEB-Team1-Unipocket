@@ -6,7 +6,6 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZoneOffset;
 
 /**
  * <b>지출내역 수정 응답 DTO</b>
@@ -46,7 +45,7 @@ public record ExpenseUpdateResponse(
 						result.cardCompany(),
 						result.cardLabel(),
 						result.cardLastDigits()),
-				result.occurredAt().toInstant(ZoneOffset.UTC),
+				result.occurredAt().toInstant(),
 				result.localCurrencyAmount(),
 				result.localCurrencyCode(),
 				result.baseCurrencyAmount(),

@@ -56,6 +56,10 @@ app:
     domain:
     secure: false
 
+analysis:
+  batch:
+    enabled: false
+
 # Swagger / OpenAPI
 springdoc:
   swagger-ui:
@@ -69,3 +73,7 @@ gemini:
     key: test-gemini-api-key
     model: gemini-1.5-flash
     endpoint: https://generativelanguage.googleapis.com/v1beta
+
+media:
+  cleanup:
+    cron: "0 0 0 1 1 *"

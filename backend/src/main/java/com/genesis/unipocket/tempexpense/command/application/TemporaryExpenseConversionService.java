@@ -1,15 +1,23 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
+import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.common.enums.ExpenseSource;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ConversionResult;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import java.math.BigDecimal;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -31,6 +39,8 @@ public class TemporaryExpenseConversionService {
 	private final TemporaryExpenseRepository tempExpenseRepository;
 	private final ExpenseRepository expenseRepository;
 	private final TempExpenseMetaRepository metaRepository;
+	private final FileRepository fileRepository;
+	private final ExchangeRateService exchangeRateService;
 
 	/**
 	 * 단일 변환
@@ -43,10 +53,7 @@ public class TemporaryExpenseConversionService {
 		TemporaryExpense temp =
 				tempExpenseRepository
 						.findById(tempExpenseId)
-						.orElseThrow(
-								() ->
-										new IllegalArgumentException(
-												"임시지출내역을 찾을 수 없습니다. ID: " + tempExpenseId));
+						.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
 
 		// 2. 필수 필드 검증
 		validateRequiredFields(temp);
@@ -55,24 +62,18 @@ public class TemporaryExpenseConversionService {
 		TempExpenseMeta meta =
 				metaRepository
 						.findById(temp.getTempExpenseMetaId())
-						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		if (!meta.getAccountBookId().equals(accountBookId)) {
-			throw new IllegalArgumentException("가계부와 임시지출내역이 일치하지 않습니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
 
 		// 4. ExpenseManualCreateArgs 생성 (manual 팩토리 메서드 사용)
-		BigDecimal exchangeRate = temp.getExchangeRate();
-		if (exchangeRate == null
-				&& temp.getLocalCurrencyAmount() != null
-				&& temp.getBaseCurrencyAmount() != null
-				&& temp.getLocalCurrencyAmount().compareTo(BigDecimal.ZERO) > 0) {
-			exchangeRate =
-					temp.getBaseCurrencyAmount()
-							.divide(
-									temp.getLocalCurrencyAmount(),
-									4,
-									java.math.RoundingMode.HALF_UP);
-		}
+		ResolvedAmount resolvedAmount = resolveBaseAmountAndRate(temp);
+		List<File> sourceFiles =
+				fileRepository.findByTempExpenseMetaId(temp.getTempExpenseMetaId());
+		ExpenseSource source = resolveExpenseSource(sourceFiles);
+		String fileLink = resolveFileLink(sourceFiles);
 
 		ExpenseManualCreateArgs args =
 				new ExpenseManualCreateArgs(
@@ -80,21 +81,28 @@ public class TemporaryExpenseConversionService {
 						temp.getMerchantName(),
 						temp.getCategory(),
 						null, // userCardId - 임시지출에서는 카드 정보 없음
-						temp.getOccurredAt(),
+						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
 						temp.getLocalCurrencyAmount(),
 						temp.getLocalCountryCode() != null
 								? temp.getLocalCountryCode()
 								: com.genesis.unipocket.global.common.enums.CurrencyCode.KRW,
-						temp.getBaseCurrencyAmount(),
+						resolvedAmount.baseCurrencyAmount(),
 						temp.getBaseCountryCode() != null
 								? temp.getBaseCountryCode()
 								: com.genesis.unipocket.global.common.enums.CurrencyCode.KRW,
+						resolvedAmount.calculatedBaseCurrencyAmount(),
+						resolvedAmount.calculatedBaseCurrencyCode(),
 						temp.getMemo(),
 						null,
-						exchangeRate);
+						resolvedAmount.exchangeRate());
 
-		// 5. Expense 생성 (manual 메서드 사용)
-		ExpenseEntity expense = ExpenseEntity.manual(args);
+		ExpenseEntity expense =
+				ExpenseEntity.convertedFromTemporary(
+						args,
+						source,
+						fileLink,
+						temp.getApprovalNumber(),
+						temp.getCardLastFourDigits());
 
 		// 6. Expense 저장
 		ExpenseEntity savedExpense = expenseRepository.save(expense);
@@ -153,9 +161,10 @@ public class TemporaryExpenseConversionService {
 		TempExpenseMeta meta =
 				metaRepository
 						.findById(tempExpenseMetaId)
-						.orElseThrow(() -> new IllegalArgumentException("메타데이터를 찾을 수 없습니다."));
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 		if (!meta.getAccountBookId().equals(accountBookId)) {
-			throw new IllegalArgumentException("가계부와 메타데이터가 일치하지 않습니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
 
 		List<Long> targetIds =
@@ -165,6 +174,25 @@ public class TemporaryExpenseConversionService {
 								.toList()
 						: tempExpenseIds;
 
+		// tempExpenseIds가 주어졌을 때, 전부 존재하는지 + 전부 해당 tempExpenseMetaId 소속인지 검증.
+		if (tempExpenseIds != null && !tempExpenseIds.isEmpty()) {
+			List<TemporaryExpense> targetExpenses =
+					tempExpenseRepository.findAllById(tempExpenseIds);
+			if (targetExpenses.size() != tempExpenseIds.size()) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND);
+			}
+
+			boolean hasOutOfScopeMeta =
+					targetExpenses.stream()
+							.anyMatch(
+									tempExpense ->
+											!tempExpenseMetaId.equals(
+													tempExpense.getTempExpenseMetaId()));
+			if (hasOutOfScopeMeta) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+			}
+		}
+
 		return convertBatch(accountBookId, targetIds);
 	}
 
@@ -173,14 +201,78 @@ public class TemporaryExpenseConversionService {
 	 */
 	private void validateRequiredFields(TemporaryExpense temp) {
 		if (temp.getMerchantName() == null || temp.getMerchantName().isBlank()) {
-			throw new IllegalArgumentException("가맹점명은 필수입니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING);
+		}
+		if (temp.getCategory() == null) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING);
+		}
+		if (temp.getLocalCountryCode() == null) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING);
 		}
 		if (temp.getLocalCurrencyAmount() == null) {
-			throw new IllegalArgumentException("금액은 필수입니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING);
+		}
+		if (temp.getBaseCountryCode() == null) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING);
 		}
 		if (temp.getOccurredAt() == null) {
-			throw new IllegalArgumentException("거래일시는 필수입니다.");
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING);
 		}
-		// Category는 null 허용 (UNCLASSIFIED로 변환 가능)
 	}
+
+	private ResolvedAmount resolveBaseAmountAndRate(TemporaryExpense temp) {
+		BigDecimal localAmount = temp.getLocalCurrencyAmount();
+		BigDecimal baseAmount = temp.getBaseCurrencyAmount();
+		BigDecimal exchangeRate = temp.getExchangeRate();
+
+		if (baseAmount != null) {
+			if (exchangeRate == null && localAmount.compareTo(BigDecimal.ZERO) > 0) {
+				exchangeRate = baseAmount.divide(localAmount, 4, java.math.RoundingMode.HALF_UP);
+			}
+			return new ResolvedAmount(baseAmount, null, null, exchangeRate);
+		}
+
+		if (temp.getLocalCountryCode() == temp.getBaseCountryCode()) {
+			return new ResolvedAmount(null, localAmount, temp.getBaseCountryCode(), BigDecimal.ONE);
+		}
+
+		if (exchangeRate == null || exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
+			exchangeRate =
+					exchangeRateService.getExchangeRate(
+							temp.getLocalCountryCode(),
+							temp.getBaseCountryCode(),
+							temp.getOccurredAt().atOffset(ZoneOffset.UTC));
+		}
+
+		BigDecimal calculatedBaseAmount =
+				localAmount.multiply(exchangeRate).setScale(2, java.math.RoundingMode.HALF_UP);
+		return new ResolvedAmount(
+				null, calculatedBaseAmount, temp.getBaseCountryCode(), exchangeRate);
+	}
+
+	private ExpenseSource resolveExpenseSource(List<File> files) {
+		if (files == null || files.isEmpty()) {
+			return ExpenseSource.MANUAL;
+		}
+
+		File.FileType fileType = files.get(0).getFileType();
+		return switch (fileType) {
+			case IMAGE -> ExpenseSource.IMAGE_RECEIPT;
+			case CSV -> ExpenseSource.CSV;
+			case EXCEL -> ExpenseSource.EXCEL;
+		};
+	}
+
+	private String resolveFileLink(List<File> files) {
+		if (files == null || files.isEmpty()) {
+			return null;
+		}
+		return files.get(0).getS3Key();
+	}
+
+	private record ResolvedAmount(
+			BigDecimal baseCurrencyAmount,
+			BigDecimal calculatedBaseCurrencyAmount,
+			CurrencyCode calculatedBaseCurrencyCode,
+			BigDecimal exchangeRate) {}
 }

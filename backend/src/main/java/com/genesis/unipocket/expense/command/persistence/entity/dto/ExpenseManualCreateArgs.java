@@ -4,7 +4,7 @@ import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCo
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * <b>지출내역 생성 - 수기 DTO</b>
@@ -19,17 +19,23 @@ public record ExpenseManualCreateArgs(
 		String merchantName,
 		Category category,
 		Long userCardId,
-		LocalDateTime occurredAt,
+		OffsetDateTime occurredAt,
 		BigDecimal localCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
+		BigDecimal calculatedBaseCurrencyAmount,
+		CurrencyCode calculatedBaseCurrencyCode,
 		String memo,
 		Long travelId,
 		BigDecimal exchangeRate) {
 
 	public static ExpenseManualCreateArgs of(
-			ExpenseCreateCommand command, BigDecimal baseCurrencyAmount, BigDecimal exchangeRate) {
+			ExpenseCreateCommand command,
+			BigDecimal baseCurrencyAmount,
+			BigDecimal calculatedBaseCurrencyAmount,
+			CurrencyCode calculatedBaseCurrencyCode,
+			BigDecimal exchangeRate) {
 		return new ExpenseManualCreateArgs(
 				command.accountBookId(),
 				command.merchantName(),
@@ -40,6 +46,8 @@ public record ExpenseManualCreateArgs(
 				command.localCurrencyCode(),
 				baseCurrencyAmount,
 				command.baseCurrencyCode(),
+				calculatedBaseCurrencyAmount,
+				calculatedBaseCurrencyCode,
 				command.memo(),
 				command.travelId(),
 				exchangeRate);

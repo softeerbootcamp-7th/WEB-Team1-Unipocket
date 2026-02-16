@@ -11,7 +11,19 @@ public record UserQueryResponse(
 		String name,
 		String profileImgUrl,
 		UserRole role,
-		UserStatus status) {
+		UserStatus status,
+		boolean needsOnboarding) {
+
+	public UserQueryResponse(
+			UUID userId,
+			String email,
+			String name,
+			String profileImgUrl,
+			UserRole role,
+			UserStatus status) {
+		this(userId, email, name, profileImgUrl, role, status, false);
+	}
+
 	public static UserQueryResponse from(UserEntity user) {
 		return new UserQueryResponse(
 				user.getId(),
@@ -19,6 +31,12 @@ public record UserQueryResponse(
 				user.getName(),
 				user.getProfileImgUrl(),
 				user.getRole(),
-				user.getStatus());
+				user.getStatus(),
+				false);
+	}
+
+	public UserQueryResponse withNeedsOnboarding(boolean needsOnboarding) {
+		return new UserQueryResponse(
+				userId, email, name, profileImgUrl, role, status, needsOnboarding);
 	}
 }

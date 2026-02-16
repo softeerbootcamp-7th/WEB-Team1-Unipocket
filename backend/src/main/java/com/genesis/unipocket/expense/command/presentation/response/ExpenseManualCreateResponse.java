@@ -5,7 +5,6 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZoneOffset;
 
 public record ExpenseManualCreateResponse(
 		Long expenseId,
@@ -36,6 +35,6 @@ public record ExpenseManualCreateResponse(
 				result.localCurrencyCode(),
 				result.baseCurrencyAmount(),
 				result.baseCurrencyCode(),
-				result.occurredAt().toInstant(ZoneOffset.UTC));
+				result.occurredAt().toInstant());
 	}
 }

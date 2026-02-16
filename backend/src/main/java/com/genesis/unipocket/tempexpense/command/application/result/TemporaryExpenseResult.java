@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public record TemporaryExpenseResult(
 		Long tempExpenseId,
 		Long tempExpenseMetaId,
+		Long fileId,
 		String merchantName,
 		Category category,
 		CurrencyCode localCountryCode,
@@ -32,6 +33,7 @@ public record TemporaryExpenseResult(
 		return new TemporaryExpenseResult(
 				entity.getTempExpenseId(),
 				entity.getTempExpenseMetaId(),
+				entity.getFileId(),
 				entity.getMerchantName(),
 				entity.getCategory(),
 				entity.getLocalCountryCode(),

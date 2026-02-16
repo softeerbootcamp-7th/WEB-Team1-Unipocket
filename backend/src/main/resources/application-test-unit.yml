@@ -60,9 +60,17 @@ app:
     domain:
     secure: false
 
+analysis:
+  batch:
+    enabled: false
+
 # Swagger / OpenAPI
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+media:
+  cleanup:
+    cron: "0 0 0 1 1 *"

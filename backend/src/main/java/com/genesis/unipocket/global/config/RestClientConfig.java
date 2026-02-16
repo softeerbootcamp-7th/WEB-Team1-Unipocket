@@ -1,11 +1,13 @@
 package com.genesis.unipocket.global.config;
 
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * RestClient 및 RestTemplate 설정
@@ -18,16 +20,27 @@ public class RestClientConfig {
 	private static final int CONNECT_TIMEOUT_SECONDS = 5;
 	private static final int READ_TIMEOUT_SECONDS = 10;
 
+	@Value("${gemini.api.connect-timeout-seconds:10}")
+	private int geminiConnectTimeoutSeconds;
+
+	@Value("${gemini.api.read-timeout-seconds:90}")
+	private int geminiReadTimeoutSeconds;
+
 	@Bean
 	public RestClient restClient() {
 		return RestClient.builder().requestFactory(clientHttpRequestFactory()).build();
 	}
 
 	@Bean
-	public org.springframework.web.client.RestTemplate restTemplate() {
-		org.springframework.web.client.RestTemplate restTemplate =
-				new org.springframework.web.client.RestTemplate(clientHttpRequestFactory());
+	public RestTemplate restTemplate() {
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
 		return restTemplate;
+	}
+
+	@Bean(name = "geminiRestTemplate")
+	public RestTemplate geminiRestTemplate() {
+		return new RestTemplate(
+				clientHttpRequestFactory(geminiConnectTimeoutSeconds, geminiReadTimeoutSeconds));
 	}
 
 	/**
@@ -36,9 +49,14 @@ public class RestClientConfig {
 	 * - 읽기 타임아웃: 10초
 	 */
 	private ClientHttpRequestFactory clientHttpRequestFactory() {
+		return clientHttpRequestFactory(CONNECT_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS);
+	}
+
+	private ClientHttpRequestFactory clientHttpRequestFactory(
+			int connectTimeoutSeconds, int readTimeoutSeconds) {
 		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-		factory.setConnectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS)); // 연결 타임아웃
-		factory.setReadTimeout(Duration.ofSeconds(READ_TIMEOUT_SECONDS)); // 읽기 타임아웃
+		factory.setConnectTimeout(Duration.ofSeconds(connectTimeoutSeconds));
+		factory.setReadTimeout(Duration.ofSeconds(readTimeoutSeconds));
 		return factory;
 	}
 }

@@ -7,7 +7,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * <b>지출내역 결과 DTO</b>
@@ -25,7 +25,7 @@ public record ExpenseResult(
 		BigDecimal baseCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		BigDecimal localCurrencyAmount,
-		LocalDateTime occurredAt,
+		OffsetDateTime occurredAt,
 		String merchantName,
 		String displayMerchantName,
 		String approvalNumber,
@@ -44,12 +44,8 @@ public record ExpenseResult(
 				entity.getAccountBookId(),
 				entity.getTravelId(),
 				entity.getCategory(),
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyCode()
-						: null,
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyAmount()
-						: null,
+				entity.getDisplayBaseCurrency(),
+				entity.getDisplayBaseAmount(),
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getLocalCurrencyCode()
 						: null,
@@ -57,7 +53,7 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant() != null ? entity.getMerchant().getMerchantName() : null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),
@@ -80,12 +76,8 @@ public record ExpenseResult(
 				entity.getAccountBookId(),
 				entity.getTravelId(),
 				entity.getCategory(),
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyCode()
-						: null,
-				entity.getExchangeInfo() != null
-						? entity.getExchangeInfo().getBaseCurrencyAmount()
-						: null,
+				entity.getDisplayBaseCurrency(),
+				entity.getDisplayBaseAmount(),
 				entity.getExchangeInfo() != null
 						? entity.getExchangeInfo().getLocalCurrencyCode()
 						: null,
@@ -93,7 +85,7 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant() != null ? entity.getMerchant().getMerchantName() : null,
+				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),

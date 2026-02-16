@@ -95,3 +95,14 @@ gemini:
     key: ${GEMINI_API_KEY}
     model: ${GEMINI_MODEL}
     endpoint: https://generativelanguage.googleapis.com/v1beta
+
+media:
+  cleanup:
+    cron: ${MEDIA_CLEANUP_CRON}
+
+analysis:
+  batch:
+    enabled: true
+    dispatch-batch-size: 20
+    dispatcher:
+      fixed-delay-ms: 6000000

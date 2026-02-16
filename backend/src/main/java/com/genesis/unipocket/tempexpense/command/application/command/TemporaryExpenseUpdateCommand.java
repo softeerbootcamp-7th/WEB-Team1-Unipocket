@@ -2,7 +2,7 @@ package com.genesis.unipocket.tempexpense.command.application.command;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseUpdateRequest;
+import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateItemRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -26,10 +26,8 @@ public record TemporaryExpenseUpdateCommand(
 		LocalDateTime occurredAt,
 		String cardLastFourDigits) {
 
-	/**
-	 * Request DTO → Command
-	 */
-	public static TemporaryExpenseUpdateCommand from(TemporaryExpenseUpdateRequest request) {
+	public static TemporaryExpenseUpdateCommand from(
+			TemporaryExpenseMetaBulkUpdateItemRequest request) {
 		return new TemporaryExpenseUpdateCommand(
 				request.merchantName(),
 				request.category(),

@@ -23,9 +23,9 @@ const WidgetList = ({
       className="rounded-modal-20 flex w-full items-center justify-between transition-colors"
       {...dropZoneProps}
     >
-      {displayWidgets.map((widget) => (
+      {displayWidgets.map((widget, i) => (
         <WidgetListItem
-          key={widget.order}
+          key={widget.widgetType === 'BLANK' ? `BLANK-${i}` : widget.widgetType}
           widget={widget}
           isWidgetEditMode={isWidgetEditMode}
           handleRemoveWidget={handleRemoveWidget}

@@ -13,6 +13,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,11 +65,11 @@ public class AnalysisMonthlyDirtyMarkerService {
 		CountryCode localCountry = accountBook.getLocalCountryCode();
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountry);
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
-		Set<LocalDate> targetYearMonths = new LinkedHashSet<>();
-		for (OffsetDateTime occurredAt : occurredAts) {
-			targetYearMonths.add(
-					occurredAt.atZoneSameInstant(zoneId).toLocalDate().withDayOfMonth(1));
-		}
+		Set<LocalDate> targetYearMonths =
+				occurredAts.stream()
+						.map(occurredAt -> occurredAt.atZoneSameInstant(zoneId).toLocalDate())
+						.map(date -> date.withDayOfMonth(1))
+						.collect(Collectors.toCollection(LinkedHashSet::new));
 		for (LocalDate targetYearMonth : targetYearMonths) {
 			AnalysisMonthlyDirtyEntity dirty =
 					monthlyDirtyRepository

@@ -20,8 +20,11 @@ public interface AnalysisMonthlyDirtyRepository
 	Optional<AnalysisMonthlyDirtyEntity> findByCountryCodeAndAccountBookIdAndTargetYearMonth(
 			CountryCode countryCode, Long accountBookId, LocalDate targetYearMonth);
 
-	Optional<AnalysisMonthlyDirtyEntity> findByAccountBookIdAndTargetYearMonth(
-			Long accountBookId, LocalDate targetYearMonth);
+	boolean existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+			CountryCode countryCode,
+			Long accountBookId,
+			LocalDate targetYearMonth,
+			AnalysisBatchJobStatus status);
 
 	@Query(
 			"""

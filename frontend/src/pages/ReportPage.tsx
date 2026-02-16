@@ -12,11 +12,22 @@ import { type CurrencyType } from '@/types/currency';
 import { Icons } from '@/assets';
 
 const ReportPage = () => {
-  const year = new Date().getFullYear();
-  const month = new Date().getMonth() + 1;
+  const now = new Date();
+  const [selectedDate, setSelectedDate] = useState(now);
   const categoryData = mockData.compareByCategory;
   const myselfData = mockData.compareWithLastMonth;
   const [currencyType, setCurrencyType] = useState<CurrencyType>('LOCAL'); // @TODO: 드롭다운 추가 예정
+
+  const handleMonthChange = (offset: number) => {
+    setSelectedDate((prev) => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + offset);
+      return newDate;
+    });
+  };
+
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth() + 1;
 
   return (
     <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
@@ -34,8 +45,14 @@ const ReportPage = () => {
               {year}년 {month}월
             </span>
             <div className="flex gap-3.5">
-              <Icons.ChevronBack className="text-label-neutral size-6" />
-              <Icons.ChevronForward className="text-label-neutral size-6" />
+              <Icons.ChevronBack
+                className="text-label-neutral size-6 cursor-pointer"
+                onClick={() => handleMonthChange(-1)}
+              />
+              <Icons.ChevronForward
+                className="text-label-neutral size-6 cursor-pointer"
+                onClick={() => handleMonthChange(1)}
+              />
             </div>
           </div>
           <div className="flex gap-3">

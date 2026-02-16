@@ -24,11 +24,7 @@ const ExpandableSheet = ({
     if (info.offset.y < -SWIPE_THRESHOLD) {
       if (!isExpanded) onToggleExpand(true);
     } else if (info.offset.y > SWIPE_THRESHOLD) {
-      if (isExpanded) {
-        onToggleExpand(false);
-      } else {
-        onToggleExpand(false);
-      }
+      onToggleExpand(false);
     }
   };
   return (

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Button, { type ButtonProps } from '@/components/common/Button';
@@ -15,6 +16,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAction: () => void;
+  className?: string;
   cancelButton?: ModalButton | null; // null로 전달 시 버튼 숨김
   confirmButton?: ModalButton | null; // null로 전달 시 버튼 숨김
 }
@@ -30,6 +32,7 @@ const Modal = ({
   isOpen,
   onClose,
   onAction,
+  className,
   cancelButton,
   confirmButton,
 }: ModalProps) => {
@@ -67,7 +70,10 @@ const Modal = ({
           >
             {/* Modal Content */}
             <motion.div
-              className="rounded-modal-16 bg-background-normal relative z-51 flex h-fit w-fit flex-col items-center justify-center px-4 pt-5"
+              className={clsx(
+                'rounded-modal-16 bg-background-normal relative z-51 flex h-fit w-fit flex-col items-center justify-center px-4 pt-5',
+                className,
+              )}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}

@@ -40,7 +40,7 @@ const UploadBox = ({ type }: UploadBoxProps) => {
   return (
     <label
       className={clsx(
-        'bg-background-normal flex cursor-pointer flex-col items-center justify-center gap-5 rounded-lg border-2 border-dashed py-10 transition-colors',
+        'bg-background-normal flex h-full w-full cursor-pointer flex-col items-center justify-center gap-5 rounded-lg border-2 border-dashed py-10 transition-colors',
         isDragging
           ? 'border-blue-400 bg-blue-50'
           : 'hover:bg-background-alternative border-line-normal-strong',

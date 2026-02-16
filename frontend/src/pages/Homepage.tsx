@@ -13,11 +13,11 @@ import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
 import MethodFilter from '@/components/data-table/filters/MethodFilter';
 import SortDropdown from '@/components/data-table/filters/SortDropdown';
-import SelectionActionProvider from '@/components/data-table/SelectionActionProvider';
+import SelectionActionBar from '@/components/data-table/SelectionActionBar';
 import { columns } from '@/components/home-page/columns';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { type Expense, getData } from '@/components/landing-page/dummy';
-import ExpandableSheet from '@/components/layout/menu/ExpandableSheet';
+import ExpandableSheet from '@/components/layout/ExpandableSheet';
 import SidePanel from '@/components/side-panel/SidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
@@ -87,7 +87,7 @@ const Homepage = () => {
               }
             />
             <DataTableCellEditor />
-            <SelectionActionProvider />
+            <SelectionActionBar />
             <SidePanel />
           </DataTableProvider>
         </ExpandableSheet>

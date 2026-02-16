@@ -11,6 +11,7 @@ import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,7 @@ public class ExpenseQueryService {
 	private final ExpenseRepository expenseRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 	private final UserCardFetchService userCardFetchService;
+	private final ExpenseMerchantSearchRateLimitService expenseMerchantSearchRateLimitService;
 
 	public ExpenseResult getExpense(Long expenseId, Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
@@ -132,5 +134,24 @@ public class ExpenseQueryService {
 				&& filter.maxAmount() == null
 				&& filter.merchantName() == null
 				&& filter.travelId() == null;
+	}
+
+	public List<String> searchMerchantNames(
+			Long accountBookId, UUID userId, String query, Integer limit) {
+		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		expenseMerchantSearchRateLimitService.validate(userId);
+
+		if (query == null || query.isBlank()) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+
+		int pageSize = limit == null ? 10 : limit;
+		if (pageSize < 1 || pageSize > 20) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+
+		String normalizedQuery = query.trim();
+		return expenseRepository.findMerchantNameSuggestions(
+				accountBookId, normalizedQuery, PageRequest.of(0, pageSize));
 	}
 }

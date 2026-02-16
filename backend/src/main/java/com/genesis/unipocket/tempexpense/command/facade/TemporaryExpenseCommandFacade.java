@@ -3,6 +3,7 @@ package com.genesis.unipocket.tempexpense.command.facade;
 import com.genesis.unipocket.tempexpense.command.application.FileUploadService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseBulkUpdateService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseConversionService;
+import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseRateLimitService;
 import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryExpenseParsingService;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
@@ -31,6 +32,7 @@ public class TemporaryExpenseCommandFacade {
 	private final TemporaryExpenseParsingService temporaryExpenseParsingService;
 	private final TemporaryExpenseConversionService temporaryExpenseConversionService;
 	private final TemporaryExpenseBulkUpdateService temporaryExpenseBulkUpdateService;
+	private final TemporaryExpenseRateLimitService temporaryExpenseRateLimitService;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public FileUploadResult createPresignedUrl(
@@ -41,6 +43,7 @@ public class TemporaryExpenseCommandFacade {
 			UUID userId) {
 		// 가계부 소유주 검증 진행
 		validateOwnership(accountBookId, userId);
+		temporaryExpenseRateLimitService.validateUploadRequest(userId);
 
 		// presigned url 발급
 		return fileUploadService.createPresignedUrl(
@@ -49,6 +52,7 @@ public class TemporaryExpenseCommandFacade {
 
 	public String startParseAsync(Long accountBookId, List<String> s3Keys, UUID userId) {
 		validateOwnership(accountBookId, userId);
+		temporaryExpenseRateLimitService.validateParseRequest(userId);
 
 		// 비동기 파싱(SSE 기반 파싱) 시작
 		return temporaryExpenseParsingService.startParseAsync(accountBookId, s3Keys);

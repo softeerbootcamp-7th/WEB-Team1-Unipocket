@@ -99,3 +99,10 @@ gemini:
 media:
   cleanup:
     cron: ${MEDIA_CLEANUP_CRON}
+
+analysis:
+  batch:
+    enabled: true
+    dispatch-batch-size: 20
+    dispatcher:
+      fixed-delay-ms: 6000000

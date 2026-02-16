@@ -2,6 +2,7 @@ package com.genesis.unipocket.analysis.command.persistence.repository.support;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.EntityManager;
@@ -229,6 +230,7 @@ public class AnalysisBatchAggregationRepository {
 								e.account_book_id,
 								e.category,
 								e.local_currency_amount,
+								e.base_currency_amount,
 								e.local_currency_code,
 								e.occurred_at,
 								ab.local_country_code,
@@ -257,6 +259,7 @@ public class AnalysisBatchAggregationRepository {
 								e.account_book_id,
 								e.category,
 								e.local_currency_amount,
+								e.base_currency_amount,
 								e.local_currency_code,
 								e.occurred_at,
 								ab.local_country_code,
@@ -290,38 +293,43 @@ public class AnalysisBatchAggregationRepository {
 		return rows.stream().map(row -> ((Number) row).longValue()).toList();
 	}
 
-	public AmountCount aggregateAccountBookMonthlyRaw(
+	public AmountPairCount aggregateAccountBookMonthlyRaw(
 			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
 		Object[] row =
 				(Object[])
 						em.createNativeQuery(
 										"""
-								SELECT COALESCE(SUM(e.local_currency_amount), 0), COUNT(*)
+								SELECT
+									COALESCE(SUM(e.local_currency_amount), 0),
+									COALESCE(SUM(e.base_currency_amount), 0),
+									COUNT(*)
 								FROM expenses e
 								WHERE e.account_book_id = :accountBookId
 									AND e.occurred_at >= :startUtc
 									AND e.occurred_at < :endUtc
-									AND e.local_currency_amount IS NOT NULL
 								""")
 								.setParameter("accountBookId", accountBookId)
 								.setParameter("startUtc", startUtc)
 								.setParameter("endUtc", endUtc)
 								.getSingleResult();
-		return toAmountCount(row);
+		return toAmountPairCount(row);
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<CategoryAmountCount> aggregateAccountBookMonthlyRawByCategory(
+	public List<CategoryAmountPairCount> aggregateAccountBookMonthlyRawByCategory(
 			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
 		List<Object[]> rows =
 				em.createNativeQuery(
 								"""
-							SELECT e.category, COALESCE(SUM(e.local_currency_amount), 0), COUNT(e.expense_id)
+							SELECT
+								e.category,
+								COALESCE(SUM(e.local_currency_amount), 0),
+								COALESCE(SUM(e.base_currency_amount), 0),
+								COUNT(e.expense_id)
 							FROM expenses e
 							WHERE e.account_book_id = :accountBookId
 								AND e.occurred_at >= :startUtc
 								AND e.occurred_at < :endUtc
-								AND e.local_currency_amount IS NOT NULL
 								AND e.category IS NOT NULL
 							GROUP BY e.category
 							""")
@@ -329,11 +337,11 @@ public class AnalysisBatchAggregationRepository {
 						.setParameter("startUtc", startUtc)
 						.setParameter("endUtc", endUtc)
 						.getResultList();
-		return rows.stream().map(this::toCategoryAmountCount).toList();
+		return rows.stream().map(this::toCategoryAmountPairCount).toList();
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<ExpenseRow> findComparableExpenseRowsByAccountBook(
+	public List<ExpenseRow> findExpenseRowsByAccountBook(
 			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
 		List<Object[]> rows =
 				em.createNativeQuery(
@@ -343,6 +351,7 @@ public class AnalysisBatchAggregationRepository {
 								e.account_book_id,
 								e.category,
 								e.local_currency_amount,
+								e.base_currency_amount,
 								e.local_currency_code,
 								e.occurred_at,
 								ab.local_country_code,
@@ -350,7 +359,6 @@ public class AnalysisBatchAggregationRepository {
 							FROM expenses e
 							JOIN account_book ab ON e.account_book_id = ab.account_book_id
 							WHERE e.account_book_id = :accountBookId
-								AND ab.local_country_code = ab.base_country_code
 								AND e.occurred_at >= :startUtc
 								AND e.occurred_at < :endUtc
 							""")
@@ -436,6 +444,16 @@ public class AnalysisBatchAggregationRepository {
 	@SuppressWarnings("unchecked")
 	public List<CategoryAmountCount> aggregateCountryMonthlyCategoryFromMonthly(
 			CountryCode countryCode, LocalDate monthStart, AnalysisQualityType qualityType) {
+		return aggregateCountryMonthlyCategoryFromMonthly(
+				countryCode, monthStart, qualityType, CurrencyType.LOCAL);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryAmountCount> aggregateCountryMonthlyCategoryFromMonthly(
+			CountryCode countryCode,
+			LocalDate monthStart,
+			AnalysisQualityType qualityType,
+			CurrencyType currencyType) {
 		List<Object[]> rows =
 				em.createNativeQuery(
 								"""
@@ -444,11 +462,13 @@ public class AnalysisBatchAggregationRepository {
 							WHERE country_code = :countryCode
 								AND target_year_month = :monthStart
 								AND quality_type = :qualityType
+								AND currency_type = :currencyType
 							GROUP BY category
 							""")
 						.setParameter("countryCode", countryCode.name())
 						.setParameter("monthStart", monthStart)
 						.setParameter("qualityType", qualityType.name())
+						.setParameter("currencyType", currencyType.name())
 						.getResultList();
 		return rows.stream().map(this::toCategoryAmountCount).toList();
 	}
@@ -480,6 +500,16 @@ public class AnalysisBatchAggregationRepository {
 	@SuppressWarnings("unchecked")
 	public List<CategoryAmountCount> aggregateAccountMonthlyCategoryFromMonthly(
 			Long accountBookId, LocalDate monthStart, AnalysisQualityType qualityType) {
+		return aggregateAccountMonthlyCategoryFromMonthly(
+				accountBookId, monthStart, qualityType, CurrencyType.LOCAL);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryAmountCount> aggregateAccountMonthlyCategoryFromMonthly(
+			Long accountBookId,
+			LocalDate monthStart,
+			AnalysisQualityType qualityType,
+			CurrencyType currencyType) {
 		List<Object[]> rows =
 				em.createNativeQuery(
 								"""
@@ -488,11 +518,76 @@ public class AnalysisBatchAggregationRepository {
 							WHERE account_book_id = :accountBookId
 								AND target_year_month = :monthStart
 								AND quality_type = :qualityType
+								AND currency_type = :currencyType
 							GROUP BY category
 							""")
 						.setParameter("accountBookId", accountBookId)
 						.setParameter("monthStart", monthStart)
 						.setParameter("qualityType", qualityType.name())
+						.setParameter("currencyType", currencyType.name())
+						.getResultList();
+		return rows.stream().map(this::toCategoryAmountCount).toList();
+	}
+
+	public AmountCount aggregatePeerMonthlyTotalFromMonthly(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			Long excludedAccountBookId,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+								SELECT COALESCE(SUM(r.metric_value), 0), COUNT(*)
+								FROM account_monthly_aggregate r
+								JOIN account_book ab ON r.account_book_id = ab.account_book_id
+								WHERE ab.local_country_code = :localCountryCode
+									AND ab.base_country_code = :baseCountryCode
+									AND r.target_year_month = :monthStart
+									AND r.metric_type = :metricType
+									AND r.quality_type = :qualityType
+									AND r.account_book_id <> :excludedAccountBookId
+								""")
+								.setParameter("localCountryCode", localCountryCode.name())
+								.setParameter("baseCountryCode", baseCountryCode.name())
+								.setParameter("monthStart", monthStart)
+								.setParameter("metricType", metricType.name())
+								.setParameter("qualityType", qualityType.name())
+								.setParameter("excludedAccountBookId", excludedAccountBookId)
+								.getSingleResult();
+		return toAmountCount(row);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryAmountCount> aggregatePeerMonthlyCategoryFromMonthly(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			Long excludedAccountBookId,
+			LocalDate monthStart,
+			AnalysisQualityType qualityType,
+			CurrencyType currencyType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT r.category, COALESCE(SUM(r.total_amount), 0), COALESCE(SUM(r.expense_count), 0)
+							FROM account_monthly_category_aggregate r
+							JOIN account_book ab ON r.account_book_id = ab.account_book_id
+							WHERE ab.local_country_code = :localCountryCode
+								AND ab.base_country_code = :baseCountryCode
+								AND r.target_year_month = :monthStart
+								AND r.quality_type = :qualityType
+								AND r.currency_type = :currencyType
+								AND r.account_book_id <> :excludedAccountBookId
+							GROUP BY r.category
+							""")
+						.setParameter("localCountryCode", localCountryCode.name())
+						.setParameter("baseCountryCode", baseCountryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("qualityType", qualityType.name())
+						.setParameter("currencyType", currencyType.name())
+						.setParameter("excludedAccountBookId", excludedAccountBookId)
 						.getResultList();
 		return rows.stream().map(this::toCategoryAmountCount).toList();
 	}
@@ -731,20 +826,31 @@ public class AnalysisBatchAggregationRepository {
 		Long expenseId = row[0] == null ? null : ((Number) row[0]).longValue();
 		Long accountBookId = row[1] == null ? null : ((Number) row[1]).longValue();
 		Object categoryValue = row[2];
-		BigDecimal amount = row[3] == null ? null : new BigDecimal(row[3].toString());
-		String localCurrencyCode = row[4] == null ? null : row[4].toString();
-		LocalDateTime occurredAtUtc = toLocalDateTime(row[5]);
-		String localCountryCode = row[6] == null ? null : row[6].toString();
-		String baseCountryCode = row[7] == null ? null : row[7].toString();
+		BigDecimal localAmount = row[3] == null ? null : new BigDecimal(row[3].toString());
+		BigDecimal baseAmount = row[4] == null ? null : new BigDecimal(row[4].toString());
+		String localCurrencyCode = row[5] == null ? null : row[5].toString();
+		LocalDateTime occurredAtUtc = toLocalDateTime(row[6]);
+		String localCountryCode = row[7] == null ? null : row[7].toString();
+		String baseCountryCode = row[8] == null ? null : row[8].toString();
 		return new ExpenseRow(
 				expenseId,
 				accountBookId,
 				categoryValue,
-				amount,
+				localAmount,
+				baseAmount,
 				localCurrencyCode,
 				occurredAtUtc,
 				localCountryCode,
 				baseCountryCode);
+	}
+
+	private AmountPairCount toAmountPairCount(Object[] row) {
+		BigDecimal localAmount =
+				row[0] == null ? BigDecimal.ZERO : new BigDecimal(row[0].toString());
+		BigDecimal baseAmount =
+				row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
+		long count = row[2] == null ? 0L : ((Number) row[2]).longValue();
+		return new AmountPairCount(localAmount, baseAmount, count);
 	}
 
 	private CategoryAmountCount toCategoryAmountCount(Object[] row) {
@@ -752,6 +858,16 @@ public class AnalysisBatchAggregationRepository {
 		BigDecimal amount = row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
 		long count = row[2] == null ? 0L : ((Number) row[2]).longValue();
 		return new CategoryAmountCount(categoryOrdinal, amount, count);
+	}
+
+	private CategoryAmountPairCount toCategoryAmountPairCount(Object[] row) {
+		Integer categoryOrdinal = CategoryOrdinalParser.parse(row[0]);
+		BigDecimal localAmount =
+				row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
+		BigDecimal baseAmount =
+				row[2] == null ? BigDecimal.ZERO : new BigDecimal(row[2].toString());
+		long count = row[3] == null ? 0L : ((Number) row[3]).longValue();
+		return new CategoryAmountPairCount(categoryOrdinal, localAmount, baseAmount, count);
 	}
 
 	private AccountCategoryAmountCount toAccountCategoryAmountCount(Object[] row) {
@@ -795,11 +911,20 @@ public class AnalysisBatchAggregationRepository {
 
 	public record AmountCount(BigDecimal totalAmount, long expenseCount) {}
 
+	public record AmountPairCount(
+			BigDecimal totalLocalAmount, BigDecimal totalBaseAmount, long expenseCount) {}
+
 	public record AccountAmountCount(
 			Long accountBookId, BigDecimal totalAmount, long expenseCount) {}
 
 	public record CategoryAmountCount(
 			Integer categoryOrdinal, BigDecimal totalAmount, long expenseCount) {}
+
+	public record CategoryAmountPairCount(
+			Integer categoryOrdinal,
+			BigDecimal totalLocalAmount,
+			BigDecimal totalBaseAmount,
+			long expenseCount) {}
 
 	public record AccountCategoryAmountCount(
 			Long accountBookId,
@@ -815,6 +940,7 @@ public class AnalysisBatchAggregationRepository {
 			Long accountBookId,
 			Object categoryValue,
 			BigDecimal localAmount,
+			BigDecimal baseAmount,
 			String localCurrencyCode,
 			LocalDateTime occurredAtUtc,
 			String localCountryCode,

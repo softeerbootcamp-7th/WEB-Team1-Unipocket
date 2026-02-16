@@ -13,7 +13,10 @@ import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -135,8 +138,10 @@ public class ExpenseCommandService {
 			// Local cache for exchange rates to avoid N+1 lookups within the chunk.
 			// Keyed by source/target currency and occurred date (daily rate granularity).
 			java.util.Map<String, BigDecimal> rateCache = new java.util.HashMap<>();
+			Set<OffsetDateTime> occurredAts = new LinkedHashSet<>();
 
 			for (ExpenseEntity expense : expenses) {
+				occurredAts.add(expense.getOccurredAt());
 				String cacheKey =
 						expense.getLocalCurrency()
 								+ ":"
@@ -171,6 +176,7 @@ public class ExpenseCommandService {
 						exchangeRate);
 			}
 			expenseRepository.saveAll(expenses);
+			analysisMonthlyDirtyMarkerService.markDirty(accountBookId, occurredAts);
 			pageNumber++;
 		} while (page.hasNext());
 	}

@@ -1,5 +1,6 @@
 package com.genesis.unipocket.analysis.command.persistence.entity;
 
+import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -29,7 +30,7 @@ import lombok.NoArgsConstructor;
 		indexes = {
 			@Index(
 					name = "idx_account_monthly_category_country_month",
-					columnList = "country_code,target_year_month,quality_type")
+					columnList = "country_code,target_year_month,quality_type,currency_type")
 		},
 		uniqueConstraints = {
 			@UniqueConstraint(
@@ -38,7 +39,8 @@ import lombok.NoArgsConstructor;
 						"account_book_id",
 						"target_year_month",
 						"category",
-						"quality_type"
+						"quality_type",
+						"currency_type"
 					})
 		})
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -68,6 +70,10 @@ public class AccountMonthlyCategoryAggregateEntity extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private AnalysisQualityType qualityType;
 
+	@Column(nullable = false, name = "currency_type", length = 16)
+	@Enumerated(EnumType.STRING)
+	private CurrencyType currencyType;
+
 	@Column(nullable = false, name = "total_amount", precision = 19, scale = 4)
 	private BigDecimal totalAmount;
 
@@ -80,6 +86,7 @@ public class AccountMonthlyCategoryAggregateEntity extends BaseEntity {
 			LocalDate targetYearMonth,
 			Category category,
 			AnalysisQualityType qualityType,
+			CurrencyType currencyType,
 			BigDecimal totalAmount,
 			long expenseCount) {
 		return AccountMonthlyCategoryAggregateEntity.builder()
@@ -88,6 +95,7 @@ public class AccountMonthlyCategoryAggregateEntity extends BaseEntity {
 				.targetYearMonth(targetYearMonth)
 				.category(category)
 				.qualityType(qualityType)
+				.currencyType(currencyType)
 				.totalAmount(totalAmount)
 				.expenseCount(expenseCount)
 				.build();

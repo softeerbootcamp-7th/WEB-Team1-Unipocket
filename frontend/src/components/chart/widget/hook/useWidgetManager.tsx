@@ -87,15 +87,21 @@ const useWidgetCRUD = (maxWidgets: number) => {
   };
 };
 
+const getMaxWidgets = () => {
+  return window.innerWidth >= WIDGET_MAX_SLOT_BREAKPOINT
+    ? MAX_WIDGET_SLOTS
+    : MIN_WIDGET_SLOTS;
+};
+
 // 조합 레이어
 export const useWidgetManager = () => {
   const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
-  const [maxWidgets, setMaxWidgets] = useState(MIN_WIDGET_SLOTS);
+  const [maxWidgets, setMaxWidgets] = useState(getMaxWidgets());
 
   useEffect(() => {
     const updateLayout = () => {
-      const isDesktop = window.innerWidth >= WIDGET_MAX_SLOT_BREAKPOINT;
-      setMaxWidgets(isDesktop ? MAX_WIDGET_SLOTS : MIN_WIDGET_SLOTS);
+      const newMax = getMaxWidgets();
+      setMaxWidgets((prev) => (prev !== newMax ? newMax : prev));
     };
 
     updateLayout();

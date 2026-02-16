@@ -29,8 +29,10 @@ const VARIANT_STYLES = {
 
 const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
   const { currencyType } = useReportContext();
-  const countryCode = useAccountBookStore(
-    (state) => state.accountBook?.localCountryCode,
+  const countryCode = useAccountBookStore((state) =>
+    currencyType === 'LOCAL'
+      ? state.accountBook?.localCountryCode
+      : state.accountBook?.baseCountryCode,
   );
 
   const styles = VARIANT_STYLES[variant];

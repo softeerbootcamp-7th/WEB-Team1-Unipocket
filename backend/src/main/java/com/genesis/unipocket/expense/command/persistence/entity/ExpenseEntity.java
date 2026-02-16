@@ -34,7 +34,12 @@ import lombok.*;
 			@Index(name = "idx_expenses_category", columnList = "category"),
 
 			// 선택: 여행별 조회
-			@Index(name = "idx_expenses_travel_id", columnList = "travelId")
+			@Index(name = "idx_expenses_travel_id", columnList = "travelId"),
+
+			// 거래처명 prefix 검색 최적화
+			@Index(
+					name = "idx_expenses_account_book_merchant_name",
+					columnList = "accountBookId, displayMerchantName")
 		})
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

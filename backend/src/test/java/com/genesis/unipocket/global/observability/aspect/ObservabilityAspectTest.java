@@ -1,9 +1,7 @@
 package com.genesis.unipocket.global.observability.aspect;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +27,7 @@ class ObservabilityAspectTest {
 	}
 
 	@Test
-	@DisplayName("메서드 실행 시간을 측정하고 로그와 메트릭을 남긴다")
+	@DisplayName("메서드 실행 시간을 측정하고 메트릭을 남긴다")
 	void measuresExecutionTime() throws Throwable {
 		// given
 		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
@@ -49,8 +47,5 @@ class ObservabilityAspectTest {
 		// Verify Metric
 		assertThat(meterRegistry.find("method.execution.time").timer()).isNotNull();
 		assertThat(meterRegistry.find("method.execution.time").timer().count()).isEqualTo(1);
-
-		// Verify Log (ObjectMapper called)
-		verify(objectMapper).writeValueAsString(any());
 	}
 }

@@ -27,6 +27,10 @@ public class ExpenseSourceInfo {
 	}
 
 	public static ExpenseSourceInfo ofManual() {
-		return new ExpenseSourceInfo(ExpenseSource.MANUAL, null);
+		return of(ExpenseSource.MANUAL, null);
+	}
+
+	public static ExpenseSourceInfo of(ExpenseSource expenseSource, String fileLink) {
+		return new ExpenseSourceInfo(expenseSource, fileLink);
 	}
 }

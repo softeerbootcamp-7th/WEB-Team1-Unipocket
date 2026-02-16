@@ -4,6 +4,7 @@ import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManua
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -84,6 +85,42 @@ public class ExpenseEntity extends BaseEntity {
 				.category(params.category())
 				.travelId(params.travelId())
 				.expenseSourceInfo(ExpenseSourceInfo.ofManual())
+				.exchangeInfo(
+						ExchangeInfo.of(
+								params.localCurrencyCode(),
+								params.baseCurrencyCode(),
+								params.localCurrencyAmount(),
+								params.baseCurrencyAmount(),
+								params.calculatedBaseCurrencyAmount(),
+								params.calculatedBaseCurrencyCode(),
+								params.exchangeRate()))
+				.build();
+	}
+
+	public static ExpenseEntity convertedFromTemporary(
+			ExpenseManualCreateArgs params,
+			ExpenseSource source,
+			String fileLink,
+			String approvalNumber,
+			String cardNumber) {
+		if (params == null) {
+			throw new IllegalArgumentException("params must not be null");
+		}
+		if (source == null) {
+			throw new IllegalArgumentException("source must not be null");
+		}
+
+		return ExpenseEntity.builder()
+				.accountBookId(params.accountBookId())
+				.merchant(Merchant.of(params.merchantName()))
+				.occurredAt(params.occurredAt())
+				.memo(params.memo())
+				.userCardId(params.userCardId())
+				.category(params.category())
+				.travelId(params.travelId())
+				.approvalNumber(approvalNumber)
+				.cardNumber(cardNumber)
+				.expenseSourceInfo(ExpenseSourceInfo.of(source, fileLink))
 				.exchangeInfo(
 						ExchangeInfo.of(
 								params.localCurrencyCode(),

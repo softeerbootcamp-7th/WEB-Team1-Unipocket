@@ -42,14 +42,12 @@ public class TemporaryExpenseCommandController {
 
 	private final TemporaryExpenseCommandFacade temporaryExpenseCommandFacade;
 
-	/**
-	 * 단일 업로드 Presigned URL 발급
-	 *
-	 * TODO: media 도메인 포트 연동 구현 시 controller -> facade 호출로 교체
-	 */
 	@Operation(
 			summary = "임시지출 업로드 URL 발급",
-			description = "임시지출 파일 업로드를 위한 presigned URL과 메타 정보를 발급합니다.")
+			description =
+					"임시지출 파일 업로드를 위한 presigned URL을 발급합니다. request.tempExpenseMetaId가 없으면"
+							+ " 새 메타를 생성하고, 값이 있으면 해당 메타에 파일을 추가합니다. 즉,"
+							+ " 여러 이미지는 같은 tempExpenseMetaId를 재사용해 1(meta):N(file)로 업로드해야 합니다.")
 	@PostMapping("/temporary-expenses/uploads/presigned-url")
 	public ResponseEntity<PresignedUrlResponse> createPresignedUrl(
 			@PathVariable Long accountBookId,
@@ -58,7 +56,11 @@ public class TemporaryExpenseCommandController {
 
 		FileUploadResult result =
 				temporaryExpenseCommandFacade.createPresignedUrl(
-						accountBookId, request.fileName(), request.fileType(), userId);
+						accountBookId,
+						request.fileName(),
+						request.fileType(),
+						request.tempExpenseMetaId(),
+						userId);
 
 		return ResponseEntity.ok(PresignedUrlResponse.from(result));
 	}
@@ -101,9 +103,6 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.ok(response);
 	}
 
-	/**
-	 * 비동기 파싱 시작
-	 */
 	@Operation(summary = "임시지출 파싱 시작", description = "파일 목록 파싱 작업을 비동기로 시작하고 진행 조회용 taskId를 반환합니다.")
 	@PostMapping("/temporary-expenses/parse")
 	public ResponseEntity<BatchParseResponse> parse(
@@ -126,9 +125,6 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.accepted().body(response);
 	}
 
-	/**
-	 * 임시지출 메타 단위 일괄 수정
-	 */
 	@Operation(summary = "임시지출 일괄 수정", description = "메타(파일) 단위로 여러 임시지출을 한 번에 수정합니다.")
 	@PatchMapping("/temporary-expense-metas/{tempExpenseMetaId}/temporary-expenses")
 	public ResponseEntity<TemporaryExpenseMetaBulkUpdateResponse> updateTemporaryExpensesByMeta(

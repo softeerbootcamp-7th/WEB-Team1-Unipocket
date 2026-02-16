@@ -108,10 +108,12 @@ public class ObservabilityAspect {
 			logData.put("exceptionMessage", exception.getMessage());
 		}
 
-		try {
-			log.info(objectMapper.writeValueAsString(logData));
-		} catch (Exception e) {
-			log.error("Failed to log observability data", e);
+		if (log.isDebugEnabled()) {
+			try {
+				log.debug(objectMapper.writeValueAsString(logData));
+			} catch (Exception e) {
+				log.error("Failed to log observability data", e);
+			}
 		}
 
 		String exceptionName = exception != null ? exception.getClass().getSimpleName() : "none";

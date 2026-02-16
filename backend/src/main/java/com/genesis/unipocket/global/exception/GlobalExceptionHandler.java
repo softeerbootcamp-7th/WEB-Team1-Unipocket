@@ -4,6 +4,7 @@ import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.global.common.dto.CustomErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -126,6 +128,16 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleHttpMessageNotReadableException(
 			HttpMessageNotReadableException e) {
 		return createErrorResponse(ErrorCode.HTTP_MESSAGE_NOT_READABLE);
+	}
+
+	/**
+	 * 비동기 요청 타임아웃(SSE 포함)은 정상적인 종료 케이스로 간주
+	 */
+	@ExceptionHandler(AsyncRequestTimeoutException.class)
+	public ResponseEntity<Void> handleAsyncRequestTimeoutException(
+			HttpServletRequest req, AsyncRequestTimeoutException e) {
+		log.debug("Async request timed out: {} {}", req.getMethod(), req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	private void logException(ErrorCode errorCode, HttpServletRequest req, Exception e) {

@@ -34,19 +34,31 @@ public class TemporaryExpenseCommandFacade {
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public FileUploadResult createPresignedUrl(
-			Long accountBookId, String fileName, FileType fileType, UUID userId) {
+			Long accountBookId,
+			String fileName,
+			FileType fileType,
+			Long tempExpenseMetaId,
+			UUID userId) {
+		// 가계부 소유주 검증 진행
 		validateOwnership(accountBookId, userId);
-		return fileUploadService.createPresignedUrl(accountBookId, fileName, fileType);
+
+		// presigned url 발급
+		return fileUploadService.createPresignedUrl(
+				accountBookId, fileName, fileType, tempExpenseMetaId);
 	}
 
 	public String startParseAsync(Long accountBookId, List<String> s3Keys, UUID userId) {
 		validateOwnership(accountBookId, userId);
+
+		// 비동기 파싱(SSE 기반 파싱) 시작
 		return temporaryExpenseParsingService.startParseAsync(accountBookId, s3Keys);
 	}
 
 	public BatchConversionResult confirm(
 			Long accountBookId, Long tempExpenseMetaId, List<Long> tempExpenseIds, UUID userId) {
+
 		validateOwnership(accountBookId, userId);
+
 		return temporaryExpenseConversionService.convertMeta(
 				accountBookId, tempExpenseMetaId, tempExpenseIds);
 	}
@@ -56,12 +68,17 @@ public class TemporaryExpenseCommandFacade {
 		fileUploadService.deleteMeta(accountBookId, tempExpenseMetaId);
 	}
 
+	/**
+	 * 임시지출내역 리스트 단위 수정 API
+	 */
 	public TemporaryExpenseMetaBulkUpdateResponse updateTemporaryExpensesByMeta(
 			Long accountBookId,
 			Long tempExpenseMetaId,
 			TemporaryExpenseMetaBulkUpdateRequest request,
 			UUID userId) {
+
 		validateOwnership(accountBookId, userId);
+
 		return TemporaryExpenseMetaBulkUpdateResponse.from(
 				temporaryExpenseBulkUpdateService.updateByMeta(
 						accountBookId, tempExpenseMetaId, request));

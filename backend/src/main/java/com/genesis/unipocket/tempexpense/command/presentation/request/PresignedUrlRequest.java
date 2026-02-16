@@ -8,4 +8,4 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileTyp
  * @author 김동균
  * @since 2026-02-08
  */
-public record PresignedUrlRequest(String fileName, FileType fileType) {}
+public record PresignedUrlRequest(String fileName, FileType fileType, Long tempExpenseMetaId) {}

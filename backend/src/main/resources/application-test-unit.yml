@@ -70,3 +70,7 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+media:
+  cleanup:
+    cron: "0 0 0 1 1 *"

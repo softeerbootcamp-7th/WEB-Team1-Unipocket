@@ -4,6 +4,7 @@ import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.global.common.enums.Category;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +39,14 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 			Pageable pageable);
 
 	long countByAccountBookId(Long accountBookId);
+
+	@Query(
+			"SELECT e.merchant.displayMerchantName FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId "
+					+ "AND e.merchant.displayMerchantName LIKE CONCAT(:prefix, '%') "
+					+ "GROUP BY e.merchant.displayMerchantName "
+					+ "ORDER BY MAX(e.updatedAt) DESC")
+	List<String> findMerchantNameSuggestions(
+			@Param("accountBookId") Long accountBookId,
+			@Param("prefix") String prefix,
+			Pageable pageable);
 }

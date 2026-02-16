@@ -1,6 +1,6 @@
-package com.genesis.unipocket.accountbook.command.facade.provide;
+package com.genesis.unipocket.accountbook.query.facade.provide;
 
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
 import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AccountBookCountProvider implements AccountBookCountService {
 
-	private final AccountBookCommandRepository accountBookCommandRepository;
+	private final AccountBookQueryRepository accountBookQueryRepository;
 
 	@Override
 	public long countByUserId(UUID userId) {
-		return accountBookCommandRepository.countByUser_Id(userId);
+		return accountBookQueryRepository.countByUserId(userId);
 	}
 }

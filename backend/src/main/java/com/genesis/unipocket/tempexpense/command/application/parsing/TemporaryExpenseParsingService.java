@@ -332,6 +332,7 @@ public class TemporaryExpenseParsingService {
 							failedFiles,
 							List.copyOf(fileResults));
 
+			// 배치 파싱 결과를 SSE 로 전달
 			progressPublisher.complete(taskId, finalResult);
 			return CompletableFuture.completedFuture(finalResult);
 

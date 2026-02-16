@@ -20,7 +20,7 @@ const ReportBarList = ({ items, maxLabel }: ReportBarListProps) => {
 
   return (
     <div className="relative h-125.25 pt-4.75">
-      <VerticalGrid steps={steps} labels={labels} className="left-14.75" />
+      <VerticalGrid steps={steps} labels={labels} className="left-15" />
       <div className="relative z-10 flex flex-col gap-4.5">
         {items.map((item) => (
           <ReportBarRow

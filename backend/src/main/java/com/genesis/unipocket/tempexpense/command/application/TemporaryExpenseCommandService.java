@@ -83,7 +83,9 @@ public class TemporaryExpenseCommandService {
 				reevaluateStatus(
 						entity.getStatus(),
 						resolvedMerchantName,
+						resolvedLocalCountryCode,
 						resolvedLocalCurrencyAmount,
+						resolvedBaseCountryCode,
 						resolvedOccurredAt,
 						resolvedCategory);
 
@@ -98,11 +100,13 @@ public class TemporaryExpenseCommandService {
 						.localCurrencyAmount(resolvedLocalCurrencyAmount)
 						.baseCountryCode(resolvedBaseCountryCode)
 						.baseCurrencyAmount(resolvedBaseCurrencyAmount)
+						.exchangeRate(entity.getExchangeRate())
 						.paymentsMethod(resolvedPaymentsMethod)
 						.memo(resolvedMemo)
 						.occurredAt(resolvedOccurredAt)
 						.status(resolvedStatus)
 						.cardLastFourDigits(resolvedCardLastFourDigits)
+						.approvalNumber(entity.getApprovalNumber())
 						.build();
 
 		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(updated));
@@ -143,7 +147,9 @@ public class TemporaryExpenseCommandService {
 	private TemporaryExpenseStatus reevaluateStatus(
 			TemporaryExpenseStatus originalStatus,
 			String merchantName,
+			com.genesis.unipocket.global.common.enums.CurrencyCode localCountryCode,
 			java.math.BigDecimal localCurrencyAmount,
+			com.genesis.unipocket.global.common.enums.CurrencyCode baseCountryCode,
 			java.time.LocalDateTime occurredAt,
 			Category category) {
 		// ABNORMAL 상태는 자동 변경하지 않음
@@ -155,7 +161,9 @@ public class TemporaryExpenseCommandService {
 		boolean hasAllRequired =
 				merchantName != null
 						&& !merchantName.isBlank()
+						&& localCountryCode != null
 						&& localCurrencyAmount != null
+						&& baseCountryCode != null
 						&& occurredAt != null
 						&& category != null;
 

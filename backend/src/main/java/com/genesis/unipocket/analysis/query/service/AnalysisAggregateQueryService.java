@@ -38,16 +38,24 @@ public class AnalysisAggregateQueryService {
 		YearMonth yearMonth = parseYearMonth(year, month);
 		LocalDate monthStart = yearMonth.atDay(1);
 		LocalDate nextMonthStart = yearMonth.plusMonths(1).atDay(1);
+		boolean hasMonthly =
+				aggregationRepository.hasCountryMonthlyAggregate(
+						countryCode,
+						monthStart,
+						AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
+						qualityType);
 
 		AmountCount totalAmountRow =
-				aggregationRepository.aggregateCountryMonthlyFromDaily(
+				getCountryMonthlyAmountCount(
+						hasMonthly,
 						countryCode,
 						monthStart,
 						nextMonthStart,
 						AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
 						qualityType);
 		AmountCount totalExpenseCountRow =
-				aggregationRepository.aggregateCountryMonthlyFromDaily(
+				getCountryMonthlyAmountCount(
+						hasMonthly,
 						countryCode,
 						monthStart,
 						nextMonthStart,
@@ -63,17 +71,20 @@ public class AnalysisAggregateQueryService {
 						.toList();
 
 		List<CountryMonthlyAggregateRes.CategoryItem> categoryItems =
-				aggregationRepository
-						.aggregateCountryMonthlyCategoryFromDaily(
-								countryCode, monthStart, nextMonthStart, qualityType)
+				(hasMonthly
+								? aggregationRepository.aggregateCountryMonthlyCategoryFromMonthly(
+										countryCode, monthStart, qualityType)
+								: aggregationRepository.aggregateCountryMonthlyCategoryFromDaily(
+										countryCode, monthStart, nextMonthStart, qualityType))
 						.stream()
-						.filter(row -> row.categoryOrdinal() != null)
-						.sorted(
-								Comparator.comparing(CategoryAmountCount::totalAmount)
-										.reversed()
-										.thenComparing(CategoryAmountCount::categoryOrdinal))
-						.map(this::toCountryCategoryItem)
-						.toList();
+								.filter(row -> row.categoryOrdinal() != null)
+								.sorted(
+										Comparator.comparing(CategoryAmountCount::totalAmount)
+												.reversed()
+												.thenComparing(
+														CategoryAmountCount::categoryOrdinal))
+								.map(this::toCountryCategoryItem)
+								.toList();
 
 		return new CountryMonthlyAggregateRes(
 				countryCode,
@@ -94,16 +105,24 @@ public class AnalysisAggregateQueryService {
 		YearMonth yearMonth = parseYearMonth(year, month);
 		LocalDate monthStart = yearMonth.atDay(1);
 		LocalDate nextMonthStart = yearMonth.plusMonths(1).atDay(1);
+		boolean hasMonthly =
+				aggregationRepository.hasAccountMonthlyAggregate(
+						accountBookId,
+						monthStart,
+						AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
+						qualityType);
 
 		AmountCount totalAmountRow =
-				aggregationRepository.aggregateAccountMonthlyFromDaily(
+				getAccountMonthlyAmountCount(
+						hasMonthly,
 						accountBookId,
 						monthStart,
 						nextMonthStart,
 						AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
 						qualityType);
 		AmountCount totalExpenseCountRow =
-				aggregationRepository.aggregateAccountMonthlyFromDaily(
+				getAccountMonthlyAmountCount(
+						hasMonthly,
 						accountBookId,
 						monthStart,
 						nextMonthStart,
@@ -119,17 +138,20 @@ public class AnalysisAggregateQueryService {
 						.toList();
 
 		List<AccountBookMonthlyAggregateRes.CategoryItem> categoryItems =
-				aggregationRepository
-						.aggregateAccountMonthlyCategoryFromDaily(
-								accountBookId, monthStart, nextMonthStart, qualityType)
+				(hasMonthly
+								? aggregationRepository.aggregateAccountMonthlyCategoryFromMonthly(
+										accountBookId, monthStart, qualityType)
+								: aggregationRepository.aggregateAccountMonthlyCategoryFromDaily(
+										accountBookId, monthStart, nextMonthStart, qualityType))
 						.stream()
-						.filter(row -> row.categoryOrdinal() != null)
-						.sorted(
-								Comparator.comparing(CategoryAmountCount::totalAmount)
-										.reversed()
-										.thenComparing(CategoryAmountCount::categoryOrdinal))
-						.map(this::toAccountCategoryItem)
-						.toList();
+								.filter(row -> row.categoryOrdinal() != null)
+								.sorted(
+										Comparator.comparing(CategoryAmountCount::totalAmount)
+												.reversed()
+												.thenComparing(
+														CategoryAmountCount::categoryOrdinal))
+								.map(this::toAccountCategoryItem)
+								.toList();
 
 		return new AccountBookMonthlyAggregateRes(
 				accountBookId,
@@ -169,6 +191,34 @@ public class AnalysisAggregateQueryService {
 				row.categoryOrdinal(),
 				AmountFormatUtil.format(row.totalAmount()),
 				row.expenseCount());
+	}
+
+	private AmountCount getCountryMonthlyAmountCount(
+			boolean hasMonthly,
+			CountryCode countryCode,
+			LocalDate monthStart,
+			LocalDate nextMonthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		return hasMonthly
+				? aggregationRepository.aggregateCountryMonthlyFromMonthly(
+						countryCode, monthStart, metricType, qualityType)
+				: aggregationRepository.aggregateCountryMonthlyFromDaily(
+						countryCode, monthStart, nextMonthStart, metricType, qualityType);
+	}
+
+	private AmountCount getAccountMonthlyAmountCount(
+			boolean hasMonthly,
+			Long accountBookId,
+			LocalDate monthStart,
+			LocalDate nextMonthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		return hasMonthly
+				? aggregationRepository.aggregateAccountMonthlyFromMonthly(
+						accountBookId, monthStart, metricType, qualityType)
+				: aggregationRepository.aggregateAccountMonthlyFromDaily(
+						accountBookId, monthStart, nextMonthStart, metricType, qualityType);
 	}
 
 	private void validateComparableAccountBook(Long accountBookId) {

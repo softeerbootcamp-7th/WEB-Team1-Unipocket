@@ -10,8 +10,8 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookC
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.auth.support.JwtTestHelper;
-import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.time.LocalDate;
@@ -80,25 +80,30 @@ class TemporaryExpenseRateLimitIntegrationTest {
 	void parseRateLimitExceeded() throws Exception {
 		String body = """
 			{
-			  "s3Keys": []
+			"s3Keys": []
 			}
 			""";
 
 		mockMvc.perform(
-						post("/account-books/{accountBookId}/temporary-expenses/parse", accountBookId)
+						post(
+										"/account-books/{accountBookId}/temporary-expenses/parse",
+										accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isBadRequest());
 
 		mockMvc.perform(
-						post("/account-books/{accountBookId}/temporary-expenses/parse", accountBookId)
+						post(
+										"/account-books/{accountBookId}/temporary-expenses/parse",
+										accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isTooManyRequests())
 				.andExpect(header().exists("Retry-After"))
 				.andExpect(
-						jsonPath("$.code").value(ErrorCode.TEMP_EXPENSE_RATE_LIMIT_EXCEEDED.getCode()));
+						jsonPath("$.code")
+								.value(ErrorCode.TEMP_EXPENSE_RATE_LIMIT_EXCEEDED.getCode()));
 	}
 }

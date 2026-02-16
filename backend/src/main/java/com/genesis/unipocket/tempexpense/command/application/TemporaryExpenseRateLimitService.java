@@ -47,7 +47,8 @@ public class TemporaryExpenseRateLimitService {
 
 	private void validate(Map<String, Deque<Long>> requestsByUser, UUID userId, int limit) {
 		String key = userId.toString();
-		Deque<Long> requestTimes = requestsByUser.computeIfAbsent(key, ignored -> new ArrayDeque<>());
+		Deque<Long> requestTimes =
+				requestsByUser.computeIfAbsent(key, ignored -> new ArrayDeque<>());
 		long now = System.currentTimeMillis();
 		long windowStart = now - WINDOW.toMillis();
 
@@ -62,7 +63,9 @@ public class TemporaryExpenseRateLimitService {
 				long oldest = requestTimes.peekFirst();
 				long retryAfterMillis = (oldest + WINDOW.toMillis()) - now;
 				long retryAfterSeconds =
-						Math.max(MIN_RETRY_AFTER_SECONDS, (long) Math.ceil(retryAfterMillis / 1000.0));
+						Math.max(
+								MIN_RETRY_AFTER_SECONDS,
+								(long) Math.ceil(retryAfterMillis / 1000.0));
 				throw new RateLimitExceededException(
 						ErrorCode.TEMP_EXPENSE_RATE_LIMIT_EXCEEDED, retryAfterSeconds);
 			}

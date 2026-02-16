@@ -13,6 +13,7 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
       onClose={onClose}
       onAction={() => {}}
       className="px-8 pb-4"
+      confirmButton={{ label: '결과 확인' }}
     >
       <div className="flex w-109 flex-col gap-6">
         <div className="flex flex-col">

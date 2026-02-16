@@ -1,8 +1,10 @@
-import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { createContext, useContext } from 'react';
 
+import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
+
 interface WidgetContextType {
-  isEditMode: boolean;
+  isWidgetEditMode: boolean;
+  toggleEditMode: () => void;
 }
 
 interface WidgetItemContextType {
@@ -15,7 +17,7 @@ export const WidgetItemContext = createContext<WidgetItemContextType>({});
 
 export const useWidgetContext = () => {
   const context = useContext(WidgetContext);
-  if (!context) return { isEditMode: false };
+  if (!context) return { isWidgetEditMode: false, toggleEditMode: () => {} };
   return context;
 };
 

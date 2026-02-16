@@ -18,7 +18,7 @@ const WidgetSection = () => {
   } = useWidgetManager();
 
   return (
-    <WidgetContext.Provider value={{ isEditMode: isWidgetEditMode }}>
+    <WidgetContext.Provider value={{ isWidgetEditMode, toggleEditMode }}>
       <div
         className="flex w-full flex-col gap-4"
         style={{

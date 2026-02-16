@@ -259,10 +259,13 @@ public class CountryMonthlyDirtyAggregationService {
 		if (sorted.size() < properties.getOutlierMinSampleSize()) {
 			return Bounds.notApplicable();
 		}
-		double lowerP = normalizeTailP(properties.getOutlierLowerTailP());
-		double upperP = normalizeTailP(properties.getOutlierUpperTailP());
-		BigDecimal lower = quantile(sorted, lowerP);
-		BigDecimal upper = quantile(sorted, 1d - upperP);
+		BigDecimal q1 = quantile(sorted, 0.25d);
+		BigDecimal q3 = quantile(sorted, 0.75d);
+		BigDecimal iqr = q3.subtract(q1, MC);
+		BigDecimal delta =
+				iqr.multiply(BigDecimal.valueOf(properties.getOutlierIqrMultiplier()), MC);
+		BigDecimal lower = q1.subtract(delta, MC);
+		BigDecimal upper = q3.add(delta, MC);
 
 		lower = lower.max(properties.getCleanedMinAmount());
 		upper = upper.min(properties.getCleanedMaxAmount());
@@ -427,13 +430,6 @@ public class CountryMonthlyDirtyAggregationService {
 			throw new IllegalArgumentException("Invalid category ordinal: " + ordinal);
 		}
 		return Category.values()[ordinal];
-	}
-
-	private double normalizeTailP(double p) {
-		if (Double.isNaN(p) || p < 0d) {
-			return 0d;
-		}
-		return Math.min(p, 0.49d);
 	}
 
 	private BigDecimal quantile(List<BigDecimal> sorted, double p) {

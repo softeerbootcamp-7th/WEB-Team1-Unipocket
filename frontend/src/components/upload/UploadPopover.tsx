@@ -9,6 +9,34 @@ interface UploadMenuItemProps {
   onClick?: () => void;
 }
 
+const UPLOAD_MENU_ITEMS = [
+  {
+    key: 'mobile',
+    Icon: Icons.Phone,
+    title: '모바일로 업로드',
+    subTitle:
+      '휴대폰에 저장된 결제 자료를 바로 업로드해 지출 내역으로 등록하세요.',
+  },
+  {
+    key: 'image',
+    Icon: Icons.Camera,
+    title: '영수증 / 은행 앱 사진 업로드',
+    subTitle: '사진 속 결제 정보를 자동으로 인식해요.',
+  },
+  {
+    key: 'file',
+    Icon: Icons.FileBox,
+    title: '거래 내역 파일 업로드',
+    subTitle: '은행·카드사에서 받은 내역 파일을 올려주세요.',
+  },
+  {
+    key: 'manual',
+    Icon: Icons.Edit,
+    title: '직접 입력',
+    subTitle: '현지 결제, 현금 사용 내역을 기록해요.',
+  },
+] as const;
+
 const UploadMenuItem = ({
   Icon,
   title,
@@ -42,36 +70,36 @@ const UploadPopover = ({
   onOpenImageUpload,
   onOpenFileUpload,
 }: UploadPopoverProps) => {
+  const getMenuItemClick = (key: (typeof UPLOAD_MENU_ITEMS)[number]['key']) => {
+    switch (key) {
+      case 'image':
+        return onOpenImageUpload;
+      case 'file':
+        return onOpenFileUpload;
+      case 'mobile':
+        return () => console.log('모바일 업로드 클릭');
+      case 'manual':
+        return () => console.log('직접 입력 클릭');
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <PopoverContent
       align="end"
       sideOffset={12}
       className="rounded-modal-20 border-line-normal-alternative shadow-backdrop flex w-fit flex-col items-center justify-center gap-2 border bg-white px-5 py-3.5"
     >
-      <UploadMenuItem
-        Icon={Icons.Phone}
-        title="모바일로 업로드"
-        subTitle="휴대폰에 저장된 결제 자료를 바로 업로드해 지출 내역으로 등록하세요."
-        onClick={() => console.log('모바일 업로드 클릭')}
-      />
-      <UploadMenuItem
-        Icon={Icons.Camera}
-        title="영수증 / 은행 앱 사진 업로드"
-        subTitle="사진 속 결제 정보를 자동으로 인식해요."
-        onClick={onOpenImageUpload}
-      />
-      <UploadMenuItem
-        Icon={Icons.FileBox}
-        title="거래 내역 파일 업로드"
-        subTitle="은행·카드사에서 받은 내역 파일을 올려주세요."
-        onClick={onOpenFileUpload}
-      />
-      <UploadMenuItem
-        Icon={Icons.Edit}
-        title="직접 입력"
-        subTitle="현지 결제, 현금 사용 내역을 기록해요."
-        onClick={() => console.log('직접 입력 클릭')}
-      />
+      {UPLOAD_MENU_ITEMS.map((item) => (
+        <UploadMenuItem
+          key={item.key}
+          Icon={item.Icon}
+          title={item.title}
+          subTitle={item.subTitle}
+          onClick={getMenuItemClick(item.key)}
+        />
+      ))}
     </PopoverContent>
   );
 };

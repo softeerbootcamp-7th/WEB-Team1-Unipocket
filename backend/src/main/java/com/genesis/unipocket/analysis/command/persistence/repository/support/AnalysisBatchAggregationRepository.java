@@ -540,7 +540,7 @@ public class AnalysisBatchAggregationRepository {
 				(Object[])
 						em.createNativeQuery(
 										"""
-								SELECT COALESCE(SUM(r.metric_value), 0), COUNT(DISTINCT ab.user_id)
+								SELECT COALESCE(SUM(r.metric_value), 0), COUNT(*)
 								FROM account_monthly_aggregate r
 								JOIN account_book ab ON r.account_book_id = ab.account_book_id
 								WHERE ab.local_country_code = :localCountryCode

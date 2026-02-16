@@ -38,10 +38,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -61,9 +61,9 @@ class TemporaryExpenseSseIntegrationTest {
 	@Autowired private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Autowired private JwtTestHelper jwtTestHelper;
 
-	@MockBean private GeminiService geminiService;
-	@MockBean private ExchangeRateService exchangeRateService;
-	@MockBean private TempExpenseMediaAccessService tempExpenseMediaAccessService;
+	@MockitoBean private GeminiService geminiService;
+	@MockitoBean private ExchangeRateService exchangeRateService;
+	@MockitoBean private TempExpenseMediaAccessService tempExpenseMediaAccessService;
 
 	private Long accountBookId;
 	private Long tempExpenseMetaId;

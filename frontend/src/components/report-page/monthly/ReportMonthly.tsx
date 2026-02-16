@@ -7,7 +7,7 @@ const ReportMonthly = () => {
       <ReportContent className="h-60 w-109 gap-7">
         <h3 className="heading1-bold text-label-normal">
           나랑 같은 국가의 교환학생보다 <br />
-          <span className="text-primary-strong">234달러 덜</span> 썼어요
+          <span className="text-primary-strong">234엔 덜</span> 썼어요
         </h3>
       </ReportContent>
     </ReportContainer>

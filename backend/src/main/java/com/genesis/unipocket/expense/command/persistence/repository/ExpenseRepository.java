@@ -41,10 +41,9 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 	long countByAccountBookId(Long accountBookId);
 
 	@Query(
-			"SELECT e.merchant.displayMerchantName FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId "
-					+ "AND e.merchant.displayMerchantName LIKE CONCAT(:prefix, '%') "
-					+ "GROUP BY e.merchant.displayMerchantName "
-					+ "ORDER BY MAX(e.updatedAt) DESC")
+			"SELECT e.merchant.displayMerchantName FROM ExpenseEntity e WHERE e.accountBookId ="
+					+ " :accountBookId AND e.merchant.displayMerchantName LIKE CONCAT(:prefix, '%')"
+					+ " GROUP BY e.merchant.displayMerchantName ORDER BY MAX(e.updatedAt) DESC")
 	List<String> findMerchantNameSuggestions(
 			@Param("accountBookId") Long accountBookId,
 			@Param("prefix") String prefix,

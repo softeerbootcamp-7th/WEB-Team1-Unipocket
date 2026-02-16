@@ -19,7 +19,8 @@ public class SlidingWindowRateLimiter {
 
 	public void validate(String bucket, String subject, int limit, ErrorCode errorCode) {
 		String key = bucket + ":" + subject;
-		Deque<Long> requestTimes = requestsByKey.computeIfAbsent(key, ignored -> new ArrayDeque<>());
+		Deque<Long> requestTimes =
+				requestsByKey.computeIfAbsent(key, ignored -> new ArrayDeque<>());
 		long now = System.currentTimeMillis();
 		long windowStart = now - WINDOW.toMillis();
 

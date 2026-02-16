@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
@@ -12,8 +14,8 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepo
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.query.presentation.response.FileProcessingSummaryResponse;
-import com.genesis.unipocket.tempexpense.query.presentation.response.ImageProcessingSummaryResponse;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,196 +44,150 @@ class TemporaryExpenseQueryServiceTest {
 	private static final Long ACCOUNT_BOOK_ID = 1L;
 
 	@Test
-	@DisplayName("파일별 처리 현황 조회 - 모든 항목이 NORMAL이면 processed=true")
-	void getFileProcessingSummary_allNormal_processed() {
-		// given
-		TempExpenseMeta meta =
-				TempExpenseMeta.builder()
-						.tempExpenseMetaId(10L)
-						.accountBookId(ACCOUNT_BOOK_ID)
-						.build();
-		File file =
-				File.builder()
-						.fileId(100L)
-						.tempExpenseMetaId(10L)
-						.fileType(FileType.IMAGE)
-						.s3Key("test/image.jpg")
-						.build();
-		TemporaryExpense expense =
-				TemporaryExpense.builder()
-						.tempExpenseId(1000L)
-						.tempExpenseMetaId(10L)
-						.merchantName("스타벅스")
-						.category(Category.FOOD)
-						.localCurrencyAmount(BigDecimal.valueOf(5000))
-						.occurredAt(LocalDateTime.now())
-						.status(TemporaryExpenseStatus.NORMAL)
-						.build();
-
-		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
-				.thenReturn(List.of(meta));
-		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L))).thenReturn(List.of(file));
-		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L)))
-				.thenReturn(List.of(expense));
-
-		// when
-		FileProcessingSummaryResponse result = service.getFileProcessingSummary(ACCOUNT_BOOK_ID);
-
-		// then
-		assertThat(result.totalFiles()).isEqualTo(1);
-		assertThat(result.processedFiles()).isEqualTo(1);
-		assertThat(result.unprocessedFiles()).isEqualTo(0);
-		assertThat(result.files()).hasSize(1);
-		assertThat(result.files().get(0).processed()).isTrue();
-		assertThat(result.files().get(0).normalCount()).isEqualTo(1);
-	}
-
-	@Test
-	@DisplayName("파일별 처리 현황 조회 - INCOMPLETE 항목이 있으면 processed=false")
-	void getFileProcessingSummary_hasIncomplete_notProcessed() {
-		// given
-		TempExpenseMeta meta =
-				TempExpenseMeta.builder()
-						.tempExpenseMetaId(10L)
-						.accountBookId(ACCOUNT_BOOK_ID)
-						.build();
-		File file =
-				File.builder()
-						.fileId(100L)
-						.tempExpenseMetaId(10L)
-						.fileType(FileType.IMAGE)
-						.s3Key("test/image.jpg")
-						.build();
-		TemporaryExpense normalExpense =
-				TemporaryExpense.builder()
-						.tempExpenseId(1000L)
-						.tempExpenseMetaId(10L)
-						.merchantName("스타벅스")
-						.status(TemporaryExpenseStatus.NORMAL)
-						.build();
-		TemporaryExpense incompleteExpense =
-				TemporaryExpense.builder()
-						.tempExpenseId(1001L)
-						.tempExpenseMetaId(10L)
-						.merchantName("이디야")
-						.status(TemporaryExpenseStatus.INCOMPLETE)
-						.build();
-
-		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
-				.thenReturn(List.of(meta));
-		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L))).thenReturn(List.of(file));
-		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L)))
-				.thenReturn(List.of(normalExpense, incompleteExpense));
-
-		// when
-		FileProcessingSummaryResponse result = service.getFileProcessingSummary(ACCOUNT_BOOK_ID);
-
-		// then
-		assertThat(result.processedFiles()).isEqualTo(0);
-		assertThat(result.unprocessedFiles()).isEqualTo(1);
-		assertThat(result.files().get(0).processed()).isFalse();
-		assertThat(result.files().get(0).normalCount()).isEqualTo(1);
-		assertThat(result.files().get(0).incompleteCount()).isEqualTo(1);
-	}
-
-	@Test
-	@DisplayName("파일별 처리 현황 조회 - 메타가 없으면 빈 결과")
-	void getFileProcessingSummary_noMeta_emptyResult() {
-		// given
-		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID)).thenReturn(List.of());
-
-		// when
-		FileProcessingSummaryResponse result = service.getFileProcessingSummary(ACCOUNT_BOOK_ID);
-
-		// then
-		assertThat(result.totalFiles()).isEqualTo(0);
-		assertThat(result.processedFiles()).isEqualTo(0);
-		assertThat(result.files()).isEmpty();
-	}
-
-	@Test
-	@DisplayName("이미지 처리 현황 요약 - 정상 동작")
-	void getImageProcessingSummary_success() {
-		// given
+	@DisplayName("메타 목록 조회 - 파일 수/상태 집계가 정상 동작한다")
+	void getTemporaryExpenseMetas_success() {
 		TempExpenseMeta meta1 =
 				TempExpenseMeta.builder()
 						.tempExpenseMetaId(10L)
 						.accountBookId(ACCOUNT_BOOK_ID)
+						.createdAt(LocalDateTime.now().minusDays(1))
 						.build();
 		TempExpenseMeta meta2 =
 				TempExpenseMeta.builder()
 						.tempExpenseMetaId(11L)
 						.accountBookId(ACCOUNT_BOOK_ID)
-						.build();
-		File file1 =
-				File.builder()
-						.fileId(100L)
-						.tempExpenseMetaId(10L)
-						.fileType(FileType.IMAGE)
-						.s3Key("img1.jpg")
-						.build();
-		File file2 =
-				File.builder()
-						.fileId(101L)
-						.tempExpenseMetaId(11L)
-						.fileType(FileType.IMAGE)
-						.s3Key("img2.jpg")
+						.createdAt(LocalDateTime.now())
 						.build();
 
-		TemporaryExpense normal1 =
+		File file1 =
+				File.builder().fileId(100L).tempExpenseMetaId(10L).fileType(FileType.IMAGE).build();
+		File file2 =
+				File.builder().fileId(101L).tempExpenseMetaId(10L).fileType(FileType.IMAGE).build();
+		File file3 =
+				File.builder().fileId(102L).tempExpenseMetaId(11L).fileType(FileType.IMAGE).build();
+
+		TemporaryExpense normal =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)
 						.tempExpenseMetaId(10L)
+						.fileId(100L)
 						.status(TemporaryExpenseStatus.NORMAL)
-						.merchantName("A")
-						.build();
-		TemporaryExpense normal2 =
-				TemporaryExpense.builder()
-						.tempExpenseId(2L)
-						.tempExpenseMetaId(10L)
-						.status(TemporaryExpenseStatus.NORMAL)
-						.merchantName("B")
 						.build();
 		TemporaryExpense incomplete =
 				TemporaryExpense.builder()
+						.tempExpenseId(2L)
+						.tempExpenseMetaId(10L)
+						.fileId(101L)
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build();
+		TemporaryExpense abnormal =
+				TemporaryExpense.builder()
 						.tempExpenseId(3L)
 						.tempExpenseMetaId(11L)
-						.status(TemporaryExpenseStatus.INCOMPLETE)
-						.merchantName("C")
+						.fileId(102L)
+						.status(TemporaryExpenseStatus.ABNORMAL)
 						.build();
 
 		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
 				.thenReturn(List.of(meta1, meta2));
 		when(fileRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
-				.thenReturn(List.of(file1, file2));
+				.thenReturn(List.of(file1, file2, file3));
 		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
-				.thenReturn(List.of(normal1, normal2, incomplete));
+				.thenReturn(List.of(normal, incomplete, abnormal));
 
-		// when
-		ImageProcessingSummaryResponse result = service.getImageProcessingSummary(ACCOUNT_BOOK_ID);
+		TemporaryExpenseMetaListResponse result = service.getTemporaryExpenseMetas(ACCOUNT_BOOK_ID);
 
-		// then
-		assertThat(result.totalImages()).isEqualTo(2);
-		assertThat(result.processedImages()).isEqualTo(1); // file1만 모두 NORMAL
-		assertThat(result.unprocessedImages()).isEqualTo(1); // file2에 INCOMPLETE
-		assertThat(result.totalExpenses()).isEqualTo(3);
-		assertThat(result.normalExpenses()).isEqualTo(2);
-		assertThat(result.incompleteExpenses()).isEqualTo(1);
-		assertThat(result.abnormalExpenses()).isEqualTo(0);
+		assertThat(result.metas()).hasSize(2);
+		assertThat(result.metas().get(0).tempExpenseMetaId()).isEqualTo(10L);
+		assertThat(result.metas().get(0).fileCount()).isEqualTo(2);
+		assertThat(result.metas().get(0).normalCount()).isEqualTo(1);
+		assertThat(result.metas().get(0).incompleteCount()).isEqualTo(1);
+		assertThat(result.metas().get(1).tempExpenseMetaId()).isEqualTo(11L);
+		assertThat(result.metas().get(1).abnormalCount()).isEqualTo(1);
 	}
 
 	@Test
-	@DisplayName("이미지 처리 현황 요약 - 메타가 없으면 전부 0")
-	void getImageProcessingSummary_noMeta_zeros() {
-		// given
-		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID)).thenReturn(List.of());
+	@DisplayName("메타 파일 상세 조회 - fileId 기준으로 임시지출이 묶여 반환된다")
+	void getTemporaryExpenseMetaFiles_success() {
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(10L)
+						.accountBookId(ACCOUNT_BOOK_ID)
+						.createdAt(LocalDateTime.now())
+						.build();
 
-		// when
-		ImageProcessingSummaryResponse result = service.getImageProcessingSummary(ACCOUNT_BOOK_ID);
+		File file1 =
+				File.builder()
+						.fileId(100L)
+						.tempExpenseMetaId(10L)
+						.fileType(FileType.IMAGE)
+						.s3Key("a.png")
+						.build();
+		File file2 =
+				File.builder()
+						.fileId(101L)
+						.tempExpenseMetaId(10L)
+						.fileType(FileType.IMAGE)
+						.s3Key("b.png")
+						.build();
 
-		// then
-		assertThat(result.totalImages()).isEqualTo(0);
-		assertThat(result.processedImages()).isEqualTo(0);
-		assertThat(result.totalExpenses()).isEqualTo(0);
+		TemporaryExpense e1 =
+				TemporaryExpense.builder()
+						.tempExpenseId(1L)
+						.tempExpenseMetaId(10L)
+						.fileId(100L)
+						.merchantName("A")
+						.status(TemporaryExpenseStatus.NORMAL)
+						.build();
+		TemporaryExpense e2 =
+				TemporaryExpense.builder()
+						.tempExpenseId(2L)
+						.tempExpenseMetaId(10L)
+						.fileId(101L)
+						.merchantName("B")
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build();
+
+		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.of(meta));
+		when(fileRepository.findByTempExpenseMetaId(10L)).thenReturn(List.of(file1, file2));
+		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L, 101L))).thenReturn(List.of(e1, e2));
+
+		TemporaryExpenseMetaFilesResponse result =
+				service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L);
+
+		assertThat(result.tempExpenseMetaId()).isEqualTo(10L);
+		assertThat(result.files()).hasSize(2);
+		assertThat(result.files().get(0).fileId()).isEqualTo(100L);
+		assertThat(result.files().get(0).expenses()).hasSize(1);
+		assertThat(result.files().get(1).fileId()).isEqualTo(101L);
+		assertThat(result.files().get(1).expenses()).hasSize(1);
+	}
+
+	@Test
+	@DisplayName("메타 파일 상세 조회 - 다른 가계부 메타면 scope mismatch")
+	void getTemporaryExpenseMetaFiles_scopeMismatch() {
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder().tempExpenseMetaId(10L).accountBookId(999L).build();
+		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.of(meta));
+
+		assertThatThrownBy(() -> service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH));
+	}
+
+	@Test
+	@DisplayName("메타 파일 상세 조회 - 메타가 없으면 not found")
+	void getTemporaryExpenseMetaFiles_metaNotFound() {
+		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.empty());
+
+		assertThatThrownBy(() -> service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
 	}
 }

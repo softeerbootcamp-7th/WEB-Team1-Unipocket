@@ -155,6 +155,10 @@ public enum ErrorCode {
 			HttpStatus.INTERNAL_SERVER_ERROR,
 			"500_TEMP_EXPENSE_PARSE_FAILED",
 			"임시 지출 파싱 처리 중 오류가 발생했습니다."),
+	TEMP_EXPENSE_RATE_LIMIT_EXCEEDED(
+			HttpStatus.TOO_MANY_REQUESTS,
+			"429_TEMP_EXPENSE_RATE_LIMIT_EXCEEDED",
+			"요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
 	// ========== Widget Errors ==========
 	WIDGET_ORDER_DUPLICATED(

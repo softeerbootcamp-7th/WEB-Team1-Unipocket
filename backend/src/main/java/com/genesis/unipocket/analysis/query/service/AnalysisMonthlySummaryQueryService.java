@@ -247,8 +247,11 @@ public class AnalysisMonthlySummaryQueryService {
 	}
 
 	private MyCategorySnapshot resolveMyCategorySnapshot(
-			Long accountBookId, MonthRange range, CurrencyType currencyView) {
-		if (isMonthlyBatchReady(accountBookId, range, currencyView)) {
+			Long accountBookId,
+			CountryCode localCountryCode,
+			MonthRange range,
+			CurrencyType currencyView) {
+		if (isMonthlyBatchReady(accountBookId, localCountryCode, range, currencyView)) {
 			AmountCount totalRow =
 					aggregationRepository.aggregateAccountMonthlyFromMonthly(
 							accountBookId,
@@ -292,8 +295,11 @@ public class AnalysisMonthlySummaryQueryService {
 	}
 
 	private boolean isMonthlyBatchReady(
-			Long accountBookId, MonthRange range, CurrencyType currencyView) {
-		if (isDirtyPending(accountBookId, range.yearMonth().atDay(1))) {
+			Long accountBookId,
+			CountryCode localCountryCode,
+			MonthRange range,
+			CurrencyType currencyView) {
+		if (isDirtyPending(accountBookId, localCountryCode, range.yearMonth().atDay(1))) {
 			return false;
 		}
 		return aggregationRepository.hasAccountMonthlyAggregate(
@@ -303,11 +309,10 @@ public class AnalysisMonthlySummaryQueryService {
 				PEER_QUALITY_TYPE);
 	}
 
-	private boolean isDirtyPending(Long accountBookId, LocalDate monthStart) {
-		return monthlyDirtyRepository
-				.findByAccountBookIdAndTargetYearMonth(accountBookId, monthStart)
-				.map(dirty -> dirty.getStatus() != AnalysisBatchJobStatus.SUCCESS)
-				.orElse(false);
+	private boolean isDirtyPending(
+			Long accountBookId, CountryCode localCountryCode, LocalDate monthStart) {
+		return monthlyDirtyRepository.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+				localCountryCode, accountBookId, monthStart, AnalysisBatchJobStatus.SUCCESS);
 	}
 
 	private DailySeries buildDailySeries(

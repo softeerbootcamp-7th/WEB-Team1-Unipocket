@@ -289,7 +289,7 @@ public class WidgetQueryService {
 		List<String> names = new ArrayList<>();
 		List<BigDecimal> amounts = new ArrayList<>();
 		for (Object[] row : topRows) {
-			names.add((String) row[0]);
+			names.add(toPaymentMethodLabel((String) row[0]));
 			amounts.add(toBigDecimal(row[1]));
 		}
 		if (etcAmount.compareTo(BigDecimal.ZERO) > 0) {
@@ -305,6 +305,17 @@ public class WidgetQueryService {
 		}
 
 		return new PaymentWidgetResponse(totalDistinctCount, items);
+	}
+
+	private String toPaymentMethodLabel(String methodKey) {
+		if (methodKey == null) {
+			return ETC_LABEL;
+		}
+		return switch (methodKey) {
+			case "CARD" -> "카드";
+			case "OTHER" -> "기타";
+			default -> methodKey;
+		};
 	}
 
 	private CurrencyWidgetResponse getCurrencyWidget(WidgetQueryContext context) {

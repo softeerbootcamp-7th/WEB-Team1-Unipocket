@@ -223,14 +223,14 @@ public class WidgetQueryRepository {
 			LocalDateTime periodEnd) {
 
 		String jpql =
-				"SELECT CASE WHEN e.userCardId IS NULL THEN '기타' ELSE '카드' END, SUM("
+				"SELECT CASE WHEN e.userCardId IS NULL THEN 'OTHER' ELSE 'CARD' END, SUM("
 						+ amountExpr(type)
 						+ ")"
 						+ " FROM ExpenseEntity e"
 						+ " WHERE e.accountBookId = :accountBookId"
 						+ travelFilter(travelId)
 						+ periodFilter(periodStart, periodEnd)
-						+ " GROUP BY CASE WHEN e.userCardId IS NULL THEN '기타' ELSE '카드' END"
+						+ " GROUP BY CASE WHEN e.userCardId IS NULL THEN 'OTHER' ELSE 'CARD' END"
 						+ " ORDER BY SUM("
 						+ amountExpr(type)
 						+ ") DESC";

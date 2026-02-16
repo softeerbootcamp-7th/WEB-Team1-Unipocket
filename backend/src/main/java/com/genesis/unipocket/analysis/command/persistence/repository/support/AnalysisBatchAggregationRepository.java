@@ -290,6 +290,213 @@ public class AnalysisBatchAggregationRepository {
 		return rows.stream().map(row -> ((Number) row).longValue()).toList();
 	}
 
+	public AmountCount aggregateAccountBookMonthlyRaw(
+			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+								SELECT COALESCE(SUM(e.local_currency_amount), 0), COUNT(*)
+								FROM expenses e
+								WHERE e.account_book_id = :accountBookId
+									AND e.occurred_at >= :startUtc
+									AND e.occurred_at < :endUtc
+									AND e.local_currency_amount IS NOT NULL
+								""")
+								.setParameter("accountBookId", accountBookId)
+								.setParameter("startUtc", startUtc)
+								.setParameter("endUtc", endUtc)
+								.getSingleResult();
+		return toAmountCount(row);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryAmountCount> aggregateAccountBookMonthlyRawByCategory(
+			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT e.category, COALESCE(SUM(e.local_currency_amount), 0), COUNT(e.expense_id)
+							FROM expenses e
+							WHERE e.account_book_id = :accountBookId
+								AND e.occurred_at >= :startUtc
+								AND e.occurred_at < :endUtc
+								AND e.local_currency_amount IS NOT NULL
+								AND e.category IS NOT NULL
+							GROUP BY e.category
+							""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("startUtc", startUtc)
+						.setParameter("endUtc", endUtc)
+						.getResultList();
+		return rows.stream().map(this::toCategoryAmountCount).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ExpenseRow> findComparableExpenseRowsByAccountBook(
+			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT
+								e.expense_id,
+								e.account_book_id,
+								e.category,
+								e.local_currency_amount,
+								e.local_currency_code,
+								e.occurred_at,
+								ab.local_country_code,
+								ab.base_country_code
+							FROM expenses e
+							JOIN account_book ab ON e.account_book_id = ab.account_book_id
+							WHERE e.account_book_id = :accountBookId
+								AND ab.local_country_code = ab.base_country_code
+								AND e.occurred_at >= :startUtc
+								AND e.occurred_at < :endUtc
+							""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("startUtc", startUtc)
+						.setParameter("endUtc", endUtc)
+						.getResultList();
+		return rows.stream().map(this::toExpenseRow).toList();
+	}
+
+	public boolean hasCountryMonthlyAggregate(
+			CountryCode countryCode,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		Number count =
+				(Number)
+						em.createNativeQuery(
+										"""
+								SELECT COUNT(*)
+								FROM account_monthly_aggregate r
+								WHERE r.country_code = :countryCode
+									AND r.target_year_month = :monthStart
+									AND r.metric_type = :metricType
+									AND r.quality_type = :qualityType
+								""")
+								.setParameter("countryCode", countryCode.name())
+								.setParameter("monthStart", monthStart)
+								.setParameter("metricType", metricType.name())
+								.setParameter("qualityType", qualityType.name())
+								.getSingleResult();
+		return count != null && count.longValue() > 0L;
+	}
+
+	public boolean hasAccountMonthlyAggregate(
+			Long accountBookId,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		Number count =
+				(Number)
+						em.createNativeQuery(
+										"""
+								SELECT COUNT(*)
+								FROM account_monthly_aggregate r
+								WHERE r.account_book_id = :accountBookId
+									AND r.target_year_month = :monthStart
+									AND r.metric_type = :metricType
+									AND r.quality_type = :qualityType
+								""")
+								.setParameter("accountBookId", accountBookId)
+								.setParameter("monthStart", monthStart)
+								.setParameter("metricType", metricType.name())
+								.setParameter("qualityType", qualityType.name())
+								.getSingleResult();
+		return count != null && count.longValue() > 0L;
+	}
+
+	public AmountCount aggregateCountryMonthlyFromMonthly(
+			CountryCode countryCode,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+								SELECT COALESCE(SUM(r.metric_value), 0), COUNT(*)
+								FROM account_monthly_aggregate r
+								WHERE r.country_code = :countryCode
+									AND r.target_year_month = :monthStart
+									AND r.metric_type = :metricType
+									AND r.quality_type = :qualityType
+								""")
+								.setParameter("countryCode", countryCode.name())
+								.setParameter("monthStart", monthStart)
+								.setParameter("metricType", metricType.name())
+								.setParameter("qualityType", qualityType.name())
+								.getSingleResult();
+		return toAmountCount(row);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryAmountCount> aggregateCountryMonthlyCategoryFromMonthly(
+			CountryCode countryCode, LocalDate monthStart, AnalysisQualityType qualityType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT category, COALESCE(SUM(total_amount), 0), COALESCE(SUM(expense_count), 0)
+							FROM account_monthly_category_aggregate
+							WHERE country_code = :countryCode
+								AND target_year_month = :monthStart
+								AND quality_type = :qualityType
+							GROUP BY category
+							""")
+						.setParameter("countryCode", countryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("qualityType", qualityType.name())
+						.getResultList();
+		return rows.stream().map(this::toCategoryAmountCount).toList();
+	}
+
+	public AmountCount aggregateAccountMonthlyFromMonthly(
+			Long accountBookId,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+								SELECT COALESCE(SUM(r.metric_value), 0), COUNT(*)
+								FROM account_monthly_aggregate r
+								WHERE r.account_book_id = :accountBookId
+									AND r.target_year_month = :monthStart
+									AND r.metric_type = :metricType
+									AND r.quality_type = :qualityType
+								""")
+								.setParameter("accountBookId", accountBookId)
+								.setParameter("monthStart", monthStart)
+								.setParameter("metricType", metricType.name())
+								.setParameter("qualityType", qualityType.name())
+								.getSingleResult();
+		return toAmountCount(row);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryAmountCount> aggregateAccountMonthlyCategoryFromMonthly(
+			Long accountBookId, LocalDate monthStart, AnalysisQualityType qualityType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT category, COALESCE(SUM(total_amount), 0), COALESCE(SUM(expense_count), 0)
+							FROM account_monthly_category_aggregate
+							WHERE account_book_id = :accountBookId
+								AND target_year_month = :monthStart
+								AND quality_type = :qualityType
+							GROUP BY category
+							""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("monthStart", monthStart)
+						.setParameter("qualityType", qualityType.name())
+						.getResultList();
+		return rows.stream().map(this::toCategoryAmountCount).toList();
+	}
+
 	public AmountCount aggregateCountryMonthlyFromDaily(
 			CountryCode countryCode,
 			LocalDate monthStart,

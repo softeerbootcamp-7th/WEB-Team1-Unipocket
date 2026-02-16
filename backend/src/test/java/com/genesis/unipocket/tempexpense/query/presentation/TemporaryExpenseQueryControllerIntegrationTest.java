@@ -147,4 +147,21 @@ class TemporaryExpenseQueryControllerIntegrationTest {
 				.andExpect(jsonPath("$.files[0].expenses[0].tempExpenseMetaId").value(metaId))
 				.andExpect(jsonPath("$.files[0].expenses[0].fileId").value(fileId));
 	}
+
+	@Test
+	@DisplayName("메타 파일 단건 상세 조회 API는 파일 1건의 임시지출 목록을 반환한다")
+	void getTemporaryExpenseMetaFile() throws Exception {
+		mockMvc.perform(
+						get(
+										"/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}",
+										accountBookId,
+										metaId,
+										fileId)
+								.with(jwtTestHelper.withJwtAuth(userId)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.fileId").value(fileId))
+				.andExpect(jsonPath("$.expenses.length()").value(1))
+				.andExpect(jsonPath("$.expenses[0].tempExpenseMetaId").value(metaId))
+				.andExpect(jsonPath("$.expenses[0].fileId").value(fileId));
+	}
 }

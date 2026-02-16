@@ -27,11 +27,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +55,10 @@ public class TemporaryExpenseParsingService {
 	private final TemporaryExpenseParseClient temporaryExpenseParseClient;
 	private final TemporaryExpensePersistenceService temporaryExpensePersistenceService;
 	private final ParsingProgressPublisher progressPublisher;
+
+	// AsyncConfig 에서 지정해준 이미지 파싱 작업을 지정된 비동기 스레드풀에서 돌려줌.
+	@Qualifier("parsingExecutor")
+	private final Executor parsingExecutor;
 
 	/**
 	 * 비동기 파싱 시작 전 입력 검증 및 taskId 생성
@@ -95,7 +100,10 @@ public class TemporaryExpenseParsingService {
 
 		String taskId = UUID.randomUUID().toString();
 		progressPublisher.registerTask(taskId, accountBookId);
-		parseBatchFilesAsync(accountBookId, s3Keys, taskId);
+
+		//
+		CompletableFuture.runAsync(
+				() -> parseBatchFilesAsync(accountBookId, s3Keys, taskId), parsingExecutor);
 		return taskId;
 	}
 
@@ -207,7 +215,6 @@ public class TemporaryExpenseParsingService {
 	/**
 	 * 여러 파일 비동기 파싱 (SSE 진행 상황 알림)
 	 */
-	@Async("parsingExecutor")
 	public CompletableFuture<BatchParsingResult> parseBatchFilesAsync(
 			Long accountBookId, List<String> s3Keys, String taskId) {
 		log.info("Starting async batch parsing for task: {}, files: {}", taskId, s3Keys.size());

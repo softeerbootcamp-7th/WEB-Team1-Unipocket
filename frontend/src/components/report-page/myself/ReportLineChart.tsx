@@ -21,7 +21,7 @@ const ReportLineChart = ({
   thisMonth,
   lastMonth,
   maxValue,
-  width = 348,
+  width = 352,
   height = 140,
 }: ReportLineChartProps) => {
   const maxDay = Math.max(thisMonth.dayCount, lastMonth.dayCount);

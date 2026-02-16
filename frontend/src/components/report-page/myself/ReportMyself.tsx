@@ -40,7 +40,7 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
 
   return (
     <ReportContainer title="전월 대비 지출 비교">
-      <ReportContent className="h-84.25 w-109 pb-5 pl-6.5">
+      <ReportContent className="h-84.25 w-109 pr-6">
         <div className="flex flex-col gap-2.5">
           <h3 className="heading1-bold text-label-normal">
             지난달보다{' '}

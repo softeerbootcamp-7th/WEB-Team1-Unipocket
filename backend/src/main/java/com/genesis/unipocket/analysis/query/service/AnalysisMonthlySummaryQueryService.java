@@ -311,8 +311,12 @@ public class AnalysisMonthlySummaryQueryService {
 
 	private boolean isDirtyPending(
 			Long accountBookId, CountryCode localCountryCode, LocalDate monthStart) {
-		return monthlyDirtyRepository.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
-				localCountryCode, accountBookId, monthStart, AnalysisBatchJobStatus.SUCCESS);
+		return monthlyDirtyRepository
+				.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+						localCountryCode,
+						accountBookId,
+						monthStart,
+						AnalysisBatchJobStatus.SUCCESS);
 	}
 
 	private DailySeries buildDailySeries(

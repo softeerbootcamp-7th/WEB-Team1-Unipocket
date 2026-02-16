@@ -209,7 +209,8 @@ public class CountryMonthlyDirtyAggregationService {
 
 		Map<Integer, Bounds> localBoundsByCategory =
 				computeBoundsForCategories(localAmountsByCategory);
-		Map<Integer, Bounds> baseBoundsByCategory = computeBoundsForCategories(baseAmountsByCategory);
+		Map<Integer, Bounds> baseBoundsByCategory =
+				computeBoundsForCategories(baseAmountsByCategory);
 
 		BigDecimal totalLocalAmount = BigDecimal.ZERO;
 		BigDecimal totalBaseAmount = BigDecimal.ZERO;

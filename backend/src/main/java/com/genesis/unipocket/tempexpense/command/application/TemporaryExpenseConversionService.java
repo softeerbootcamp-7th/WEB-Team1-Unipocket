@@ -173,6 +173,23 @@ public class TemporaryExpenseConversionService {
 								.toList()
 						: tempExpenseIds;
 
+		// tempExpenseIds가 주어졌을 때, 전부 존재하는지 + 전부 해당 tempExpenseMetaId 소속인지 검증.
+		if (tempExpenseIds != null && !tempExpenseIds.isEmpty()) {
+			List<TemporaryExpense> targetExpenses = tempExpenseRepository.findAllById(tempExpenseIds);
+			if (targetExpenses.size() != tempExpenseIds.size()) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND);
+			}
+
+			boolean hasOutOfScopeMeta =
+					targetExpenses.stream()
+							.anyMatch(
+									tempExpense ->
+											!tempExpenseMetaId.equals(tempExpense.getTempExpenseMetaId()));
+			if (hasOutOfScopeMeta) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+			}
+		}
+
 		return convertBatch(accountBookId, targetIds);
 	}
 

@@ -97,4 +97,3 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 		verify(monthlyDirtyRepository, never()).save(any());
 	}
 }
-

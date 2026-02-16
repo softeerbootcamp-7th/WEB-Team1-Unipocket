@@ -19,7 +19,7 @@ const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('LOCAL'); // @TODO: 드롭다운 추가 예정
 
   return (
-    <div className="flex min-w-283 flex-col gap-9.5 px-30 pt-8">
+    <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
       <div className="flex flex-col gap-3">
         <span className="title2-bold text-label-normal">분석</span>
         <span className="headline1-medium text-label-alternative">
@@ -27,7 +27,7 @@ const ReportPage = () => {
           변화를 살펴봐요
         </span>
       </div>
-      <div className="flex min-w-283 flex-col gap-4.75">
+      <div className="flex min-w-283 flex-col gap-4.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-[21.5px]">
             <span className="title3-medium text-label-normal">
@@ -38,10 +38,17 @@ const ReportPage = () => {
               <Icons.ChevronForward className="text-label-neutral size-6" />
             </div>
           </div>
-          <Switch
-            checked={currencyType === 'LOCAL'}
-            onChange={(checked) => setCurrencyType(checked ? 'LOCAL' : 'BASE')}
-          />
+          <div className="flex gap-3">
+            <span className="body1-normal-medium text-label-alternative">
+              현지통화로 보기
+            </span>
+            <Switch
+              checked={currencyType === 'LOCAL'}
+              onChange={(checked) =>
+                setCurrencyType(checked ? 'LOCAL' : 'BASE')
+              }
+            />
+          </div>
         </div>
 
         <div className="flex w-full min-w-283 gap-3.5">

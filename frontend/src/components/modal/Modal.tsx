@@ -16,7 +16,7 @@ export interface ModalProps {
   onClose: () => void;
   onAction: () => void;
   cancelButton?: ModalButton | null; // null로 전달 시 버튼 숨김
-  confirmButton?: ModalButton;
+  confirmButton?: ModalButton | null; // null로 전달 시 버튼 숨김
 }
 
 /**
@@ -37,9 +37,13 @@ const Modal = ({
   const [isActionReady, setActionReady] = useState(true);
   const contextValue = useMemo(() => ({ setActionReady }), []);
 
-  const { label: cancelText = '취소', variant: cancelVariant = 'outlined' } =
-    cancelButton || {};
-  const { label: confirmText = '확인', variant: confirmVariant = 'solid' } =
+  // null 여부로 버튼 표시 여부 결정 (undefined는 기본값 적용, null은 버튼 숨김)
+  const showCancel = cancelButton !== null;
+  const showConfirm = confirmButton !== null;
+
+  const { label: cancelLabel = '취소', variant: cancelVariant = 'outlined' } =
+    cancelButton ?? {};
+  const { label: confirmLabel = '확인', variant: confirmVariant = 'solid' } =
     confirmButton ?? {};
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -76,19 +80,21 @@ const Modal = ({
               {children}
 
               <div className="flex h-20 w-full flex-row items-center justify-end gap-3">
-                {cancelButton !== null && (
+                {showCancel && (
                   <Button variant={cancelVariant} size="lg" onClick={onClose}>
-                    {cancelText}
+                    {cancelLabel}
                   </Button>
                 )}
-                <Button
-                  variant={confirmVariant}
-                  size="lg"
-                  onClick={onAction}
-                  disabled={!isActionReady}
-                >
-                  {confirmText}
-                </Button>
+                {showConfirm && (
+                  <Button
+                    variant={confirmVariant}
+                    size="lg"
+                    onClick={onAction}
+                    disabled={!isActionReady}
+                  >
+                    {confirmLabel}
+                  </Button>
+                )}
               </div>
             </motion.div>
           </motion.div>

@@ -69,7 +69,8 @@ class TemporaryExpenseParsingServiceTest {
 						fieldParser,
 						temporaryExpenseParseClient,
 						temporaryExpensePersistenceService,
-						progressPublisher);
+						progressPublisher,
+						Runnable::run);
 	}
 
 	@Test

@@ -25,8 +25,8 @@ public class UserQueryService {
 	public UserQueryResponse getUserInfo(UUID userId) {
 		UserQueryResponse userInfo =
 				userQueryRepository
-				.findById(userId)
-				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+						.findById(userId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 		boolean needsOnboarding = accountBookCountService.countByUserId(userId) == 0L;
 		return userInfo.withNeedsOnboarding(needsOnboarding);
 	}

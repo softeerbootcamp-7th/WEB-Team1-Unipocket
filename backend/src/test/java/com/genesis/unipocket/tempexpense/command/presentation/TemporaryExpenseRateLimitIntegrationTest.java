@@ -12,6 +12,8 @@ import com.genesis.unipocket.accountbook.command.persistence.repository.AccountB
 import com.genesis.unipocket.auth.support.JwtTestHelper;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.time.LocalDate;
@@ -46,8 +48,10 @@ class TemporaryExpenseRateLimitIntegrationTest {
 	@Autowired private JwtTestHelper jwtTestHelper;
 	@Autowired private AccountBookCommandRepository accountBookRepository;
 	@Autowired private UserCommandRepository userRepository;
+	@Autowired private TempExpenseMetaRepository tempExpenseMetaRepository;
 
 	private Long accountBookId;
+	private Long tempExpenseMetaId;
 	private UUID userId;
 
 	@BeforeEach
@@ -73,16 +77,24 @@ class TemporaryExpenseRateLimitIntegrationTest {
 						LocalDate.of(2026, 12, 31));
 		AccountBookEntity accountBook = accountBookRepository.save(AccountBookEntity.create(args));
 		accountBookId = accountBook.getId();
+
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository.save(
+						TempExpenseMeta.builder().accountBookId(accountBookId).build());
+		tempExpenseMetaId = meta.getTempExpenseMetaId();
 	}
 
 	@Test
 	@DisplayName("파싱 시작 API는 사용자 기준 분당 제한 초과 시 429 + Retry-After를 반환한다")
 	void parseRateLimitExceeded() throws Exception {
-		String body = """
+		String body =
+				"""
 			{
+			"tempExpenseMetaId": %d,
 			"s3Keys": []
 			}
-			""";
+			"""
+						.formatted(tempExpenseMetaId);
 
 		mockMvc.perform(
 						post(

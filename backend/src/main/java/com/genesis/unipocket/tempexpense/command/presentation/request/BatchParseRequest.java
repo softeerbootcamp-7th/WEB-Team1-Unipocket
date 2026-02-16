@@ -8,4 +8,4 @@ import java.util.List;
  * @author 김동균
  * @since 2026-02-08
  */
-public record BatchParseRequest(List<String> s3Keys) {}
+public record BatchParseRequest(Long tempExpenseMetaId, List<String> s3Keys) {}

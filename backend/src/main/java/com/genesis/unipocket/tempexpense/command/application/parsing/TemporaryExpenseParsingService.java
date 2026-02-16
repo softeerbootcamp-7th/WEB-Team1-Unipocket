@@ -9,6 +9,7 @@ import com.genesis.unipocket.tempexpense.command.application.parsing.result.Acco
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult.FileParsingOutcome;
+import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
@@ -21,6 +22,7 @@ import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPu
 import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -62,23 +64,43 @@ public class TemporaryExpenseParsingService {
 	/**
 	 * 비동기 파싱 시작 전 입력 검증 및 taskId 생성
 	 */
-	public String startParseAsync(Long accountBookId, List<String> s3Keys) {
-		if (s3Keys == null || s3Keys.isEmpty()) {
+	public ParseStartResult startParseAsync(
+			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys) {
+		if (tempExpenseMetaId == null) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND);
+		}
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(tempExpenseMetaId)
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+		if (!meta.getAccountBookId().equals(accountBookId)) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+		}
+
+		List<File> metaFiles = fileRepository.findByTempExpenseMetaId(tempExpenseMetaId);
+		if (metaFiles.isEmpty()) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILES_REQUIRED);
 		}
 
-		List<File> files =
-				s3Keys.stream()
-						.map(
-								key ->
-										fileRepository
-												.findByS3Key(key)
-												.orElseThrow(
-														() ->
-																new BusinessException(
-																		ErrorCode
-																				.TEMP_EXPENSE_FILE_NOT_FOUND)))
-						.toList();
+		List<File> files;
+		if (s3Keys == null || s3Keys.isEmpty()) {
+			files = metaFiles;
+		} else {
+			Map<String, File> metaFileByKey =
+					metaFiles.stream()
+							.collect(Collectors.toMap(File::getS3Key, Function.identity()));
+			Set<String> distinctKeys = new HashSet<>(s3Keys);
+			files =
+					distinctKeys.stream()
+							.map(metaFileByKey::get)
+							.filter(java.util.Objects::nonNull)
+							.toList();
+
+			if (files.size() != distinctKeys.size()) {
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND);
+			}
+		}
 
 		boolean hasDocument =
 				files.stream()
@@ -97,13 +119,13 @@ public class TemporaryExpenseParsingService {
 			}
 		}
 
+		List<String> targetS3Keys = files.stream().map(File::getS3Key).toList();
 		String taskId = UUID.randomUUID().toString();
 		progressPublisher.registerTask(taskId, accountBookId);
 
-		//
 		CompletableFuture.runAsync(
-				() -> parseBatchFilesAsync(accountBookId, s3Keys, taskId), parsingExecutor);
-		return taskId;
+				() -> parseBatchFilesAsync(accountBookId, targetS3Keys, taskId), parsingExecutor);
+		return new ParseStartResult(taskId, targetS3Keys.size());
 	}
 
 	/**
@@ -153,7 +175,7 @@ public class TemporaryExpenseParsingService {
 		Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap =
 				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
 		return temporaryExpensePersistenceService.persist(
-				meta, normalizedItems, rateContext, exchangeRateMap);
+				file, meta, normalizedItems, rateContext, exchangeRateMap);
 	}
 
 	private AccountBookRateContext resolveRateContext(Long accountBookId) {

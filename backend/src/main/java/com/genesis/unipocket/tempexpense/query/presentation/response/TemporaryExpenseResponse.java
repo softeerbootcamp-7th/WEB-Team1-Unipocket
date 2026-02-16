@@ -17,6 +17,7 @@ import java.util.List;
 public record TemporaryExpenseResponse(
 		Long tempExpenseId,
 		Long tempExpenseMetaId,
+		Long fileId,
 		String merchantName,
 		Category category,
 		CurrencyCode localCountryCode,
@@ -36,6 +37,7 @@ public record TemporaryExpenseResponse(
 		return new TemporaryExpenseResponse(
 				entity.getTempExpenseId(),
 				entity.getTempExpenseMetaId(),
+				entity.getFileId(),
 				entity.getMerchantName(),
 				entity.getCategory(),
 				entity.getLocalCountryCode(),
@@ -53,6 +55,7 @@ public record TemporaryExpenseResponse(
 		return new TemporaryExpenseResponse(
 				result.tempExpenseId(),
 				result.tempExpenseMetaId(),
+				result.fileId(),
 				result.merchantName(),
 				result.category(),
 				result.localCountryCode(),

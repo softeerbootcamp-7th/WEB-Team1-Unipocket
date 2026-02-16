@@ -36,10 +36,12 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
 	void deleteByTempExpenseMetaId(Long tempExpenseMetaId);
 
-	/**
-	 * 여러 메타 ID로 파일 목록 조회
-	 */
-	List<File> findByTempExpenseMetaIdIn(List<Long> tempExpenseMetaIds);
+	@Query(
+			"SELECT f.tempExpenseMetaId, COUNT(f.fileId) "
+					+ "FROM File f "
+					+ "WHERE f.tempExpenseMetaId IN :metaIds "
+					+ "GROUP BY f.tempExpenseMetaId")
+	List<Object[]> countFilesByTempExpenseMetaIdIn(@Param("metaIds") List<Long> metaIds);
 
 	/**
 	 * 일정 시간 경과했지만 파싱되지 않은 파일 조회

@@ -134,7 +134,9 @@ class TemporaryExpenseSseIntegrationTest {
 		when(exchangeRateService.getExchangeRate(any(), any(), any()))
 				.thenReturn(new BigDecimal("1300.00"));
 
-		String parseBody = objectMapper.writeValueAsString(new ParseRequest(List.of(s3Key)));
+		String parseBody =
+				objectMapper.writeValueAsString(
+						new ParseRequest(tempExpenseMetaId, List.of(s3Key)));
 		MvcResult parseResult =
 				mockMvc.perform(
 								post(
@@ -175,5 +177,5 @@ class TemporaryExpenseSseIntegrationTest {
 				.hasSize(1);
 	}
 
-	private record ParseRequest(List<String> s3Keys) {}
+	private record ParseRequest(Long tempExpenseMetaId, List<String> s3Keys) {}
 }

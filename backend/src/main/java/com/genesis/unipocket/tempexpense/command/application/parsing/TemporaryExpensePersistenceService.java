@@ -5,6 +5,7 @@ import com.genesis.unipocket.tempexpense.command.application.parsing.command.Exc
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
 import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
@@ -26,6 +27,7 @@ public class TemporaryExpensePersistenceService {
 
 	@Transactional
 	public ParsingResult persist(
+			File file,
 			TempExpenseMeta meta,
 			List<NormalizedParsedExpenseItem> normalizedItems,
 			AccountBookRateContext rateContext,
@@ -48,6 +50,7 @@ public class TemporaryExpensePersistenceService {
 			TemporaryExpense expense =
 					TemporaryExpense.builder()
 							.tempExpenseMetaId(meta.getTempExpenseMetaId())
+							.fileId(file.getFileId())
 							.merchantName(item.merchantName())
 							.category(item.category())
 							.localCountryCode(item.localCurrencyCode())

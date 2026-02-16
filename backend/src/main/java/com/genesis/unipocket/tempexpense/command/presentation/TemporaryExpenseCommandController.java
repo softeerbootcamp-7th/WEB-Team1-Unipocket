@@ -3,6 +3,7 @@ package com.genesis.unipocket.tempexpense.command.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
+import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.TemporaryExpenseCommandFacade;
 import com.genesis.unipocket.tempexpense.command.presentation.request.BatchConvertRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.BatchParseRequest;
@@ -103,38 +104,43 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "임시지출 파싱 시작", description = "파일 목록 파싱 작업을 비동기로 시작하고 진행 조회용 taskId를 반환합니다.")
+	@Operation(
+			summary = "임시지출 파싱 시작",
+			description =
+					"메타 단위로 파싱 작업을 비동기로 시작하고 진행 조회용 taskId를 반환합니다. 요청에 s3Keys가 없으면 메타의 전체 파일을"
+							+ " 파싱합니다.")
 	@PostMapping("/temporary-expenses/parse")
 	public ResponseEntity<BatchParseResponse> parse(
 			@PathVariable Long accountBookId,
 			@RequestBody @Valid BatchParseRequest request,
 			@LoginUser UUID userId) {
-		String taskId =
+		ParseStartResult result =
 				temporaryExpenseCommandFacade.startParseAsync(
-						accountBookId, request.s3Keys(), userId);
+						accountBookId, request.tempExpenseMetaId(), request.s3Keys(), userId);
 
 		BatchParseResponse response =
 				new BatchParseResponse(
-						taskId,
-						request.s3Keys().size(),
+						result.taskId(),
+						result.totalFiles(),
 						"/account-books/"
 								+ accountBookId
 								+ "/temporary-expenses/parse-status/"
-								+ taskId);
+								+ result.taskId());
 
 		return ResponseEntity.accepted().body(response);
 	}
 
 	@Operation(summary = "임시지출 일괄 수정", description = "메타(파일) 단위로 여러 임시지출을 한 번에 수정합니다.")
-	@PatchMapping("/temporary-expense-metas/{tempExpenseMetaId}/temporary-expenses")
-	public ResponseEntity<TemporaryExpenseMetaBulkUpdateResponse> updateTemporaryExpensesByMeta(
+	@PatchMapping("/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}/temporary-expenses")
+	public ResponseEntity<TemporaryExpenseMetaBulkUpdateResponse> updateTemporaryExpensesByFile(
 			@PathVariable Long accountBookId,
 			@PathVariable Long tempExpenseMetaId,
+			@PathVariable Long fileId,
 			@RequestBody @Valid TemporaryExpenseMetaBulkUpdateRequest request,
 			@LoginUser UUID userId) {
 		TemporaryExpenseMetaBulkUpdateResponse response =
-				temporaryExpenseCommandFacade.updateTemporaryExpensesByMeta(
-						accountBookId, tempExpenseMetaId, request, userId);
+				temporaryExpenseCommandFacade.updateTemporaryExpensesByFile(
+						accountBookId, tempExpenseMetaId, fileId, request, userId);
 		return ResponseEntity.ok(response);
 	}
 

@@ -29,9 +29,10 @@ public class TemporaryExpenseBulkUpdateService {
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 
 	@Transactional
-	public TemporaryExpenseMetaBulkUpdateResult updateByMeta(
+	public TemporaryExpenseMetaBulkUpdateResult updateByFile(
 			Long accountBookId,
 			Long tempExpenseMetaId,
+			Long fileId,
 			TemporaryExpenseMetaBulkUpdateRequest request) {
 		List<TemporaryExpenseMetaBulkUpdateResult.ItemResult> results = new ArrayList<>();
 		int successCount = 0;
@@ -75,6 +76,9 @@ public class TemporaryExpenseBulkUpdateService {
 				}
 
 				if (!tempExpenseMetaId.equals(target.getTempExpenseMetaId())) {
+					throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+				}
+				if (!fileId.equals(target.getFileId())) {
 					throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 				}
 

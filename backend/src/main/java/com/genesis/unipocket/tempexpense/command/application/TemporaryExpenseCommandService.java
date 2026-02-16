@@ -94,6 +94,7 @@ public class TemporaryExpenseCommandService {
 				TemporaryExpense.builder()
 						.tempExpenseId(entity.getTempExpenseId())
 						.tempExpenseMetaId(entity.getTempExpenseMetaId())
+						.fileId(entity.getFileId())
 						.merchantName(resolvedMerchantName)
 						.category(resolvedCategory)
 						.localCountryCode(resolvedLocalCountryCode)

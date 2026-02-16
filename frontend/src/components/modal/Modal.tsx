@@ -16,6 +16,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAction: () => void;
+  className?: string;
   cancelButton?: ModalButton | null; // null로 전달 시 버튼 숨김
   confirmButton?: ModalButton | null; // null로 전달 시 버튼 숨김
 }
@@ -31,6 +32,7 @@ const Modal = ({
   isOpen,
   onClose,
   onAction,
+  className,
   cancelButton,
   confirmButton,
 }: ModalProps) => {

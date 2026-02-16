@@ -2,7 +2,7 @@ package com.genesis.unipocket.analysis.command.persistence.repository.support;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
-import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -748,7 +748,7 @@ public class AnalysisBatchAggregationRepository {
 	}
 
 	private CategoryAmountCount toCategoryAmountCount(Object[] row) {
-		Integer categoryOrdinal = parseCategoryOrdinal(row[0]);
+		Integer categoryOrdinal = CategoryOrdinalParser.parse(row[0]);
 		BigDecimal amount = row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
 		long count = row[2] == null ? 0L : ((Number) row[2]).longValue();
 		return new CategoryAmountCount(categoryOrdinal, amount, count);
@@ -756,7 +756,7 @@ public class AnalysisBatchAggregationRepository {
 
 	private AccountCategoryAmountCount toAccountCategoryAmountCount(Object[] row) {
 		Long accountBookId = ((Number) row[0]).longValue();
-		Integer categoryOrdinal = parseCategoryOrdinal(row[1]);
+		Integer categoryOrdinal = CategoryOrdinalParser.parse(row[1]);
 		BigDecimal amount = row[2] == null ? BigDecimal.ZERO : new BigDecimal(row[2].toString());
 		long count = row[3] == null ? 0L : ((Number) row[3]).longValue();
 		return new AccountCategoryAmountCount(accountBookId, categoryOrdinal, amount, count);
@@ -791,25 +791,6 @@ public class AnalysisBatchAggregationRepository {
 			return date.toLocalDate();
 		}
 		return LocalDate.parse(value.toString());
-	}
-
-	private Integer parseCategoryOrdinal(Object value) {
-		if (value == null) {
-			return null;
-		}
-		if (value instanceof Number number) {
-			return number.intValue();
-		}
-		String raw = value.toString();
-		try {
-			return Integer.parseInt(raw);
-		} catch (NumberFormatException ignored) {
-			try {
-				return Category.valueOf(raw).ordinal();
-			} catch (IllegalArgumentException e) {
-				return null;
-			}
-		}
 	}
 
 	public record AmountCount(BigDecimal totalAmount, long expenseCount) {}

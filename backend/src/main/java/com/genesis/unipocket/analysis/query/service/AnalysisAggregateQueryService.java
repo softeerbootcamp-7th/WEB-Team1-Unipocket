@@ -46,31 +46,21 @@ public class AnalysisAggregateQueryService {
 						qualityType);
 
 		AmountCount totalAmountRow =
-				hasMonthly
-						? aggregationRepository.aggregateCountryMonthlyFromMonthly(
-								countryCode,
-								monthStart,
-								AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
-								qualityType)
-						: aggregationRepository.aggregateCountryMonthlyFromDaily(
-								countryCode,
-								monthStart,
-								nextMonthStart,
-								AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
-								qualityType);
+				getCountryMonthlyAmountCount(
+						hasMonthly,
+						countryCode,
+						monthStart,
+						nextMonthStart,
+						AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
+						qualityType);
 		AmountCount totalExpenseCountRow =
-				hasMonthly
-						? aggregationRepository.aggregateCountryMonthlyFromMonthly(
-								countryCode,
-								monthStart,
-								AnalysisMetricType.EXPENSE_COUNT,
-								qualityType)
-						: aggregationRepository.aggregateCountryMonthlyFromDaily(
-								countryCode,
-								monthStart,
-								nextMonthStart,
-								AnalysisMetricType.EXPENSE_COUNT,
-								qualityType);
+				getCountryMonthlyAmountCount(
+						hasMonthly,
+						countryCode,
+						monthStart,
+						nextMonthStart,
+						AnalysisMetricType.EXPENSE_COUNT,
+						qualityType);
 
 		List<CountryMonthlyAggregateRes.DailyItem> dailyItems =
 				aggregationRepository
@@ -123,31 +113,21 @@ public class AnalysisAggregateQueryService {
 						qualityType);
 
 		AmountCount totalAmountRow =
-				hasMonthly
-						? aggregationRepository.aggregateAccountMonthlyFromMonthly(
-								accountBookId,
-								monthStart,
-								AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
-								qualityType)
-						: aggregationRepository.aggregateAccountMonthlyFromDaily(
-								accountBookId,
-								monthStart,
-								nextMonthStart,
-								AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
-								qualityType);
+				getAccountMonthlyAmountCount(
+						hasMonthly,
+						accountBookId,
+						monthStart,
+						nextMonthStart,
+						AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
+						qualityType);
 		AmountCount totalExpenseCountRow =
-				hasMonthly
-						? aggregationRepository.aggregateAccountMonthlyFromMonthly(
-								accountBookId,
-								monthStart,
-								AnalysisMetricType.EXPENSE_COUNT,
-								qualityType)
-						: aggregationRepository.aggregateAccountMonthlyFromDaily(
-								accountBookId,
-								monthStart,
-								nextMonthStart,
-								AnalysisMetricType.EXPENSE_COUNT,
-								qualityType);
+				getAccountMonthlyAmountCount(
+						hasMonthly,
+						accountBookId,
+						monthStart,
+						nextMonthStart,
+						AnalysisMetricType.EXPENSE_COUNT,
+						qualityType);
 
 		List<AccountBookMonthlyAggregateRes.DailyItem> dailyItems =
 				aggregationRepository
@@ -211,6 +191,34 @@ public class AnalysisAggregateQueryService {
 				row.categoryOrdinal(),
 				AmountFormatUtil.format(row.totalAmount()),
 				row.expenseCount());
+	}
+
+	private AmountCount getCountryMonthlyAmountCount(
+			boolean hasMonthly,
+			CountryCode countryCode,
+			LocalDate monthStart,
+			LocalDate nextMonthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		return hasMonthly
+				? aggregationRepository.aggregateCountryMonthlyFromMonthly(
+						countryCode, monthStart, metricType, qualityType)
+				: aggregationRepository.aggregateCountryMonthlyFromDaily(
+						countryCode, monthStart, nextMonthStart, metricType, qualityType);
+	}
+
+	private AmountCount getAccountMonthlyAmountCount(
+			boolean hasMonthly,
+			Long accountBookId,
+			LocalDate monthStart,
+			LocalDate nextMonthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		return hasMonthly
+				? aggregationRepository.aggregateAccountMonthlyFromMonthly(
+						accountBookId, monthStart, metricType, qualityType)
+				: aggregationRepository.aggregateAccountMonthlyFromDaily(
+						accountBookId, monthStart, nextMonthStart, metricType, qualityType);
 	}
 
 	private void validateComparableAccountBook(Long accountBookId) {

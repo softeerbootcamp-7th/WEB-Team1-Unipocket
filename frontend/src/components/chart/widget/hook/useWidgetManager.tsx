@@ -8,7 +8,7 @@ import {
   type WidgetType,
 } from '@/components/chart/widget/type';
 
-const DESKTOP_BREAKPOINT = 1500;
+const WIDGET_MAX_SLOT_BREAKPOINT = 1500;
 const MIN_WIDGET_SLOTS = 4;
 const MAX_WIDGET_SLOTS = 5;
 
@@ -94,7 +94,7 @@ export const useWidgetManager = () => {
 
   useEffect(() => {
     const updateLayout = () => {
-      const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+      const isDesktop = window.innerWidth >= WIDGET_MAX_SLOT_BREAKPOINT;
       setMaxWidgets(isDesktop ? MAX_WIDGET_SLOTS : MIN_WIDGET_SLOTS);
     };
 

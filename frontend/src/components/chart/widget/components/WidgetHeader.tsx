@@ -1,16 +1,10 @@
+import { useWidgetContext } from '@/components/chart/widget/WidgetContext';
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 
-interface WidgetHeaderProps {
-  isWidgetEditMode: boolean;
-  toggleEditMode: () => void;
-}
-
-const WidgetHeader = ({
-  isWidgetEditMode,
-  toggleEditMode,
-}: WidgetHeaderProps) => {
+const WidgetHeader = () => {
+  const { isWidgetEditMode, toggleEditMode } = useWidgetContext();
   const ButtonVariant = isWidgetEditMode ? 'solid' : 'outlined';
 
   return (

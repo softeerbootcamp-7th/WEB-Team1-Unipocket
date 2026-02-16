@@ -26,13 +26,9 @@ const WidgetSection = () => {
         }}
       >
         <div className="flex flex-col gap-8">
-          <WidgetHeader
-            isWidgetEditMode={isWidgetEditMode}
-            toggleEditMode={toggleEditMode}
-          />
+          <WidgetHeader />
           <WidgetList
             displayWidgets={displayWidgets}
-            isWidgetEditMode={isWidgetEditMode}
             handleRemoveWidget={handleRemoveWidget}
             dropZoneProps={
               isWidgetEditMode ? listDropZone.dropZoneProps : undefined

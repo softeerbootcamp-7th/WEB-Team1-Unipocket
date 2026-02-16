@@ -3,21 +3,23 @@ import { useMemo } from 'react';
 import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { renderWidget } from '@/components/chart/widget/renderWidget';
 import type { WidgetItem } from '@/components/chart/widget/type';
-import { WidgetItemContext } from '@/components/chart/widget/WidgetContext';
+import {
+  useWidgetContext,
+  WidgetItemContext,
+} from '@/components/chart/widget/WidgetContext';
 
 interface WidgetListProps {
   displayWidgets: WidgetItem[];
-  isWidgetEditMode: boolean;
   handleRemoveWidget: (order: number) => void;
   dropZoneProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 const WidgetList = ({
   displayWidgets,
-  isWidgetEditMode,
   handleRemoveWidget,
   dropZoneProps,
 }: WidgetListProps) => {
+  const { isWidgetEditMode } = useWidgetContext();
   return (
     <div
       className="rounded-modal-20 flex w-full items-center justify-between transition-colors"

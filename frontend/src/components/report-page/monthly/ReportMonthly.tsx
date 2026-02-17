@@ -54,21 +54,22 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   return (
     <ReportContainer title="월별 지출 비교">
       <ReportContent className="h-60 w-109 gap-7">
-        {!isEqual && (
-          <p className="heading1-bold text-label-normal">
-            나랑 같은 국가의 교환학생보다 <br />
-            <span className="text-primary-strong">
-              {formattedDiff}
-              {unit} {isLess ? '덜' : '더'}
-            </span>{' '}
-            썼어요
-          </p>
-        )}
-        {isEqual && (
-          <p className="heading1-bold text-label-normal">
-            <span className="text-primary-strong">평균</span>과 일치해요!
-          </p>
-        )}
+        <p className="heading1-bold text-label-normal">
+          {!isEqual ? (
+            <>
+              나랑 같은 국가의 교환학생보다 <br />
+              <span className="text-primary-strong">
+                {formattedDiff}
+                {unit} {isLess ? '덜' : '더'}
+              </span>{' '}
+              썼어요
+            </>
+          ) : (
+            <>
+              <span className="text-primary-strong">평균</span>과 일치해요!
+            </>
+          )}
+        </p>
 
         <div className="flex flex-col gap-3">
           <ComparisonCard

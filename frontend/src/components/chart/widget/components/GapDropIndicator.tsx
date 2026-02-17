@@ -26,7 +26,7 @@ const GapDropIndicator = ({
   return (
     <div
       className={clsx(
-        'bg-primary-normal/50 absolute top-0 bottom-0 z-60 flex w-20 items-center justify-center',
+        'absolute top-0 bottom-0 z-60 flex w-20 items-center justify-center',
         position === 'left' ? 'left-0' : 'right-0',
       )}
       style={{

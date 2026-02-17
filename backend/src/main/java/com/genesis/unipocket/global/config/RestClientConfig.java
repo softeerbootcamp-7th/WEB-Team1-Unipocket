@@ -16,9 +16,11 @@ import org.springframework.web.client.RestTemplate;
  */
 @Configuration
 public class RestClientConfig {
-	// 타임아웃 설정을 변수로 추출
-	private static final int CONNECT_TIMEOUT_SECONDS = 5;
-	private static final int READ_TIMEOUT_SECONDS = 10;
+	@Value("${external.http.default-connect-timeout-seconds:5}")
+	private int defaultConnectTimeoutSeconds;
+
+	@Value("${external.http.default-read-timeout-seconds:10}")
+	private int defaultReadTimeoutSeconds;
 
 	@Value("${gemini.api.connect-timeout-seconds:10}")
 	private int geminiConnectTimeoutSeconds;
@@ -45,11 +47,11 @@ public class RestClientConfig {
 
 	/**
 	 * HTTP 요청 팩토리 설정
-	 * - 연결 타임아웃: 5초
-	 * - 읽기 타임아웃: 10초
+	 * - 연결 타임아웃: external.http.default-connect-timeout-seconds
+	 * - 읽기 타임아웃: external.http.default-read-timeout-seconds
 	 */
 	private ClientHttpRequestFactory clientHttpRequestFactory() {
-		return clientHttpRequestFactory(CONNECT_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS);
+		return clientHttpRequestFactory(defaultConnectTimeoutSeconds, defaultReadTimeoutSeconds);
 	}
 
 	private ClientHttpRequestFactory clientHttpRequestFactory(

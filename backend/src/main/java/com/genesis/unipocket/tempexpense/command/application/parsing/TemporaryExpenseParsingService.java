@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +37,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <b>임시지출내역 파싱 서비스</b>
@@ -48,6 +48,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class TemporaryExpenseParsingService {
+
+	private static final int MAX_DOCUMENT_PARSE_FILES = 1;
+	private static final int MAX_IMAGE_PARSE_FILES = 3;
 
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
@@ -66,42 +69,56 @@ public class TemporaryExpenseParsingService {
 	 */
 	public ParseStartResult startParseAsync(
 			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys) {
+		// s3Keys 가 null 인 경우에 대한 방어 코드
+		List<String> requestedS3Keys = s3Keys == null ? List.of() : s3Keys;
+
 		if (tempExpenseMetaId == null) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND);
 		}
+
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
 						.findById(tempExpenseMetaId)
 						.orElseThrow(
 								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+
+		// 메타가 해당 accountBook 내의 메타가 아니면 스코프가 맞지 않으므로 방어
 		if (!meta.getAccountBookId().equals(accountBookId)) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
 
+		// 메타 내 전체 파일 조회 -> 왜? 일부면 메타 내 파일이 맞는지 확인필요
+		// 전체면 어차피 전체 가져와야함
 		List<File> metaFiles = fileRepository.findByTempExpenseMetaId(tempExpenseMetaId);
+
 		if (metaFiles.isEmpty()) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILES_REQUIRED);
 		}
 
+		// 일부분 요청인 경우를 위하여 파싱할 파일들을 거르는 작업
 		List<File> files;
-		if (s3Keys == null || s3Keys.isEmpty()) {
+		if (requestedS3Keys.isEmpty()) {
 			files = metaFiles;
 		} else {
 			Map<String, File> metaFileByKey =
 					metaFiles.stream()
 							.collect(Collectors.toMap(File::getS3Key, Function.identity()));
-			Set<String> distinctKeys = new HashSet<>(s3Keys);
+			Set<String> distinctKeys = new HashSet<>(requestedS3Keys);
 			files =
 					distinctKeys.stream()
 							.map(metaFileByKey::get)
-							.filter(java.util.Objects::nonNull)
+							.filter(Objects::nonNull)
 							.toList();
-
+			// 요청된 s3Keys를 중복 제거한 뒤(distinctKeys)
+			// 실제 메타 목록에서 매칭된 파일 수(files.size())와 비교하는 로직
+			// 매칭된 파일 수 == (중복제거된) distinctKeys 수 로 비교하는 로직입니다.
+			// 즉, 실제로 전부 존재하는지 확인하는 로직입니다.
 			if (files.size() != distinctKeys.size()) {
 				throw new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND);
 			}
 		}
 
+		// 파일 파싱하는지 여부 -> true 면 파일
 		boolean hasDocument =
 				files.stream()
 						.anyMatch(
@@ -110,47 +127,24 @@ public class TemporaryExpenseParsingService {
 												|| f.getFileType() == File.FileType.EXCEL);
 
 		if (hasDocument) {
-			if (s3Keys.size() > 1) {
+			if (files.size() > MAX_DOCUMENT_PARSE_FILES) {
 				throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED);
 			}
 		} else {
-			if (s3Keys.size() > 20) {
+			if (files.size() > MAX_IMAGE_PARSE_FILES) {
 				throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED);
 			}
 		}
 
 		List<String> targetS3Keys = files.stream().map(File::getS3Key).toList();
+
+		// SSE 비동기 파싱 시작
 		String taskId = UUID.randomUUID().toString();
 		progressPublisher.registerTask(taskId, accountBookId);
 
 		CompletableFuture.runAsync(
 				() -> parseBatchFilesAsync(accountBookId, targetS3Keys, taskId), parsingExecutor);
 		return new ParseStartResult(taskId, targetS3Keys.size());
-	}
-
-	/**
-	 * 파일 파싱 및 TemporaryExpense 생성
-	 */
-	@Transactional
-	public ParsingResult parseFile(Long accountBookId, String s3Key) {
-		File file =
-				fileRepository
-						.findByS3Key(s3Key)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND));
-
-		Long tempExpenseMetaId = file.getTempExpenseMetaId();
-		TempExpenseMeta meta =
-				tempExpenseMetaRepository
-						.findById(tempExpenseMetaId)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		if (!meta.getAccountBookId().equals(accountBookId)) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
-
-		AccountBookRateContext rateContext = resolveRateContext(accountBookId);
-		return parseAndPersistExpenses(file, meta, rateContext);
 	}
 
 	private ParsingResult parseAndPersistExpenses(
@@ -201,17 +195,20 @@ public class TemporaryExpenseParsingService {
 
 	private Map<ExchangeRateLookupCommand, BigDecimal> buildExchangeRateMap(
 			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
-		Set<ExchangeRateLookupCommand> lookupKeys =
-				items.stream()
-						.filter(
-								item ->
-										item.localAmount() != null
-												&& item.occurredAt() != null
-												&& item.baseAmount()
-														== null) // baseAmount가 있으면 환율 조회 불필요
-						.map(
-								item ->
-										new ExchangeRateLookupCommand(
+			Set<ExchangeRateLookupCommand> lookupKeys =
+					items.stream()
+							.filter(
+									item ->
+											item.localAmount() != null
+													&& item.occurredAt() != null
+													&& !(item.baseAmount() != null
+															&& item.baseCurrencyCode() != null
+															&& item.baseCurrencyCode()
+																	== baseCurrencyCode)) // baseAmount/baseCurrencyCode
+							// 쌍이 기준 통화와 일치할 때만 환율 조회 생략
+							.map(
+									item ->
+											new ExchangeRateLookupCommand(
 												item.localCurrencyCode(),
 												baseCurrencyCode,
 												item.occurredAt().toLocalDate()))
@@ -318,7 +315,9 @@ public class TemporaryExpenseParsingService {
 									file.getS3Key(),
 									(completedFiles * 100) / totalFiles));
 
+					// 제미나이 API 호출 코드
 					ParsingResult result = parseAndPersistExpenses(file, meta, rateContext);
+
 					if (firstMetaId == null) {
 						firstMetaId = result.metaId();
 					}

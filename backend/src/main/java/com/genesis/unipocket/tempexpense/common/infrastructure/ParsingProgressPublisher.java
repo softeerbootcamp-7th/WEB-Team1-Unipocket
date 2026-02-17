@@ -25,6 +25,8 @@ public class ParsingProgressPublisher {
 
 	/** 구독 없이 종료된 task 종료 이벤트 보관 시간 */
 	private static final Duration TERMINAL_EVENT_RETENTION = Duration.ofMinutes(30);
+	/** 비구독 활성 task 보관 시간 (비정상 종료 누수 방지) */
+	private static final Duration ACTIVE_TASK_RETENTION = Duration.ofHours(6);
 
 	/** task 단위 SSE 상태 저장소 */
 	private final Map<String, TaskContext> tasks = new ConcurrentHashMap<>();
@@ -226,8 +228,13 @@ public class ParsingProgressPublisher {
 
 	/** 미구독 종료 task를 보관 시간 이후 정리 */
 	private void purgeExpiredTerminalTasks() {
-		Instant cutoff = Instant.now().minus(TERMINAL_EVENT_RETENTION);
-		tasks.entrySet().removeIf(entry -> entry.getValue().isExpiredTerminal(cutoff));
+		Instant terminalCutoff = Instant.now().minus(TERMINAL_EVENT_RETENTION);
+		Instant activeCutoff = Instant.now().minus(ACTIVE_TASK_RETENTION);
+		tasks.entrySet()
+				.removeIf(
+						entry ->
+								entry.getValue().isExpiredTerminal(terminalCutoff)
+										|| entry.getValue().isExpiredActiveWithoutEmitter(activeCutoff));
 	}
 
 	/** 진행 상황 이벤트 */
@@ -326,6 +333,11 @@ public class ParsingProgressPublisher {
 		/** 만료된 terminal 상태인지 확인 */
 		private synchronized boolean isExpiredTerminal(Instant cutoff) {
 			return terminalEvent != null && emitter == null && updatedAt.isBefore(cutoff);
+		}
+
+		/** 비구독 상태로 오래 방치된 활성 task인지 확인 */
+		private synchronized boolean isExpiredActiveWithoutEmitter(Instant cutoff) {
+			return terminalEvent == null && emitter == null && updatedAt.isBefore(cutoff);
 		}
 
 		private synchronized void touch() {

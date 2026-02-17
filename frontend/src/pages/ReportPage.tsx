@@ -16,6 +16,10 @@ import { useAccountBookStore } from '@/stores/useAccountBookStore';
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
+  const categoryData = mockData.compareByCategory;
+  const myselfData = mockData.compareWithLastMonth;
+  const monthlyData = mockData.compareWithAverage;
+
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
   const startDate = useAccountBookStore(
@@ -55,9 +59,6 @@ const ReportPage = () => {
       );
     }
   };
-
-  const categoryData = mockData.compareByCategory;
-  const myselfData = mockData.compareWithLastMonth;
 
   const handleMonthChange = (offset: number) => {
     setSelectedDate((prev) => {
@@ -121,7 +122,7 @@ const ReportPage = () => {
             onCurrencyTypeChange={setCurrencyType}
           >
             <div className="flex w-113 flex-col justify-between">
-              <ReportMonthly />
+              <ReportMonthly data={monthlyData} />
               <ReportMyself data={myselfData} />
             </div>
 

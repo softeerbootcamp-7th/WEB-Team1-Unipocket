@@ -162,18 +162,18 @@ public class ExpenseEntity extends BaseEntity {
 		if (exchangeInfo == null) {
 			return null;
 		}
-		return exchangeInfo.getCalculatedBaseCurrencyCode() != null
-				? exchangeInfo.getCalculatedBaseCurrencyCode()
-				: exchangeInfo.getBaseCurrencyCode();
+		return exchangeInfo.getBaseCurrencyAmount() != null
+				? exchangeInfo.getBaseCurrencyCode()
+				: exchangeInfo.getCalculatedBaseCurrencyCode();
 	}
 
 	public BigDecimal getDisplayBaseAmount() {
 		if (exchangeInfo == null) {
 			return null;
 		}
-		return exchangeInfo.getCalculatedBaseCurrencyAmount() != null
-				? exchangeInfo.getCalculatedBaseCurrencyAmount()
-				: exchangeInfo.getBaseCurrencyAmount();
+		return exchangeInfo.getBaseCurrencyAmount() != null
+				? exchangeInfo.getBaseCurrencyAmount()
+				: exchangeInfo.getCalculatedBaseCurrencyAmount();
 	}
 
 	public CurrencyCode getOriginalBaseCurrency() {

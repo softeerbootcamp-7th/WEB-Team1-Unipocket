@@ -3,7 +3,6 @@ import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
-import type { CountryCode } from '@/data/countryCode';
 import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
@@ -23,14 +22,12 @@ interface ReportMonthlyProps {
 
 const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   const { currencyType } = useReportContext();
-  const localCountryCode = useAccountBookStore(
-    (state) => state.accountBook?.localCountryCode,
-  ) as CountryCode;
-  const countryCode = useAccountBookStore((state) =>
-    currencyType === 'LOCAL'
-      ? state.accountBook?.localCountryCode
-      : state.accountBook?.baseCountryCode,
-  ) as CountryCode;
+  const accountBook = useAccountBookStore((state) => state.accountBook);
+  if (!accountBook) return null;
+
+  const { localCountryCode, baseCountryCode } = accountBook;
+  const countryCode =
+    currencyType === 'LOCAL' ? localCountryCode : baseCountryCode;
 
   const isLocal = currencyType === 'LOCAL';
 

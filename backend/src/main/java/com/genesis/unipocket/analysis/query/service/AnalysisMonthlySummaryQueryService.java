@@ -11,6 +11,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
+import com.genesis.unipocket.analysis.common.util.QuantileUtil;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
 import com.genesis.unipocket.analysis.query.persistence.response.CategoryBreakdownRes;
 import com.genesis.unipocket.analysis.query.persistence.response.MonthlySpendSummaryRes;
@@ -21,6 +22,7 @@ import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnalysisMonthlySummaryQueryService {
 
 	private static final int AVG_SCALE = 10;
+	private static final MathContext MC = MathContext.DECIMAL64;
 	private static final AnalysisQualityType PEER_QUALITY_TYPE = AnalysisQualityType.CLEANED;
 
 	private final AnalysisQueryRepository analysisQueryRepository;
@@ -499,36 +502,16 @@ public class AnalysisMonthlySummaryQueryService {
 		}
 		List<BigDecimal> sorted = new ArrayList<>(values);
 		sorted.sort(Comparator.naturalOrder());
-		BigDecimal q1 = quantile(sorted, 0.25d);
-		BigDecimal q3 = quantile(sorted, 0.75d);
-		BigDecimal iqr = q3.subtract(q1);
+		BigDecimal q1 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.25d, MC);
+		BigDecimal q3 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.75d, MC);
+		BigDecimal iqr = q3.subtract(q1, MC);
 		if (iqr.compareTo(BigDecimal.ZERO) < 0) {
 			return null;
 		}
 		BigDecimal multiplier =
 				BigDecimal.valueOf(analysisBatchProperties.getOutlierIqrMultiplier());
-		BigDecimal delta = iqr.multiply(multiplier);
-		return new Bounds(q1.subtract(delta), q3.add(delta));
-	}
-
-	private BigDecimal quantile(List<BigDecimal> sorted, double p) {
-		if (sorted.isEmpty()) {
-			return BigDecimal.ZERO;
-		}
-		if (sorted.size() == 1) {
-			return sorted.get(0);
-		}
-		double clampedP = Math.max(0d, Math.min(1d, p));
-		double idx = clampedP * (sorted.size() - 1);
-		int lowerIdx = (int) Math.floor(idx);
-		int upperIdx = (int) Math.ceil(idx);
-		BigDecimal lower = sorted.get(lowerIdx);
-		BigDecimal upper = sorted.get(upperIdx);
-		if (lowerIdx == upperIdx) {
-			return lower;
-		}
-		BigDecimal ratio = BigDecimal.valueOf(idx - lowerIdx);
-		return lower.add(upper.subtract(lower).multiply(ratio));
+		BigDecimal delta = iqr.multiply(multiplier, MC);
+		return new Bounds(q1.subtract(delta, MC), q3.add(delta, MC));
 	}
 
 	private LocalDate toLocalDate(Object value) {

@@ -25,7 +25,7 @@ const ReportBarGraph = ({ maxLabel, items }: ReportBarGraphProps) => {
   const data = useMemo(() => transformCategoryData(items), [items]);
 
   return (
-    <div className="flex w-145.5 flex-col gap-3.5">
+    <div className="flex w-full flex-col gap-3.5">
       <div className="flex justify-end gap-4">
         <ReportLegend label="나" color="primary" />
         <ReportLegend label="다른 학생" color="secondary" />

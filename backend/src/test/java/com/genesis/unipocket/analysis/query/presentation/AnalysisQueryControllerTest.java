@@ -52,7 +52,10 @@ class AnalysisQueryControllerTest {
 	@MockitoBean private AnalysisBatchAggregationRepository aggregationRepository;
 	@MockitoBean private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
 	@MockitoBean private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
-	@MockitoBean private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
+
+	@MockitoBean
+	private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
+
 	@MockitoBean private AccountBookOwnershipValidator accountBookOwnershipValidator;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
@@ -120,11 +123,11 @@ class AnalysisQueryControllerTest {
 		org.mockito.BDDMockito.given(
 						pairMonthlyAggregateRepository
 								.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
-								eq(CountryCode.US),
-								eq(CountryCode.KR),
-								eq(LocalDate.of(2025, 12, 1)),
-								eq(AnalysisQualityType.CLEANED),
-								eq(AnalysisMetricType.TOTAL_BASE_AMOUNT)))
+										eq(CountryCode.US),
+										eq(CountryCode.KR),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisQualityType.CLEANED),
+										eq(AnalysisMetricType.TOTAL_BASE_AMOUNT)))
 				.willReturn(
 						Optional.of(
 								PairMonthlyAggregateEntity.of(
@@ -209,11 +212,11 @@ class AnalysisQueryControllerTest {
 		org.mockito.BDDMockito.given(
 						pairMonthlyAggregateRepository
 								.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
-								eq(CountryCode.US),
-								eq(CountryCode.KR),
-								eq(LocalDate.of(2025, 12, 1)),
-								eq(AnalysisQualityType.CLEANED),
-								eq(AnalysisMetricType.TOTAL_BASE_AMOUNT)))
+										eq(CountryCode.US),
+										eq(CountryCode.KR),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisQualityType.CLEANED),
+										eq(AnalysisMetricType.TOTAL_BASE_AMOUNT)))
 				.willReturn(
 						Optional.of(
 								PairMonthlyAggregateEntity.of(
@@ -230,11 +233,11 @@ class AnalysisQueryControllerTest {
 		org.mockito.BDDMockito.given(
 						pairMonthlyCategoryAggregateRepository
 								.findAllByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndCurrencyType(
-								eq(CountryCode.US),
-								eq(CountryCode.KR),
-								eq(LocalDate.of(2025, 12, 1)),
-								eq(AnalysisQualityType.CLEANED),
-								eq(CurrencyType.BASE)))
+										eq(CountryCode.US),
+										eq(CountryCode.KR),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisQualityType.CLEANED),
+										eq(CurrencyType.BASE)))
 				.willReturn(
 						List.of(
 								PairMonthlyCategoryAggregateEntity.of(

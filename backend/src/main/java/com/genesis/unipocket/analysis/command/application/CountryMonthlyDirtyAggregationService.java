@@ -103,7 +103,8 @@ public class CountryMonthlyDirtyAggregationService {
 			}
 
 			try {
-				PairMonthKey affectedKey = txTemplate.execute(status -> processOneDirtyRow(dirtyId));
+				PairMonthKey affectedKey =
+						txTemplate.execute(status -> processOneDirtyRow(dirtyId));
 				if (affectedKey != null) {
 					affectedPairMonths.add(affectedKey);
 				}
@@ -456,9 +457,12 @@ public class CountryMonthlyDirtyAggregationService {
 
 		PairIqrBounds iqrBounds = computePairIqrBounds(monthlyRows);
 		List<AccountAmountCount> filteredRows = filterByIqr(monthlyRows, iqrBounds);
-		List<AccountAmountCount> effectiveRows = filteredRows.isEmpty() ? monthlyRows : filteredRows;
+		List<AccountAmountCount> effectiveRows =
+				filteredRows.isEmpty() ? monthlyRows : filteredRows;
 		Set<Long> includedAccountIds =
-				effectiveRows.stream().map(AccountAmountCount::accountBookId).collect(java.util.stream.Collectors.toSet());
+				effectiveRows.stream()
+						.map(AccountAmountCount::accountBookId)
+						.collect(java.util.stream.Collectors.toSet());
 
 		BigDecimal totalMetricSum =
 				effectiveRows.stream()
@@ -515,7 +519,9 @@ public class CountryMonthlyDirtyAggregationService {
 			categoryTotalMap.merge(row.categoryOrdinal(), row.totalAmount(), BigDecimal::add);
 		}
 
-		List<com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity>
+		List<
+						com.genesis.unipocket.analysis.command.persistence.entity
+								.PairMonthlyCategoryAggregateEntity>
 				toSave = new ArrayList<>();
 		for (Category category : Category.values()) {
 			if (category == Category.INCOME) {

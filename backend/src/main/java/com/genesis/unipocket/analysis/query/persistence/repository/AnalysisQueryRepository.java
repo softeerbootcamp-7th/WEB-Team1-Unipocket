@@ -68,7 +68,8 @@ public class AnalysisQueryRepository {
 
 	private String amountJpql(CurrencyType type) {
 		return type == CurrencyType.BASE
-				? "COALESCE(e.exchangeInfo.baseCurrencyAmount, e.exchangeInfo.calculatedBaseCurrencyAmount)"
+				? "COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+						+ " e.exchangeInfo.calculatedBaseCurrencyAmount)"
 				: "e.exchangeInfo.localCurrencyAmount";
 	}
 }

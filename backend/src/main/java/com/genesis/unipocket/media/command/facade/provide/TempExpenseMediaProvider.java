@@ -1,5 +1,8 @@
 package com.genesis.unipocket.media.command.facade.provide;
 
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
@@ -18,9 +21,12 @@ public class TempExpenseMediaProvider implements TempExpenseMediaAccessService {
 	private final MediaObjectStorage mediaObjectStorage;
 
 	@Override
-	public PresignedUrlResult issueUploadPath(Long accountBookId, String originalFileName) {
+	public PresignedUrlResult issueUploadPath(Long accountBookId, String mimeType) {
 		String prefix = TEMP_EXPENSE_PREFIX + "/" + accountBookId;
-		return mediaObjectStorage.getPresignedUrl(prefix, originalFileName);
+		MediaContentType contentType =
+				MediaContentType.fromMimeType(mimeType)
+						.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
+		return mediaObjectStorage.getPresignedUrl(prefix, "upload" + contentType.getExt());
 	}
 
 	@Override

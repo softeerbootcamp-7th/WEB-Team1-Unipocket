@@ -18,7 +18,7 @@ import { columns } from '@/components/home-page/columns';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { type Expense, getData } from '@/components/landing-page/dummy';
 import ExpandableSheet from '@/components/layout/ExpandableSheet';
-import SidePanel from '@/components/side-panel/SidePanel';
+import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
 import { mockData } from '@/stores/mock';
@@ -88,7 +88,7 @@ const Homepage = () => {
             />
             <DataTableCellEditor />
             <SelectionActionBar />
-            <SidePanel />
+            <TableSidePanel />
           </DataTableProvider>
         </ExpandableSheet>
       </div>

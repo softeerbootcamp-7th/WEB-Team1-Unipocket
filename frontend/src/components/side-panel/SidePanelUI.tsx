@@ -9,7 +9,6 @@ import Chip from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
-import { useDataTable } from '@/components/data-table/context';
 import type { Expense } from '@/components/landing-page/dummy';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
@@ -24,17 +23,19 @@ const uploadTitleMap: Record<Exclude<SidePanelInputMode, 'manual'>, string> = {
   image: '사진',
 };
 
-// @TODO: API 연동 시 file / image 모드에서 파일 데이터 props로 받기
-interface SidePanelProps {
+interface SidePanelUIProps {
   mode?: SidePanelInputMode;
-  file?: File; // file / image 전용
+  isOpen: boolean;
+  onClose: () => void;
+  initialData?: Partial<Expense>;
 }
 
-const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
-  const { tableState, dispatch } = useDataTable();
-  const { activeRow } = tableState;
-
-  const isOpen = !!activeRow;
+const SidePanelUI = ({
+  mode,
+  isOpen,
+  onClose,
+  initialData,
+}: SidePanelUIProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const [title, setTitle] = useState('');
@@ -45,17 +46,16 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
 
   const [prevRowId, setPrevRowId] = useState<string | null>(null);
 
-  if (activeRow && activeRow.rowId !== prevRowId) {
-    const rowData = activeRow.value as Expense;
-    setPrevRowId(activeRow.rowId);
-    setTitle(rowData.merchantName || '');
-    setMemo(rowData.memo || '');
-    setSelectedDateTime(rowData.date ? new Date(rowData.date) : null);
+  if (initialData && initialData.rowId !== prevRowId) {
+    setPrevRowId(initialData.rowId);
+    setTitle(initialData.merchantName || '');
+    setMemo(initialData.memo || '');
+    setSelectedDateTime(initialData.date ? new Date(initialData.date) : null);
     setIsDateTimePickerOpen(false); // 다른 행 열면 달력은 무조건 닫히게
   }
 
   // activeRow.value 데이터를 기반으로 화면에 그릴 내용을 정의합니다.
-  const rowData = activeRow?.value as Expense | undefined;
+  const rowData = initialData as Expense | undefined;
 
   const valueItems: ValueItemProps[] = [
     {
@@ -108,12 +108,8 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
     // );
   };
 
-  const closePanel = () => {
-    dispatch({ type: 'SET_ACTIVE_ROW', payload: null });
-  };
-
   useClickOutside(panelRef, () => {
-    closePanel();
+    onClose();
   });
 
   return (
@@ -124,12 +120,9 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
         'flex flex-col gap-8 pb-50',
         'scrollbar h-dvh w-100 overflow-auto',
         'border-line-normal-normal bg-background-normal shadow-panel border-l',
-        // 애니메이션 속성
         'transform transition-transform duration-300 ease-out',
-        // 열려있으면 원래 위치로(0), 닫혀있으면 화면 우측 밖으로 100% 밀어냄
         isOpen ? 'translate-x-0' : 'translate-x-full',
-        // 완전히 닫혀있을 때 화면 밖에서 클릭을 가로채지 못하게 방어
-        !isOpen && 'pointer-events-none',
+        !isOpen && 'pointer-events-none', // 완전히 닫혀있을 때 화면 밖에서 클릭을 가로채지 못하게 방어
       )}
     >
       <div className="flex items-center justify-between p-4">
@@ -138,14 +131,16 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
           iconName="ChevronForward"
           width={24}
           height={24}
-          onClick={closePanel}
+          onClick={onClose}
         />
         <div className="flex items-center gap-2">
-          {/*<div className="flex gap-1 items-center">
+          {/* <div className="flex items-center gap-1">
             {isEditing ? (
               <>
-                <p className="label2-medium text-label-alternative">저장 중...</p>
-                <Icons.Loading className="h-3 w-3 animate-spin text-label-assistive" />
+                <p className="label2-medium text-label-alternative">
+                  저장 중...
+                </p>
+                <Icons.Loading className="text-label-assistive h-3 w-3 animate-spin" />
               </>
             ) : (
               <>
@@ -153,7 +148,7 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
                 <Icons.CheckmarkCircle className="h-3 w-3" />
               </>
             )}
-          </div>*/}
+          </div> */}
           <Button variant="solid">저장</Button>
           <Button>삭제</Button>
         </div>
@@ -161,12 +156,15 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
       <div className="flex flex-col gap-10 px-5">
         <textarea
           ref={titleRef}
-          className="heading1-bold text-label-strong placeholder:text-label-assistive resize-none overflow-hidden border-0 leading-tight outline-0"
+          className={clsx(
+            'heading1-bold text-label-strong placeholder:text-label-assistive',
+            'resize-none overflow-hidden border-0 leading-tight outline-0',
+          )}
           value={title}
-          placeholder="거래처를 입력해 주세요."
           onChange={(e) => {
             setTitle(e.target.value);
           }}
+          placeholder="거래처를 입력해 주세요."
         />
         <div className="relative">
           <ValueContainer items={valueItems} />
@@ -189,7 +187,6 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
           title="메모"
           placeholder="메모를 입력해 주세요."
         />
-
         {mode !== 'manual' && (
           <>
             <Divider style="thin" />
@@ -207,5 +204,4 @@ const SidePanel = ({ mode = 'manual' }: SidePanelProps) => {
     </div>
   );
 };
-
-export default SidePanel;
+export default SidePanelUI;

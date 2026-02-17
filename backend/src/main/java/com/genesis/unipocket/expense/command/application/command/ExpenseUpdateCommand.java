@@ -21,6 +21,7 @@ public record ExpenseUpdateCommand(
 		String memo,
 		OffsetDateTime occurredAt,
 		BigDecimal localCurrencyAmount,
+		BigDecimal baseCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		Long travelId,
 		CurrencyCode baseCurrencyCode) {}

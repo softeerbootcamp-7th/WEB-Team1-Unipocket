@@ -29,19 +29,19 @@ const UploadImage = ({ item, onRemove }: UploadImageProps) => {
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div
-        className={clsx(
-          'border-line-normal-normal h-26.75 w-20 rounded-lg border',
-          isUploading ? 'blur-sm' : '',
-        )}
-      >
-        {item.url && (
-          <img
-            src={item.url}
-            alt={item.name}
-            className="h-full w-full rounded-lg object-cover"
-          />
-        )}
+      <div className="border-line-normal-normal h-26.75 w-20 rounded-lg border">
+        <div className="h-full w-full overflow-hidden rounded-lg">
+          {item.url && (
+            <img
+              src={item.url}
+              alt={item.name}
+              className={clsx(
+                'h-full w-full object-cover',
+                isUploading && 'blur-sm',
+              )}
+            />
+          )}
+        </div>
       </div>
       <div className="flex w-full flex-col gap-1 text-center">
         <span className="caption1-medium text-label-normal truncate">

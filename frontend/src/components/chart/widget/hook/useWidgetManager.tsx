@@ -68,6 +68,29 @@ const useWidgetCRUD = (maxWidgets: number) => {
     return [...initialAvailableWidgets, ...removed];
   }, [addedWidgets, removedWidgets]);
 
+  // 특정 위치(targetOrder)에 위젯 삽입
+  const handleInsertWidget = useCallback(
+    (widgetType: WidgetType, targetOrder: number) => {
+      setAddedWidgets((prev) => {
+        // 용량 체크
+        if (getTotalSlots(prev) + getWidgetSpan(widgetType) > maxWidgets)
+          return prev;
+
+        const normalized = normalizeOrders(prev);
+        const shifted = normalized.map((w) =>
+          w.order >= targetOrder ? { ...w, order: w.order + 1 } : w,
+        );
+        return normalizeOrders([
+          ...shifted,
+          { order: targetOrder, widgetType },
+        ]);
+      });
+
+      setRemovedWidgets((prev) => prev.filter((t) => t !== widgetType));
+    },
+    [maxWidgets],
+  );
+
   // 위젯을 맨 뒤에 추가
   const handleAddWidget = useCallback(
     (widgetType: WidgetType) => {
@@ -83,6 +106,34 @@ const useWidgetCRUD = (maxWidgets: number) => {
     },
     [maxWidgets],
   );
+
+  // list 내에서 위젯 순서 이동
+  const handleMoveWidget = useCallback((fromOrder: number, toOrder: number) => {
+    // 같은 자리에 놓는 경우 (자기 왼쪽/오른쪽 gap) 무시
+    if (toOrder === fromOrder || toOrder === fromOrder + 1) return;
+
+    setAddedWidgets((prev) => {
+      const normalized = normalizeOrders(prev);
+
+      // 이동할 위젯 (타겟 위젯)
+      const widget = normalized.find((w) => w.order === fromOrder);
+      if (!widget) return prev;
+
+      // 타겟 위젯을 제외한 나머지 위젯들
+      const without = normalizeOrders(
+        normalized.filter((w) => w.order !== fromOrder),
+      );
+
+      // 순서 보정 (앞에서 타겟 위젯이 빠졌으니 -1)
+      const adjustedTo = toOrder > fromOrder ? toOrder - 1 : toOrder;
+
+      // 타겟 위치 이후 위젯들 순서 +1
+      const shifted = without.map((w) =>
+        w.order >= adjustedTo ? { ...w, order: w.order + 1 } : w,
+      );
+      return normalizeOrders([...shifted, { ...widget, order: adjustedTo }]);
+    });
+  }, []);
 
   const handleRemoveWidget = useCallback((order: number) => {
     setAddedWidgets((prev) => {
@@ -100,6 +151,8 @@ const useWidgetCRUD = (maxWidgets: number) => {
     displayWidgets,
     availableWidgets,
     handleAddWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     handleRemoveWidget,
   };
 };
@@ -135,9 +188,12 @@ export const useWidgetManager = () => {
     displayWidgets,
     availableWidgets,
     handleAddWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     handleRemoveWidget,
   } = useWidgetCRUD(maxWidgets);
 
+  // list 영역 전체 드롭존 (gap에 안 떨어졌을 때 fallback → 맨 뒤에 추가)
   const listDropZone = useDropZone({
     zone: 'list',
     onDropWidget: (data) => handleAddWidget(data.widgetType),
@@ -157,6 +213,8 @@ export const useWidgetManager = () => {
     displayWidgets,
     availableWidgets,
     handleAddWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     handleRemoveWidget,
     listDropZone,
     pickerDropZone,

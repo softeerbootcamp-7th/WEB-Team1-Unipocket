@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CountryDailyAnalysisPlanner {
+public class CountryBatchScheduleProcessor {
 
 	private final CountryBatchScheduleRepository scheduleRepository;
 	private final CountryMonthlyDirtyAggregationService monthlyDirtyAggregationService;

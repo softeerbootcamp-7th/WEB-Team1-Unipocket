@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 		name = "enabled",
 		havingValue = "true",
 		matchIfMissing = true)
-public class CountryDailyAnalysisScheduler {
+public class CountryBatchScheduler {
 
-	private final CountryDailyAnalysisPlanner planner;
+	private final CountryBatchScheduleProcessor planner;
 	private final AnalysisBatchProperties properties;
 
 	private final AtomicBoolean planning = new AtomicBoolean(false);

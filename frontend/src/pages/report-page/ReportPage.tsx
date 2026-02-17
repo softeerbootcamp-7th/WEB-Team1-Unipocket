@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { clsx } from 'clsx';
 
 import Switch from '@/components/common/Switch';
 import ReportCategory from '@/components/report-page/category/ReportCategory';
@@ -8,16 +7,18 @@ import ReportMonthly from '@/components/report-page/monthly/ReportMonthly';
 import ReportMyself from '@/components/report-page/myself/ReportMyself';
 import ReportProvider from '@/components/report-page/ReportProvider';
 
+import {
+  canGoToMonth,
+  dateToYearMonth,
+  getMaxYearMonth,
+  getNavButtonClass,
+  parseYearMonth,
+} from '@/pages/report-page/report.utils';
+
 import { type CurrencyType } from '@/types/currency';
 
 import { Icons } from '@/assets';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
-
-const parseYearMonth = (dateString: string | undefined) => {
-  if (!dateString) return null;
-  const [year, month] = dateString.split('-').map(Number);
-  return { year, month };
-};
 
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
@@ -36,28 +37,8 @@ const ReportPage = () => {
   const startYearMonth = parseYearMonth(startDate);
   const endYearMonth = parseYearMonth(endDate);
 
-  // 월 이동 가능 여부 체크 함수
-  const canGoToMonth = (offset: number): boolean => {
-    const targetDate = new Date(selectedDate);
-    targetDate.setMonth(targetDate.getMonth() + offset);
-    const targetYear = targetDate.getFullYear();
-    const targetMonth = targetDate.getMonth() + 1;
-
-    if (offset < 0) {
-      if (!startYearMonth) return true;
-      return (
-        targetYear > startYearMonth.year ||
-        (targetYear === startYearMonth.year &&
-          targetMonth >= startYearMonth.month)
-      );
-    } else {
-      if (!endYearMonth) return true;
-      return (
-        targetYear < endYearMonth.year ||
-        (targetYear === endYearMonth.year && targetMonth <= endYearMonth.month)
-      );
-    }
-  };
+  const nowYearMonth = dateToYearMonth(now);
+  const maxYearMonth = getMaxYearMonth(endYearMonth, nowYearMonth);
 
   const handleMonthChange = (offset: number) => {
     setSelectedDate((prev) => {
@@ -67,14 +48,13 @@ const ReportPage = () => {
     });
   };
 
-  const canGoPrev = canGoToMonth(-1);
-  const canGoNext = canGoToMonth(1);
-
-  const getNavButtonClass = (enabled: boolean) =>
-    clsx('size-6', {
-      'text-label-alternative cursor-pointer': enabled,
-      'text-label-disable': !enabled,
-    });
+  const canGoPrev = canGoToMonth(
+    selectedDate,
+    -1,
+    startYearMonth,
+    maxYearMonth,
+  );
+  const canGoNext = canGoToMonth(selectedDate, 1, startYearMonth, maxYearMonth);
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;

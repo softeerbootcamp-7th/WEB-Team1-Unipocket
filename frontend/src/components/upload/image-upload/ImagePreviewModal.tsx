@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 interface ImagePreviewModalProps {
   isOpen: boolean;
   imageUrl: string;
@@ -11,12 +13,30 @@ const ImagePreviewModal = ({
   imageName,
   onClose,
 }: ImagePreviewModalProps) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div
       className="bg-dimmer-strong/60 fixed inset-0 z-100 flex items-center justify-center"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <img
         src={imageUrl}

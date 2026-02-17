@@ -48,10 +48,15 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
     }, 2000);
   };
 
+  const handleClose = () => {
+    setItems([]);
+    onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onAction={() => {}}
       className="px-8 pb-4"
       confirmButton={{ label: '결과 확인' }}

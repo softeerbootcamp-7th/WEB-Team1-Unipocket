@@ -13,23 +13,20 @@ interface ImageUploadModalProps {
   onClose: () => void;
 }
 
+const MAX_TOTAL = uploadPolicy.image.maxCount;
+
 const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
   const [items, setItems] = useState<UploadImageItem[]>([]);
   const hasItems = items.length > 0;
-  const MAX_TOTAL = uploadPolicy.image.maxCount;
 
   const handleFilesSelected = (files: File[]) => {
-    const remaining = MAX_TOTAL - items.length;
-
-    if (remaining <= 0) {
+    if (items.length + files.length > MAX_TOTAL) {
       //@TODO: Toast로 변경
       alert(`최대 ${MAX_TOTAL}개까지 업로드할 수 있어요.`);
       return;
     }
 
-    const limitedFiles = files.slice(0, remaining);
-
-    const newItems: UploadImageItem[] = limitedFiles.map((file) => ({
+    const newItems: UploadImageItem[] = files.map((file) => ({
       id: crypto.randomUUID(),
       name: file.name,
       url: URL.createObjectURL(file),

@@ -52,9 +52,9 @@ const UploadImage = ({ item, onRemove }: UploadImageProps) => {
         </span>
       </div>
 
-      {!isUploading && isHover && (
+      {isHover && (
         <Icons.CloseButton
-          className="absolute top-1 right-0.5 size-6 cursor-pointer"
+          className="absolute top-1 right-[2.5px] size-6 cursor-pointer"
           style={{
             filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))',
           }}
@@ -62,6 +62,12 @@ const UploadImage = ({ item, onRemove }: UploadImageProps) => {
             onRemove(item.id);
           }}
         />
+      )}
+
+      {!isUploading && isHover && (
+        <div className="rounded-modal-6 bg-label-alternative absolute bottom-16.5 left-4 flex size-6 cursor-pointer items-center justify-center backdrop-blur-xs">
+          <Icons.Expand className="text-inverse-label size-4" />
+        </div>
       )}
     </div>
   );

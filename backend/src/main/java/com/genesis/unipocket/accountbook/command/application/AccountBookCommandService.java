@@ -9,6 +9,7 @@ import com.genesis.unipocket.accountbook.command.application.validator.AccountBo
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -39,6 +40,7 @@ public class AccountBookCommandService {
 	private final UserCommandRepository userRepository;
 	private final AccountBookValidator validator;
 	private final ExchangeRateService exchangeRateService;
+	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 
 	@Transactional
 	public AccountBookResult create(CreateAccountBookCommand command) {
@@ -81,6 +83,8 @@ public class AccountBookCommandService {
 
 		AccountBookEntity entity =
 				findAndVerifyOwnership(command.accountBookId(), command.userId());
+		CountryCode previousLocalCountryCode = entity.getLocalCountryCode();
+		CountryCode previousBaseCountryCode = entity.getBaseCountryCode();
 
 		entity.updateBudget(command.budget());
 		entity.updateTitle(command.title());
@@ -88,6 +92,12 @@ public class AccountBookCommandService {
 		entity.updateCountryCodes(command.localCountryCode(), command.baseCountryCode());
 
 		validator.validate(entity);
+		boolean countryChanged =
+				previousLocalCountryCode != entity.getLocalCountryCode()
+						|| previousBaseCountryCode != entity.getBaseCountryCode();
+		if (countryChanged) {
+			analysisMonthlyDirtyMarkerService.markDirtyAllMonths(entity.getId());
+		}
 
 		return AccountBookResult.of(entity);
 	}

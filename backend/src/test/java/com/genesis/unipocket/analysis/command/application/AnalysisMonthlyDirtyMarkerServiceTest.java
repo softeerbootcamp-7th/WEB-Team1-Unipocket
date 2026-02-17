@@ -11,6 +11,7 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 
 	@Mock private AccountBookCommandRepository accountBookRepository;
 	@Mock private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
+	@Mock private ExpenseRepository expenseRepository;
 
 	@InjectMocks private AnalysisMonthlyDirtyMarkerService service;
 
@@ -95,5 +97,35 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 
 		verify(accountBookRepository, never()).findById(any());
 		verify(monthlyDirtyRepository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("가계부 전체 월 dirty 마킹은 최소/최대 발생월 범위를 모두 생성한다")
+	void markDirtyAllMonths_marksFullMonthRange() {
+		Long accountBookId = 3L;
+		AccountBookEntity accountBook = org.mockito.Mockito.mock(AccountBookEntity.class);
+		when(accountBook.getLocalCountryCode()).thenReturn(CountryCode.KR);
+		when(accountBookRepository.findById(accountBookId)).thenReturn(Optional.of(accountBook));
+		when(expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId))
+				.thenReturn(
+						new Object[] {
+							OffsetDateTime.parse("2026-01-05T10:00:00+09:00"),
+							OffsetDateTime.parse("2026-03-17T10:00:00+09:00")
+						});
+		when(monthlyDirtyRepository.findByCountryCodeAndAccountBookIdAndTargetYearMonth(
+						eq(CountryCode.KR), eq(accountBookId), any(LocalDate.class)))
+				.thenReturn(Optional.empty());
+
+		service.markDirtyAllMonths(accountBookId);
+
+		ArgumentCaptor<LocalDate> monthCaptor = ArgumentCaptor.forClass(LocalDate.class);
+		verify(monthlyDirtyRepository, org.mockito.Mockito.times(3))
+				.findByCountryCodeAndAccountBookIdAndTargetYearMonth(
+						eq(CountryCode.KR), eq(accountBookId), monthCaptor.capture());
+		assertThat(monthCaptor.getAllValues())
+				.containsExactly(
+						LocalDate.of(2026, 1, 1),
+						LocalDate.of(2026, 2, 1),
+						LocalDate.of(2026, 3, 1));
 	}
 }

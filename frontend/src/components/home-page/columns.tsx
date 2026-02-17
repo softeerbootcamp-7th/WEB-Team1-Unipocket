@@ -1,10 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import type { TableUIAction } from '@/components/data-table/type';
 import type { Expense } from '@/components/landing-page/dummy';
+import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
-
-import { cn } from '@/lib/utils';
 
 export const columns: ColumnDef<Expense>[] = [
   {
@@ -29,39 +27,14 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'merchantName',
     header: () => <>거래처</>,
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as {
-        dispatch: React.Dispatch<TableUIAction>;
-      };
-
-      const handleOpenSidePanel = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation();
-        e.currentTarget.blur();
-        meta?.dispatch({
-          type: 'SET_ACTIVE_ROW',
-          payload: {
-            rowId: row.id,
-            value: row.original,
-          },
-        });
-      };
-
-      return (
-        <div className="flex items-center gap-2">
-          <span>{row.getValue('merchantName')}</span>
-          <button
-            onClick={handleOpenSidePanel}
-            className={cn(
-              'rounded-modal-6 shadow-semantic-emphasize bg-background-normal px-1.25 py-1',
-              'label2-medium text-label-neutral',
-              'invisible cursor-pointer group-hover/row:visible focus:visible',
-            )}
-          >
-            열기
-          </button>
+    cell: ({ row, table }) => (
+      <div className="relative flex items-center">
+        <span>{row.getValue('merchantName')}</span>
+        <div className="absolute right-0 z-10">
+          <SidePanelButton row={row} table={table} />
         </div>
-      );
-    },
+      </div>
+    ),
   },
   {
     accessorKey: 'categoryCode',

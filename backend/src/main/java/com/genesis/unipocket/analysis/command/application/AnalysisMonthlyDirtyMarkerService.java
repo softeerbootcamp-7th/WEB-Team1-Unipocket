@@ -146,6 +146,13 @@ public class AnalysisMonthlyDirtyMarkerService {
 		if (value instanceof java.sql.Timestamp timestamp) {
 			return timestamp.toLocalDateTime().atOffset(ZoneOffset.UTC);
 		}
-		return OffsetDateTime.parse(value.toString());
+		if (value instanceof java.util.Date date) {
+			return date.toInstant().atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof String stringValue) {
+			return OffsetDateTime.parse(stringValue);
+		}
+		throw new IllegalStateException(
+				"Unsupported type for date-time conversion: " + value.getClass().getName());
 	}
 }

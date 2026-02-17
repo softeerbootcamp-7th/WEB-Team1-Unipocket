@@ -438,8 +438,14 @@ public class AnalysisMonthlySummaryQueryService {
 			offsetDateTime = value;
 		} else if (occurredAt instanceof LocalDateTime value) {
 			offsetDateTime = value.atOffset(ZoneOffset.UTC);
+		} else if (occurredAt instanceof java.sql.Timestamp value) {
+			offsetDateTime = value.toLocalDateTime().atOffset(ZoneOffset.UTC);
+		} else if (occurredAt instanceof String value) {
+			offsetDateTime = OffsetDateTime.parse(value);
 		} else {
-			offsetDateTime = OffsetDateTime.parse(occurredAt.toString());
+			throw new IllegalStateException(
+					"Unsupported type for date-time conversion: "
+							+ occurredAt.getClass().getName());
 		}
 		return offsetDateTime.atZoneSameInstant(zoneId).toLocalDate();
 	}

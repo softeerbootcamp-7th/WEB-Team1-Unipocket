@@ -5,11 +5,10 @@ import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
-import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +33,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ExpenseQueryService {
 
+	private static final String DISPLAY_BASE_AMOUNT_SORT_EXPRESSION =
+			"COALESCE(exchangeInfo.baseCurrencyAmount, exchangeInfo.calculatedBaseCurrencyAmount)";
+	private static final String SIGNED_DISPLAY_BASE_AMOUNT_SORT_EXPRESSION =
+			"CASE WHEN category = com.genesis.unipocket.global.common.enums.Category.INCOME THEN "
+					+ DISPLAY_BASE_AMOUNT_SORT_EXPRESSION
+					+ " ELSE (-"
+					+ DISPLAY_BASE_AMOUNT_SORT_EXPRESSION
+					+ ") END";
 	private static final Set<String> ALLOWED_SORT_PROPERTIES =
 			Set.of("occurredAt", "baseCurrencyAmount");
 
@@ -52,55 +60,52 @@ public class ExpenseQueryService {
 
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 
-		Sort refinedSort =
-				Sort.by(
-						pageable.getSort().stream()
-								.map(
-										order -> {
-											if (!ALLOWED_SORT_PROPERTIES.contains(
-													order.getProperty())) {
-												throw new BusinessException(
-														ErrorCode.EXPENSE_INVALID_SORT);
-											}
+		Sort refinedSort = null;
+		for (Sort.Order order : pageable.getSort()) {
+			if (!ALLOWED_SORT_PROPERTIES.contains(order.getProperty())) {
+				throw new BusinessException(ErrorCode.EXPENSE_INVALID_SORT);
+			}
 
-											if ("baseCurrencyAmount".equals(order.getProperty())) {
-												return new Sort.Order(
-														order.getDirection(),
-														"exchangeInfo.baseCurrencyAmount");
-											}
-											return order;
-										})
-								.toList());
+			Sort mappedSort =
+					"baseCurrencyAmount".equals(order.getProperty())
+							? JpaSort.unsafe(
+									order.getDirection(), SIGNED_DISPLAY_BASE_AMOUNT_SORT_EXPRESSION)
+							: Sort.by(new Sort.Order(order.getDirection(), order.getProperty()));
+
+			refinedSort = refinedSort == null ? mappedSort : refinedSort.and(mappedSort);
+		}
+		if (refinedSort == null) {
+			refinedSort = Sort.by(Sort.Order.desc("occurredAt"));
+		}
 
 		Pageable refinedPageable =
 				PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), refinedSort);
 
-		Page<ExpenseEntity> entities;
+		var startDate =
+				filter != null && filter.startDate() != null
+						? filter.startDate().withOffsetSameInstant(ZoneOffset.UTC)
+						: null;
+		var endDate =
+				filter != null && filter.endDate() != null
+						? filter.endDate().withOffsetSameInstant(ZoneOffset.UTC)
+						: null;
+		var category = filter != null ? filter.category() : null;
+		var minAmount = filter != null ? filter.minAmount() : null;
+		var maxAmount = filter != null ? filter.maxAmount() : null;
+		var merchantName = filter != null ? filter.merchantName() : null;
+		var travelId = filter != null ? filter.travelId() : null;
 
-		if (filter == null || isFilterEmpty(filter)) {
-			entities = expenseRepository.findByAccountBookId(accountBookId, refinedPageable);
-		} else {
-			var startDate =
-					filter.startDate() != null
-							? filter.startDate().withOffsetSameInstant(ZoneOffset.UTC)
-							: null;
-			var endDate =
-					filter.endDate() != null
-							? filter.endDate().withOffsetSameInstant(ZoneOffset.UTC)
-							: OffsetDateTime.now(ZoneOffset.UTC);
-
-			entities =
-					expenseRepository.findByFilters(
-							accountBookId,
-							startDate,
-							endDate,
-							filter.category(),
-							filter.minAmount(),
-							filter.maxAmount(),
-							filter.merchantName(),
-							filter.travelId(),
-							refinedPageable);
-		}
+		Page<ExpenseEntity> entities =
+				expenseRepository.findByFilters(
+						accountBookId,
+						startDate,
+						endDate,
+						category,
+						minAmount,
+						maxAmount,
+						merchantName,
+						travelId,
+						refinedPageable);
 
 		return entities.map(this::enrichWithCardInfo);
 	}
@@ -124,16 +129,6 @@ public class ExpenseQueryService {
 		}
 
 		return entity;
-	}
-
-	private boolean isFilterEmpty(ExpenseSearchFilter filter) {
-		return filter.startDate() == null
-				&& filter.endDate() == null
-				&& filter.category() == null
-				&& filter.minAmount() == null
-				&& filter.maxAmount() == null
-				&& filter.merchantName() == null
-				&& filter.travelId() == null;
 	}
 
 	public List<String> searchMerchantNames(

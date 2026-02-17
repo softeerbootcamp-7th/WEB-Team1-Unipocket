@@ -1,11 +1,11 @@
 package com.genesis.unipocket.expense.query.presentation.response;
 
 import com.genesis.unipocket.expense.command.presentation.response.PaymentMethodResponse;
-import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
+import com.genesis.unipocket.expense.presentation.support.AmountFormatters;
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
-import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
@@ -23,9 +23,9 @@ public record ExpenseResponse(
 		Category category,
 		PaymentMethodResponse paymentMethod,
 		Instant occurredAt,
-		BigDecimal localCurrencyAmount,
+		String localCurrencyAmount,
 		CurrencyCode localCurrencyCode,
-		BigDecimal baseCurrencyAmount,
+		String baseCurrencyAmount,
 		CurrencyCode baseCurrencyCode,
 		String memo,
 		ExpenseSource source,
@@ -35,21 +35,21 @@ public record ExpenseResponse(
 
 	public static ExpenseResponse from(ExpenseResult dto) {
 		return new ExpenseResponse(
-				dto.id(),
+				dto.expenseId(),
 				dto.accountBookId(),
 				dto.travelId(),
-				dto.merchantName(),
+				dto.displayMerchantName(),
 				dto.displayMerchantName(),
 				dto.category(),
-				PaymentMethodResponse.from(
-						dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),
-				dto.occurredAt().toInstant(),
-				dto.localCurrencyAmount(),
-				dto.localCurrencyCode(),
-				dto.baseCurrencyAmount(),
-				dto.baseCurrencyCode(),
-				dto.memo(),
-				dto.expenseSource(),
+					PaymentMethodResponse.from(
+							dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),
+					dto.occurredAt().toInstant(),
+					AmountFormatters.toAmountString(dto.localCurrencyAmount()),
+					dto.localCurrencyCode(),
+					AmountFormatters.toAmountString(dto.baseCurrencyAmount()),
+					dto.baseCurrencyCode(),
+					dto.memo(),
+					dto.expenseSource(),
 				dto.approvalNumber(),
 				dto.cardNumber(),
 				dto.fileLink());

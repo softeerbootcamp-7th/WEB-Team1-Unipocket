@@ -6,7 +6,7 @@ import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResp
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
 import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
-import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;

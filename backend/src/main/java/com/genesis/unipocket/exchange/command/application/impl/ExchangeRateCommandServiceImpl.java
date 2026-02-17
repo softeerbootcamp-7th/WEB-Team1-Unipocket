@@ -31,7 +31,7 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 	private static final int MAX_BACKTRACK_DAYS = 3650;
 
 	@Value("${exchange.yahoo.chart-url:https://query1.finance.yahoo.com/v8/finance/chart/{symbol}}")
-	private String yahooChartUrl;
+	private String yahooChartUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}";
 
 	private final ExchangeRateRepository exchangeRateRepository;
 	private final ExchangeRateQueryService exchangeRateQueryService;

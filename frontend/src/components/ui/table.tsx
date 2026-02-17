@@ -2,16 +2,11 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Table({
-  className,
-  height,
-  ...props
-}: React.ComponentProps<'table'> & { height?: number }) {
+function Table({ ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
-      className={cn('w-full overflow-auto', className)}
-      style={{ height }}
+      className="scrollbar relative min-h-0 w-full flex-1 overflow-y-auto"
     >
       <table data-slot="table" className="w-full" {...props} />
     </div>
@@ -23,7 +18,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
     <thead
       data-slot="table-header"
       className={cn(
-        '[&_tr]:border-line-solid-neutral caption1-medium bg-background-normal',
+        '[&_tr]:border-line-solid-neutral caption1-medium bg-background-normal sticky top-0 z-20',
         className,
       )}
       {...props}

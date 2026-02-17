@@ -15,13 +15,13 @@ import {
 interface DataTableProps<TData> {
   groupBy?: (row: TData) => string;
   enableGroupSelection?: boolean;
-  height?: number;
+  blankFallbackText?: string;
 }
 
 const DataTable = <TData,>({
   groupBy,
-  height,
   enableGroupSelection = true,
+  blankFallbackText,
 }: DataTableProps<TData>) => {
   const { table, dispatch } = useDataTable();
   const rows = table.getRowModel().rows as Row<TData>[];
@@ -60,8 +60,8 @@ const DataTable = <TData,>({
   ); // dispatch가 바뀌지 않는 한 함수 재사용
 
   return (
-    <Table height={height}>
-      <TableHeader className="sticky top-0 z-10">
+    <Table>
+      <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
@@ -151,12 +151,14 @@ const DataTable = <TData,>({
             );
           })
         ) : (
-          <TableRow>
+          <TableRow className="hover:bg-background-normal!">
             <TableCell
               colSpan={table.getVisibleLeafColumns().length}
-              className="h-24 text-center"
+              className="text-center"
             >
-              No results.
+              <h1 className="headline1-medium text-label-alternative">
+                {blankFallbackText || '데이터가 없습니다'}
+              </h1>
             </TableCell>
           </TableRow>
         )}

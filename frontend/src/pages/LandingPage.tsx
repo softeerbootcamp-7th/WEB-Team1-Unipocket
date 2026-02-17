@@ -186,7 +186,6 @@ const DemoSection = () => {
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
-                      height={480}
                       enableGroupSelection={false}
                       groupBy={(row: Expense) =>
                         new Date(row.date).toLocaleDateString('ko-KR', {
@@ -211,7 +210,6 @@ const DemoSection = () => {
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
-                      height={480}
                       enableGroupSelection={false}
                       groupBy={(row: Expense) =>
                         new Date(row.date).toLocaleDateString('ko-KR', {

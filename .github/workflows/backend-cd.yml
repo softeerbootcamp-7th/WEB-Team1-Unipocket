@@ -30,10 +30,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      # jar를 EC2로 전송 및 배포 스크립트 실행
       - name: Deploy to EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          # 전체 내용을 환경 변수로 안전하게 담음
+          RAW_ENV_FILE: ${{ secrets.ENV_FILE }}
+          SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
         run: |
           set -e
           

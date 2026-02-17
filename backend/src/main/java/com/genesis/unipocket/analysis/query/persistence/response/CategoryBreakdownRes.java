@@ -6,9 +6,9 @@ import java.util.List;
 
 public record CategoryBreakdownRes(
 		Long accountBookId,
-		int year,
+		String year,
 		String month,
-		CurrencyType currencyView,
+		CurrencyType currencyType,
 		List<CategoryItem> categories,
 		String myTotal,
 		String avgTotal,

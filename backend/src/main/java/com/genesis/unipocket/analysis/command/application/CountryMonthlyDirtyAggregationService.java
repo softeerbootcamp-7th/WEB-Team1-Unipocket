@@ -18,6 +18,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.ExpenseRow;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
+import com.genesis.unipocket.analysis.common.util.QuantileUtil;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
@@ -259,10 +260,13 @@ public class CountryMonthlyDirtyAggregationService {
 		if (sorted.size() < properties.getOutlierMinSampleSize()) {
 			return Bounds.notApplicable();
 		}
-		double lowerP = normalizeTailP(properties.getOutlierLowerTailP());
-		double upperP = normalizeTailP(properties.getOutlierUpperTailP());
-		BigDecimal lower = quantile(sorted, lowerP);
-		BigDecimal upper = quantile(sorted, 1d - upperP);
+		BigDecimal q1 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.25d, MC);
+		BigDecimal q3 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.75d, MC);
+		BigDecimal iqr = q3.subtract(q1, MC);
+		BigDecimal delta =
+				iqr.multiply(BigDecimal.valueOf(properties.getOutlierIqrMultiplier()), MC);
+		BigDecimal lower = q1.subtract(delta, MC);
+		BigDecimal upper = q3.add(delta, MC);
 
 		lower = lower.max(properties.getCleanedMinAmount());
 		upper = upper.min(properties.getCleanedMaxAmount());
@@ -427,33 +431,6 @@ public class CountryMonthlyDirtyAggregationService {
 			throw new IllegalArgumentException("Invalid category ordinal: " + ordinal);
 		}
 		return Category.values()[ordinal];
-	}
-
-	private double normalizeTailP(double p) {
-		if (Double.isNaN(p) || p < 0d) {
-			return 0d;
-		}
-		return Math.min(p, 0.49d);
-	}
-
-	private BigDecimal quantile(List<BigDecimal> sorted, double p) {
-		if (sorted.isEmpty()) {
-			return BigDecimal.ZERO;
-		}
-		if (sorted.size() == 1) {
-			return sorted.get(0);
-		}
-		double clampedP = Math.max(0d, Math.min(1d, p));
-		double idx = clampedP * (sorted.size() - 1);
-		int lowerIdx = (int) Math.floor(idx);
-		int upperIdx = (int) Math.ceil(idx);
-		BigDecimal lower = sorted.get(lowerIdx);
-		BigDecimal upper = sorted.get(upperIdx);
-		if (lowerIdx == upperIdx) {
-			return lower;
-		}
-		BigDecimal ratio = BigDecimal.valueOf(idx - lowerIdx);
-		return lower.add(upper.subtract(lower, MC).multiply(ratio, MC), MC);
 	}
 
 	private LocalDateTime toUtc(LocalDate localDate, ZoneId zoneId) {

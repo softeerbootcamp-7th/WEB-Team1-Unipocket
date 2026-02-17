@@ -561,6 +561,38 @@ public class AnalysisBatchAggregationRepository {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<AccountAmountCount> aggregatePeerMonthlyTotalByAccountFromMonthly(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			Long excludedAccountBookId,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT r.account_book_id, COALESCE(SUM(r.metric_value), 0), COUNT(*)
+							FROM account_monthly_aggregate r
+							JOIN account_book ab ON r.account_book_id = ab.account_book_id
+							WHERE ab.local_country_code = :localCountryCode
+								AND ab.base_country_code = :baseCountryCode
+								AND r.target_year_month = :monthStart
+								AND r.metric_type = :metricType
+								AND r.quality_type = :qualityType
+								AND r.account_book_id <> :excludedAccountBookId
+							GROUP BY r.account_book_id
+							""")
+						.setParameter("localCountryCode", localCountryCode.name())
+						.setParameter("baseCountryCode", baseCountryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("metricType", metricType.name())
+						.setParameter("qualityType", qualityType.name())
+						.setParameter("excludedAccountBookId", excludedAccountBookId)
+						.getResultList();
+		return rows.stream().map(this::toAccountAmountCount).toList();
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<CategoryAmountCount> aggregatePeerMonthlyCategoryFromMonthly(
 			CountryCode localCountryCode,
 			CountryCode baseCountryCode,
@@ -590,6 +622,38 @@ public class AnalysisBatchAggregationRepository {
 						.setParameter("excludedAccountBookId", excludedAccountBookId)
 						.getResultList();
 		return rows.stream().map(this::toCategoryAmountCount).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AccountCategoryAmountCount> aggregatePeerMonthlyCategoryByAccountFromMonthly(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			Long excludedAccountBookId,
+			LocalDate monthStart,
+			AnalysisQualityType qualityType,
+			CurrencyType currencyType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT r.account_book_id, r.category, COALESCE(SUM(r.total_amount), 0), COALESCE(SUM(r.expense_count), 0)
+							FROM account_monthly_category_aggregate r
+							JOIN account_book ab ON r.account_book_id = ab.account_book_id
+							WHERE ab.local_country_code = :localCountryCode
+								AND ab.base_country_code = :baseCountryCode
+								AND r.target_year_month = :monthStart
+								AND r.quality_type = :qualityType
+								AND r.currency_type = :currencyType
+								AND r.account_book_id <> :excludedAccountBookId
+							GROUP BY r.account_book_id, r.category
+							""")
+						.setParameter("localCountryCode", localCountryCode.name())
+						.setParameter("baseCountryCode", baseCountryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("qualityType", qualityType.name())
+						.setParameter("currencyType", currencyType.name())
+						.setParameter("excludedAccountBookId", excludedAccountBookId)
+						.getResultList();
+		return rows.stream().map(this::toAccountCategoryAmountCount).toList();
 	}
 
 	public AmountCount aggregateCountryMonthlyFromDaily(

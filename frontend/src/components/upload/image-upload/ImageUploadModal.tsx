@@ -1,4 +1,10 @@
+import { useState } from 'react';
+import { clsx } from 'clsx';
+
+import Divider from '@/components/common/Divider';
 import Modal from '@/components/modal/Modal';
+import UploadGallery from '@/components/upload/image-upload/UploadGallery';
+import type { UploadImageItem } from '@/components/upload/image-upload/UploadImage';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
 interface ImageUploadModalProps {
@@ -7,6 +13,32 @@ interface ImageUploadModalProps {
 }
 
 const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
+  const [items, setItems] = useState<UploadImageItem[]>([]);
+  const hasItems = items.length > 0;
+
+  const handleFilesSelected = (files: File[]) => {
+    const newItems: UploadImageItem[] = files.map((file) => ({
+      id: crypto.randomUUID(),
+      name: file.name,
+      url: URL.createObjectURL(file),
+      status: 'uploading',
+    }));
+
+    setItems((prev) => [...prev, ...newItems]);
+
+    // @TODO: s3 업로드 로직 구현 후 테스트 코드 제거
+    // 테스트용: 2초 뒤 done 처리
+    setTimeout(() => {
+      setItems((prev) =>
+        prev.map((item) =>
+          newItems.find((n) => n.id === item.id)
+            ? { ...item, status: 'done' }
+            : item,
+        ),
+      );
+    }, 2000);
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -26,8 +58,34 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
             </span>
           </div>
         </div>
-        <div className="mb-2.5 flex h-121.5 items-center justify-center">
-          <UploadBox type="image" />
+        <div
+          className={clsx(
+            'mb-2.5 flex h-121.5 gap-5 transition-all',
+            hasItems ? 'justify-start' : 'justify-center',
+          )}
+        >
+          <div
+            className={clsx(
+              'transition-all duration-200',
+              hasItems ? 'w-md' : 'w-full',
+            )}
+          >
+            <UploadBox type="image" onFilesSelected={handleFilesSelected} />
+          </div>
+
+          {hasItems && (
+            <>
+              <Divider style="vertical" />
+              <div className="w-md">
+                <UploadGallery
+                  items={items}
+                  onRemove={(id) =>
+                    setItems((prev) => prev.filter((item) => item.id !== id))
+                  }
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </Modal>

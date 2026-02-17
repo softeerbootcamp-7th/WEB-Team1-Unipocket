@@ -79,9 +79,11 @@ public class TemporaryExpenseSingleConversionTxService {
 						null,
 						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
 						temp.getLocalCurrencyAmount(),
-                        temp.getLocalCountryCode() != null
-                                ? temp.getLocalCountryCode()
-                                : accountBookRateInfoProvider.getRateInfo(accountBookId).localCurrencyCode(),
+						temp.getLocalCountryCode() != null
+								? temp.getLocalCountryCode()
+								: accountBookRateInfoProvider
+										.getRateInfo(accountBookId)
+										.localCurrencyCode(),
 						resolvedAmount.baseCurrencyAmount(),
 						resolvedBaseCurrencyCode,
 						resolvedAmount.calculatedBaseCurrencyAmount(),

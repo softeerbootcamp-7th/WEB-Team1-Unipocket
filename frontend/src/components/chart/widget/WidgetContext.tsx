@@ -1,16 +1,26 @@
 import { createContext, useContext } from 'react';
 
+import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
+
 interface WidgetContextType {
-  isEditMode: boolean;
-  // 추후 위젯 삭제 핸들러 등 추가 예정
-  // onDeleteWidget?: (id: number) => void;
+  isWidgetEditMode: boolean;
+  toggleEditMode: () => void;
+}
+
+interface WidgetItemContextType {
+  dragData?: DragData;
+  onRemove?: () => void;
 }
 
 export const WidgetContext = createContext<WidgetContextType | null>(null);
+export const WidgetItemContext = createContext<WidgetItemContextType>({});
 
 export const useWidgetContext = () => {
   const context = useContext(WidgetContext);
-  // Provider 밖에서 사용할 경우를 대비한 안전장치 (선택사항)
-  if (!context) return { isEditMode: false };
+  if (!context) return { isWidgetEditMode: false, toggleEditMode: () => {} };
   return context;
+};
+
+export const useWidgetItemContext = () => {
+  return useContext(WidgetItemContext);
 };

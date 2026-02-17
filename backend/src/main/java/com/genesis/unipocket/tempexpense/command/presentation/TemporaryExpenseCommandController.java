@@ -1,22 +1,20 @@
 package com.genesis.unipocket.tempexpense.command.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
-import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
+import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.TemporaryExpenseCommandFacade;
-import com.genesis.unipocket.tempexpense.command.presentation.request.BatchConvertRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.BatchParseRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
-import com.genesis.unipocket.tempexpense.command.presentation.response.BatchConvertResponse;
+import com.genesis.unipocket.tempexpense.command.presentation.response.BatchConvertStartResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.BatchParseResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.PresignedUrlResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseMetaBulkUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -59,7 +57,8 @@ public class TemporaryExpenseCommandController {
 				temporaryExpenseCommandFacade.createPresignedUrl(
 						accountBookId,
 						request.fileName(),
-						request.fileType(),
+						request.mimeType(),
+						request.uploadType(),
 						request.tempExpenseMetaId(),
 						userId);
 
@@ -68,40 +67,25 @@ public class TemporaryExpenseCommandController {
 
 	@Operation(
 			summary = "임시지출 확정",
-			description = "파일 메타 단위로 임시지출을 확정 변환합니다. tempExpenseIds가 있으면 부분 확정이 가능합니다.")
+			description = "메타 단위로 임시지출 전체를 비동기로 확정 변환하고 진행 조회용 taskId를 반환합니다.")
 	@PostMapping("/temporary-expense-metas/{tempExpenseMetaId}/confirm")
-	public ResponseEntity<BatchConvertResponse> confirm(
+	public ResponseEntity<BatchConvertStartResponse> confirm(
 			@PathVariable Long accountBookId,
 			@PathVariable Long tempExpenseMetaId,
-			@RequestBody(required = false) BatchConvertRequest request,
 			@LoginUser UUID userId) {
 
-		BatchConversionResult result =
-				temporaryExpenseCommandFacade.confirm(
-						accountBookId,
-						tempExpenseMetaId,
-						request != null ? request.tempExpenseIds() : null,
-						userId);
+		ConfirmStartResult result =
+				temporaryExpenseCommandFacade.confirm(accountBookId, tempExpenseMetaId, userId);
 
-		List<BatchConvertResponse.ConversionResult> responseResults =
-				result.results().stream()
-						.map(
-								r ->
-										new BatchConvertResponse.ConversionResult(
-												r.tempExpenseId(),
-												r.expenseId(),
-												r.status(),
-												r.reason()))
-						.toList();
-
-		BatchConvertResponse response =
-				new BatchConvertResponse(
-						result.totalRequested(),
-						result.successCount(),
-						result.failedCount(),
-						responseResults);
-
-		return ResponseEntity.ok(response);
+		BatchConvertStartResponse response =
+				new BatchConvertStartResponse(
+						result.taskId(),
+						result.totalExpenses(),
+						"/account-books/"
+								+ accountBookId
+								+ "/temporary-expenses/parse-status/"
+								+ result.taskId());
+		return ResponseEntity.accepted().body(response);
 	}
 
 	@Operation(
@@ -152,5 +136,19 @@ public class TemporaryExpenseCommandController {
 			@LoginUser UUID userId) {
 		temporaryExpenseCommandFacade.deleteMeta(accountBookId, tempExpenseMetaId, userId);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@Operation(summary = "임시지출 단건 삭제", description = "메타/파일 범위에 속한 임시지출 단건을 삭제합니다.")
+	@DeleteMapping(
+			"/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}/temporary-expenses/{tempExpenseId}")
+	public ResponseEntity<Void> deleteTemporaryExpenseByFile(
+			@PathVariable Long accountBookId,
+			@PathVariable Long tempExpenseMetaId,
+			@PathVariable Long fileId,
+			@PathVariable Long tempExpenseId,
+			@LoginUser UUID userId) {
+		temporaryExpenseCommandFacade.deleteTemporaryExpenseByFile(
+				accountBookId, tempExpenseMetaId, fileId, tempExpenseId, userId);
+		return ResponseEntity.noContent().build();
 	}
 }

@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.command.application;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
@@ -11,6 +12,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,17 +44,22 @@ public class FileUploadService {
 	 */
 	@Transactional
 	public FileUploadResult createPresignedUrl(
-			Long accountBookId, String fileName, FileType fileType, Long tempExpenseMetaId) {
+			Long accountBookId,
+			String fileName,
+			String mimeType,
+			UploadType uploadType,
+			Long tempExpenseMetaId) {
 
 		// Presigned URL 발급 단에서 Meta 를 찾아오는 함수
 		TempExpenseMeta savedMeta = resolveMeta(accountBookId, tempExpenseMetaId);
+		FileType fileType = resolveFileType(mimeType, uploadType);
 
 		// 비즈니스 로직으로 두는 제한에 어긋나는지 확인하는 함수
 		validateFileGroupingPolicy(savedMeta.getTempExpenseMetaId(), fileType);
 
 		// 2. S3 Presigned URL 생성
 		PresignedUrlResult s3Response =
-				tempExpenseMediaAccessService.issueUploadPath(accountBookId, fileName);
+				tempExpenseMediaAccessService.issueUploadPath(accountBookId, mimeType);
 
 		// 3. File 엔티티 생성
 		File file =
@@ -69,6 +76,34 @@ public class FileUploadService {
 				s3Response.presignedUrl(),
 				s3Response.imageKey(),
 				300);
+	}
+
+	private FileType resolveFileType(String mimeType, UploadType uploadType) {
+		if (uploadType == null) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+		MediaContentType mediaContentType =
+				MediaContentType.fromMimeType(mimeType)
+						.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
+
+		return switch (uploadType) {
+			case IMAGE -> {
+				if (!mediaContentType.getMimeType().startsWith("image/")) {
+					throw new BusinessException(ErrorCode.TEMP_EXPENSE_INVALID_FILE_TYPE);
+				}
+				yield FileType.IMAGE;
+			}
+			case DOCS -> {
+				if (mediaContentType == MediaContentType.CSV) {
+					yield FileType.CSV;
+				}
+				if (mediaContentType == MediaContentType.XLS
+						|| mediaContentType == MediaContentType.XLSX) {
+					yield FileType.EXCEL;
+				}
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_INVALID_FILE_TYPE);
+			}
+		};
 	}
 
 	private TempExpenseMeta resolveMeta(Long accountBookId, Long tempExpenseMetaId) {

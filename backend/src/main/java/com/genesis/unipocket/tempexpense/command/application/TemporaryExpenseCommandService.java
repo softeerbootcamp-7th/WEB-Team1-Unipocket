@@ -1,15 +1,17 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
-import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,8 @@ public class TemporaryExpenseCommandService {
 
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
+	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
+	private final TemporaryExpenseValidator temporaryExpenseValidator;
 
 	/**
 	 * 임시지출내역 단건 조회
@@ -58,10 +62,7 @@ public class TemporaryExpenseCommandService {
 				command.localCurrencyAmount() != null
 						? command.localCurrencyAmount()
 						: entity.getLocalCurrencyAmount();
-		var resolvedBaseCountryCode =
-				command.baseCountryCode() != null
-						? command.baseCountryCode()
-						: entity.getBaseCountryCode();
+		var resolvedBaseCountryCode = resolveBaseCountryCode(command, entity);
 		var resolvedBaseCurrencyAmount =
 				command.baseCurrencyAmount() != null
 						? command.baseCurrencyAmount()
@@ -80,14 +81,14 @@ public class TemporaryExpenseCommandService {
 
 		// 상태 재평가
 		TemporaryExpenseStatus resolvedStatus =
-				reevaluateStatus(
+				temporaryExpenseValidator.resolveStatus(
 						entity.getStatus(),
 						resolvedMerchantName,
+						resolvedCategory,
 						resolvedLocalCountryCode,
 						resolvedLocalCurrencyAmount,
 						resolvedBaseCountryCode,
-						resolvedOccurredAt,
-						resolvedCategory);
+						resolvedOccurredAt);
 
 		// 새로운 엔티티 생성 (불변 객체 패턴)
 		TemporaryExpense updated =
@@ -113,6 +114,29 @@ public class TemporaryExpenseCommandService {
 		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(updated));
 	}
 
+	private CurrencyCode resolveBaseCountryCode(
+			TemporaryExpenseUpdateCommand command, TemporaryExpense entity) {
+		if (command.baseCountryCode() != null) {
+			return command.baseCountryCode();
+		}
+		if (entity.getBaseCountryCode() != null) {
+			return entity.getBaseCountryCode();
+		}
+		if (command.baseCurrencyAmount() != null) {
+			TempExpenseMeta meta =
+					tempExpenseMetaRepository
+							.findById(entity.getTempExpenseMetaId())
+							.orElseThrow(
+									() ->
+											new BusinessException(
+													ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+			return accountBookRateInfoProvider
+					.getRateInfo(meta.getAccountBookId())
+					.baseCurrencyCode();
+		}
+		return null;
+	}
+
 	/**
 	 * 임시지출내역 삭제
 	 */
@@ -135,39 +159,5 @@ public class TemporaryExpenseCommandService {
 	public Long findMetaIdByTempExpenseId(Long tempExpenseId) {
 		TemporaryExpense tempExpense = findById(tempExpenseId);
 		return tempExpense.getTempExpenseMetaId();
-	}
-
-	/**
-	 * 수정 후 상태 재평가
-	 * <p>
-	 * ABNORMAL 상태는 유지합니다 (자동 변경 불가).
-	 * 필수 필드(merchantName, localCurrencyAmount, occurredAt, category)가
-	 * 모두 채워지면 NORMAL, 하나라도 빠지면 INCOMPLETE.
-	 * </p>
-	 */
-	private TemporaryExpenseStatus reevaluateStatus(
-			TemporaryExpenseStatus originalStatus,
-			String merchantName,
-			com.genesis.unipocket.global.common.enums.CurrencyCode localCountryCode,
-			java.math.BigDecimal localCurrencyAmount,
-			com.genesis.unipocket.global.common.enums.CurrencyCode baseCountryCode,
-			java.time.LocalDateTime occurredAt,
-			Category category) {
-		// ABNORMAL 상태는 자동 변경하지 않음
-		if (originalStatus == TemporaryExpenseStatus.ABNORMAL) {
-			return TemporaryExpenseStatus.ABNORMAL;
-		}
-
-		// 필수 필드 검증
-		boolean hasAllRequired =
-				merchantName != null
-						&& !merchantName.isBlank()
-						&& localCountryCode != null
-						&& localCurrencyAmount != null
-						&& baseCountryCode != null
-						&& occurredAt != null
-						&& category != null;
-
-		return hasAllRequired ? TemporaryExpenseStatus.NORMAL : TemporaryExpenseStatus.INCOMPLETE;
 	}
 }

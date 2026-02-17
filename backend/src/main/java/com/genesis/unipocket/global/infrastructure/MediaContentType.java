@@ -9,7 +9,9 @@ public enum MediaContentType {
 	PNG(".png", "image/png"),
 	JPEG(".jpeg", "image/jpeg"),
 	JPG(".jpg", "image/jpeg"),
-	CSV(".csv", "text/csv");
+	CSV(".csv", "text/csv"),
+	XLS(".xls", "application/vnd.ms-excel"),
+	XLSX(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	@Getter private final String ext;
 
@@ -31,5 +33,13 @@ public enum MediaContentType {
 						: ("." + extension).toLowerCase(Locale.ROOT);
 
 		return Arrays.stream(values()).filter(type -> type.ext.equals(normalized)).findFirst();
+	}
+
+	public static Optional<MediaContentType> fromMimeType(String mimeType) {
+		if (mimeType == null || mimeType.isBlank()) {
+			return Optional.empty();
+		}
+		String normalized = mimeType.trim().toLowerCase(Locale.ROOT);
+		return Arrays.stream(values()).filter(type -> type.mimeType.equals(normalized)).findFirst();
 	}
 }

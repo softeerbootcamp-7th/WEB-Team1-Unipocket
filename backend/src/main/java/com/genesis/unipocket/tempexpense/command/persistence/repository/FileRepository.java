@@ -34,6 +34,8 @@ public interface FileRepository extends JpaRepository<File, Long> {
 	 */
 	List<File> findByTempExpenseMetaId(Long tempExpenseMetaId);
 
+	boolean existsByTempExpenseMetaId(Long tempExpenseMetaId);
+
 	void deleteByTempExpenseMetaId(Long tempExpenseMetaId);
 
 	@Query(
@@ -47,8 +49,10 @@ public interface FileRepository extends JpaRepository<File, Long> {
 	 * 일정 시간 경과했지만 파싱되지 않은 파일 조회
 	 */
 	@Query(
-			"SELECT f FROM File f JOIN TempExpenseMeta tm ON f.tempExpenseMetaId ="
-				+ " tm.tempExpenseMetaId LEFT JOIN TemporaryExpense te ON te.tempExpenseMetaId ="
-				+ " tm.tempExpenseMetaId WHERE tm.createdAt < :cutoff AND te.tempExpenseId IS NULL")
+			"SELECT f FROM File f "
+					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
+					+ "LEFT JOIN TemporaryExpense te ON te.fileId = f.fileId "
+					+ "WHERE tm.createdAt < :cutoff "
+					+ "AND te.tempExpenseId IS NULL")
 	List<File> findStaleUnparsedFiles(@Param("cutoff") LocalDateTime cutoff);
 }

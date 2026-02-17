@@ -55,7 +55,8 @@ public class TemporaryExpenseSingleConversionTxService {
 		if (!meta.getAccountBookId().equals(accountBookId)) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
-		CurrencyCode resolvedBaseCurrencyCode = resolveBaseCurrencyCode(temp, meta.getAccountBookId());
+		CurrencyCode resolvedBaseCurrencyCode =
+				resolveBaseCurrencyCode(temp, meta.getAccountBookId());
 		temporaryExpenseValidator.validateConvertible(temp, resolvedBaseCurrencyCode);
 
 		ResolvedAmount resolvedAmount = resolveBaseAmountAndRate(temp, resolvedBaseCurrencyCode);
@@ -78,7 +79,9 @@ public class TemporaryExpenseSingleConversionTxService {
 						null,
 						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
 						temp.getLocalCurrencyAmount(),
-						temp.getLocalCountryCode() != null ? temp.getLocalCountryCode() : CurrencyCode.KRW,
+						temp.getLocalCountryCode() != null
+								? temp.getLocalCountryCode()
+								: CurrencyCode.KRW,
 						resolvedAmount.baseCurrencyAmount(),
 						resolvedBaseCurrencyCode,
 						resolvedAmount.calculatedBaseCurrencyAmount(),

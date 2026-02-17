@@ -77,8 +77,14 @@ class TemporaryExpenseConversionServiceTest {
 						.build();
 
 		when(metaRepository.findById(metaId))
-				.thenReturn(Optional.of(TempExpenseMeta.builder().tempExpenseMetaId(metaId).accountBookId(accountBookId).build()));
-		when(tempExpenseRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(tempExpense));
+				.thenReturn(
+						Optional.of(
+								TempExpenseMeta.builder()
+										.tempExpenseMetaId(metaId)
+										.accountBookId(accountBookId)
+										.build()));
+		when(tempExpenseRepository.findByTempExpenseMetaId(metaId))
+				.thenReturn(List.of(tempExpense));
 		when(tempExpenseRepository.findAllById(List.of(100L))).thenReturn(List.of(tempExpense));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
@@ -104,7 +110,8 @@ class TemporaryExpenseConversionServiceTest {
 		when(singleConversionTxService.convertToExpense(accountBookId, 2L))
 				.thenThrow(new IllegalStateException("fail"));
 
-		BatchConversionResult result = service.convertBatchAsync(accountBookId, ids, "task-1").join();
+		BatchConversionResult result =
+				service.convertBatchAsync(accountBookId, ids, "task-1").join();
 
 		assertThat(result.totalRequested()).isEqualTo(2);
 		assertThat(result.successCount()).isEqualTo(1);
@@ -132,8 +139,14 @@ class TemporaryExpenseConversionServiceTest {
 						.build();
 
 		when(metaRepository.findById(metaId))
-				.thenReturn(Optional.of(TempExpenseMeta.builder().tempExpenseMetaId(metaId).accountBookId(accountBookId).build()));
-		when(tempExpenseRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(tempExpense));
+				.thenReturn(
+						Optional.of(
+								TempExpenseMeta.builder()
+										.tempExpenseMetaId(metaId)
+										.accountBookId(accountBookId)
+										.build()));
+		when(tempExpenseRepository.findByTempExpenseMetaId(metaId))
+				.thenReturn(List.of(tempExpense));
 		when(tempExpenseRepository.findAllById(List.of(100L))).thenReturn(List.of(tempExpense));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));

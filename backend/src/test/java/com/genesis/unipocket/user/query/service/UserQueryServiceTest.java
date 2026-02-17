@@ -42,8 +42,7 @@ class UserQueryServiceTest {
 	// I'll do a quick check in separate tool, but for now I'll write a placeholder
 	// test that matches UserQueryRepository pattern.
 
-	@Mock
-	private UserQueryRepository userQueryRepository;
+	@Mock private UserQueryRepository userQueryRepository;
 
 	@Mock private AccountBookCountService accountBookCountService;
 

@@ -40,6 +40,7 @@ public class TemporaryExpenseConversionService {
 	private final ParsingProgressPublisher progressPublisher;
 	private final TemporaryExpenseSingleConversionTxService singleConversionTxService;
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
+
 	@Qualifier("parsingExecutor") private final Executor parsingExecutor;
 
 	/**
@@ -69,7 +70,8 @@ public class TemporaryExpenseConversionService {
 		String taskId = UUID.randomUUID().toString();
 		progressPublisher.registerTask(taskId, accountBookId);
 
-		CompletableFuture.runAsync(() -> convertBatchAsync(accountBookId, targetIds, taskId), parsingExecutor);
+		CompletableFuture.runAsync(
+				() -> convertBatchAsync(accountBookId, targetIds, taskId), parsingExecutor);
 		return new ConfirmStartResult(taskId, targetIds.size());
 	}
 
@@ -95,14 +97,17 @@ public class TemporaryExpenseConversionService {
 								"tempExpenseId=" + tempExpenseId,
 								(completed * 100) / totalExpenses));
 				try {
-					var expense = singleConversionTxService.convertToExpense(accountBookId, tempExpenseId);
+					var expense =
+							singleConversionTxService.convertToExpense(
+									accountBookId, tempExpenseId);
 					results.add(
 							new ConversionResult(
 									tempExpenseId, expense.getExpenseId(), "SUCCESS", null));
 					successCount++;
 				} catch (Exception e) {
 					log.error("Failed to convert temporary expense: {}", tempExpenseId, e);
-					results.add(new ConversionResult(tempExpenseId, null, "FAILED", e.getMessage()));
+					results.add(
+							new ConversionResult(tempExpenseId, null, "FAILED", e.getMessage()));
 					failedCount++;
 					progressPublisher.publishFileError(
 							taskId,
@@ -117,7 +122,8 @@ public class TemporaryExpenseConversionService {
 			}
 
 			BatchConversionResult finalResult =
-					new BatchConversionResult(totalExpenses, successCount, failedCount, List.copyOf(results));
+					new BatchConversionResult(
+							totalExpenses, successCount, failedCount, List.copyOf(results));
 			progressPublisher.complete(taskId, finalResult);
 			return CompletableFuture.completedFuture(finalResult);
 		} catch (Exception e) {

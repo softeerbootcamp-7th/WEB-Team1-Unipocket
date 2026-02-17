@@ -21,8 +21,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,11 +35,9 @@ class UserCommandControllerTest {
 
 	@MockitoBean private JwtProvider jwtProvider;
 
-	@MockitoBean
-	private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private TokenBlacklistService tokenBlacklistService;
 
-	@MockitoBean
-	private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
 	@Autowired private ObjectMapper objectMapper;
 
@@ -59,8 +57,7 @@ class UserCommandControllerTest {
 
 		mockMvc.perform(
 						delete("/users/me")
-								.cookie(
-										new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
 	}
 
@@ -84,8 +81,7 @@ class UserCommandControllerTest {
 						post("/users/cards")
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
-								.cookie(
-										new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isCreated())
 				.andExpect(header().string("Location", "/users/cards/" + cardId));
 	}
@@ -107,8 +103,7 @@ class UserCommandControllerTest {
 
 		mockMvc.perform(
 						delete("/users/cards/{cardId}", cardId)
-								.cookie(
-										new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
 	}
 }

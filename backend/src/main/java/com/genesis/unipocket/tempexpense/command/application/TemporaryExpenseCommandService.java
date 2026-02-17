@@ -1,6 +1,5 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
-import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -63,8 +62,7 @@ public class TemporaryExpenseCommandService {
 				command.localCurrencyAmount() != null
 						? command.localCurrencyAmount()
 						: entity.getLocalCurrencyAmount();
-		var resolvedBaseCountryCode =
-				resolveBaseCountryCode(command, entity);
+		var resolvedBaseCountryCode = resolveBaseCountryCode(command, entity);
 		var resolvedBaseCurrencyAmount =
 				command.baseCurrencyAmount() != null
 						? command.baseCurrencyAmount()
@@ -129,8 +127,12 @@ public class TemporaryExpenseCommandService {
 					tempExpenseMetaRepository
 							.findById(entity.getTempExpenseMetaId())
 							.orElseThrow(
-									() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-			return accountBookRateInfoProvider.getRateInfo(meta.getAccountBookId()).baseCurrencyCode();
+									() ->
+											new BusinessException(
+													ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+			return accountBookRateInfoProvider
+					.getRateInfo(meta.getAccountBookId())
+					.baseCurrencyCode();
 		}
 		return null;
 	}
@@ -158,5 +160,4 @@ public class TemporaryExpenseCommandService {
 		TemporaryExpense tempExpense = findById(tempExpenseId);
 		return tempExpense.getTempExpenseMetaId();
 	}
-
 }

@@ -359,7 +359,10 @@ class TemporaryExpenseParsingServiceTest {
 		Long accountBookId = 1L;
 		Long metaId = 10L;
 		TempExpenseMeta meta =
-				TempExpenseMeta.builder().tempExpenseMetaId(metaId).accountBookId(accountBookId).build();
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(metaId)
+						.accountBookId(accountBookId)
+						.build();
 		File file1 =
 				File.builder()
 						.fileId(1L)
@@ -378,7 +381,8 @@ class TemporaryExpenseParsingServiceTest {
 		when(tempExpenseMetaRepository.findById(metaId)).thenReturn(Optional.of(meta));
 		when(fileRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(file1, file2));
 
-		ParseStartResult result = asyncStartOnlyService.startParseAsync(accountBookId, metaId, null);
+		ParseStartResult result =
+				asyncStartOnlyService.startParseAsync(accountBookId, metaId, null);
 
 		assertThat(result.totalFiles()).isEqualTo(2);
 		verify(progressPublisher).registerTask(anyString(), eq(accountBookId));
@@ -425,7 +429,9 @@ class TemporaryExpenseParsingServiceTest {
 												"SHOPPING",
 												new BigDecimal("100.00"),
 												"USD",
-												new BigDecimal("1000.00"), // provided but invalid without currency
+												new BigDecimal(
+														"1000.00"), // provided but invalid without
+												// currency
 												null,
 												LocalDateTime.of(2026, 2, 15, 12, 0),
 												null,

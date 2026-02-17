@@ -11,9 +11,7 @@ public enum MediaContentType {
 	JPG(".jpg", "image/jpeg"),
 	CSV(".csv", "text/csv"),
 	XLS(".xls", "application/vnd.ms-excel"),
-	XLSX(
-			".xlsx",
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	XLSX(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	@Getter private final String ext;
 

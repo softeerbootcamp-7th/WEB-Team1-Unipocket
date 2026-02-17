@@ -25,6 +25,7 @@ public class ParsingProgressPublisher {
 
 	/** 구독 없이 종료된 task 종료 이벤트 보관 시간 */
 	private static final Duration TERMINAL_EVENT_RETENTION = Duration.ofMinutes(30);
+
 	/** 비구독 활성 task 보관 시간 (비정상 종료 누수 방지) */
 	private static final Duration ACTIVE_TASK_RETENTION = Duration.ofHours(6);
 
@@ -234,7 +235,8 @@ public class ParsingProgressPublisher {
 				.removeIf(
 						entry ->
 								entry.getValue().isExpiredTerminal(terminalCutoff)
-										|| entry.getValue().isExpiredActiveWithoutEmitter(activeCutoff));
+										|| entry.getValue()
+												.isExpiredActiveWithoutEmitter(activeCutoff));
 	}
 
 	/** 진행 상황 이벤트 */

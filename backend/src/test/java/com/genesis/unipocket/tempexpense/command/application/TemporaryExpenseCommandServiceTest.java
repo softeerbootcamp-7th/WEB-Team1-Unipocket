@@ -84,7 +84,12 @@ class TemporaryExpenseCommandServiceTest {
 
 		when(temporaryExpenseRepository.findById(tempExpenseId)).thenReturn(Optional.of(existing));
 		when(tempExpenseMetaRepository.findById(metaId))
-				.thenReturn(Optional.of(TempExpenseMeta.builder().tempExpenseMetaId(metaId).accountBookId(accountBookId).build()));
+				.thenReturn(
+						Optional.of(
+								TempExpenseMeta.builder()
+										.tempExpenseMetaId(metaId)
+										.accountBookId(accountBookId)
+										.build()));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
 		when(temporaryExpenseRepository.save(any(TemporaryExpense.class)))

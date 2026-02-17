@@ -104,11 +104,7 @@ public class TemporaryExpenseParsingService {
 					metaFiles.stream()
 							.collect(Collectors.toMap(File::getS3Key, Function.identity()));
 			Set<String> distinctKeys = new HashSet<>(requestedS3Keys);
-			files =
-					distinctKeys.stream()
-							.map(metaFileByKey::get)
-							.filter(Objects::nonNull)
-							.toList();
+			files = distinctKeys.stream().map(metaFileByKey::get).filter(Objects::nonNull).toList();
 			// 요청된 s3Keys를 중복 제거한 뒤(distinctKeys)
 			// 실제 메타 목록에서 매칭된 파일 수(files.size())와 비교하는 로직
 			// 매칭된 파일 수 == (중복제거된) distinctKeys 수 로 비교하는 로직입니다.
@@ -195,20 +191,20 @@ public class TemporaryExpenseParsingService {
 
 	private Map<ExchangeRateLookupCommand, BigDecimal> buildExchangeRateMap(
 			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
-			Set<ExchangeRateLookupCommand> lookupKeys =
-					items.stream()
-							.filter(
-									item ->
-											item.localAmount() != null
-													&& item.occurredAt() != null
-													&& !(item.baseAmount() != null
-															&& item.baseCurrencyCode() != null
-															&& item.baseCurrencyCode()
-																	== baseCurrencyCode)) // baseAmount/baseCurrencyCode
-							// 쌍이 기준 통화와 일치할 때만 환율 조회 생략
-							.map(
-									item ->
-											new ExchangeRateLookupCommand(
+		Set<ExchangeRateLookupCommand> lookupKeys =
+				items.stream()
+						.filter(
+								item ->
+										item.localAmount() != null
+												&& item.occurredAt() != null
+												&& !(item.baseAmount() != null
+														&& item.baseCurrencyCode() != null
+														&& item.baseCurrencyCode()
+																== baseCurrencyCode)) // baseAmount/baseCurrencyCode
+						// 쌍이 기준 통화와 일치할 때만 환율 조회 생략
+						.map(
+								item ->
+										new ExchangeRateLookupCommand(
 												item.localCurrencyCode(),
 												baseCurrencyCode,
 												item.occurredAt().toLocalDate()))

@@ -12,6 +12,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
+import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
 import com.genesis.unipocket.analysis.query.persistence.response.CategoryBreakdownRes;
 import com.genesis.unipocket.analysis.query.persistence.response.MonthlySpendSummaryRes;
@@ -433,20 +434,7 @@ public class AnalysisMonthlySummaryQueryService {
 	}
 
 	private LocalDate toLocalDateInZone(Object occurredAt, ZoneId zoneId) {
-		OffsetDateTime offsetDateTime;
-		if (occurredAt instanceof OffsetDateTime value) {
-			offsetDateTime = value;
-		} else if (occurredAt instanceof LocalDateTime value) {
-			offsetDateTime = value.atOffset(ZoneOffset.UTC);
-		} else if (occurredAt instanceof java.sql.Timestamp value) {
-			offsetDateTime = value.toLocalDateTime().atOffset(ZoneOffset.UTC);
-		} else if (occurredAt instanceof String value) {
-			offsetDateTime = OffsetDateTime.parse(value);
-		} else {
-			throw new IllegalStateException(
-					"Unsupported type for date-time conversion: "
-							+ occurredAt.getClass().getName());
-		}
+		OffsetDateTime offsetDateTime = OffsetDateTimeConverter.from(occurredAt);
 		return offsetDateTime.atZoneSameInstant(zoneId).toLocalDate();
 	}
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { UploadImageItem } from '@/components/upload/image-upload/UploadImage';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
@@ -7,6 +7,21 @@ const MAX_TOTAL = uploadPolicy.image.maxCount;
 
 export const useImageUpload = () => {
   const [items, setItems] = useState<UploadImageItem[]>([]);
+  const itemsRef = useRef<UploadImageItem[]>([]);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
+    return () => {
+      itemsRef.current.forEach((item) => {
+        if (item.url) {
+          URL.revokeObjectURL(item.url);
+        }
+      });
+    };
+  }, []);
 
   const handleFilesSelected = (files: File[]) => {
     const remaining = MAX_TOTAL - items.length;
@@ -42,7 +57,13 @@ export const useImageUpload = () => {
   };
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prevItems) => {
+      const itemToRemove = prevItems.find((item) => item.id === id);
+      if (itemToRemove?.url) {
+        URL.revokeObjectURL(itemToRemove.url);
+      }
+      return prevItems.filter((item) => item.id !== id);
+    });
   };
 
   const isAllUploaded =

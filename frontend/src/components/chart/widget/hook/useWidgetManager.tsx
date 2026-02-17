@@ -29,6 +29,9 @@ const useWidgetCRUD = (maxWidgets: number) => {
   const [addedWidgets, setAddedWidgets] =
     useState<WidgetItem[]>(MOCK_WIDGET_DATA);
 
+  // 삭제된 위젯 타입 목록 (순서 유지: 가장 최근 삭제된 위젯이 맨 뒤)
+  const [removedWidgets, setRemovedWidgets] = useState<WidgetType[]>([]);
+
   // 표시용 위젯 (실제 위젯 + 남은 슬롯은 BLANK로 채움)
   const displayWidgets: WidgetItem[] = useMemo(() => {
     let used = 0;
@@ -56,8 +59,14 @@ const useWidgetCRUD = (maxWidgets: number) => {
   // 추가 가능한 위젯 타입 목록
   const availableWidgets = useMemo(() => {
     const addedTypes = new Set(addedWidgets.map((w) => w.widgetType));
-    return WIDGET_TYPES.filter((type) => !addedTypes.has(type));
-  }, [addedWidgets]);
+    // 삭제 이력 없는 위젯 (WIDGET_TYPES 원래 순서)
+    const initialAvailableWidgets = WIDGET_TYPES.filter(
+      (type) => !addedTypes.has(type) && !removedWidgets.includes(type),
+    );
+    // 삭제 이력 있는 위젯 (삭제된 순서 유지)
+    const removed = removedWidgets.filter((type) => !addedTypes.has(type));
+    return [...initialAvailableWidgets, ...removed];
+  }, [addedWidgets, removedWidgets]);
 
   // 위젯을 맨 뒤에 추가
   const handleAddWidget = useCallback(
@@ -69,14 +78,22 @@ const useWidgetCRUD = (maxWidgets: number) => {
         const normalized = normalizeOrders(prev);
         return [...normalized, { order: normalized.length, widgetType }];
       });
+
+      setRemovedWidgets((prev) => prev.filter((t) => t !== widgetType));
     },
     [maxWidgets],
   );
 
   const handleRemoveWidget = useCallback((order: number) => {
-    setAddedWidgets((prev) =>
-      normalizeOrders(prev.filter((w) => w.order !== order)),
-    );
+    setAddedWidgets((prev) => {
+      const target = prev.find((w) => w.order === order);
+      if (target && target.widgetType !== 'BLANK') {
+        const type = target.widgetType as WidgetType;
+        // 삭제 이력에 추가 (이미 있으면 제거 후 맨 뒤에)
+        setRemovedWidgets((old) => [...old.filter((t) => t !== type), type]);
+      }
+      return normalizeOrders(prev.filter((w) => w.order !== order));
+    });
   }, []);
 
   return {

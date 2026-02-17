@@ -16,6 +16,7 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
+import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -44,6 +45,7 @@ public class AccountBookCommandServiceTest {
 	@Mock private UserCommandRepository userRepository;
 	@Mock private AccountBookValidator validator;
 	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 
 	@InjectMocks private AccountBookCommandService accountBookCommandService;
 
@@ -175,6 +177,7 @@ public class AccountBookCommandServiceTest {
 		assertThat(entity.getTitle()).isEqualTo(req.title());
 		assertThat(entity.getLocalCountryCode()).isEqualTo(req.localCountryCode());
 		verify(validator).validate(entity);
+		verify(analysisMonthlyDirtyMarkerService).markDirtyAllMonths(accountBookId);
 	}
 
 	@Test

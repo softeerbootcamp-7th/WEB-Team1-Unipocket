@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
 import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
+import com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
 import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
@@ -42,8 +43,7 @@ class UserQueryServiceTest {
 	// test that matches UserQueryRepository pattern.
 
 	@Mock
-	private com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository
-			userQueryRepository;
+	private UserQueryRepository userQueryRepository;
 
 	@Mock private AccountBookCountService accountBookCountService;
 

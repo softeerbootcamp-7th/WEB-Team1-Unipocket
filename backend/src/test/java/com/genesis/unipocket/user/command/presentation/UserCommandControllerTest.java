@@ -10,16 +10,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
+import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import jakarta.servlet.http.Cookie;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,12 +36,10 @@ class UserCommandControllerTest {
 	@MockitoBean private JwtProvider jwtProvider;
 
 	@MockitoBean
-	private com.genesis.unipocket.auth.command.application.TokenBlacklistService
-			tokenBlacklistService;
+	private TokenBlacklistService tokenBlacklistService;
 
 	@MockitoBean
-	private org.springframework.data.jpa.mapping.JpaMetamodelMappingContext
-			jpaMetamodelMappingContext;
+	private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
 	@Autowired private ObjectMapper objectMapper;
 
@@ -59,8 +60,7 @@ class UserCommandControllerTest {
 		mockMvc.perform(
 						delete("/users/me")
 								.cookie(
-										new jakarta.servlet.http.Cookie(
-												AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+										new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
 	}
 
@@ -85,8 +85,7 @@ class UserCommandControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(
-										new jakarta.servlet.http.Cookie(
-												AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+										new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isCreated())
 				.andExpect(header().string("Location", "/users/cards/" + cardId));
 	}
@@ -109,8 +108,7 @@ class UserCommandControllerTest {
 		mockMvc.perform(
 						delete("/users/cards/{cardId}", cardId)
 								.cookie(
-										new jakarta.servlet.http.Cookie(
-												AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+										new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
 	}
 }

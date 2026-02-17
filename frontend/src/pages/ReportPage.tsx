@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clsx } from 'clsx';
 
 import Switch from '@/components/common/Switch';
 import ReportCategory from '@/components/report-page/category/ReportCategory';
@@ -10,13 +11,53 @@ import ReportProvider from '@/components/report-page/ReportProvider';
 import { type CurrencyType } from '@/types/currency';
 
 import { Icons } from '@/assets';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ReportPage = () => {
+  const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
+
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
+  const startDate = useAccountBookStore(
+    (state) => state.accountBook?.startDate,
+  );
+  const endDate = useAccountBookStore((state) => state.accountBook?.endDate);
+
+  // startDate와 endDate에서 년월 추출
+  const parseYearMonth = (dateString: string | undefined) => {
+    if (!dateString) return null;
+    const [year, month] = dateString.split('-').map(Number);
+    return { year, month };
+  };
+
+  const startYearMonth = parseYearMonth(startDate);
+  const endYearMonth = parseYearMonth(endDate);
+
+  // 월 이동 가능 여부 체크 함수
+  const canGoToMonth = (offset: number): boolean => {
+    const targetDate = new Date(selectedDate);
+    targetDate.setMonth(targetDate.getMonth() + offset);
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth() + 1;
+
+    if (offset < 0) {
+      if (!startYearMonth) return true;
+      return (
+        targetYear > startYearMonth.year ||
+        (targetYear === startYearMonth.year &&
+          targetMonth >= startYearMonth.month)
+      );
+    } else {
+      if (!endYearMonth) return true;
+      return (
+        targetYear < endYearMonth.year ||
+        (targetYear === endYearMonth.year && targetMonth <= endYearMonth.month)
+      );
+    }
+  };
+
   const categoryData = mockData.compareByCategory;
   const myselfData = mockData.compareWithLastMonth;
-  const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
   const handleMonthChange = (offset: number) => {
     setSelectedDate((prev) => {
@@ -46,12 +87,18 @@ const ReportPage = () => {
             </span>
             <div className="flex gap-3.5">
               <Icons.ChevronBack
-                className="text-label-neutral size-6 cursor-pointer"
-                onClick={() => handleMonthChange(-1)}
+                className={clsx('size-6', {
+                  'text-label-alternative cursor-pointer': canGoToMonth(-1),
+                  'text-label-disable': !canGoToMonth(-1),
+                })}
+                onClick={() => canGoToMonth(-1) && handleMonthChange(-1)}
               />
               <Icons.ChevronForward
-                className="text-label-neutral size-6 cursor-pointer"
-                onClick={() => handleMonthChange(1)}
+                className={clsx('size-6', {
+                  'text-label-alternative cursor-pointer': canGoToMonth(1),
+                  'text-label-disable': !canGoToMonth(1),
+                })}
+                onClick={() => canGoToMonth(1) && handleMonthChange(1)}
               />
             </div>
           </div>

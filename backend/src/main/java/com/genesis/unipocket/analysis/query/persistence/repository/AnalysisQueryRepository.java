@@ -4,7 +4,7 @@ import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.global.common.enums.Category;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -24,7 +24,7 @@ public class AnalysisQueryRepository {
 	}
 
 	public List<Object[]> getMySpendEvents(
-			Long accountBookId, LocalDateTime start, LocalDateTime end, CurrencyType type) {
+			Long accountBookId, OffsetDateTime start, OffsetDateTime end, CurrencyType type) {
 		String amountField = amountJpql(type);
 		return em.createQuery(
 						"SELECT e.occurredAt,"
@@ -35,17 +35,19 @@ public class AnalysisQueryRepository {
 								+ " WHERE e.accountBookId = :abId"
 								+ " AND e.occurredAt >= :start"
 								+ " AND e.occurredAt < :end"
+								+ " AND e.category <> :income"
 								+ " ORDER BY e.occurredAt ASC",
 						Object[].class)
 				.setParameter("abId", accountBookId)
 				.setParameter("start", start)
 				.setParameter("end", end)
+				.setParameter("income", Category.INCOME)
 				.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Object[]> getMyCategorySpent(
-			Long accountBookId, LocalDateTime start, LocalDateTime end, CurrencyType type) {
+			Long accountBookId, OffsetDateTime start, OffsetDateTime end, CurrencyType type) {
 		String amountField = amountJpql(type);
 		return em.createQuery(
 						"SELECT e.category,"

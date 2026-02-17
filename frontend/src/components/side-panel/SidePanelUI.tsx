@@ -15,16 +15,18 @@ import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import ValueContainer, {
   type ValueItemProps,
 } from '@/components/side-panel/ValueContainer';
+import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
-type SidePanelInputMode = 'manual' | 'file' | 'image';
-
-const uploadTitleMap: Record<Exclude<SidePanelInputMode, 'manual'>, string> = {
+const uploadTitleMap: Record<
+  Exclude<UploadEntryType, 'manual' | null>,
+  string
+> = {
   file: '파일',
   image: '사진',
 };
 
 interface SidePanelUIProps {
-  mode?: SidePanelInputMode;
+  mode?: UploadEntryType;
   isOpen: boolean;
   onClose: () => void;
   initialData?: Partial<Expense>;
@@ -37,6 +39,7 @@ const SidePanelUI = ({
   initialData,
 }: SidePanelUIProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
 
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
@@ -88,8 +91,6 @@ const SidePanelUI = ({
       value: rowData?.travel?.name || '-',
     },
   ];
-
-  const titleRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
     if (!titleRef.current) return;

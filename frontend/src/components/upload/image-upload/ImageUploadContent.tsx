@@ -4,52 +4,14 @@ import { clsx } from 'clsx';
 import Divider from '@/components/common/Divider';
 import { ModalContext } from '@/components/modal/useModalContext';
 import UploadGallery from '@/components/upload/image-upload/UploadGallery';
-import type { UploadImageItem } from '@/components/upload/image-upload/UploadImage';
+import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
-import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
-interface ImageUploadContentProps {
-  items: UploadImageItem[];
-  setItems: React.Dispatch<React.SetStateAction<UploadImageItem[]>>;
-}
-
-const MAX_TOTAL = uploadPolicy.image.maxCount;
-
-const ImageUploadContent = ({ items, setItems }: ImageUploadContentProps) => {
+const ImageUploadContent = () => {
   const context = useContext(ModalContext);
+  const { items, handleFilesSelected, removeItem, isAllUploaded } =
+    useImageUpload();
   const hasItems = items.length > 0;
-
-  const handleFilesSelected = (files: File[]) => {
-    if (items.length + files.length > MAX_TOTAL) {
-      //@TODO: Toast로 변경
-      alert(`최대 ${MAX_TOTAL}개까지 업로드할 수 있어요.`);
-      return;
-    }
-
-    const newItems: UploadImageItem[] = files.map((file) => ({
-      id: crypto.randomUUID(),
-      name: file.name,
-      url: URL.createObjectURL(file),
-      status: 'uploading',
-    }));
-
-    setItems((prev) => [...prev, ...newItems]);
-
-    // @TODO: s3 업로드 로직 구현 후 테스트 코드 제거
-    // 테스트용: 2초 뒤 done 처리
-    setTimeout(() => {
-      setItems((prev) =>
-        prev.map((item) =>
-          newItems.find((n) => n.id === item.id)
-            ? { ...item, status: 'done' }
-            : item,
-        ),
-      );
-    }, 2000);
-  };
-
-  const isAllUploaded =
-    items.length > 0 && items.every((item) => item.status === 'done');
 
   useEffect(() => {
     context?.setActionReady(isAllUploaded);
@@ -86,12 +48,7 @@ const ImageUploadContent = ({ items, setItems }: ImageUploadContentProps) => {
           <>
             <Divider style="vertical" />
             <div className="w-md">
-              <UploadGallery
-                items={items}
-                onRemove={(id) =>
-                  setItems((prev) => prev.filter((item) => item.id !== id))
-                }
-              />
+              <UploadGallery items={items} onRemove={removeItem} />
             </div>
           </>
         )}

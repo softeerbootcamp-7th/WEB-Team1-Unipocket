@@ -4,6 +4,7 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
@@ -90,8 +91,8 @@ public class AnalysisMonthlyDirtyMarkerService {
 		if (occurredRange == null || occurredRange.length < 2) {
 			return;
 		}
-		OffsetDateTime minOccurredAt = toOffsetDateTime(occurredRange[0]);
-		OffsetDateTime maxOccurredAt = toOffsetDateTime(occurredRange[1]);
+		OffsetDateTime minOccurredAt = OffsetDateTimeConverter.from(occurredRange[0]);
+		OffsetDateTime maxOccurredAt = OffsetDateTimeConverter.from(occurredRange[1]);
 		if (minOccurredAt == null || maxOccurredAt == null) {
 			return;
 		}
@@ -131,21 +132,5 @@ public class AnalysisMonthlyDirtyMarkerService {
 			dirty.markPendingFromEvent(nowUtc);
 			monthlyDirtyRepository.save(dirty);
 		}
-	}
-
-	private OffsetDateTime toOffsetDateTime(Object value) {
-		if (value == null) {
-			return null;
-		}
-		if (value instanceof OffsetDateTime offsetDateTime) {
-			return offsetDateTime;
-		}
-		if (value instanceof LocalDateTime localDateTime) {
-			return localDateTime.atOffset(ZoneOffset.UTC);
-		}
-		if (value instanceof java.sql.Timestamp timestamp) {
-			return timestamp.toLocalDateTime().atOffset(ZoneOffset.UTC);
-		}
-		return OffsetDateTime.parse(value.toString());
 	}
 }

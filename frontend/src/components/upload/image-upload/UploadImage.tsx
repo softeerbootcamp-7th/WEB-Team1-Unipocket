@@ -19,6 +19,7 @@ interface UploadImageProps {
 
 const UploadImage = ({ item, onRemove }: UploadImageProps) => {
   const [isHover, setIsHover] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const isUploading = item.status === 'uploading';
   const fileExtension = item.name.split('.').pop()?.toUpperCase() || '';
@@ -65,8 +66,28 @@ const UploadImage = ({ item, onRemove }: UploadImageProps) => {
       )}
 
       {!isUploading && isHover && (
-        <div className="rounded-modal-6 bg-label-alternative absolute bottom-16.5 left-4 flex size-6 cursor-pointer items-center justify-center backdrop-blur-xs">
+        <div
+          className="rounded-modal-6 bg-label-alternative absolute bottom-16.5 left-4 flex size-6 cursor-pointer items-center justify-center backdrop-blur-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsPreviewOpen(true);
+          }}
+        >
           <Icons.Expand className="text-inverse-label size-4" />
+        </div>
+      )}
+
+      {isPreviewOpen && item.url && (
+        <div
+          className="bg-dimmer-strong/60 fixed inset-0 z-100 flex items-center justify-center"
+          onClick={() => setIsPreviewOpen(false)}
+        >
+          <img
+            src={item.url}
+            alt={item.name}
+            className="max-h-[80vh] max-w-[80vw] rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

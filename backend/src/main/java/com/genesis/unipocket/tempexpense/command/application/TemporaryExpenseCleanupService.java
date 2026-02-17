@@ -4,7 +4,9 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,9 +45,16 @@ public class TemporaryExpenseCleanupService {
 			return;
 		}
 
+		Set<Long> affectedMetaIds = new HashSet<>();
 		for (File file : staleFiles) {
 			fileRepository.delete(file);
-			tempExpenseMetaRepository.deleteById(file.getTempExpenseMetaId());
+			affectedMetaIds.add(file.getTempExpenseMetaId());
+		}
+
+		for (Long metaId : affectedMetaIds) {
+			if (!fileRepository.existsByTempExpenseMetaId(metaId)) {
+				tempExpenseMetaRepository.deleteById(metaId);
+			}
 		}
 
 		log.info("Cleaned up {} stale uploads", staleFiles.size());

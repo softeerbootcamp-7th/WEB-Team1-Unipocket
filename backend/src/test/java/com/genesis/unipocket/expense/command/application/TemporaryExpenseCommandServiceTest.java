@@ -10,10 +10,12 @@ import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseCommandService;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -21,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -36,13 +37,20 @@ class TemporaryExpenseCommandServiceTest {
 
 	@Mock private TemporaryExpenseRepository repository;
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
+	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 
-	@InjectMocks private TemporaryExpenseCommandService service;
+	private TemporaryExpenseCommandService service;
 
 	private TemporaryExpense testExpense;
 
 	@BeforeEach
 	void setUp() {
+		service =
+				new TemporaryExpenseCommandService(
+						repository,
+						tempExpenseMetaRepository,
+						accountBookRateInfoProvider,
+						new TemporaryExpenseValidator());
 		testExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)

@@ -38,6 +38,9 @@ public class TemporaryExpenseBulkUpdateService {
 		int successCount = 0;
 		List<Long> requestedIds =
 				request.items().stream().map(item -> item.tempExpenseId()).toList();
+		if (requestedIds.size() != requestedIds.stream().distinct().count()) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
 
 		// findAll 을 이용해서 조회하여 N+1 문제 개선
 		Map<Long, TemporaryExpense> expenseById =
@@ -109,5 +112,32 @@ public class TemporaryExpenseBulkUpdateService {
 				successCount,
 				request.items().size() - successCount,
 				results);
+	}
+
+	@Transactional
+	public void deleteByFile(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId, Long tempExpenseId) {
+		TemporaryExpense target =
+				temporaryExpenseRepository
+						.findById(tempExpenseId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
+
+		TempExpenseMeta targetMeta =
+				tempExpenseMetaRepository
+						.findById(target.getTempExpenseMetaId())
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+
+		if (!accountBookId.equals(targetMeta.getAccountBookId())) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+		}
+		if (!tempExpenseMetaId.equals(target.getTempExpenseMetaId())) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+		}
+		if (!fileId.equals(target.getFileId())) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
+		}
+
+		temporaryExpenseCommandService.deleteTemporaryExpense(tempExpenseId);
 	}
 }

@@ -10,6 +10,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemporaryExpensePersistenceService {
 
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
+	private final TemporaryExpenseValidator temporaryExpenseValidator;
 
 	@Transactional
 	public ParsingResult persist(
@@ -37,7 +39,15 @@ public class TemporaryExpensePersistenceService {
 		int incompleteCount = 0;
 
 		for (NormalizedParsedExpenseItem item : normalizedItems) {
-			TemporaryExpenseStatus status = determineStatus(item);
+			TemporaryExpenseStatus status =
+					temporaryExpenseValidator.resolveStatus(
+							null,
+							item.merchantName(),
+							item.category(),
+							item.localCurrencyCode(),
+							item.localAmount(),
+							rateContext.baseCurrencyCode(),
+							item.occurredAt());
 			if (status == TemporaryExpenseStatus.NORMAL) {
 				normalCount++;
 			} else if (status == TemporaryExpenseStatus.INCOMPLETE) {
@@ -85,7 +95,9 @@ public class TemporaryExpensePersistenceService {
 		BigDecimal baseAmount = null;
 		BigDecimal exchangeRate = null;
 
-		if (item.baseAmount() != null && item.baseCurrencyCode() == baseCurrencyCode) {
+		if (item.baseAmount() != null
+				&& item.baseCurrencyCode() != null
+				&& item.baseCurrencyCode() == baseCurrencyCode) {
 			baseAmount = item.baseAmount();
 			if (item.localAmount() != null && item.localAmount().compareTo(BigDecimal.ZERO) > 0) {
 				exchangeRate = baseAmount.divide(item.localAmount(), 4, RoundingMode.HALF_UP);
@@ -109,16 +121,6 @@ public class TemporaryExpensePersistenceService {
 		}
 
 		return new CalculatedAmount(baseAmount, exchangeRate);
-	}
-
-	private TemporaryExpenseStatus determineStatus(NormalizedParsedExpenseItem item) {
-		if (item.merchantName() == null || item.localAmount() == null) {
-			return TemporaryExpenseStatus.INCOMPLETE;
-		}
-		if (item.occurredAt() == null) {
-			return TemporaryExpenseStatus.INCOMPLETE;
-		}
-		return TemporaryExpenseStatus.NORMAL;
 	}
 
 	private record CalculatedAmount(BigDecimal baseAmount, BigDecimal exchangeRate) {}

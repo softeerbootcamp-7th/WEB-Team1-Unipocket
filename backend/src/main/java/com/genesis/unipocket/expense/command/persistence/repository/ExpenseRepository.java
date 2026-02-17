@@ -17,7 +17,7 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 
 	Page<ExpenseEntity> findByAccountBookId(Long accountBookId, Pageable pageable);
 
-	java.util.List<ExpenseEntity> findAllByAccountBookId(Long accountBookId);
+	List<ExpenseEntity> findAllByAccountBookId(Long accountBookId);
 
 	@Query(
 			"SELECT e FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId AND (:startDate"
@@ -39,6 +39,11 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 			Pageable pageable);
 
 	long countByAccountBookId(Long accountBookId);
+
+	@Query(
+			"SELECT MIN(e.occurredAt), MAX(e.occurredAt) FROM ExpenseEntity e WHERE e.accountBookId"
+					+ " = :accountBookId")
+	Object[] findOccurredAtRangeByAccountBookId(@Param("accountBookId") Long accountBookId);
 
 	@Query(
 			"SELECT e.merchant.displayMerchantName FROM ExpenseEntity e WHERE e.accountBookId ="

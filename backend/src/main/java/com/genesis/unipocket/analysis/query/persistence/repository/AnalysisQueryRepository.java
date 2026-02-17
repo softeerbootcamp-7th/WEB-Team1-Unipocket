@@ -4,7 +4,7 @@ import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.global.common.enums.Category;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -23,30 +23,31 @@ public class AnalysisQueryRepository {
 				.getSingleResult();
 	}
 
-	public List<Object[]> getMyDailySpent(
-			Long accountBookId, LocalDateTime start, LocalDateTime end, CurrencyType type) {
+	public List<Object[]> getMySpendEvents(
+			Long accountBookId, OffsetDateTime start, OffsetDateTime end, CurrencyType type) {
 		String amountField = amountJpql(type);
 		return em.createQuery(
-						"SELECT CAST(e.occurredAt AS DATE),"
-								+ " SUM("
+						"SELECT e.occurredAt,"
+								+ " "
 								+ amountField
-								+ ")"
+								+ ""
 								+ " FROM ExpenseEntity e"
 								+ " WHERE e.accountBookId = :abId"
 								+ " AND e.occurredAt >= :start"
 								+ " AND e.occurredAt < :end"
-								+ " GROUP BY CAST(e.occurredAt AS DATE)"
-								+ " ORDER BY CAST(e.occurredAt AS DATE) ASC",
+								+ " AND e.category <> :income"
+								+ " ORDER BY e.occurredAt ASC",
 						Object[].class)
 				.setParameter("abId", accountBookId)
 				.setParameter("start", start)
 				.setParameter("end", end)
+				.setParameter("income", Category.INCOME)
 				.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<Object[]> getMyCategorySpent(
-			Long accountBookId, LocalDateTime start, LocalDateTime end, CurrencyType type) {
+			Long accountBookId, OffsetDateTime start, OffsetDateTime end, CurrencyType type) {
 		String amountField = amountJpql(type);
 		return em.createQuery(
 						"SELECT e.category,"
@@ -69,7 +70,8 @@ public class AnalysisQueryRepository {
 
 	private String amountJpql(CurrencyType type) {
 		return type == CurrencyType.BASE
-				? "e.exchangeInfo.baseCurrencyAmount"
+				? "COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+						+ " e.exchangeInfo.calculatedBaseCurrencyAmount)"
 				: "e.exchangeInfo.localCurrencyAmount";
 	}
 }

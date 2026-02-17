@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,7 +17,7 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
-import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
+import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
@@ -28,6 +29,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpe
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -59,7 +61,8 @@ class TemporaryExpenseParsingServiceTest {
 	@BeforeEach
 	void setUp() {
 		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
-				new TemporaryExpensePersistenceService(temporaryExpenseRepository);
+				new TemporaryExpensePersistenceService(
+						temporaryExpenseRepository, new TemporaryExpenseValidator());
 		service =
 				new TemporaryExpenseParsingService(
 						fileRepository,
@@ -75,7 +78,7 @@ class TemporaryExpenseParsingServiceTest {
 
 	@Test
 	@DisplayName("파싱 시 카테고리 숫자/별칭을 변환하고 환율 조회는 키별 1회만 수행")
-	void parseFile_mapsCategoryAndDeduplicatesExchangeRateLookup() {
+	void parseBatchSingleFile_mapsCategoryAndDeduplicatesExchangeRateLookup() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-1.jpg";
 		File file =
@@ -91,8 +94,8 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.of(meta));
+		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
+		when(tempExpenseMetaRepository.findAllById(List.of(10L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -135,9 +138,10 @@ class TemporaryExpenseParsingServiceTest {
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		ParsingResult result = service.parseFile(accountBookId, s3Key);
+		BatchParsingResult result =
+				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-1").join();
 
-		assertThat(result.totalCount()).isEqualTo(2);
+		assertThat(result.totalParsed()).isEqualTo(2);
 		assertThat(result.normalCount()).isEqualTo(2);
 		verify(exchangeRateProvider, times(1))
 				.getExchangeRate(
@@ -161,7 +165,7 @@ class TemporaryExpenseParsingServiceTest {
 
 	@Test
 	@DisplayName("거래일시가 없으면 INCOMPLETE로 저장되고 환율 조회는 수행하지 않음")
-	void parseFile_incompleteItemSkipsExchangeLookup() {
+	void parseBatchSingleFile_incompleteItemSkipsExchangeLookup() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-2.jpg";
 		File file =
@@ -177,8 +181,8 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
-		when(tempExpenseMetaRepository.findById(11L)).thenReturn(Optional.of(meta));
+		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
+		when(tempExpenseMetaRepository.findAllById(List.of(11L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -205,7 +209,8 @@ class TemporaryExpenseParsingServiceTest {
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		ParsingResult result = service.parseFile(accountBookId, s3Key);
+		BatchParsingResult result =
+				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-2").join();
 
 		assertThat(result.incompleteCount()).isEqualTo(1);
 		verifyNoInteractions(exchangeRateProvider);
@@ -220,7 +225,7 @@ class TemporaryExpenseParsingServiceTest {
 
 	@Test
 	@DisplayName("파싱 결과에 기본 통화 금액(BaseAmount)이 있으면 환율 조회를 건너뛰고 해당 값을 사용")
-	void parseFile_usesProvidedBaseAmount_skipsExchangeLookup() {
+	void parseBatchSingleFile_usesProvidedBaseAmount_skipsExchangeLookup() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-base-amount.jpg";
 		File file =
@@ -236,8 +241,8 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3Key(s3Key)).thenReturn(Optional.of(file));
-		when(tempExpenseMetaRepository.findById(12L)).thenReturn(Optional.of(meta));
+		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
+		when(tempExpenseMetaRepository.findAllById(List.of(12L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -265,7 +270,8 @@ class TemporaryExpenseParsingServiceTest {
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		ParsingResult result = service.parseFile(accountBookId, s3Key);
+		BatchParsingResult result =
+				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-3").join();
 
 		assertThat(result.normalCount()).isEqualTo(1);
 
@@ -332,5 +338,120 @@ class TemporaryExpenseParsingServiceTest {
 		verify(fileRepository, never()).findByS3Key(anyString());
 		verify(tempExpenseMetaRepository, times(1)).findAllById(any());
 		verify(progressPublisher, times(1)).complete(eq("task-1"), any(BatchParsingResult.class));
+	}
+
+	@Test
+	@DisplayName("startParseAsync는 s3Keys가 null이어도 NPE 없이 메타 전체 파일을 대상으로 시작한다")
+	void startParseAsync_acceptsNullS3Keys() {
+		TemporaryExpenseParsingService asyncStartOnlyService =
+				new TemporaryExpenseParsingService(
+						fileRepository,
+						tempExpenseMetaRepository,
+						accountBookRateInfoProvider,
+						exchangeRateProvider,
+						fieldParser,
+						temporaryExpenseParseClient,
+						new TemporaryExpensePersistenceService(
+								temporaryExpenseRepository, new TemporaryExpenseValidator()),
+						progressPublisher,
+						runnable -> {});
+
+		Long accountBookId = 1L;
+		Long metaId = 10L;
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(metaId)
+						.accountBookId(accountBookId)
+						.build();
+		File file1 =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(metaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/a.png")
+						.build();
+		File file2 =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(metaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/b.png")
+						.build();
+
+		when(tempExpenseMetaRepository.findById(metaId)).thenReturn(Optional.of(meta));
+		when(fileRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(file1, file2));
+
+		ParseStartResult result =
+				asyncStartOnlyService.startParseAsync(accountBookId, metaId, null);
+
+		assertThat(result.totalFiles()).isEqualTo(2);
+		verify(progressPublisher).registerTask(anyString(), eq(accountBookId));
+	}
+
+	@Test
+	@DisplayName("baseAmount는 baseCurrencyCode가 없으면 무시되고 환율로 재계산한다")
+	void parseBatchSingleFile_ignoresBaseAmountWhenBaseCurrencyCodeMissing() {
+		Long accountBookId = 1L;
+		String s3Key = "temp/image-base-missing-currency.jpg";
+		File file =
+				File.builder()
+						.fileId(4L)
+						.tempExpenseMetaId(13L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(13L)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
+		when(tempExpenseMetaRepository.findAllById(List.of(13L))).thenReturn(List.of(meta));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
+		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
+		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
+		when(exchangeRateProvider.getExchangeRate(
+						eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any()))
+				.thenReturn(new BigDecimal("1300"));
+		when(temporaryExpenseRepository.saveAll(anyList()))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		when(temporaryExpenseParseClient.parse(file))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								true,
+								List.of(
+										new GeminiService.ParsedExpenseItem(
+												"Global Store",
+												"SHOPPING",
+												new BigDecimal("100.00"),
+												"USD",
+												new BigDecimal(
+														"1000.00"), // provided but invalid without
+												// currency
+												null,
+												LocalDateTime.of(2026, 2, 15, 12, 0),
+												null,
+												null,
+												null)),
+								null));
+
+		BatchParsingResult result =
+				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-4").join();
+
+		assertThat(result.normalCount()).isEqualTo(1);
+		verify(exchangeRateProvider, atLeastOnce())
+				.getExchangeRate(eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any());
+
+		@SuppressWarnings("unchecked")
+		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
+		verify(temporaryExpenseRepository).saveAll(captor.capture());
+		TemporaryExpense saved = captor.getValue().get(0);
+
+		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
+		assertThat(saved.getBaseCurrencyAmount()).isEqualByComparingTo("130000.00");
 	}
 }

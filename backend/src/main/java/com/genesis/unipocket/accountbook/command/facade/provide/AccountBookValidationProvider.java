@@ -1,7 +1,9 @@
 package com.genesis.unipocket.accountbook.command.facade.provide;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
+import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
@@ -20,15 +22,13 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AccountBookValidationProvider
-		implements com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator,
+		implements AccountBookOwnershipValidator,
 				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
 				AccountBookInfoFetchService,
 				AccountBookRateInfoProvider,
 				UserAccountBookValidator {
 
-	private final com.genesis.unipocket.accountbook.command.persistence.repository
-					.AccountBookCommandRepository
-			accountBookRepository;
+	private final AccountBookCommandRepository accountBookRepository;
 
 	@Override
 	public void validateOwnership(Long accountBookId, String userId) {

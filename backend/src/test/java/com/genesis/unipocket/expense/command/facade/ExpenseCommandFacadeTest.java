@@ -6,11 +6,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandContextService;
+import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
@@ -61,7 +61,9 @@ class ExpenseCommandFacadeTest {
 						55L);
 
 		when(accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString()))
-				.thenReturn(new AccountBookInfo(accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
 		when(expenseCommandContextService.resolveLocalCurrencyCode(null, CurrencyCode.USD))
 				.thenReturn(CurrencyCode.USD);
 		when(expenseService.createExpenseManual(any(ExpenseCreateCommand.class)))
@@ -127,8 +129,11 @@ class ExpenseCommandFacadeTest {
 						77L);
 
 		when(accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString()))
-				.thenReturn(new AccountBookInfo(accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
-		when(expenseCommandContextService.resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD))
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+		when(expenseCommandContextService.resolveLocalCurrencyCode(
+						CurrencyCode.JPY, CurrencyCode.USD))
 				.thenReturn(CurrencyCode.JPY);
 		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
 				.thenReturn(
@@ -167,8 +172,10 @@ class ExpenseCommandFacadeTest {
 		assertThat(command.localCurrencyCode()).isEqualTo(CurrencyCode.JPY);
 		assertThat(command.baseCurrencyCode()).isEqualTo(CurrencyCode.KRW);
 		assertThat(command.travelId()).isEqualTo(77L);
-		verify(accountBookOwnershipValidator).validateOwnership(eq(accountBookId), eq(userId.toString()));
-		verify(expenseCommandContextService).resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD);
+		verify(accountBookOwnershipValidator)
+				.validateOwnership(eq(accountBookId), eq(userId.toString()));
+		verify(expenseCommandContextService)
+				.resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD);
 		verify(expenseCommandContextService).enrichWithCardInfo(any(ExpenseResult.class));
 	}
 

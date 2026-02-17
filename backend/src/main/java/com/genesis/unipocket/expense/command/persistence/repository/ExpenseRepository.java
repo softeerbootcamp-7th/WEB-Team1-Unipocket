@@ -27,8 +27,8 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 				+ " e.exchangeInfo.calculatedBaseCurrencyAmount) >= :minAmount) AND (:maxAmount IS"
 				+ " NULL OR COALESCE(e.exchangeInfo.baseCurrencyAmount,"
 				+ " e.exchangeInfo.calculatedBaseCurrencyAmount) <= :maxAmount) AND (:merchantName"
-				+ " IS NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) AND (:travelId IS"
-				+ " NULL OR e.travelId = :travelId)")
+				+ " IS NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) AND (:travelId"
+				+ " IS NULL OR e.travelId = :travelId)")
 	Page<ExpenseEntity> findByFilters(
 			@Param("accountBookId") Long accountBookId,
 			@Param("startDate") OffsetDateTime startDate,

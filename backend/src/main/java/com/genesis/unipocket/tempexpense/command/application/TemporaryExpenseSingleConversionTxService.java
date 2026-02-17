@@ -140,10 +140,7 @@ public class TemporaryExpenseSingleConversionTxService {
 				ExchangeAmountCalculator.calculateBaseAmount(localAmount, resolvedRate);
 
 		return new ResolvedAmount(
-				baseAmount,
-				calculatedBaseAmount,
-				resolvedBaseCurrencyCode,
-				resolvedRate);
+				baseAmount, calculatedBaseAmount, resolvedBaseCurrencyCode, resolvedRate);
 	}
 
 	private CurrencyCode resolveBaseCurrencyCode(TemporaryExpense temp, Long accountBookId) {

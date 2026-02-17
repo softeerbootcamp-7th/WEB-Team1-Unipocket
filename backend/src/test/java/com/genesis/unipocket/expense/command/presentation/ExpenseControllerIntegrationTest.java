@@ -447,7 +447,8 @@ class ExpenseControllerIntegrationTest {
 		assertThat(saved.getBaseAmount()).isEqualByComparingTo("10000.00");
 		assertThat(saved.getDisplayBaseAmount()).isEqualByComparingTo("10000.00");
 		assertThat(saved.getExchangeInfo().getCalculatedBaseCurrencyAmount()).isNotNull();
-		assertThat(saved.getExchangeInfo().getCalculatedBaseCurrencyAmount().signum()).isGreaterThan(0);
+		assertThat(saved.getExchangeInfo().getCalculatedBaseCurrencyAmount().signum())
+				.isGreaterThan(0);
 	}
 
 	@Test

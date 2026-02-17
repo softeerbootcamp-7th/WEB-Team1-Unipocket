@@ -199,7 +199,8 @@ class TemporaryExpenseConversionServiceTest {
 							TempExpenseConvertValidationException exception =
 									(TempExpenseConvertValidationException) ex;
 							assertThat(exception.getViolations()).hasSize(1);
-							assertThat(exception.getViolations().get(0).tempExpenseId()).isEqualTo(101L);
+							assertThat(exception.getViolations().get(0).tempExpenseId())
+									.isEqualTo(101L);
 							assertThat(exception.getViolations().get(0).missingOrInvalidFields())
 									.contains("merchantName")
 									.contains("localCurrencyAmountMustBeGreaterThanZero")

@@ -1,8 +1,8 @@
 package com.genesis.unipocket.expense.query.presentation.response;
 
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.presentation.response.PaymentMethodResponse;
 import com.genesis.unipocket.expense.presentation.support.AmountFormatters;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
@@ -41,15 +41,15 @@ public record ExpenseResponse(
 				dto.displayMerchantName(),
 				dto.displayMerchantName(),
 				dto.category(),
-					PaymentMethodResponse.from(
-							dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),
-					dto.occurredAt().toInstant(),
-					AmountFormatters.toAmountString(dto.localCurrencyAmount()),
-					dto.localCurrencyCode(),
-					AmountFormatters.toAmountString(dto.baseCurrencyAmount()),
-					dto.baseCurrencyCode(),
-					dto.memo(),
-					dto.expenseSource(),
+				PaymentMethodResponse.from(
+						dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),
+				dto.occurredAt().toInstant(),
+				AmountFormatters.toAmountString(dto.localCurrencyAmount()),
+				dto.localCurrencyCode(),
+				AmountFormatters.toAmountString(dto.baseCurrencyAmount()),
+				dto.baseCurrencyCode(),
+				dto.memo(),
+				dto.expenseSource(),
 				dto.approvalNumber(),
 				dto.cardNumber(),
 				dto.fileLink());

@@ -2,9 +2,9 @@ package com.genesis.unipocket.expense.command.application;
 
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
-import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
-import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
+import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
@@ -137,8 +137,7 @@ public class ExpenseCommandService {
 								+ ":"
 								+ newBaseCurrencyCode
 								+ ":"
-								+ expense.getOccurredAt()
-										.toLocalDate(); // 일 단위 환율 기준
+								+ expense.getOccurredAt().toLocalDate(); // 일 단위 환율 기준
 
 				BigDecimal exchangeRate = rateCache.get(cacheKey);
 
@@ -188,5 +187,4 @@ public class ExpenseCommandService {
 			throw new BusinessException(ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
 		}
 	}
-
 }

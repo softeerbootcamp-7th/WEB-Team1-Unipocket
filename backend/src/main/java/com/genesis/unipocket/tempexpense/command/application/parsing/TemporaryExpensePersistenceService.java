@@ -1,7 +1,7 @@
 package com.genesis.unipocket.tempexpense.command.application.parsing;
 
-import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
@@ -117,7 +117,8 @@ public class TemporaryExpensePersistenceService {
 						item.occurredAt().toLocalDate());
 		exchangeRate = exchangeRateMap.get(key);
 		if (exchangeRate != null) {
-			baseAmount = ExchangeAmountCalculator.calculateBaseAmount(item.localAmount(), exchangeRate);
+			baseAmount =
+					ExchangeAmountCalculator.calculateBaseAmount(item.localAmount(), exchangeRate);
 		}
 
 		return new CalculatedAmount(baseAmount, exchangeRate);

@@ -61,7 +61,8 @@ public final class ExpenseExchangeResolver {
 		}
 
 		BigDecimal exchangeRate =
-				exchangeRateService.getExchangeRate(localCurrencyCode, baseCurrencyCode, occurredAt);
+				exchangeRateService.getExchangeRate(
+						localCurrencyCode, baseCurrencyCode, occurredAt);
 
 		// local only -> base(null), calculated 채움
 		if (localCurrencyAmount != null && inputBaseCurrencyAmount == null) {

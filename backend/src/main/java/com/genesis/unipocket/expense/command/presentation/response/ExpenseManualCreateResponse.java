@@ -24,15 +24,15 @@ public record ExpenseManualCreateResponse(
 				result.accountBookId(),
 				result.displayMerchantName(),
 				result.category(),
-					PaymentMethodResponse.from(
-							result.userCardId(),
-							result.cardCompany(),
-							result.cardLabel(),
-							result.cardLastDigits()),
-					AmountFormatters.toAmountString(result.localCurrencyAmount()),
-					result.localCurrencyCode(),
-					AmountFormatters.toAmountString(result.baseCurrencyAmount()),
-					result.baseCurrencyCode(),
-					result.occurredAt().toInstant());
+				PaymentMethodResponse.from(
+						result.userCardId(),
+						result.cardCompany(),
+						result.cardLabel(),
+						result.cardLastDigits()),
+				AmountFormatters.toAmountString(result.localCurrencyAmount()),
+				result.localCurrencyCode(),
+				AmountFormatters.toAmountString(result.baseCurrencyAmount()),
+				result.baseCurrencyCode(),
+				result.occurredAt().toInstant());
 	}
 }

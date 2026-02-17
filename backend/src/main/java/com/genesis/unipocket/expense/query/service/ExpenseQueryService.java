@@ -1,11 +1,11 @@
 package com.genesis.unipocket.expense.query.service;
 
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
@@ -69,7 +69,8 @@ public class ExpenseQueryService {
 			Sort mappedSort =
 					"baseCurrencyAmount".equals(order.getProperty())
 							? JpaSort.unsafe(
-									order.getDirection(), SIGNED_DISPLAY_BASE_AMOUNT_SORT_EXPRESSION)
+									order.getDirection(),
+									SIGNED_DISPLAY_BASE_AMOUNT_SORT_EXPRESSION)
 							: Sort.by(new Sort.Order(order.getDirection(), order.getProperty()));
 
 			refinedSort = refinedSort == null ? mappedSort : refinedSort.and(mappedSort);

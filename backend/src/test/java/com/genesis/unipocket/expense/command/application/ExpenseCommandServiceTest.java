@@ -1,7 +1,7 @@
 package com.genesis.unipocket.expense.command.application;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -22,9 +22,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -85,26 +85,26 @@ class ExpenseCommandServiceTest {
 		Long expenseId = 1L;
 		Long accountBookId = 7L;
 
-			ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
-			when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
-			when(expenseEntity.getExpenseId()).thenReturn(expenseId);
+		ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
+		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
+		when(expenseEntity.getExpenseId()).thenReturn(expenseId);
 
-			when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
+		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
 
-			ExpenseUpdateCommand command =
-					new ExpenseUpdateCommand(
-							expenseId,
-							accountBookId,
-							"스타벅스",
-							Category.FOOD,
-							null,
-							"메모",
-							OffsetDateTime.now(),
-							BigDecimal.valueOf(1500),
-							null,
-							CurrencyCode.JPY,
-							null,
-							CurrencyCode.KRW);
+		ExpenseUpdateCommand command =
+				new ExpenseUpdateCommand(
+						expenseId,
+						accountBookId,
+						"스타벅스",
+						Category.FOOD,
+						null,
+						"메모",
+						OffsetDateTime.now(),
+						BigDecimal.valueOf(1500),
+						null,
+						CurrencyCode.JPY,
+						null,
+						CurrencyCode.KRW);
 
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.getExchangeRate(any(), any(), any())).thenReturn(BigDecimal.ONE);
@@ -151,7 +151,8 @@ class ExpenseCommandServiceTest {
 		ArgumentCaptor<ExpenseEntity> expenseCaptor = ArgumentCaptor.forClass(ExpenseEntity.class);
 		verify(expenseRepository).save(expenseCaptor.capture());
 		assertThat(expenseCaptor.getValue().getBaseAmount()).isNull();
-		assertThat(expenseCaptor.getValue().getDisplayBaseAmount()).isEqualByComparingTo("12000.00");
+		assertThat(expenseCaptor.getValue().getDisplayBaseAmount())
+				.isEqualByComparingTo("12000.00");
 	}
 
 	@Test
@@ -286,12 +287,12 @@ class ExpenseCommandServiceTest {
 						Category.FOOD,
 						null,
 						"메모",
-							OffsetDateTime.now(),
-							new BigDecimal("10000.00"),
-							new BigDecimal("9000.00"),
-							CurrencyCode.KRW,
-							null,
-							CurrencyCode.KRW);
+						OffsetDateTime.now(),
+						new BigDecimal("10000.00"),
+						new BigDecimal("9000.00"),
+						CurrencyCode.KRW,
+						null,
+						CurrencyCode.KRW);
 
 		assertThatThrownBy(() -> expenseService.updateExpense(command))
 				.isInstanceOf(BusinessException.class)
@@ -306,26 +307,26 @@ class ExpenseCommandServiceTest {
 		Long expenseId = 1L;
 		Long accountBookId = 7L;
 
-			ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
-			when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
-			when(expenseEntity.getExpenseId()).thenReturn(expenseId);
+		ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
+		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
+		when(expenseEntity.getExpenseId()).thenReturn(expenseId);
 
-			when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
+		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
 
-			ExpenseUpdateCommand command =
-					new ExpenseUpdateCommand(
-							expenseId,
-							accountBookId,
-							"스타벅스",
-							Category.FOOD,
-							null,
-							"메모",
-							OffsetDateTime.now(),
-							BigDecimal.valueOf(15000),
-							null,
-							CurrencyCode.KRW,
-							null,
-							CurrencyCode.KRW);
+		ExpenseUpdateCommand command =
+				new ExpenseUpdateCommand(
+						expenseId,
+						accountBookId,
+						"스타벅스",
+						Category.FOOD,
+						null,
+						"메모",
+						OffsetDateTime.now(),
+						BigDecimal.valueOf(15000),
+						null,
+						CurrencyCode.KRW,
+						null,
+						CurrencyCode.KRW);
 
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.getExchangeRate(any(), any(), any())).thenReturn(BigDecimal.ONE);
@@ -403,22 +404,22 @@ class ExpenseCommandServiceTest {
 						Category.FOOD,
 						null,
 						"메모",
-							OffsetDateTime.now(),
-							new BigDecimal("10000.00"),
-							new BigDecimal("9000.00"),
-							CurrencyCode.USD,
-							null,
-							CurrencyCode.KRW);
+						OffsetDateTime.now(),
+						new BigDecimal("10000.00"),
+						new BigDecimal("9000.00"),
+						CurrencyCode.USD,
+						null,
+						CurrencyCode.KRW);
 
 		expenseService.updateExpense(command);
 
 		ArgumentCaptor<BigDecimal> baseCaptor = ArgumentCaptor.forClass(BigDecimal.class);
 		ArgumentCaptor<BigDecimal> calculatedCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-			verify(expenseEntity)
-					.updateExchangeInfo(
-							eq(CurrencyCode.USD),
-							eq(new BigDecimal("10000.00")),
-							eq(CurrencyCode.KRW),
+		verify(expenseEntity)
+				.updateExchangeInfo(
+						eq(CurrencyCode.USD),
+						eq(new BigDecimal("10000.00")),
+						eq(CurrencyCode.KRW),
 						baseCaptor.capture(),
 						calculatedCaptor.capture(),
 						eq(CurrencyCode.KRW),

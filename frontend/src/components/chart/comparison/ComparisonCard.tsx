@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 import { TOTAL_ANIMATION_DURATION } from '@/components/chart/chartType';
@@ -37,6 +38,15 @@ const ComparisonCard = ({
   isLocal,
 }: ComparisonCardProps) => {
   const styles = VARIANT_STYLES[variant];
+  const [showAmount, setShowAmount] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAmount(true);
+    }, TOTAL_ANIMATION_DURATION * 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="flex h-8.5 items-center gap-3.5">
@@ -48,7 +58,12 @@ const ComparisonCard = ({
         )}
         style={{ animationDuration: `${TOTAL_ANIMATION_DURATION}s` }}
       />
-      <div className="flex h-full flex-col justify-between">
+      <div
+        className={clsx(
+          'flex h-full flex-col justify-between transition-opacity duration-200',
+          showAmount ? 'opacity-100' : 'opacity-0',
+        )}
+      >
         <span className={clsx('caption2-medium', styles.textColor)}>
           {label}
         </span>

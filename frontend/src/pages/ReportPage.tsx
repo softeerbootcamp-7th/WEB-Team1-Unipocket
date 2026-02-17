@@ -68,6 +68,15 @@ const ReportPage = () => {
     });
   };
 
+  const canGoPrev = canGoToMonth(-1);
+  const canGoNext = canGoToMonth(1);
+
+  const getNavButtonClass = (enabled: boolean) =>
+    clsx('size-6', {
+      'text-label-alternative cursor-pointer': enabled,
+      'text-label-disable': !enabled,
+    });
+
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
 
@@ -88,18 +97,12 @@ const ReportPage = () => {
             </span>
             <div className="flex gap-3.5">
               <Icons.ChevronBack
-                className={clsx('size-6', {
-                  'text-label-alternative cursor-pointer': canGoToMonth(-1),
-                  'text-label-disable': !canGoToMonth(-1),
-                })}
-                onClick={() => canGoToMonth(-1) && handleMonthChange(-1)}
+                className={getNavButtonClass(canGoPrev)}
+                onClick={() => canGoPrev && handleMonthChange(-1)}
               />
               <Icons.ChevronForward
-                className={clsx('size-6', {
-                  'text-label-alternative cursor-pointer': canGoToMonth(1),
-                  'text-label-disable': !canGoToMonth(1),
-                })}
-                onClick={() => canGoToMonth(1) && handleMonthChange(1)}
+                className={getNavButtonClass(canGoNext)}
+                onClick={() => canGoNext && handleMonthChange(1)}
               />
             </div>
           </div>

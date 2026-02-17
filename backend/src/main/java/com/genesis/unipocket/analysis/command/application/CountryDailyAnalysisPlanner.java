@@ -2,10 +2,7 @@ package com.genesis.unipocket.analysis.command.application;
 
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
 import com.genesis.unipocket.analysis.command.persistence.entity.CountryBatchScheduleEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.CountryDailyAnalysisJobEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.CountryBatchScheduleRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.CountryDailyAnalysisJobRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.time.LocalDate;
@@ -25,12 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CountryDailyAnalysisPlanner {
 
 	private final CountryBatchScheduleRepository scheduleRepository;
-	private final CountryDailyAnalysisJobRepository jobRepository;
-	private final AnalysisBatchAggregationRepository aggregationRepository;
+	private final CountryMonthlyDirtyAggregationService monthlyDirtyAggregationService;
 	private final AnalysisBatchProperties properties;
 
 	@Transactional
-	public void createDueJobs() {
+	public void processDueCountries() {
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
 		initializeSchedules(nowUtc);
 
@@ -41,65 +37,19 @@ public class CountryDailyAnalysisPlanner {
 							.atZone(ZoneOffset.UTC)
 							.withZoneSameInstant(zoneId)
 							.toLocalDate();
-
-			LocalDate rangeEnd = runLocalDate.minusDays(1);
-			LocalDate rangeStart = calculateRangeStart(schedule, zoneId, rangeEnd);
-			if (rangeStart.isAfter(rangeEnd)) {
-				log.debug(
-						"Skip analysis job creation due to invalid range. country={}, runDate={},"
-								+ " rangeStart={}, rangeEnd={}",
+			try {
+				monthlyDirtyAggregationService.processCountryDirtyRows(schedule.getCountryCode());
+				LocalDateTime successAtUtc = LocalDateTime.now(ZoneOffset.UTC);
+				schedule.markSuccess(runLocalDate, successAtUtc);
+				schedule.moveNextRun(properties.getRunHour(), properties.getRunMinute());
+			} catch (Exception e) {
+				log.error(
+						"Failed monthly dirty aggregation. country={}, runLocalDate={}",
 						schedule.getCountryCode(),
 						runLocalDate,
-						rangeStart,
-						rangeEnd);
-				continue;
+						e);
 			}
-
-			jobRepository
-					.findByCountryCodeAndRunLocalDate(schedule.getCountryCode(), runLocalDate)
-					.orElseGet(
-							() ->
-									jobRepository.save(
-											CountryDailyAnalysisJobEntity.create(
-													schedule.getCountryCode(),
-													runLocalDate,
-													rangeStart,
-													rangeEnd)));
 		}
-	}
-
-	private LocalDate calculateRangeStart(
-			CountryBatchScheduleEntity schedule, ZoneId zoneId, LocalDate rangeEnd) {
-		LocalDate minAllowedStart =
-				rangeEnd.minusMonths(properties.getLookbackMonths()).plusDays(1);
-
-		LocalDate fallbackStart;
-		if (schedule.getLastSuccessAtUtc() == null) {
-			fallbackStart = minAllowedStart;
-		} else {
-			fallbackStart = rangeEnd;
-		}
-
-		LocalDate detectedStart =
-				schedule.getLastSuccessAtUtc() == null
-						? fallbackStart
-						: aggregationRepository
-								.findEarliestOccurredAtUtcUpdatedAfter(
-										schedule.getCountryCode(), schedule.getLastSuccessAtUtc())
-								.map(occurredAtUtc -> toLocalDateInZone(occurredAtUtc, zoneId))
-								.orElse(fallbackStart);
-
-		if (detectedStart.isBefore(minAllowedStart)) {
-			return minAllowedStart;
-		}
-		if (detectedStart.isAfter(rangeEnd)) {
-			return rangeEnd;
-		}
-		return detectedStart;
-	}
-
-	private LocalDate toLocalDateInZone(LocalDateTime utcDateTime, ZoneId zoneId) {
-		return utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(zoneId).toLocalDate();
 	}
 
 	private void initializeSchedules(LocalDateTime nowUtc) {

@@ -6,14 +6,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountAmountCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountCategoryAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
@@ -28,7 +29,9 @@ import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,7 +51,11 @@ class AnalysisQueryControllerTest {
 	@MockitoBean private AnalysisQueryRepository analysisQueryRepository;
 	@MockitoBean private AnalysisBatchAggregationRepository aggregationRepository;
 	@MockitoBean private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
-	@MockitoBean private AnalysisBatchProperties analysisBatchProperties;
+	@MockitoBean private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+
+	@MockitoBean
+	private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
+
 	@MockitoBean private AccountBookOwnershipValidator accountBookOwnershipValidator;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
@@ -65,23 +72,48 @@ class AnalysisQueryControllerTest {
 		Long accountBookId = 1L;
 
 		mockAuthentication(accessToken, userId);
-		org.mockito.BDDMockito.given(analysisBatchProperties.getOutlierIqrMultiplier())
-				.willReturn(1.5d);
 
 		org.mockito.BDDMockito.given(
 						analysisQueryRepository.getAccountBookCountryCodes(accountBookId))
 				.willReturn(new Object[] {CountryCode.US, CountryCode.KR});
+		org.mockito.BDDMockito.given(
+						monthlyDirtyRepository
+								.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+										eq(CountryCode.US),
+										eq(accountBookId),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisBatchJobStatus.SUCCESS)))
+				.willReturn(false);
+		org.mockito.BDDMockito.given(
+						aggregationRepository.hasAccountMonthlyAggregate(
+								eq(accountBookId),
+								eq(LocalDate.of(2025, 12, 1)),
+								eq(AnalysisMetricType.TOTAL_BASE_AMOUNT),
+								eq(AnalysisQualityType.CLEANED)))
+				.willReturn(true);
 
 		List<Object[]> thisMonthRows =
 				List.of(
-						new Object[] {LocalDate.of(2025, 12, 1), new BigDecimal("100.129")},
-						new Object[] {LocalDate.of(2025, 12, 3), new BigDecimal("50.126")});
+						new Object[] {
+							OffsetDateTime.parse("2025-12-01T12:00:00-05:00"),
+							new BigDecimal("100.129")
+						},
+						new Object[] {
+							OffsetDateTime.parse("2025-12-03T12:00:00-05:00"),
+							new BigDecimal("50.126")
+						});
 		List<Object[]> prevMonthRows =
 				List.of(
-						new Object[] {LocalDate.of(2025, 11, 1), new BigDecimal("20.111")},
-						new Object[] {LocalDate.of(2025, 11, 2), new BigDecimal("30.114")});
+						new Object[] {
+							OffsetDateTime.parse("2025-11-01T12:00:00-05:00"),
+							new BigDecimal("20.111")
+						},
+						new Object[] {
+							OffsetDateTime.parse("2025-11-02T12:00:00-05:00"),
+							new BigDecimal("30.114")
+						});
 		org.mockito.BDDMockito.given(
-						analysisQueryRepository.getMyDailySpent(
+						analysisQueryRepository.getMySpendEvents(
 								eq(accountBookId),
 								any(LocalDateTime.class),
 								any(LocalDateTime.class),
@@ -89,18 +121,26 @@ class AnalysisQueryControllerTest {
 				.willReturn(thisMonthRows, prevMonthRows);
 
 		org.mockito.BDDMockito.given(
-						aggregationRepository.aggregatePeerMonthlyTotalByAccountFromMonthly(
-								eq(CountryCode.US),
-								eq(CountryCode.KR),
-								eq(accountBookId),
-								eq(LocalDate.of(2025, 12, 1)),
-								eq(AnalysisMetricType.TOTAL_BASE_AMOUNT),
-								eq(AnalysisQualityType.CLEANED)))
+						pairMonthlyAggregateRepository
+								.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+										eq(CountryCode.US),
+										eq(CountryCode.KR),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisQualityType.CLEANED),
+										eq(AnalysisMetricType.TOTAL_BASE_AMOUNT)))
 				.willReturn(
-						List.of(
-								new AccountAmountCount(101L, new BigDecimal("200.111"), 1L),
-								new AccountAmountCount(102L, new BigDecimal("300.115"), 1L),
-								new AccountAmountCount(103L, new BigDecimal("400.114"), 1L)));
+						Optional.of(
+								PairMonthlyAggregateEntity.of(
+										CountryCode.US,
+										CountryCode.KR,
+										LocalDate.of(2025, 12, 1),
+										AnalysisQualityType.CLEANED,
+										AnalysisMetricType.TOTAL_BASE_AMOUNT,
+										3L,
+										new BigDecimal("750.4750"),
+										new BigDecimal("250.1583"),
+										null,
+										null)));
 
 		mockMvc.perform(
 						get(
@@ -133,8 +173,6 @@ class AnalysisQueryControllerTest {
 		Long accountBookId = 1L;
 
 		mockAuthentication(accessToken, userId);
-		org.mockito.BDDMockito.given(analysisBatchProperties.getOutlierIqrMultiplier())
-				.willReturn(1.5d);
 
 		org.mockito.BDDMockito.given(
 						analysisQueryRepository.getAccountBookCountryCodes(accountBookId))
@@ -172,33 +210,56 @@ class AnalysisQueryControllerTest {
 								new CategoryAmountCount(2, new BigDecimal("200.225"), 3L),
 								new CategoryAmountCount(4, new BigDecimal("300.335"), 2L)));
 		org.mockito.BDDMockito.given(
-						aggregationRepository.aggregatePeerMonthlyTotalByAccountFromMonthly(
-								eq(CountryCode.US),
-								eq(CountryCode.KR),
-								eq(accountBookId),
-								eq(LocalDate.of(2025, 12, 1)),
-								eq(AnalysisMetricType.TOTAL_BASE_AMOUNT),
-								eq(AnalysisQualityType.CLEANED)))
+						pairMonthlyAggregateRepository
+								.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+										eq(CountryCode.US),
+										eq(CountryCode.KR),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisQualityType.CLEANED),
+										eq(AnalysisMetricType.TOTAL_BASE_AMOUNT)))
 				.willReturn(
-						List.of(
-								new AccountAmountCount(201L, new BigDecimal("200.111"), 1L),
-								new AccountAmountCount(202L, new BigDecimal("400.111"), 1L)));
+						Optional.of(
+								PairMonthlyAggregateEntity.of(
+										CountryCode.US,
+										CountryCode.KR,
+										LocalDate.of(2025, 12, 1),
+										AnalysisQualityType.CLEANED,
+										AnalysisMetricType.TOTAL_BASE_AMOUNT,
+										3L,
+										new BigDecimal("1100.7750"),
+										new BigDecimal("366.9250"),
+										null,
+										null)));
 		org.mockito.BDDMockito.given(
-						aggregationRepository.aggregatePeerMonthlyCategoryByAccountFromMonthly(
-								eq(CountryCode.US),
-								eq(CountryCode.KR),
-								eq(accountBookId),
-								eq(LocalDate.of(2025, 12, 1)),
-								eq(AnalysisQualityType.CLEANED),
-								eq(CurrencyType.BASE)))
+						pairMonthlyCategoryAggregateRepository
+								.findAllByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndCurrencyType(
+										eq(CountryCode.US),
+										eq(CountryCode.KR),
+										eq(LocalDate.of(2025, 12, 1)),
+										eq(AnalysisQualityType.CLEANED),
+										eq(CurrencyType.BASE)))
 				.willReturn(
 						List.of(
-								new AccountCategoryAmountCount(
-										201L, 2, new BigDecimal("300.125"), 3L),
-								new AccountCategoryAmountCount(
-										202L, 2, new BigDecimal("200.125"), 2L),
-								new AccountCategoryAmountCount(
-										201L, 4, new BigDecimal("100.126"), 1L)));
+								PairMonthlyCategoryAggregateEntity.of(
+										CountryCode.US,
+										CountryCode.KR,
+										LocalDate.of(2025, 12, 1),
+										AnalysisQualityType.CLEANED,
+										CurrencyType.BASE,
+										com.genesis.unipocket.global.common.enums.Category.FOOD,
+										3L,
+										new BigDecimal("700.4750"),
+										new BigDecimal("233.4917")),
+								PairMonthlyCategoryAggregateEntity.of(
+										CountryCode.US,
+										CountryCode.KR,
+										LocalDate.of(2025, 12, 1),
+										AnalysisQualityType.CLEANED,
+										CurrencyType.BASE,
+										com.genesis.unipocket.global.common.enums.Category.LIVING,
+										3L,
+										new BigDecimal("400.4550"),
+										new BigDecimal("133.4850"))));
 
 		mockMvc.perform(
 						get(
@@ -226,7 +287,7 @@ class AnalysisQueryControllerTest {
 				.andExpect(jsonPath("$.categories[4].category").value(4))
 				.andExpect(jsonPath("$.categories[4].mySpend").value("300.34"))
 				.andExpect(jsonPath("$.categories[4].avgSpend").value("50.06"))
-				.andExpect(jsonPath("$.categories[4].diff").value("250.27"));
+				.andExpect(jsonPath("$.categories[4].diff").value("250.28"));
 	}
 
 	private void mockAuthentication(String accessToken, UUID userId) {

@@ -9,6 +9,8 @@ import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJo
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
@@ -488,8 +490,7 @@ public class CountryMonthlyDirtyAggregationService {
 										iqrBounds == null ? null : iqrBounds.upper()),
 						() ->
 								pairMonthlyAggregateRepository.save(
-										com.genesis.unipocket.analysis.command.persistence.entity
-												.PairMonthlyAggregateEntity.of(
+										PairMonthlyAggregateEntity.of(
 												pairMonthKey.localCountryCode(),
 												pairMonthKey.baseCountryCode(),
 												pairMonthKey.targetYearMonth(),
@@ -519,10 +520,7 @@ public class CountryMonthlyDirtyAggregationService {
 			categoryTotalMap.merge(row.categoryOrdinal(), row.totalAmount(), BigDecimal::add);
 		}
 
-		List<
-						com.genesis.unipocket.analysis.command.persistence.entity
-								.PairMonthlyCategoryAggregateEntity>
-				toSave = new ArrayList<>();
+		List<PairMonthlyCategoryAggregateEntity> toSave = new ArrayList<>();
 		for (Category category : Category.values()) {
 			if (category == Category.INCOME) {
 				continue;
@@ -531,8 +529,7 @@ public class CountryMonthlyDirtyAggregationService {
 					categoryTotalMap.getOrDefault(category.ordinal(), BigDecimal.ZERO);
 			BigDecimal averageAmount = divideScale(totalAmount, includedAccountCount, 4);
 			toSave.add(
-					com.genesis.unipocket.analysis.command.persistence.entity
-							.PairMonthlyCategoryAggregateEntity.of(
+					PairMonthlyCategoryAggregateEntity.of(
 							pairMonthKey.localCountryCode(),
 							pairMonthKey.baseCountryCode(),
 							pairMonthKey.targetYearMonth(),

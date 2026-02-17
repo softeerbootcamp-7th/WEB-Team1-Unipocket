@@ -20,14 +20,18 @@ const UploadBox = ({ type, onFilesSelected }: UploadBoxProps) => {
   const validateFiles = useFileValidator(policy);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { isDragging, bind } = useDragAndDrop(validateFiles);
+  const handleFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const files = validateFiles(fileList);
+    if (!files) return;
+    onFilesSelected(files);
+  };
+
+  const { isDragging, bind } = useDragAndDrop(handleFiles);
 
   // 클릭 업로드
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = validateFiles(e.target.files);
-    if (!files) return;
-
-    onFilesSelected(files);
+    handleFiles(e.target.files);
     e.target.value = '';
   };
 

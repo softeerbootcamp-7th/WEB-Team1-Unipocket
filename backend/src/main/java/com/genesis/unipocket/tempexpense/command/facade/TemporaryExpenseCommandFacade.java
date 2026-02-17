@@ -5,11 +5,11 @@ import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseBul
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseConversionService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseRateLimitService;
 import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryExpenseParsingService;
-import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
+import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
+import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseMetaBulkUpdateResponse;
 import java.util.List;
@@ -39,7 +39,8 @@ public class TemporaryExpenseCommandFacade {
 	public FileUploadResult createPresignedUrl(
 			Long accountBookId,
 			String fileName,
-			FileType fileType,
+			String mimeType,
+			UploadType uploadType,
 			Long tempExpenseMetaId,
 			UUID userId) {
 		// 가계부 소유주 검증 진행
@@ -48,7 +49,7 @@ public class TemporaryExpenseCommandFacade {
 
 		// presigned url 발급
 		return fileUploadService.createPresignedUrl(
-				accountBookId, fileName, fileType, tempExpenseMetaId);
+				accountBookId, fileName, mimeType, uploadType, tempExpenseMetaId);
 	}
 
 	public ParseStartResult startParseAsync(
@@ -61,13 +62,11 @@ public class TemporaryExpenseCommandFacade {
 				accountBookId, tempExpenseMetaId, s3Keys);
 	}
 
-	public BatchConversionResult confirm(
-			Long accountBookId, Long tempExpenseMetaId, List<Long> tempExpenseIds, UUID userId) {
+	public ConfirmStartResult confirm(Long accountBookId, Long tempExpenseMetaId, UUID userId) {
 
 		validateOwnership(accountBookId, userId);
 
-		return temporaryExpenseConversionService.convertMeta(
-				accountBookId, tempExpenseMetaId, tempExpenseIds);
+		return temporaryExpenseConversionService.startConfirmAsync(accountBookId, tempExpenseMetaId);
 	}
 
 	public void deleteMeta(Long accountBookId, Long tempExpenseMetaId, UUID userId) {
@@ -90,6 +89,13 @@ public class TemporaryExpenseCommandFacade {
 		return TemporaryExpenseMetaBulkUpdateResponse.from(
 				temporaryExpenseBulkUpdateService.updateByFile(
 						accountBookId, tempExpenseMetaId, fileId, request));
+	}
+
+	public void deleteTemporaryExpenseByFile(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId, Long tempExpenseId, UUID userId) {
+		validateOwnership(accountBookId, userId);
+		temporaryExpenseBulkUpdateService.deleteByFile(
+				accountBookId, tempExpenseMetaId, fileId, tempExpenseId);
 	}
 
 	private void validateOwnership(Long accountBookId, UUID userId) {

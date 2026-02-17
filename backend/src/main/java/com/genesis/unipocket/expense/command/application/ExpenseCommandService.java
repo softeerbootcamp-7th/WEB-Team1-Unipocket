@@ -40,64 +40,55 @@ public class ExpenseCommandService {
 
 	@Transactional
 	public ExpenseResult createExpenseManual(ExpenseCreateCommand command) {
-		try {
-			validateMerchantName(command.merchantName());
-			ExpenseExchangeResolver.ResolvedExchange resolved =
-					ExpenseExchangeResolver.resolve(exchangeRateService, command);
+		validateMerchantName(command.merchantName());
+		ExpenseExchangeResolver.ResolvedExchange resolved =
+				ExpenseExchangeResolver.resolve(exchangeRateService, command);
 
-			ExpenseEntity expenseEntity =
-					ExpenseEntity.manual(
-							ExpenseManualCreateArgs.of(
-									command,
-									resolved.baseCurrencyAmount(),
-									resolved.calculatedBaseCurrencyAmount(),
-									resolved.calculatedBaseCurrencyCode(),
-									resolved.exchangeRate(),
-									resolved.localCurrencyAmount()));
+		ExpenseEntity expenseEntity =
+				ExpenseEntity.manual(
+						ExpenseManualCreateArgs.of(
+								command,
+								resolved.baseCurrencyAmount(),
+								resolved.calculatedBaseCurrencyAmount(),
+								resolved.calculatedBaseCurrencyCode(),
+								resolved.exchangeRate(),
+								resolved.localCurrencyAmount()));
 
-			var savedEntity = expenseRepository.save(expenseEntity);
-			analysisMonthlyDirtyMarkerService.markDirty(
-					savedEntity.getAccountBookId(), savedEntity.getOccurredAt());
+		var savedEntity = expenseRepository.save(expenseEntity);
+		analysisMonthlyDirtyMarkerService.markDirty(
+				savedEntity.getAccountBookId(), savedEntity.getOccurredAt());
 
-			return ExpenseResult.from(savedEntity);
-		} catch (IllegalArgumentException e) {
-			throw new BusinessException(ErrorCode.EXPENSE_INVALID_AMOUNT);
-		}
+		return ExpenseResult.from(savedEntity);
 	}
 
 	@Transactional
 	public ExpenseResult updateExpense(ExpenseUpdateCommand command) {
-		try {
-			ExpenseEntity entity =
-					findAndVerifyOwnership(command.expenseId(), command.accountBookId());
-			var previousOccurredAt = entity.getOccurredAt();
+		ExpenseEntity entity = findAndVerifyOwnership(command.expenseId(), command.accountBookId());
+		var previousOccurredAt = entity.getOccurredAt();
 
-			// 기본 필드 업데이트
-			validateMerchantName(command.merchantName());
-			entity.updateMerchantName(command.merchantName());
-			entity.updateCategory(command.category());
-			entity.updateUserCardId(command.userCardId());
-			entity.updateMemo(command.memo());
-			entity.updateOccurredAt(command.occurredAt());
-			entity.updateTravelId(command.travelId());
+		// 기본 필드 업데이트
+		validateMerchantName(command.merchantName());
+		entity.updateMerchantName(command.merchantName());
+		entity.updateCategory(command.category());
+		entity.updateUserCardId(command.userCardId());
+		entity.updateMemo(command.memo());
+		entity.updateOccurredAt(command.occurredAt());
+		entity.updateTravelId(command.travelId());
 
-			ExpenseExchangeResolver.ResolvedExchange resolved =
-					ExpenseExchangeResolver.resolve(exchangeRateService, command);
-			entity.updateExchangeInfo(
-					command.localCurrencyCode(),
-					resolved.localCurrencyAmount(),
-					command.baseCurrencyCode(),
-					resolved.baseCurrencyAmount(),
-					resolved.calculatedBaseCurrencyAmount(),
-					resolved.calculatedBaseCurrencyCode(),
-					resolved.exchangeRate());
-			analysisMonthlyDirtyMarkerService.markDirty(
-					entity.getAccountBookId(), previousOccurredAt, entity.getOccurredAt());
+		ExpenseExchangeResolver.ResolvedExchange resolved =
+				ExpenseExchangeResolver.resolve(exchangeRateService, command);
+		entity.updateExchangeInfo(
+				command.localCurrencyCode(),
+				resolved.localCurrencyAmount(),
+				command.baseCurrencyCode(),
+				resolved.baseCurrencyAmount(),
+				resolved.calculatedBaseCurrencyAmount(),
+				resolved.calculatedBaseCurrencyCode(),
+				resolved.exchangeRate());
+		analysisMonthlyDirtyMarkerService.markDirty(
+				entity.getAccountBookId(), previousOccurredAt, entity.getOccurredAt());
 
-			return ExpenseResult.from(entity);
-		} catch (IllegalArgumentException e) {
-			throw new BusinessException(ErrorCode.EXPENSE_INVALID_AMOUNT);
-		}
+		return ExpenseResult.from(entity);
 	}
 
 	@Transactional

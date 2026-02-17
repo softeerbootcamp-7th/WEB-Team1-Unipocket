@@ -16,7 +16,7 @@ const ReportPage = () => {
   const [selectedDate, setSelectedDate] = useState(now);
   const categoryData = mockData.compareByCategory;
   const myselfData = mockData.compareWithLastMonth;
-  const [currencyType, setCurrencyType] = useState<CurrencyType>('LOCAL'); // @TODO: 드롭다운 추가 예정
+  const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
   const handleMonthChange = (offset: number) => {
     setSelectedDate((prev) => {
@@ -41,7 +41,7 @@ const ReportPage = () => {
       <div className="flex min-w-283 flex-col gap-4.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-[21.5px]">
-            <span className="title3-medium text-label-normal">
+            <span className="title3-medium text-label-normal min-w-34">
               {year}년 {month}월
             </span>
             <div className="flex gap-3.5">

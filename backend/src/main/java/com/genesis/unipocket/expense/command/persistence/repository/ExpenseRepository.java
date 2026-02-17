@@ -21,11 +21,13 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 
 	@Query(
 			"SELECT e FROM ExpenseEntity e WHERE e.accountBookId = :accountBookId AND (:startDate"
-				+ " IS NULL OR e.occurredAt >= :startDate) AND (:endDate IS NULL OR e.occurredAt <="
+				+ " IS NULL OR e.occurredAt >= :startDate) AND (:endDate IS NULL OR e.occurredAt <"
 				+ " :endDate) AND (:category IS NULL OR e.category = :category) AND (:minAmount IS"
-				+ " NULL OR e.exchangeInfo.baseCurrencyAmount >= :minAmount) AND (:maxAmount IS"
-				+ " NULL OR e.exchangeInfo.baseCurrencyAmount <= :maxAmount) AND (:merchantName IS"
-				+ " NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) AND (:travelId IS"
+				+ " NULL OR COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+				+ " e.exchangeInfo.calculatedBaseCurrencyAmount) >= :minAmount) AND (:maxAmount IS"
+				+ " NULL OR COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+				+ " e.exchangeInfo.calculatedBaseCurrencyAmount) <= :maxAmount) AND (:merchantName"
+				+ " IS NULL OR e.merchant.displayMerchantName LIKE %:merchantName%) AND (:travelId IS"
 				+ " NULL OR e.travelId = :travelId)")
 	Page<ExpenseEntity> findByFilters(
 			@Param("accountBookId") Long accountBookId,

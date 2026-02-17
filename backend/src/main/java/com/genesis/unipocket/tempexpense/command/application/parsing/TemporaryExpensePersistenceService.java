@@ -1,6 +1,7 @@
 package com.genesis.unipocket.tempexpense.command.application.parsing;
 
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
 import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
@@ -12,7 +13,6 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.Temporar
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +100,8 @@ public class TemporaryExpensePersistenceService {
 				&& item.baseCurrencyCode() == baseCurrencyCode) {
 			baseAmount = item.baseAmount();
 			if (item.localAmount() != null && item.localAmount().compareTo(BigDecimal.ZERO) > 0) {
-				exchangeRate = baseAmount.divide(item.localAmount(), 4, RoundingMode.HALF_UP);
+				exchangeRate =
+						ExchangeAmountCalculator.deriveExchangeRate(baseAmount, item.localAmount());
 			}
 			return new CalculatedAmount(baseAmount, exchangeRate);
 		}
@@ -116,8 +117,7 @@ public class TemporaryExpensePersistenceService {
 						item.occurredAt().toLocalDate());
 		exchangeRate = exchangeRateMap.get(key);
 		if (exchangeRate != null) {
-			baseAmount =
-					item.localAmount().multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
+			baseAmount = ExchangeAmountCalculator.calculateBaseAmount(item.localAmount(), exchangeRate);
 		}
 
 		return new CalculatedAmount(baseAmount, exchangeRate);

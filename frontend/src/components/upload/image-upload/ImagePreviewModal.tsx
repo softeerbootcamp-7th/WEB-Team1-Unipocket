@@ -21,7 +21,7 @@ const ImagePreviewModal = ({
       <img
         src={imageUrl}
         alt={imageName}
-        className="max-h-[80vh] max-w-[80vw] rounded-lg"
+        className="max-h-[70vh] max-w-[70vw] rounded-lg"
         onClick={(e) => e.stopPropagation()}
       />
     </div>

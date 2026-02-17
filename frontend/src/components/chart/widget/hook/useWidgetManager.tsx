@@ -73,17 +73,18 @@ const useWidgetCRUD = (maxWidgets: number) => {
     (widgetType: WidgetType, targetOrder: number) => {
       setAddedWidgets((prev) => {
         // 용량 체크
-        if (getTotalSlots(prev) + getWidgetSpan(widgetType) > maxWidgets)
+        if (getTotalSlots(prev) + getWidgetSpan(widgetType) > maxWidgets) {
           return prev;
+        }
 
         const normalized = normalizeOrders(prev);
-        const shifted = normalized.map((w) =>
-          w.order >= targetOrder ? { ...w, order: w.order + 1 } : w,
-        );
-        return normalizeOrders([
-          ...shifted,
-          { order: targetOrder, widgetType },
-        ]);
+
+        // 임시 order와 함께 새 위젯 객체를 생성합니다. 최종 order는 아래에서 재할당됩니다.
+        const newWidget: WidgetItem = { widgetType, order: targetOrder };
+
+        normalized.splice(targetOrder, 0, newWidget);
+
+        return normalized.map((widget, index) => ({ ...widget, order: index }));
       });
 
       setRemovedWidgets((prev) => prev.filter((t) => t !== widgetType));
@@ -115,23 +116,19 @@ const useWidgetCRUD = (maxWidgets: number) => {
     setAddedWidgets((prev) => {
       const normalized = normalizeOrders(prev);
 
-      // 이동할 위젯 (타겟 위젯)
-      const widget = normalized.find((w) => w.order === fromOrder);
-      if (!widget) return prev;
+      const fromIndex = normalized.findIndex((w) => w.order === fromOrder);
+      if (fromIndex === -1) {
+        return prev;
+      }
 
-      // 타겟 위젯을 제외한 나머지 위젯들
-      const without = normalizeOrders(
-        normalized.filter((w) => w.order !== fromOrder),
-      );
+      const [widgetToMove] = normalized.splice(fromIndex, 1);
 
       // 순서 보정 (앞에서 타겟 위젯이 빠졌으니 -1)
       const adjustedTo = toOrder > fromOrder ? toOrder - 1 : toOrder;
 
-      // 타겟 위치 이후 위젯들 순서 +1
-      const shifted = without.map((w) =>
-        w.order >= adjustedTo ? { ...w, order: w.order + 1 } : w,
-      );
-      return normalizeOrders([...shifted, { ...widget, order: adjustedTo }]);
+      normalized.splice(adjustedTo, 0, widgetToMove);
+
+      return normalized.map((widget, index) => ({ ...widget, order: index }));
     });
   }, []);
 

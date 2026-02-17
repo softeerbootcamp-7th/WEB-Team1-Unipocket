@@ -77,7 +77,6 @@ public class AnalysisBatchAggregationRepository {
 								FROM expenses e
 								JOIN account_book ab ON e.account_book_id = ab.account_book_id
 								WHERE ab.local_country_code = :countryCode
-									AND ab.base_country_code = :countryCode
 									AND e.occurred_at >= :startUtc
 									AND e.occurred_at < :endUtc
 									AND e.local_currency_amount IS NOT NULL
@@ -130,7 +129,6 @@ public class AnalysisBatchAggregationRepository {
 								AND e.occurred_at < :endUtc
 								AND e.local_currency_amount IS NOT NULL
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 							GROUP BY ab.account_book_id
 							""")
 						.setParameter("countryCode", countryCode.name())
@@ -150,7 +148,6 @@ public class AnalysisBatchAggregationRepository {
 							FROM expenses e
 							JOIN account_book ab ON e.account_book_id = ab.account_book_id
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 								AND e.occurred_at >= :startUtc
 								AND e.occurred_at < :endUtc
 								AND e.local_currency_amount IS NOT NULL
@@ -178,7 +175,6 @@ public class AnalysisBatchAggregationRepository {
 								AND e.local_currency_amount IS NOT NULL
 								AND e.category IS NOT NULL
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 							GROUP BY ab.account_book_id, e.category
 							HAVING e.category IS NOT NULL
 							""")
@@ -207,7 +203,6 @@ public class AnalysisBatchAggregationRepository {
 								AND e.local_currency_amount >= :minAmount
 								AND e.local_currency_amount <= :maxAmount
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 							GROUP BY ab.account_book_id
 							""")
 						.setParameter("countryCode", countryCode.name())
@@ -230,7 +225,7 @@ public class AnalysisBatchAggregationRepository {
 								e.account_book_id,
 								e.category,
 								e.local_currency_amount,
-								e.base_currency_amount,
+								COALESCE(e.base_currency_amount, e.calculated_base_currency_amount),
 								e.local_currency_code,
 								e.occurred_at,
 								ab.local_country_code,
@@ -259,7 +254,7 @@ public class AnalysisBatchAggregationRepository {
 								e.account_book_id,
 								e.category,
 								e.local_currency_amount,
-								e.base_currency_amount,
+								COALESCE(e.base_currency_amount, e.calculated_base_currency_amount),
 								e.local_currency_code,
 								e.occurred_at,
 								ab.local_country_code,
@@ -267,7 +262,6 @@ public class AnalysisBatchAggregationRepository {
 							FROM expenses e
 							JOIN account_book ab ON e.account_book_id = ab.account_book_id
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 								AND e.occurred_at >= :startUtc
 								AND e.occurred_at < :endUtc
 							""")
@@ -279,14 +273,13 @@ public class AnalysisBatchAggregationRepository {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Long> findAccountBookIdsByLocalEqualsBaseCountry(CountryCode countryCode) {
+	public List<Long> findAccountBookIdsByLocalCountry(CountryCode countryCode) {
 		List<Object> rows =
 				em.createNativeQuery(
 								"""
 							SELECT ab.account_book_id
 							FROM account_book ab
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 							""")
 						.setParameter("countryCode", countryCode.name())
 						.getResultList();
@@ -301,7 +294,7 @@ public class AnalysisBatchAggregationRepository {
 										"""
 								SELECT
 									COALESCE(SUM(e.local_currency_amount), 0),
-									COALESCE(SUM(e.base_currency_amount), 0),
+									COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
 									COUNT(*)
 								FROM expenses e
 								WHERE e.account_book_id = :accountBookId
@@ -324,7 +317,7 @@ public class AnalysisBatchAggregationRepository {
 							SELECT
 								e.category,
 								COALESCE(SUM(e.local_currency_amount), 0),
-								COALESCE(SUM(e.base_currency_amount), 0),
+								COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
 								COUNT(e.expense_id)
 							FROM expenses e
 							WHERE e.account_book_id = :accountBookId
@@ -351,7 +344,7 @@ public class AnalysisBatchAggregationRepository {
 								e.account_book_id,
 								e.category,
 								e.local_currency_amount,
-								e.base_currency_amount,
+								COALESCE(e.base_currency_amount, e.calculated_base_currency_amount),
 								e.local_currency_code,
 								e.occurred_at,
 								ab.local_country_code,
@@ -561,6 +554,35 @@ public class AnalysisBatchAggregationRepository {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<AccountAmountCount> aggregatePairMonthlyTotalByAccountFromMonthly(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			AnalysisQualityType qualityType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT r.account_book_id, COALESCE(SUM(r.metric_value), 0), COUNT(*)
+							FROM account_monthly_aggregate r
+							JOIN account_book ab ON r.account_book_id = ab.account_book_id
+							WHERE ab.local_country_code = :localCountryCode
+								AND ab.base_country_code = :baseCountryCode
+								AND r.target_year_month = :monthStart
+								AND r.metric_type = :metricType
+								AND r.quality_type = :qualityType
+							GROUP BY r.account_book_id
+							""")
+						.setParameter("localCountryCode", localCountryCode.name())
+						.setParameter("baseCountryCode", baseCountryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("metricType", metricType.name())
+						.setParameter("qualityType", qualityType.name())
+						.getResultList();
+		return rows.stream().map(this::toAccountAmountCount).toList();
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<AccountAmountCount> aggregatePeerMonthlyTotalByAccountFromMonthly(
 			CountryCode localCountryCode,
 			CountryCode baseCountryCode,
@@ -590,6 +612,35 @@ public class AnalysisBatchAggregationRepository {
 						.setParameter("excludedAccountBookId", excludedAccountBookId)
 						.getResultList();
 		return rows.stream().map(this::toAccountAmountCount).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AccountCategoryAmountCount> aggregatePairMonthlyCategoryByAccountFromMonthly(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			LocalDate monthStart,
+			AnalysisQualityType qualityType,
+			CurrencyType currencyType) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+							SELECT r.account_book_id, r.category, COALESCE(SUM(r.total_amount), 0), COALESCE(SUM(r.expense_count), 0)
+							FROM account_monthly_category_aggregate r
+							JOIN account_book ab ON r.account_book_id = ab.account_book_id
+							WHERE ab.local_country_code = :localCountryCode
+								AND ab.base_country_code = :baseCountryCode
+								AND r.target_year_month = :monthStart
+								AND r.quality_type = :qualityType
+								AND r.currency_type = :currencyType
+							GROUP BY r.account_book_id, r.category
+							""")
+						.setParameter("localCountryCode", localCountryCode.name())
+						.setParameter("baseCountryCode", baseCountryCode.name())
+						.setParameter("monthStart", monthStart)
+						.setParameter("qualityType", qualityType.name())
+						.setParameter("currencyType", currencyType.name())
+						.getResultList();
+		return rows.stream().map(this::toAccountCategoryAmountCount).toList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -722,7 +773,6 @@ public class AnalysisBatchAggregationRepository {
 							FROM account_daily_aggregate r
 							JOIN account_book ab ON r.account_book_id = ab.account_book_id
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 								AND r.target_local_date >= :monthStart
 								AND r.target_local_date < :nextMonthStart
 								AND r.metric_type = :metricType
@@ -751,7 +801,6 @@ public class AnalysisBatchAggregationRepository {
 							FROM account_daily_category_aggregate r
 							JOIN account_book ab ON r.account_book_id = ab.account_book_id
 							WHERE ab.local_country_code = :countryCode
-								AND ab.base_country_code = :countryCode
 								AND r.target_local_date >= :monthStart
 								AND r.target_local_date < :nextMonthStart
 								AND r.quality_type = :qualityType

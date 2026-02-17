@@ -12,7 +12,11 @@ import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQuality
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountAmountCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountCategoryAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountPairCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.ExpenseRow;
@@ -24,6 +28,7 @@ import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -32,8 +37,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -56,6 +63,8 @@ public class CountryMonthlyDirtyAggregationService {
 	private final AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
 	private final AccountMonthlyCategoryAggregateRepository
 			accountMonthlyCategoryAggregateRepository;
+	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	private final PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	private final AnalysisBatchProperties properties;
 	private final PlatformTransactionManager transactionManager;
 
@@ -72,6 +81,7 @@ public class CountryMonthlyDirtyAggregationService {
 		}
 
 		TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
+		Set<PairMonthKey> affectedPairMonths = new LinkedHashSet<>();
 		for (Long dirtyId : candidateIds) {
 			Boolean claimed =
 					txTemplate.execute(
@@ -93,15 +103,22 @@ public class CountryMonthlyDirtyAggregationService {
 			}
 
 			try {
-				txTemplate.executeWithoutResult(status -> processOneDirtyRow(dirtyId));
+				PairMonthKey affectedKey = txTemplate.execute(status -> processOneDirtyRow(dirtyId));
+				if (affectedKey != null) {
+					affectedPairMonths.add(affectedKey);
+				}
 			} catch (Exception e) {
 				log.error("Failed to process monthly dirty row. dirtyId={}", dirtyId, e);
 				txTemplate.executeWithoutResult(status -> markFailure(dirtyId, e));
 			}
 		}
+
+		for (PairMonthKey pairMonthKey : affectedPairMonths) {
+			txTemplate.executeWithoutResult(status -> refreshPairMonthlyAggregates(pairMonthKey));
+		}
 	}
 
-	private void processOneDirtyRow(Long dirtyId) {
+	private PairMonthKey processOneDirtyRow(Long dirtyId) {
 		AnalysisMonthlyDirtyEntity dirty =
 				monthlyDirtyRepository
 						.findById(dirtyId)
@@ -110,7 +127,7 @@ public class CountryMonthlyDirtyAggregationService {
 										new IllegalStateException(
 												"Monthly dirty row not found: " + dirtyId));
 		if (dirty.getStatus() != AnalysisBatchJobStatus.RUNNING) {
-			return;
+			return null;
 		}
 
 		AccountBookEntity accountBook =
@@ -125,7 +142,7 @@ public class CountryMonthlyDirtyAggregationService {
 
 		if (accountBook.getLocalCountryCode() != dirty.getCountryCode()) {
 			dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
-			return;
+			return null;
 		}
 
 		LocalDate monthStart = dirty.getTargetYearMonth().withDayOfMonth(1);
@@ -174,6 +191,8 @@ public class CountryMonthlyDirtyAggregationService {
 				AnalysisQualityType.CLEANED);
 
 		dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
+		return new PairMonthKey(
+				accountBook.getLocalCountryCode(), accountBook.getBaseCountryCode(), monthStart);
 	}
 
 	private CleanedMonthlyAggregation calculateCleaned(List<ExpenseRow> rows) {
@@ -395,6 +414,174 @@ public class CountryMonthlyDirtyAggregationService {
 		accountMonthlyCategoryAggregateRepository.saveAll(toSave);
 	}
 
+	private void refreshPairMonthlyAggregates(PairMonthKey pairMonthKey) {
+		if (pairMonthKey.baseCountryCode() == null) {
+			return;
+		}
+		refreshPairMonthlyAggregatesByCurrency(
+				pairMonthKey, CurrencyType.LOCAL, AnalysisMetricType.TOTAL_LOCAL_AMOUNT);
+		refreshPairMonthlyAggregatesByCurrency(
+				pairMonthKey, CurrencyType.BASE, AnalysisMetricType.TOTAL_BASE_AMOUNT);
+	}
+
+	private void refreshPairMonthlyAggregatesByCurrency(
+			PairMonthKey pairMonthKey, CurrencyType currencyType, AnalysisMetricType metricType) {
+		List<AccountAmountCount> monthlyRows =
+				aggregationRepository.aggregatePairMonthlyTotalByAccountFromMonthly(
+						pairMonthKey.localCountryCode(),
+						pairMonthKey.baseCountryCode(),
+						pairMonthKey.targetYearMonth(),
+						metricType,
+						AnalysisQualityType.CLEANED);
+
+		pairMonthlyCategoryAggregateRepository
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndCurrencyType(
+						pairMonthKey.localCountryCode(),
+						pairMonthKey.baseCountryCode(),
+						pairMonthKey.targetYearMonth(),
+						AnalysisQualityType.CLEANED,
+						currencyType);
+
+		if (monthlyRows.isEmpty()) {
+			pairMonthlyAggregateRepository
+					.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+							pairMonthKey.localCountryCode(),
+							pairMonthKey.baseCountryCode(),
+							pairMonthKey.targetYearMonth(),
+							AnalysisQualityType.CLEANED,
+							metricType)
+					.ifPresent(pairMonthlyAggregateRepository::delete);
+			return;
+		}
+
+		PairIqrBounds iqrBounds = computePairIqrBounds(monthlyRows);
+		List<AccountAmountCount> filteredRows = filterByIqr(monthlyRows, iqrBounds);
+		List<AccountAmountCount> effectiveRows = filteredRows.isEmpty() ? monthlyRows : filteredRows;
+		Set<Long> includedAccountIds =
+				effectiveRows.stream().map(AccountAmountCount::accountBookId).collect(java.util.stream.Collectors.toSet());
+
+		BigDecimal totalMetricSum =
+				effectiveRows.stream()
+						.map(AccountAmountCount::totalAmount)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+		long includedAccountCount = effectiveRows.size();
+		BigDecimal averageMetricValue = divideScale(totalMetricSum, includedAccountCount, 4);
+
+		pairMonthlyAggregateRepository
+				.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+						pairMonthKey.localCountryCode(),
+						pairMonthKey.baseCountryCode(),
+						pairMonthKey.targetYearMonth(),
+						AnalysisQualityType.CLEANED,
+						metricType)
+				.ifPresentOrElse(
+						existing ->
+								existing.update(
+										includedAccountCount,
+										totalMetricSum,
+										averageMetricValue,
+										iqrBounds == null ? null : iqrBounds.lower(),
+										iqrBounds == null ? null : iqrBounds.upper()),
+						() ->
+								pairMonthlyAggregateRepository.save(
+										com.genesis.unipocket.analysis.command.persistence.entity
+												.PairMonthlyAggregateEntity.of(
+												pairMonthKey.localCountryCode(),
+												pairMonthKey.baseCountryCode(),
+												pairMonthKey.targetYearMonth(),
+												AnalysisQualityType.CLEANED,
+												metricType,
+												includedAccountCount,
+												totalMetricSum,
+												averageMetricValue,
+												iqrBounds == null ? null : iqrBounds.lower(),
+												iqrBounds == null ? null : iqrBounds.upper())));
+
+		List<AccountCategoryAmountCount> categoryRows =
+				aggregationRepository.aggregatePairMonthlyCategoryByAccountFromMonthly(
+						pairMonthKey.localCountryCode(),
+						pairMonthKey.baseCountryCode(),
+						pairMonthKey.targetYearMonth(),
+						AnalysisQualityType.CLEANED,
+						currencyType);
+		Map<Integer, BigDecimal> categoryTotalMap = new HashMap<>();
+		for (AccountCategoryAmountCount row : categoryRows) {
+			if (!includedAccountIds.contains(row.accountBookId())) {
+				continue;
+			}
+			if (row.categoryOrdinal() == null) {
+				continue;
+			}
+			categoryTotalMap.merge(row.categoryOrdinal(), row.totalAmount(), BigDecimal::add);
+		}
+
+		List<com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity>
+				toSave = new ArrayList<>();
+		for (Category category : Category.values()) {
+			if (category == Category.INCOME) {
+				continue;
+			}
+			BigDecimal totalAmount =
+					categoryTotalMap.getOrDefault(category.ordinal(), BigDecimal.ZERO);
+			BigDecimal averageAmount = divideScale(totalAmount, includedAccountCount, 4);
+			toSave.add(
+					com.genesis.unipocket.analysis.command.persistence.entity
+							.PairMonthlyCategoryAggregateEntity.of(
+							pairMonthKey.localCountryCode(),
+							pairMonthKey.baseCountryCode(),
+							pairMonthKey.targetYearMonth(),
+							AnalysisQualityType.CLEANED,
+							currencyType,
+							category,
+							includedAccountCount,
+							totalAmount,
+							averageAmount));
+		}
+		if (!toSave.isEmpty()) {
+			pairMonthlyCategoryAggregateRepository.saveAll(toSave);
+		}
+	}
+
+	private PairIqrBounds computePairIqrBounds(List<AccountAmountCount> monthlyRows) {
+		if (monthlyRows == null || monthlyRows.size() < 4) {
+			return null;
+		}
+		List<BigDecimal> sorted =
+				monthlyRows.stream()
+						.map(AccountAmountCount::totalAmount)
+						.sorted(Comparator.naturalOrder())
+						.toList();
+		BigDecimal q1 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.25d, MC);
+		BigDecimal q3 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.75d, MC);
+		BigDecimal iqr = q3.subtract(q1, MC);
+		if (iqr.compareTo(BigDecimal.ZERO) < 0) {
+			return null;
+		}
+		BigDecimal delta =
+				iqr.multiply(BigDecimal.valueOf(properties.getOutlierIqrMultiplier()), MC);
+		return new PairIqrBounds(q1.subtract(delta, MC), q3.add(delta, MC));
+	}
+
+	private List<AccountAmountCount> filterByIqr(
+			List<AccountAmountCount> monthlyRows, PairIqrBounds iqrBounds) {
+		if (iqrBounds == null) {
+			return monthlyRows;
+		}
+		return monthlyRows.stream()
+				.filter(
+						row ->
+								row.totalAmount().compareTo(iqrBounds.lower()) >= 0
+										&& row.totalAmount().compareTo(iqrBounds.upper()) <= 0)
+				.toList();
+	}
+
+	private BigDecimal divideScale(BigDecimal value, long divisor, int scale) {
+		if (divisor <= 0L) {
+			return BigDecimal.ZERO;
+		}
+		return value.divide(BigDecimal.valueOf(divisor), scale, RoundingMode.HALF_UP);
+	}
+
 	private void markFailure(Long dirtyId, Exception exception) {
 		monthlyDirtyRepository
 				.findById(dirtyId)
@@ -469,4 +656,9 @@ public class CountryMonthlyDirtyAggregationService {
 			BigDecimal totalBaseAmount,
 			long expenseCount,
 			List<CategoryAmountPairCount> categoryAmountCounts) {}
+
+	private record PairMonthKey(
+			CountryCode localCountryCode, CountryCode baseCountryCode, LocalDate targetYearMonth) {}
+
+	private record PairIqrBounds(BigDecimal lower, BigDecimal upper) {}
 }

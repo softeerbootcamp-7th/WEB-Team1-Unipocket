@@ -13,6 +13,12 @@ import { type CurrencyType } from '@/types/currency';
 import { Icons } from '@/assets';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
+const parseYearMonth = (dateString: string | undefined) => {
+  if (!dateString) return null;
+  const [year, month] = dateString.split('-').map(Number);
+  return { year, month };
+};
+
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
@@ -26,13 +32,6 @@ const ReportPage = () => {
     (state) => state.accountBook?.startDate,
   );
   const endDate = useAccountBookStore((state) => state.accountBook?.endDate);
-
-  // startDate와 endDate에서 년월 추출
-  const parseYearMonth = (dateString: string | undefined) => {
-    if (!dateString) return null;
-    const [year, month] = dateString.split('-').map(Number);
-    return { year, month };
-  };
 
   const startYearMonth = parseYearMonth(startDate);
   const endYearMonth = parseYearMonth(endDate);

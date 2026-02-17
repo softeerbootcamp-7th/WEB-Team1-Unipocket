@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
 import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
 import WidgetList from '@/components/chart/widget/components/WidgetList';
@@ -28,7 +29,10 @@ useAccountBookStore.getState().setAccountBook(mockData);
 
 const Homepage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const data = getData();
+  const { data: expenses } = useSuspenseQuery({
+    queryKey: ['expenses'],
+    queryFn: getData,
+  });
   const {
     isWidgetEditMode,
     toggleEditMode,
@@ -69,7 +73,7 @@ const Homepage = () => {
               collapsedHeight="100%"
               expandedHeight="93vh"
             >
-              <DataTableProvider columns={columns} data={data}>
+              <DataTableProvider columns={columns} data={expenses}>
                 <DataTableFilterProvider>
                   <DateFilter />
                   <MerchantFilter />

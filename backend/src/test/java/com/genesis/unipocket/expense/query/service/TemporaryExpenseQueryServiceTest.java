@@ -18,6 +18,7 @@ import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryEx
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -146,7 +147,7 @@ class TemporaryExpenseQueryServiceTest {
 						.status(TemporaryExpenseStatus.INCOMPLETE)
 						.build();
 
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.of(meta));
+		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.of(meta));
 		when(fileRepository.findByTempExpenseMetaId(10L)).thenReturn(List.of(file1, file2));
 		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L, 101L)))
 				.thenReturn(List.of(e1, e2));
@@ -167,7 +168,7 @@ class TemporaryExpenseQueryServiceTest {
 	void getTemporaryExpenseMetaFiles_scopeMismatch() {
 		TempExpenseMeta meta =
 				TempExpenseMeta.builder().tempExpenseMetaId(10L).accountBookId(999L).build();
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.of(meta));
+		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.of(meta));
 
 		assertThatThrownBy(() -> service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L))
 				.isInstanceOf(BusinessException.class)
@@ -180,7 +181,7 @@ class TemporaryExpenseQueryServiceTest {
 	@Test
 	@DisplayName("메타 파일 상세 조회 - 메타가 없으면 not found")
 	void getTemporaryExpenseMetaFiles_metaNotFound() {
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(java.util.Optional.empty());
+		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L))
 				.isInstanceOf(BusinessException.class)

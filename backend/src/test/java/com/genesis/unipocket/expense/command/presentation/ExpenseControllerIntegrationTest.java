@@ -121,7 +121,8 @@ class ExpenseControllerIntegrationTest {
 		assertThat(saved.getCategory()).isEqualTo(Category.FOOD);
 
 		assertThat(saved.getAccountBookId()).isEqualTo(accountBookId);
-		assertThat(saved.getBaseAmount()).isEqualByComparingTo(BigDecimal.valueOf(10000.00));
+		assertThat(saved.getBaseAmount()).isNull();
+		assertThat(saved.getDisplayBaseAmount()).isEqualByComparingTo(BigDecimal.valueOf(10000.00));
 	}
 
 	@Test
@@ -333,6 +334,191 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(1))
 				.andExpect(jsonPath("$.totalCount").value(1));
+	}
+
+	@Test
+	@DisplayName("지출내역 정렬 - 금액순 정렬 시 지출은 음수, 수입은 양수로 판정")
+	void 지출내역_금액정렬시_소비수입_분리_성공() throws Exception {
+		// given
+		createTestExpenseWithDetails("소비-중간", 2, "2026-02-04T12:00:00", 30000.0, null);
+		createTestExpenseWithDetails("소비-작음", 2, "2026-02-04T13:00:00", 10000.0, null);
+		createTestExpenseWithDetails("수입-큼", 9, "2026-02-04T14:00:00", 50000.0, null);
+
+		// when & then
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "baseCurrencyAmount,desc"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses").isArray())
+				.andExpect(jsonPath("$.expenses.length()").value(3))
+				.andExpect(jsonPath("$.expenses[0].category").value(9))
+				.andExpect(jsonPath("$.expenses[0].displayMerchantName").value("수입-큼"))
+				.andExpect(jsonPath("$.expenses[1].category").value(2))
+				.andExpect(jsonPath("$.expenses[1].displayMerchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[2].category").value(2))
+				.andExpect(jsonPath("$.expenses[2].displayMerchantName").value("소비-중간"));
+	}
+
+	@Test
+	@DisplayName("지출내역 정렬 - 금액 오름차순 정렬 시 지출 우선 후 수입")
+	void 지출내역_금액오름차순_정렬_성공() throws Exception {
+		// given
+		createTestExpenseWithDetails("소비-중간", 2, "2026-02-04T12:00:00", 30000.0, null);
+		createTestExpenseWithDetails("소비-작음", 2, "2026-02-04T13:00:00", 10000.0, null);
+		createTestExpenseWithDetails("수입-큼", 9, "2026-02-04T14:00:00", 50000.0, null);
+
+		// when & then
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "baseCurrencyAmount,asc"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses").isArray())
+				.andExpect(jsonPath("$.expenses.length()").value(3))
+				.andExpect(jsonPath("$.expenses[0].category").value(2))
+				.andExpect(jsonPath("$.expenses[0].displayMerchantName").value("소비-중간"))
+				.andExpect(jsonPath("$.expenses[1].category").value(2))
+				.andExpect(jsonPath("$.expenses[1].displayMerchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[2].category").value(9))
+				.andExpect(jsonPath("$.expenses[2].displayMerchantName").value("수입-큼"));
+	}
+
+	@Test
+	@DisplayName("지출내역 수기 작성 - base only 입력 시 base는 비우고 calculated로 표시")
+	void 수기지출_base_only_입력시_정합성_성공() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "기내결제",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"baseCurrencyAmount": 20000.0,
+			"memo": "base only"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.baseCurrencyAmount").value("20000.00"));
+
+		ExpenseEntity saved = expenseRepository.findAll().get(0);
+		assertThat(saved.getBaseAmount()).isNull();
+		assertThat(saved.getDisplayBaseAmount()).isEqualByComparingTo("20000.00");
+		assertThat(saved.getLocalAmount()).isEqualByComparingTo("20000.00");
+	}
+
+	@Test
+	@DisplayName("지출내역 수기 작성 - local+base 입력 시 base 우선 표시")
+	void 수기지출_local_base_동시입력시_base_우선표시_성공() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "해외결제",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"localCurrencyAmount": 10000.0,
+			"baseCurrencyAmount": 10000.0,
+			"localCurrencyCode": "KRW",
+			"memo": "local+base"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.localCurrencyAmount").value("10000.00"))
+				.andExpect(jsonPath("$.baseCurrencyAmount").value("10000.00"));
+
+		ExpenseEntity saved = expenseRepository.findAll().get(0);
+		assertThat(saved.getBaseAmount()).isEqualByComparingTo("10000.00");
+		assertThat(saved.getDisplayBaseAmount()).isEqualByComparingTo("10000.00");
+		assertThat(saved.getExchangeInfo().getCalculatedBaseCurrencyAmount()).isNotNull();
+		assertThat(saved.getExchangeInfo().getCalculatedBaseCurrencyAmount().signum()).isGreaterThan(0);
+	}
+
+	@Test
+	@DisplayName("지출내역 수기 작성 - localAmount 0 입력 시 실패")
+	void 수기지출_local_0_입력시_실패() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "잘못된지출",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"localCurrencyAmount": 0.0,
+			"localCurrencyCode": "KRW",
+			"memo": "invalid"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("지출내역 수기 작성 - baseAmount 0 입력 시 실패")
+	void 수기지출_base_0_입력시_실패() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "잘못된지출",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"baseCurrencyAmount": 0.0,
+			"memo": "invalid"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("지출내역 수기 작성 - merchantName 공백 입력 시 실패")
+	void 수기지출_merchant_공백_입력시_실패() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "   ",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"localCurrencyAmount": 10000.0,
+			"localCurrencyCode": "KRW",
+			"memo": "invalid"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test

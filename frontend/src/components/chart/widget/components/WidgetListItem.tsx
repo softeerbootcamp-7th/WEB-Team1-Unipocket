@@ -10,6 +10,7 @@ interface WidgetListItemProps {
   widget: WidgetItem;
   isWidgetEditMode: boolean;
   handleRemoveWidget: (order: number) => void;
+  onDropToGap: (data: DragData, dropOrder: number) => void;
   isFirst: boolean;
 }
 
@@ -17,6 +18,7 @@ const WidgetListItem = ({
   widget,
   isWidgetEditMode,
   handleRemoveWidget,
+  onDropToGap,
   isFirst,
 }: WidgetListItemProps) => {
   const isEditable = isWidgetEditMode && widget.widgetType !== 'BLANK';
@@ -37,11 +39,23 @@ const WidgetListItem = ({
 
   return (
     <div className="relative">
-      {isWidgetEditMode && isFirst && <GapDropIndicator position="left" />}
+      {isWidgetEditMode && isFirst && (
+        <GapDropIndicator
+          dropOrder={widget.order}
+          onDropToGap={onDropToGap}
+          position="left"
+        />
+      )}
       <WidgetItemContext.Provider value={value}>
         {renderWidget(widget)}
       </WidgetItemContext.Provider>
-      {isWidgetEditMode && <GapDropIndicator position="right" />}
+      {isWidgetEditMode && (
+        <GapDropIndicator
+          dropOrder={widget.order + 1}
+          onDropToGap={onDropToGap}
+          position="right"
+        />
+      )}
     </div>
   );
 };

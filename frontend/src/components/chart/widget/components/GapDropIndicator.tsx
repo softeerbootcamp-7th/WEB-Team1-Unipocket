@@ -1,13 +1,27 @@
 import clsx from 'clsx';
 
+import {
+  type DragData,
+  useGapDropZone,
+} from '@/components/chart/widget/hook/useWidgetDragAndDrop';
+
 interface GapDropIndicatorProps {
+  dropOrder: number;
+  onDropToGap: (data: DragData, dropOrder: number) => void;
   position: 'left' | 'right';
 }
 
 const HALF_GAP = 10;
 
-const GapDropIndicator = ({ position }: GapDropIndicatorProps) => {
-  const isGapDragOver = true;
+const GapDropIndicator = ({
+  dropOrder,
+  onDropToGap,
+  position,
+}: GapDropIndicatorProps) => {
+  const { isGapDragOver, gapDropProps } = useGapDropZone({
+    dropOrder,
+    onDropToGap,
+  });
 
   return (
     <div
@@ -18,6 +32,7 @@ const GapDropIndicator = ({ position }: GapDropIndicatorProps) => {
       style={{
         transform: `translateX(${position === 'left' ? '-50%' : '50%'}) translateX(${position === 'left' ? -HALF_GAP : HALF_GAP}px)`,
       }}
+      {...gapDropProps}
     >
       <div
         className={clsx(

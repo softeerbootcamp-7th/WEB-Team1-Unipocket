@@ -13,6 +13,8 @@ const WidgetSection = () => {
     displayWidgets,
     availableWidgets,
     handleRemoveWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     listDropZone,
     pickerDropZone,
   } = useWidgetManager();
@@ -30,6 +32,8 @@ const WidgetSection = () => {
           <WidgetList
             displayWidgets={displayWidgets}
             handleRemoveWidget={handleRemoveWidget}
+            handleInsertWidget={handleInsertWidget}
+            handleMoveWidget={handleMoveWidget}
             dropZoneProps={
               isWidgetEditMode ? listDropZone.dropZoneProps : undefined
             }

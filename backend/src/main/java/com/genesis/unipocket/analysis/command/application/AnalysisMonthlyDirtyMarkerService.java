@@ -85,7 +85,8 @@ public class AnalysisMonthlyDirtyMarkerService {
 										new IllegalStateException(
 												"Account book not found for dirty marking: "
 														+ accountBookId));
-		Object[] occurredRange = expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
+		Object[] occurredRange =
+				expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
 		if (occurredRange == null || occurredRange.length < 2) {
 			return;
 		}

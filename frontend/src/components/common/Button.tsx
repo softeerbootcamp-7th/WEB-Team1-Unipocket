@@ -37,7 +37,7 @@ const Button = ({
       variant === 'solid' &&
       'bg-primary-normal text-inverse-label hover:bg-primary-strong cursor-pointer',
 
-    disabled && variant === 'solid' && 'bg-interactive-disable',
+    disabled && variant === 'solid' && 'bg-interaction-disable',
 
     /* --- danger --- */
     !disabled &&

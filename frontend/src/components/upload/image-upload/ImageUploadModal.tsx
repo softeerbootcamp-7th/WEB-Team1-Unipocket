@@ -6,6 +6,7 @@ import Modal from '@/components/modal/Modal';
 import UploadGallery from '@/components/upload/image-upload/UploadGallery';
 import type { UploadImageItem } from '@/components/upload/image-upload/UploadImage';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
+import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
 interface ImageUploadModalProps {
   isOpen: boolean;
@@ -15,9 +16,20 @@ interface ImageUploadModalProps {
 const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
   const [items, setItems] = useState<UploadImageItem[]>([]);
   const hasItems = items.length > 0;
+  const MAX_TOTAL = uploadPolicy.image.maxCount;
 
   const handleFilesSelected = (files: File[]) => {
-    const newItems: UploadImageItem[] = files.map((file) => ({
+    const remaining = MAX_TOTAL - items.length;
+
+    if (remaining <= 0) {
+      //@TODO: Toast로 변경
+      alert(`최대 ${MAX_TOTAL}개까지 업로드할 수 있어요.`);
+      return;
+    }
+
+    const limitedFiles = files.slice(0, remaining);
+
+    const newItems: UploadImageItem[] = limitedFiles.map((file) => ({
       id: crypto.randomUUID(),
       name: file.name,
       url: URL.createObjectURL(file),

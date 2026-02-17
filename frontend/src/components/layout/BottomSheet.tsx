@@ -1,7 +1,6 @@
 import type { ComponentPropsWithoutRef } from 'react';
+import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
-
-import { cn } from '@/lib/utils';
 
 interface BottomSheetProps extends ComponentPropsWithoutRef<'div'> {
   isOpen: boolean;
@@ -32,7 +31,7 @@ const BottomSheet = ({
           exit={{ opacity: 0 }}
           onClick={handleBackdropClick}
           // backdrop이 false면 배경색을 투명하게 처리합니다.
-          className={cn(
+          className={clsx(
             'fixed inset-0 z-(--z-overlay) flex items-end justify-center',
             backdrop ? 'bg-dimmer-strong' : 'bg-transparent',
           )}
@@ -45,7 +44,7 @@ const BottomSheet = ({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             // 부모의 클릭 이벤트가 자식에게 전달되지 않도록 방지
             onClick={(e) => e.stopPropagation()}
-            className={cn(
+            className={clsx(
               'bg-background-normal flex h-[80vh] w-full max-w-[calc(100%-30vh)] flex-col rounded-t-2xl px-2 pb-10',
               className,
             )}

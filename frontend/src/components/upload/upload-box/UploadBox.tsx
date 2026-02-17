@@ -12,9 +12,10 @@ import { Icons } from '@/assets';
 
 interface UploadBoxProps {
   type: 'image' | 'file';
+  onFilesSelected: (files: File[]) => void;
 }
 
-const UploadBox = ({ type }: UploadBoxProps) => {
+const UploadBox = ({ type, onFilesSelected }: UploadBoxProps) => {
   const policy = uploadPolicy[type];
   const validateFiles = useFileValidator(policy);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -26,7 +27,7 @@ const UploadBox = ({ type }: UploadBoxProps) => {
     const files = validateFiles(e.target.files);
     if (!files) return;
 
-    console.log('업로드 준비 완료:', files);
+    onFilesSelected(files);
     e.target.value = '';
   };
 

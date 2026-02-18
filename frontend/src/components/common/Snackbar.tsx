@@ -10,7 +10,7 @@ interface SnackbarProps {
   status?: SnackbarStatus;
   title: string;
   description?: string;
-  btnText: string;
+  btnText?: string;
   onAction: () => void;
 }
 
@@ -18,7 +18,7 @@ const Snackbar = ({
   status = 'default',
   title,
   description,
-  btnText,
+  btnText = '결과 확인',
   onAction,
 }: SnackbarProps) => {
   const iconMap = {

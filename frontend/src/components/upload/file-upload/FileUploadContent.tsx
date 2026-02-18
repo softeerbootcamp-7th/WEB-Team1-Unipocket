@@ -40,7 +40,7 @@ const FileUploadContent = () => {
           거래 내역 파일 업로드
         </h2>
         <span className="body1-normal-medium text-label-alternative">
-          은행 앱이나 카드사 홈페이지에서 다운로드한 엑셀, PDF 내역서를
+          은행 앱이나 카드사 홈페이지에서 다운로드한 거래 내역 파일을
           <br />
           업로드해 주세요.
         </span>

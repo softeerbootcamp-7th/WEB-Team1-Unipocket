@@ -53,20 +53,22 @@ const Homepage = () => {
           />
         </div>
         <div className="relative min-h-0 flex-1">
-          <ExpandableSheet
-            isExpanded={isExpanded && !isWidgetEditMode}
-            onToggleExpand={setIsExpanded}
-            collapsedHeight="100%"
-            expandedHeight="93vh"
-            isExpandable={!isWidgetEditMode}
-          >
-            {isWidgetEditMode ? (
+          {isWidgetEditMode && (
+            <ExpandableSheet collapsedHeight="100%" isExpandable={false}>
               <WidgetPicker
                 maxWidgets={maxWidgets}
                 availableWidgets={availableWidgets}
                 dropZoneProps={pickerDropZone.dropZoneProps}
               />
-            ) : (
+            </ExpandableSheet>
+          )}
+          {!isWidgetEditMode && (
+            <ExpandableSheet
+              isExpanded={isExpanded}
+              onToggleExpand={setIsExpanded}
+              collapsedHeight="100%"
+              expandedHeight="93vh"
+            >
               <DataTableProvider columns={columns} data={data}>
                 <DataTableFilterProvider>
                   <DateFilter />
@@ -90,8 +92,8 @@ const Homepage = () => {
                 <SelectionActionBar />
                 <TableSidePanel />
               </DataTableProvider>
-            )}
-          </ExpandableSheet>
+            </ExpandableSheet>
+          )}
         </div>
       </div>
     </WidgetContext.Provider>

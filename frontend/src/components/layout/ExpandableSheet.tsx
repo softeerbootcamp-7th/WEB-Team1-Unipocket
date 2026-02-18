@@ -4,11 +4,11 @@ import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 const SWIPE_THRESHOLD = 50;
 
 interface ExpandableSheetProps extends ComponentPropsWithoutRef<'div'> {
-  isExpanded: boolean;
-  onToggleExpand: (isExpanded: boolean) => void;
-  collapsedHeight: string | number;
-  expandedHeight: string | number;
   isExpandable?: boolean;
+  isExpanded?: boolean;
+  onToggleExpand?: (isExpanded: boolean) => void;
+  collapsedHeight: string | number;
+  expandedHeight?: string | number;
 }
 
 const ExpandableSheet = ({
@@ -24,9 +24,9 @@ const ExpandableSheet = ({
     info: PanInfo,
   ) => {
     if (info.offset.y < -SWIPE_THRESHOLD) {
-      if (!isExpanded) onToggleExpand(true);
+      if (!isExpanded && onToggleExpand) onToggleExpand(true);
     } else if (info.offset.y > SWIPE_THRESHOLD) {
-      onToggleExpand(false);
+      if (onToggleExpand) onToggleExpand(false);
     }
   };
   return (

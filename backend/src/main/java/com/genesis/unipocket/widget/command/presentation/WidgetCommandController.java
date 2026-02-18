@@ -52,8 +52,7 @@ public class WidgetCommandController {
 		userAccountBookValidator.validateUserAccountBook(userId, accountBookId);
 		userTravelValidator.validateTravelInAccountBook(accountBookId, travelId);
 
-		TravelWidgetsRes res =
-				widgetCommandOrchestrator.updateTravelWidgets(travelId, requests);
+		TravelWidgetsRes res = widgetCommandOrchestrator.updateTravelWidgets(travelId, requests);
 		return ResponseEntity.ok(res.items());
 	}
 }

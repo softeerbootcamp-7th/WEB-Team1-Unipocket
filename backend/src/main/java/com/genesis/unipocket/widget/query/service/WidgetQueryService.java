@@ -227,8 +227,10 @@ public class WidgetQueryService {
 						.atStartOfDay(context.zoneId());
 		ZonedDateTime monthEnd = monthStart.plusMonths(1);
 
-		OffsetDateTime utcMonthStart = monthStart.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
-		OffsetDateTime utcMonthEnd = monthEnd.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
+		OffsetDateTime utcMonthStart =
+				monthStart.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
+		OffsetDateTime utcMonthEnd =
+				monthEnd.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
 
 		CountryCode countryCode =
 				context.currencyType() == CurrencyType.LOCAL

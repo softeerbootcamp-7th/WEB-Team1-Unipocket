@@ -21,7 +21,8 @@ public class WidgetQueryRepository {
 	private String amountExpr(CurrencyType type) {
 		return type == CurrencyType.LOCAL
 				? "e.exchangeInfo.localCurrencyAmount"
-				: "COALESCE(e.exchangeInfo.baseCurrencyAmount, e.exchangeInfo.calculatedBaseCurrencyAmount)";
+				: "COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+						+ " e.exchangeInfo.calculatedBaseCurrencyAmount)";
 	}
 
 	private String travelFilter(Long travelId) {
@@ -130,8 +131,8 @@ public class WidgetQueryRepository {
 		var query =
 				em.createQuery(jpql, BigDecimal.class)
 						.setParameter("accountBookId", accountBookId)
-							.setParameter("rangeStart", start)
-							.setParameter("rangeEnd", end);
+						.setParameter("rangeStart", start)
+						.setParameter("rangeEnd", end);
 		bindTravel(query, travelId);
 		bindIncome(query);
 		return query.getSingleResult();
@@ -161,13 +162,12 @@ public class WidgetQueryRepository {
 						+ amountExpr(type)
 						+ ") DESC";
 
-			var query =
-					em.createQuery(jpql, Object[].class)
-							.setParameter("accountBookId", accountBookId);
-			bindTravel(query, travelId);
-			bindPeriod(query, periodStart, periodEnd);
-			bindIncome(query);
-			return query.getResultList();
+		var query =
+				em.createQuery(jpql, Object[].class).setParameter("accountBookId", accountBookId);
+		bindTravel(query, travelId);
+		bindPeriod(query, periodStart, periodEnd);
+		bindIncome(query);
+		return query.getResultList();
 	}
 
 	// ── COMPARISON ──────────────────────────────────────
@@ -193,8 +193,8 @@ public class WidgetQueryRepository {
 		var query =
 				em.createQuery(jpql, BigDecimal.class)
 						.setParameter("accountBookId", accountBookId)
-							.setParameter("monthStart", monthStart)
-							.setParameter("monthEnd", monthEnd);
+						.setParameter("monthStart", monthStart)
+						.setParameter("monthEnd", monthEnd);
 		bindTravel(query, travelId);
 		bindIncome(query);
 		return query.getSingleResult();

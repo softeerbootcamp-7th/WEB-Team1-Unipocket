@@ -243,7 +243,10 @@ class WidgetQueryPaymentIntegrationTest {
 								.build());
 
 		mockMvc.perform(
-						get("/account-books/{accountBookId}/travels/{travelId}/widget", accountBookId, otherTravel.getId())
+						get(
+										"/account-books/{accountBookId}/travels/{travelId}/widget",
+										accountBookId,
+										otherTravel.getId())
 								.with(jwtTestHelper.withJwtAuth(userId))
 								.queryParam("widgetType", "BUDGET")
 								.queryParam("currencyType", "BASE")

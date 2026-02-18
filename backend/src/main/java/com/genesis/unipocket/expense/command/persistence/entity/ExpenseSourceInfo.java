@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class ExpenseSourceInfo {
 	private String fileLink;
 
 	private ExpenseSourceInfo(ExpenseSource expenseSource, String fileLink) {
-		this.expenseSource = java.util.Objects.requireNonNull(expenseSource, "sourceType");
+		this.expenseSource = Objects.requireNonNull(expenseSource, "sourceType");
 		this.fileLink = fileLink;
 	}
 

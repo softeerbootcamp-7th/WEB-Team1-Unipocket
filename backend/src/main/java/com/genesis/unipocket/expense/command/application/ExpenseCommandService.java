@@ -2,20 +2,22 @@ package com.genesis.unipocket.expense.command.application;
 
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
-import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,21 +40,19 @@ public class ExpenseCommandService {
 
 	@Transactional
 	public ExpenseResult createExpenseManual(ExpenseCreateCommand command) {
-		BigDecimal exchangeRate =
-				exchangeRateService.getExchangeRate(
-						command.localCurrencyCode(),
-						command.baseCurrencyCode(),
-						command.occurredAt());
-
-		BigDecimal baseCurrencyAmount =
-				command.localCurrencyAmount()
-						.multiply(exchangeRate)
-						.setScale(2, BigDecimal.ROUND_HALF_UP);
+		validateMerchantName(command.merchantName());
+		ExpenseExchangeResolver.ResolvedExchange resolved =
+				ExpenseExchangeResolver.resolve(exchangeRateService, command);
 
 		ExpenseEntity expenseEntity =
 				ExpenseEntity.manual(
 						ExpenseManualCreateArgs.of(
-								command, baseCurrencyAmount, null, null, exchangeRate));
+								command,
+								resolved.baseCurrencyAmount(),
+								resolved.calculatedBaseCurrencyAmount(),
+								resolved.calculatedBaseCurrencyCode(),
+								resolved.exchangeRate(),
+								resolved.localCurrencyAmount()));
 
 		var savedEntity = expenseRepository.save(expenseEntity);
 		analysisMonthlyDirtyMarkerService.markDirty(
@@ -67,6 +67,7 @@ public class ExpenseCommandService {
 		var previousOccurredAt = entity.getOccurredAt();
 
 		// 기본 필드 업데이트
+		validateMerchantName(command.merchantName());
 		entity.updateMerchantName(command.merchantName());
 		entity.updateCategory(command.category());
 		entity.updateUserCardId(command.userCardId());
@@ -74,36 +75,16 @@ public class ExpenseCommandService {
 		entity.updateOccurredAt(command.occurredAt());
 		entity.updateTravelId(command.travelId());
 
-		// 통화/금액 변경 시 환율 재계산
-		boolean currencyChanged = !entity.getLocalCurrency().equals(command.localCurrencyCode());
-		boolean amountChanged =
-				entity.getLocalAmount().compareTo(command.localCurrencyAmount()) != 0;
-
-		if (currencyChanged || amountChanged) {
-			BigDecimal exchangeRate =
-					exchangeRateService.getExchangeRate(
-							command.localCurrencyCode(),
-							command.baseCurrencyCode(),
-							command.occurredAt());
-
-			BigDecimal baseCurrencyAmount =
-					command.localCurrencyAmount()
-							.multiply(exchangeRate)
-							.setScale(2, BigDecimal.ROUND_HALF_UP);
-
-			boolean convertedMode =
-					entity.getExchangeInfo() != null
-							&& entity.getExchangeInfo().getCalculatedBaseCurrencyAmount() != null;
-
-			entity.updateExchangeInfo(
-					command.localCurrencyCode(),
-					command.localCurrencyAmount(),
-					entity.getOriginalBaseCurrency(),
-					convertedMode ? entity.getOriginalBaseAmount() : baseCurrencyAmount,
-					convertedMode ? baseCurrencyAmount : null,
-					convertedMode ? command.baseCurrencyCode() : null,
-					exchangeRate);
-		}
+		ExpenseExchangeResolver.ResolvedExchange resolved =
+				ExpenseExchangeResolver.resolve(exchangeRateService, command);
+		entity.updateExchangeInfo(
+				command.localCurrencyCode(),
+				resolved.localCurrencyAmount(),
+				command.baseCurrencyCode(),
+				resolved.baseCurrencyAmount(),
+				resolved.calculatedBaseCurrencyAmount(),
+				resolved.calculatedBaseCurrencyCode(),
+				resolved.exchangeRate());
 		analysisMonthlyDirtyMarkerService.markDirty(
 				entity.getAccountBookId(), previousOccurredAt, entity.getOccurredAt());
 
@@ -135,9 +116,9 @@ public class ExpenseCommandService {
 				break;
 			}
 
-			// Local cache for exchange rates to avoid N+1 lookups within the chunk.
-			// Keyed by source/target currency and occurred date (daily rate granularity).
-			java.util.Map<String, BigDecimal> rateCache = new java.util.HashMap<>();
+			// 청크 단위 환율 캐시
+			// 캐시 키: 원본/대상 통화 + 발생일(일 단위 환율)
+			Map<String, BigDecimal> rateCache = new HashMap<>();
 			Set<OffsetDateTime> occurredAts = new LinkedHashSet<>();
 
 			for (ExpenseEntity expense : expenses) {
@@ -147,8 +128,7 @@ public class ExpenseCommandService {
 								+ ":"
 								+ newBaseCurrencyCode
 								+ ":"
-								+ expense.getOccurredAt()
-										.toLocalDate(); // Assuming daily rate granularity
+								+ expense.getOccurredAt().toLocalDate(); // 일 단위 환율 기준
 
 				BigDecimal exchangeRate = rateCache.get(cacheKey);
 
@@ -162,9 +142,8 @@ public class ExpenseCommandService {
 				}
 
 				BigDecimal baseCurrencyAmount =
-						expense.getLocalAmount()
-								.multiply(exchangeRate)
-								.setScale(2, RoundingMode.HALF_UP);
+						ExchangeAmountCalculator.calculateBaseAmount(
+								expense.getLocalAmount(), exchangeRate);
 
 				expense.updateExchangeInfo(
 						expense.getLocalCurrency(),
@@ -192,5 +171,11 @@ public class ExpenseCommandService {
 		}
 
 		return entity;
+	}
+
+	private void validateMerchantName(String merchantName) {
+		if (merchantName == null || merchantName.isBlank()) {
+			throw new BusinessException(ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
+		}
 	}
 }

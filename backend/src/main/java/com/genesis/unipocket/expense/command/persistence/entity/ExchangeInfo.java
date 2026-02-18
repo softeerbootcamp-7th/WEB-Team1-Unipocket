@@ -55,18 +55,19 @@ public class ExchangeInfo {
 		if (localCurrency == null || billingCurrency == null) {
 			throw new IllegalArgumentException("currency must not be null");
 		}
-		if (localAmount == null || localAmount.signum() < 0) {
-			throw new IllegalArgumentException("amount must be positive");
+		if (localAmount == null || localAmount.signum() <= 0) {
+			throw new IllegalArgumentException("localCurrencyAmount must be greater than 0");
 		}
 		if (billingAmount == null && calculatedBillingAmount == null) {
 			throw new IllegalArgumentException(
 					"baseCurrencyAmount or calculatedBaseCurrencyAmount is required");
 		}
-		if (billingAmount != null && billingAmount.signum() < 0) {
-			throw new IllegalArgumentException("baseCurrencyAmount must be positive");
+		if (billingAmount != null && billingAmount.signum() <= 0) {
+			throw new IllegalArgumentException("baseCurrencyAmount must be greater than 0");
 		}
-		if (calculatedBillingAmount != null && calculatedBillingAmount.signum() < 0) {
-			throw new IllegalArgumentException("calculatedBaseCurrencyAmount must be positive");
+		if (calculatedBillingAmount != null && calculatedBillingAmount.signum() <= 0) {
+			throw new IllegalArgumentException(
+					"calculatedBaseCurrencyAmount must be greater than 0");
 		}
 		if (calculatedBillingAmount != null && calculatedBillingCurrency == null) {
 			throw new IllegalArgumentException(

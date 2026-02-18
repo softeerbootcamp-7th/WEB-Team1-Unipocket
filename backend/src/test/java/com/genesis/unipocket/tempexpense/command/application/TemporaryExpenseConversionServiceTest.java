@@ -1,6 +1,7 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,6 +20,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
@@ -157,5 +159,52 @@ class TemporaryExpenseConversionServiceTest {
 
 		assertThat(result.totalExpenses()).isEqualTo(1);
 		verify(accountBookRateInfoProvider).getRateInfo(accountBookId);
+	}
+
+	@Test
+	@DisplayName("startConfirmAsync는 변환 필수 필드 누락/유효성 실패 내역을 tempExpenseId와 함께 반환한다")
+	void startConfirmAsync_returnsFieldViolations() {
+		Long accountBookId = 1L;
+		Long metaId = 10L;
+		TemporaryExpense invalidExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(101L)
+						.tempExpenseMetaId(metaId)
+						.merchantName(" ")
+						.category(Category.FOOD)
+						.localCountryCode(CurrencyCode.USD)
+						.localCurrencyAmount(BigDecimal.ZERO)
+						.baseCountryCode(CurrencyCode.USD)
+						.baseCurrencyAmount(new BigDecimal("15.00"))
+						.occurredAt(LocalDateTime.of(2026, 2, 17, 10, 0))
+						.build();
+
+		when(metaRepository.findById(metaId))
+				.thenReturn(
+						Optional.of(
+								TempExpenseMeta.builder()
+										.tempExpenseMetaId(metaId)
+										.accountBookId(accountBookId)
+										.build()));
+		when(tempExpenseRepository.findByTempExpenseMetaId(metaId))
+				.thenReturn(List.of(invalidExpense));
+		when(tempExpenseRepository.findAllById(List.of(101L))).thenReturn(List.of(invalidExpense));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.USD, CurrencyCode.USD));
+
+		assertThatThrownBy(() -> service.startConfirmAsync(accountBookId, metaId))
+				.isInstanceOf(TempExpenseConvertValidationException.class)
+				.satisfies(
+						ex -> {
+							TempExpenseConvertValidationException exception =
+									(TempExpenseConvertValidationException) ex;
+							assertThat(exception.getViolations()).hasSize(1);
+							assertThat(exception.getViolations().get(0).tempExpenseId())
+									.isEqualTo(101L);
+							assertThat(exception.getViolations().get(0).missingOrInvalidFields())
+									.contains("merchantName")
+									.contains("localCurrencyAmountMustBeGreaterThanZero")
+									.contains("sameCurrencyAmountMismatch");
+						});
 	}
 }

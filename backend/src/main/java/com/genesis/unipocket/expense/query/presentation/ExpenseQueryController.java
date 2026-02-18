@@ -1,12 +1,12 @@
 package com.genesis.unipocket.expense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
+import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
 import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
-import com.genesis.unipocket.expense.query.service.result.ExpenseResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;

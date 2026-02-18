@@ -64,22 +64,18 @@ const Coachmark = ({
           <p>{content}</p>
 
           <div className="flex items-center gap-1.5">
-            {secondaryAction && (
-              <Button
-                variant="outlined-inverse"
-                onClick={handleAction(secondaryAction.onClick)}
-              >
-                {secondaryAction.label}
-              </Button>
-            )}
-            {primaryAction && (
-              <Button
-                variant="solid"
-                onClick={handleAction(primaryAction.onClick)}
-              >
-                {primaryAction.label}
-              </Button>
-            )}
+            <Button
+              variant="outlined-inverse"
+              onClick={handleAction(secondaryAction.onClick)}
+            >
+              {secondaryAction.label}
+            </Button>
+            <Button
+              variant="solid"
+              onClick={handleAction(primaryAction.onClick)}
+            >
+              {primaryAction.label}
+            </Button>
           </div>
         </div>
         <PopoverArrow asChild>

@@ -42,7 +42,7 @@ const FileUploadContent = () => {
         )}
         {file && (
           <UploadFile
-            fileName={file.name}
+            name={file.name}
             status="uploading" // @TODO: 실제 업로드 상태 연결
             onDelete={handleRemove}
           />

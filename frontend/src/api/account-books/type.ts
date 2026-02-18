@@ -1,4 +1,4 @@
-import { type CountryCode } from '@/data/countryCode';
+import { type CountryCode } from '@/data/country/countryCode';
 
 interface CreateAccountBookRequest {
   localCountryCode: CountryCode;

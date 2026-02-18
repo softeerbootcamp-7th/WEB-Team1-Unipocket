@@ -15,6 +15,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -107,6 +108,18 @@ public class GlobalExceptionHandler {
 			MissingServletRequestParameterException e) {
 
 		String message = String.format("필수 요청 파라미터(%s)가 누락되었습니다.", e.getParameterName());
+		return ResponseEntity.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+				.body(new CustomErrorResponse(ErrorCode.INVALID_INPUT_VALUE.getCode(), message));
+	}
+
+	/**
+	 * 경로 변수/쿼리 파라미터 타입 변환 실패 시 발생 (400)
+	 */
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<CustomErrorResponse> handleMethodArgumentTypeMismatch(
+			MethodArgumentTypeMismatchException e) {
+
+		String message = String.format("요청 파라미터(%s) 타입이 올바르지 않습니다.", e.getName());
 		return ResponseEntity.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
 				.body(new CustomErrorResponse(ErrorCode.INVALID_INPUT_VALUE.getCode(), message));
 	}

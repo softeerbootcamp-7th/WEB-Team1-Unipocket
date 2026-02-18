@@ -161,6 +161,18 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 목록 조회 - accountBookId 타입 불일치 시 400")
+	void 지출내역_목록조회_accountBookId_타입불일치_실패() throws Exception {
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", "undefined")
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "10"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"));
+	}
+
+	@Test
 	@DisplayName("지출내역 목록 조회 - 2개 조회 성공")
 	void 지출내역_목록조회_2개_성공() throws Exception {
 		// given - 2개의 지출내역 생성

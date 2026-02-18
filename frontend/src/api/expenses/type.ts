@@ -1,7 +1,11 @@
 import type { CategoryType } from '@/types/category';
 
 // 지출 소스 타입
-export type ExpenseSourceType = 'MANUAL' | 'OCR';
+export type ExpenseSourceType =
+  | 'MANUAL'
+  | 'IMAGE_RECEIPT'
+  | 'IMAGE_APP_CAPTURE'
+  | 'CSV';
 
 // 카드사 타입
 export type CardCompanyType = string; // 백엔드 CardCompany enum에 맞춰 필요시 구체화

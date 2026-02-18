@@ -2,15 +2,15 @@ import ReportBarGraph from '@/components/report-page/category/ReportBarGraph';
 import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 
-import { type CategoryId, getCategoryName } from '@/types/category';
+import { type CategoryType, getCategoryName } from '@/types/category';
 
 interface ReportCategoryProps {
   data: {
-    maxDiffCategoryIndex: CategoryId;
+    maxDiffCategoryIndex: CategoryType;
     isOverSpent: boolean;
     maxLabel: string;
     items: {
-      categoryIndex: CategoryId;
+      categoryIndex: CategoryType;
       mySpentAmount: string;
       averageSpentAmount: string;
     }[];

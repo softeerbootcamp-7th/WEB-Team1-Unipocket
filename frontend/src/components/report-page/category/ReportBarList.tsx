@@ -1,12 +1,12 @@
 import ReportBarRow from '@/components/report-page/category/ReportBarRow';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 
-import type { CategoryId } from '@/types/category';
+import type { CategoryType } from '@/types/category';
 
 interface ReportBarListProps {
   maxLabel: number;
   items: {
-    categoryIndex: CategoryId;
+    categoryIndex: CategoryType;
     me: number;
     other: number;
   }[];

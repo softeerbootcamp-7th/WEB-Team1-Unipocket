@@ -7,10 +7,10 @@ import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
 import MethodFilter from '@/components/data-table/filters/MethodFilter';
 import SortDropdown from '@/components/data-table/filters/SortDropdown';
 import { columns } from '@/components/home-page/columns';
-import { type Expense } from '@/components/landing-page/dummy';
 import UploadMenu from '@/components/upload/UploadMenu';
 
 import { useGetExpensesSuspenseQuery } from '@/api/expenses/query';
+import type { ExpenseResponse } from '@/api/expenses/type';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ExpenseTable = () => {
@@ -34,7 +34,7 @@ const ExpenseTable = () => {
           <UploadMenu />
         </DataTableFilterProvider>
         <DataTable
-          groupBy={(row: Expense) =>
+          groupBy={(row: ExpenseResponse) =>
             new Date(row.occurredAt).toLocaleDateString('ko-KR', {
               year: 'numeric',
               month: '2-digit',

@@ -9,7 +9,6 @@ import Chip from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
-import type { Expense } from '@/components/landing-page/dummy';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
@@ -17,6 +16,10 @@ import ValueContainer, {
   type ValueItemProps,
 } from '@/components/side-panel/ValueContainer';
 import type { UploadEntryType } from '@/components/upload/UploadMenu';
+
+import { getCategoryName } from '@/types/category';
+
+import type { ExpenseResponse } from '@/api/expenses/type';
 
 const uploadTitleMap: Record<
   Exclude<UploadEntryType, 'manual' | null>,
@@ -30,7 +33,7 @@ interface SidePanelUIProps {
   mode?: UploadEntryType;
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<Expense>;
+  initialData?: Partial<ExpenseResponse>;
 }
 
 const SidePanelUI = ({
@@ -53,8 +56,8 @@ const SidePanelUI = ({
     setIsDateTimePickerOpen,
   } = useSidePanelForm(initialData);
 
-  const categoryValue = initialData?.categoryCode ? (
-    <Chip type={initialData.categoryCode} />
+  const categoryValue = initialData?.category ? (
+    <Chip label={getCategoryName(initialData.category)} />
   ) : (
     '-'
   );
@@ -71,9 +74,10 @@ const SidePanelUI = ({
       value: selectedDateTime ? formatDateTime(selectedDateTime) : '비어 있음',
       onClick: () => setIsDateTimePickerOpen((prev) => !prev),
     },
+
     { label: '카테고리', value: categoryValue },
     { label: '결제 수단', value: paymentValue },
-    { label: '여행', value: initialData?.travel?.name ?? '-' },
+    { label: '여행', value: initialData?.travelId ?? '-' },
   ] as const satisfies ValueItemProps[];
 
   useLayoutEffect(() => {

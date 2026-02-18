@@ -3,7 +3,7 @@ import type { CategoryType } from '@/types/category';
 import type { CountryCode } from '@/data/countryCode';
 
 type CategoryStatisticsItem = {
-  categoryName: CategoryType;
+  categoryId: CategoryType;
   amount: number;
   percent: number;
 };
@@ -20,37 +20,37 @@ export const mockData: CategoryStatisticsResponse = {
   countryCode: 'US',
   items: [
     {
-      categoryName: '거주',
+      categoryId: 1, // 거주
       amount: 450,
       percent: 35,
     },
     {
-      categoryName: '식비',
+      categoryId: 2, // 식비
       amount: 250,
       percent: 20,
     },
     {
-      categoryName: '쇼핑',
+      categoryId: 6, // 쇼핑
       amount: 100,
       percent: 12,
     },
     {
-      categoryName: '학교',
+      categoryId: 8, // 학교
       amount: 50,
       percent: 10,
     },
     {
-      categoryName: '생활',
+      categoryId: 4, // 생활
       amount: 100,
       percent: 10,
     },
     {
-      categoryName: '통신비',
+      categoryId: 7, // 통신비
       amount: 30,
       percent: 8,
     },
     {
-      categoryName: '미분류',
+      categoryId: 0, // 미분류
       amount: 20,
       percent: 5,
     },

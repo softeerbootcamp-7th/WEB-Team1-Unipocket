@@ -67,7 +67,7 @@ const CurrencyConverter = ({
         {showCurrencyDropdown && (
           <div className="flex w-25 pt-7">
             <DropDown
-              selected={localCurrencyType}
+              selectedId={localCurrencyType}
               onSelect={setLocalCurrencyType}
               options={currencyOptions}
               size="lg"

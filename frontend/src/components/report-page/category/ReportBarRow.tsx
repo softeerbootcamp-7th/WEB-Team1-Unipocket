@@ -1,9 +1,9 @@
 import ReportBar from '@/components/report-page/category/ReportBar';
 
-import { type CategoryId, getCategoryName } from '@/types/category';
+import { type CategoryType, getCategoryName } from '@/types/category';
 
 interface ReportBarRowProps {
-  categoryIndex: CategoryId;
+  categoryIndex: CategoryType;
   me: number;
   other: number;
   maxLabel: number;

@@ -5,7 +5,7 @@ import PieChart from '@/components/chart/charts/PieChart';
 import { CATEGORY_CHART_COLORS } from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 
-import type { CategoryType } from '@/types/category';
+import { type CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import type { CountryCode } from '@/data/countryCode';
@@ -13,7 +13,7 @@ import type { CountryCode } from '@/data/countryCode';
 interface CategoryChartViewProps {
   data: {
     percentage: number;
-    categoryName: CategoryType;
+    categoryId: CategoryType;
     amount: number;
   }[];
   totalAmount: number;
@@ -64,10 +64,10 @@ const CategoryChartView = ({
       <div className="flex flex-col items-start justify-center gap-1">
         {data.map((item, idx) => (
           <CategoryLegendItem
-            key={item.categoryName}
+            key={item.categoryId}
             currencyType={currencyType}
             countryCode={countryCode}
-            categoryName={item.categoryName}
+            categoryName={item.categoryId}
             percentage={item.percentage}
             amount={item.amount}
             color={colors[idx % colors.length]}

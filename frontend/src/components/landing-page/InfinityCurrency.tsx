@@ -56,7 +56,7 @@ const CurrencyItem = ({
       <div
         className={clsx(
           'absolute flex flex-col items-center transition-opacity duration-300',
-          isActive ? 'z-10 opacity-100' : 'z-0 opacity-0',
+          isActive ? 'opacity-100' : 'opacity-0',
           !isReverse ? '-top-16' : '-bottom-16 flex-col-reverse',
         )}
       >

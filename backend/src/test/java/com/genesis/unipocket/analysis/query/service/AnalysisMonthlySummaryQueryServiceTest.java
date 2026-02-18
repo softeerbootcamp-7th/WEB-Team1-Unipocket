@@ -27,6 +27,8 @@ import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +58,27 @@ class AnalysisMonthlySummaryQueryServiceTest {
 						() ->
 								service.getAnalysisOverview(
 										userId, 1L, "20A6", "12", CurrencyType.BASE))
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.INVALID_INPUT_VALUE);
+	}
+
+	@Test
+	void getAnalysisOverview_futureYearMonth_throwsInvalidInputValue() {
+		UUID userId = UUID.randomUUID();
+		Long accountBookId = 99L;
+		YearMonth nextMonth = YearMonth.now(ZoneId.of("America/New_York")).plusMonths(1);
+
+		when(analysisQueryRepository.getAccountBookCountryCodes(accountBookId))
+				.thenReturn(new Object[] {CountryCode.US, CountryCode.KR});
+
+		assertThatThrownBy(
+						() ->
+								service.getAnalysisOverview(
+										userId,
+										accountBookId,
+										String.valueOf(nextMonth.getYear()),
+										String.valueOf(nextMonth.getMonthValue()),
+										CurrencyType.BASE))
 				.isInstanceOf(BusinessException.class)
 				.hasFieldOrPropertyWithValue("code", ErrorCode.INVALID_INPUT_VALUE);
 	}
@@ -111,7 +134,7 @@ class AnalysisMonthlySummaryQueryServiceTest {
 						any(OffsetDateTime.class),
 						eq(CurrencyType.BASE)))
 				.thenReturn(
-						List.of(
+						java.util.stream.Stream.of(
 								new Object[] {
 									OffsetDateTime.parse("2025-12-01T10:00:00-05:00"),
 									new BigDecimal("100")
@@ -120,7 +143,7 @@ class AnalysisMonthlySummaryQueryServiceTest {
 									OffsetDateTime.parse("2025-12-02T10:00:00-05:00"),
 									new BigDecimal("400")
 								}),
-						List.of( // Prev Month (November)
+						java.util.stream.Stream.of( // Prev Month (November)
 								new Object[] {
 									OffsetDateTime.parse("2025-11-01T10:00:00-05:00"),
 									new BigDecimal("50")
@@ -258,12 +281,12 @@ class AnalysisMonthlySummaryQueryServiceTest {
 						any(OffsetDateTime.class),
 						eq(CurrencyType.BASE)))
 				.thenReturn(
-						List.<Object[]>of(
+						java.util.stream.Stream.<Object[]>of(
 								new Object[] {
 									OffsetDateTime.parse("2025-12-05T10:00:00-05:00"),
 									new BigDecimal("50.00")
 								}),
-						List.<Object[]>of() // Prev month empty
+						java.util.stream.Stream.empty() // Prev month empty
 						);
 
 		when(aggregationRepository.hasAccountMonthlyAggregate(any(), any(), any(), any()))

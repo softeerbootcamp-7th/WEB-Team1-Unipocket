@@ -7,7 +7,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -21,14 +21,15 @@ public class WidgetQueryRepository {
 	private String amountExpr(CurrencyType type) {
 		return type == CurrencyType.LOCAL
 				? "e.exchangeInfo.localCurrencyAmount"
-				: "e.exchangeInfo.baseCurrencyAmount";
+				: "COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+						+ " e.exchangeInfo.calculatedBaseCurrencyAmount)";
 	}
 
 	private String travelFilter(Long travelId) {
 		return travelId != null ? " AND e.travelId = :travelId" : "";
 	}
 
-	private String periodFilter(LocalDateTime periodStart, LocalDateTime periodEnd) {
+	private String periodFilter(OffsetDateTime periodStart, OffsetDateTime periodEnd) {
 		StringBuilder sb = new StringBuilder();
 		if (periodStart != null) {
 			sb.append(" AND e.occurredAt >= :periodStart");
@@ -39,19 +40,27 @@ public class WidgetQueryRepository {
 		return sb.toString();
 	}
 
+	private String incomeFilter() {
+		return " AND e.category <> :income";
+	}
+
 	private void bindTravel(Query query, Long travelId) {
 		if (travelId != null) {
 			query.setParameter("travelId", travelId);
 		}
 	}
 
-	private void bindPeriod(Query query, LocalDateTime periodStart, LocalDateTime periodEnd) {
+	private void bindPeriod(Query query, OffsetDateTime periodStart, OffsetDateTime periodEnd) {
 		if (periodStart != null) {
 			query.setParameter("periodStart", periodStart);
 		}
 		if (periodEnd != null) {
 			query.setParameter("periodEnd", periodEnd);
 		}
+	}
+
+	private void bindIncome(Query query) {
+		query.setParameter("income", Category.INCOME);
 	}
 
 	// ── ACCOUNT BOOK 정보 ──────────────────────────────
@@ -89,11 +98,13 @@ public class WidgetQueryRepository {
 						+ "), 0)"
 						+ " FROM ExpenseEntity e"
 						+ " WHERE e.accountBookId = :accountBookId"
+						+ incomeFilter()
 						+ travelFilter(travelId);
 
 		var query =
 				em.createQuery(jpql, BigDecimal.class).setParameter("accountBookId", accountBookId);
 		bindTravel(query, travelId);
+		bindIncome(query);
 		return query.getSingleResult();
 	}
 
@@ -103,8 +114,8 @@ public class WidgetQueryRepository {
 			Long accountBookId,
 			Long travelId,
 			CurrencyType type,
-			LocalDateTime start,
-			LocalDateTime end) {
+			OffsetDateTime start,
+			OffsetDateTime end) {
 
 		String jpql =
 				"SELECT COALESCE(SUM("
@@ -114,6 +125,7 @@ public class WidgetQueryRepository {
 						+ " WHERE e.accountBookId = :accountBookId"
 						+ " AND e.occurredAt >= :rangeStart"
 						+ " AND e.occurredAt < :rangeEnd"
+						+ incomeFilter()
 						+ travelFilter(travelId);
 
 		var query =
@@ -122,6 +134,7 @@ public class WidgetQueryRepository {
 						.setParameter("rangeStart", start)
 						.setParameter("rangeEnd", end);
 		bindTravel(query, travelId);
+		bindIncome(query);
 		return query.getSingleResult();
 	}
 
@@ -132,8 +145,8 @@ public class WidgetQueryRepository {
 			Long accountBookId,
 			Long travelId,
 			CurrencyType type,
-			LocalDateTime periodStart,
-			LocalDateTime periodEnd) {
+			OffsetDateTime periodStart,
+			OffsetDateTime periodEnd) {
 
 		String jpql =
 				"SELECT e.category, SUM("
@@ -141,7 +154,7 @@ public class WidgetQueryRepository {
 						+ ")"
 						+ " FROM ExpenseEntity e"
 						+ " WHERE e.accountBookId = :accountBookId"
-						+ " AND e.category <> :income"
+						+ incomeFilter()
 						+ travelFilter(travelId)
 						+ periodFilter(periodStart, periodEnd)
 						+ " GROUP BY e.category"
@@ -150,11 +163,10 @@ public class WidgetQueryRepository {
 						+ ") DESC";
 
 		var query =
-				em.createQuery(jpql, Object[].class)
-						.setParameter("accountBookId", accountBookId)
-						.setParameter("income", Category.INCOME);
+				em.createQuery(jpql, Object[].class).setParameter("accountBookId", accountBookId);
 		bindTravel(query, travelId);
 		bindPeriod(query, periodStart, periodEnd);
+		bindIncome(query);
 		return query.getResultList();
 	}
 
@@ -164,8 +176,8 @@ public class WidgetQueryRepository {
 			Long accountBookId,
 			Long travelId,
 			CurrencyType type,
-			LocalDateTime monthStart,
-			LocalDateTime monthEnd) {
+			OffsetDateTime monthStart,
+			OffsetDateTime monthEnd) {
 
 		String jpql =
 				"SELECT COALESCE(SUM("
@@ -175,6 +187,7 @@ public class WidgetQueryRepository {
 						+ " WHERE e.accountBookId = :accountBookId"
 						+ " AND e.occurredAt >= :monthStart"
 						+ " AND e.occurredAt < :monthEnd"
+						+ incomeFilter()
 						+ travelFilter(travelId);
 
 		var query =
@@ -183,17 +196,20 @@ public class WidgetQueryRepository {
 						.setParameter("monthStart", monthStart)
 						.setParameter("monthEnd", monthEnd);
 		bindTravel(query, travelId);
+		bindIncome(query);
 		return query.getSingleResult();
 	}
 
 	public BigDecimal findAverageMonthlySpentByCountryCode(
 			CountryCode localCountryCode,
 			CurrencyType type,
-			LocalDateTime monthStart,
-			LocalDateTime monthEnd) {
+			OffsetDateTime monthStart,
+			OffsetDateTime monthEnd) {
 
 		String amountCol =
-				type == CurrencyType.LOCAL ? "e.local_currency_amount" : "e.base_currency_amount";
+				type == CurrencyType.LOCAL
+						? "e.local_currency_amount"
+						: "COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)";
 
 		Object result =
 				em.createNativeQuery(
@@ -202,10 +218,12 @@ public class WidgetQueryRepository {
 										+ amountCol
 										+ ") AS total FROM expenses e JOIN account_book ab ON"
 										+ " ab.account_book_id = e.account_book_id WHERE"
-										+ " ab.local_country_code = :countryCode AND e.occurred_at"
+										+ " ab.local_country_code = :countryCode AND e.category <>"
+										+ " :incomeOrdinal AND e.occurred_at"
 										+ " >= :monthStart AND e.occurred_at < :monthEnd GROUP BY"
 										+ " e.account_book_id) sub")
 						.setParameter("countryCode", localCountryCode.name())
+						.setParameter("incomeOrdinal", Category.INCOME.ordinal())
 						.setParameter("monthStart", monthStart)
 						.setParameter("monthEnd", monthEnd)
 						.getSingleResult();
@@ -219,8 +237,8 @@ public class WidgetQueryRepository {
 			Long accountBookId,
 			Long travelId,
 			CurrencyType type,
-			LocalDateTime periodStart,
-			LocalDateTime periodEnd) {
+			OffsetDateTime periodStart,
+			OffsetDateTime periodEnd) {
 
 		String jpql =
 				"SELECT CASE WHEN e.userCardId IS NULL THEN 'OTHER' ELSE 'CARD' END, SUM("
@@ -228,6 +246,7 @@ public class WidgetQueryRepository {
 						+ ")"
 						+ " FROM ExpenseEntity e"
 						+ " WHERE e.accountBookId = :accountBookId"
+						+ incomeFilter()
 						+ travelFilter(travelId)
 						+ periodFilter(periodStart, periodEnd)
 						+ " GROUP BY CASE WHEN e.userCardId IS NULL THEN 'OTHER' ELSE 'CARD' END"
@@ -239,6 +258,7 @@ public class WidgetQueryRepository {
 				em.createQuery(jpql, Object[].class).setParameter("accountBookId", accountBookId);
 		bindTravel(query, travelId);
 		bindPeriod(query, periodStart, periodEnd);
+		bindIncome(query);
 		return query.getResultList();
 	}
 
@@ -249,8 +269,8 @@ public class WidgetQueryRepository {
 			Long accountBookId,
 			Long travelId,
 			CurrencyType type,
-			LocalDateTime periodStart,
-			LocalDateTime periodEnd) {
+			OffsetDateTime periodStart,
+			OffsetDateTime periodEnd) {
 
 		String jpql =
 				"SELECT e.exchangeInfo.localCurrencyCode, SUM("
@@ -258,6 +278,7 @@ public class WidgetQueryRepository {
 						+ ")"
 						+ " FROM ExpenseEntity e"
 						+ " WHERE e.accountBookId = :accountBookId"
+						+ incomeFilter()
 						+ travelFilter(travelId)
 						+ periodFilter(periodStart, periodEnd)
 						+ " GROUP BY e.exchangeInfo.localCurrencyCode"
@@ -269,6 +290,7 @@ public class WidgetQueryRepository {
 				em.createQuery(jpql, Object[].class).setParameter("accountBookId", accountBookId);
 		bindTravel(query, travelId);
 		bindPeriod(query, periodStart, periodEnd);
+		bindIncome(query);
 		return query.getResultList();
 	}
 }

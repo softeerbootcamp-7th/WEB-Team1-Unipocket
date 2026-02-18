@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,8 +60,6 @@ class ExchangeRateCommandServiceImplTest {
 							}
 							return Optional.empty();
 						});
-		when(restTemplate.getForObject(any(String.class), eq(String.class)))
-				.thenReturn(yahooEmptyResponse(), yahooEmptyResponse());
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -72,19 +71,40 @@ class ExchangeRateCommandServiceImplTest {
 		ArgumentCaptor<ExchangeRate> captor = ArgumentCaptor.forClass(ExchangeRate.class);
 		verify(exchangeRateRepository, times(1)).save(captor.capture());
 		assertThat(captor.getValue().getRecordedAt().toLocalDate()).isEqualTo(targetDate);
+		verify(restTemplate, never()).getForObject(any(String.class), eq(String.class));
 	}
 
 	@Test
-	@DisplayName("DB에 없으면 Yahoo를 하루씩 조회해 찾은 날짜와 targetDate 모두 저장")
-	void resolveAndStoreUsdRelativeRate_fetchesYahooByDayAndStoresBothDates() {
+	@DisplayName("targetDate 환율이 DB에 이미 있으면 외부 호출/재저장 없이 반환")
+	void resolveAndStoreUsdRelativeRate_targetExistsInDb_returnsWithoutFetch() {
+		LocalDate targetDate = LocalDate.of(2026, 2, 12);
+		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), eq(targetDate)))
+				.thenReturn(
+						Optional.of(
+								ExchangeRate.builder()
+										.currencyCode(CurrencyCode.KRW)
+										.recordedAt(targetDate.atStartOfDay())
+										.rate(new BigDecimal("1310.00"))
+										.build()));
+
+		BigDecimal rate =
+				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
+						CurrencyCode.KRW, targetDate);
+
+		assertThat(rate).isEqualByComparingTo("1310.00");
+		verify(restTemplate, never()).getForObject(any(String.class), eq(String.class));
+		verify(exchangeRateRepository, never()).save(any(ExchangeRate.class));
+	}
+
+	@Test
+	@DisplayName("DB에 없으면 Yahoo를 14일 범위로 1회 조회하고 찾은 날짜와 targetDate 모두 저장")
+	void resolveAndStoreUsdRelativeRate_fetchesYahooByRangeAndStoresBothDates() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
 		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.GBP), any(LocalDate.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
-				.thenReturn(
-						yahooEmptyResponse(),
-						yahooSingleDayResponse(LocalDate.of(2026, 2, 11), "0.79"));
+				.thenReturn(yahooSingleDayResponse(LocalDate.of(2026, 2, 11), "0.79"));
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -98,6 +118,7 @@ class ExchangeRateCommandServiceImplTest {
 		assertThat(captor.getAllValues())
 				.extracting(e -> e.getRecordedAt().toLocalDate())
 				.containsExactlyInAnyOrder(LocalDate.of(2026, 2, 11), LocalDate.of(2026, 2, 12));
+		verify(restTemplate, times(1)).getForObject(any(String.class), eq(String.class));
 	}
 
 	@Test

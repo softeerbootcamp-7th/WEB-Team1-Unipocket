@@ -34,4 +34,5 @@ public class AnalysisBatchProperties {
 	private double outlierIqrMultiplier = 1.5d;
 	private double outlierMadZThreshold = 3.5d;
 	private int outlierReferenceDays = 90;
+	private int peerMinSampleSize = 10;
 }

@@ -19,6 +19,7 @@ public record ExpenseCreateCommand(
 		Long userCardId,
 		OffsetDateTime occurredAt,
 		BigDecimal localCurrencyAmount,
+		BigDecimal baseCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		CurrencyCode baseCurrencyCode,
 		String memo,

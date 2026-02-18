@@ -30,7 +30,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,6 +67,7 @@ public class AnalysisMonthlySummaryQueryService {
 		CountryCode localCountryCode = (CountryCode) countryCodes[0];
 		CountryCode baseCountryCode = (CountryCode) countryCodes[1];
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountryCode);
+		validateNotFutureYearMonth(year, month, zoneId);
 
 		MonthRange thisRange = buildMonthRange(year, month, zoneId, true);
 		MonthRange prevRange =
@@ -403,13 +403,15 @@ public class AnalysisMonthlySummaryQueryService {
 			LocalDate startLocalDate,
 			LocalDate endLocalDateInclusive,
 			ZoneId zoneId) {
-		List<Object[]> rows =
+		Map<LocalDate, BigDecimal> dailyMap;
+		try (java.util.stream.Stream<Object[]> stream =
 				analysisQueryRepository.getMySpendEvents(
 						accountBookId,
 						toOffsetUtc(startUtc),
 						toOffsetUtc(endUtcExclusive),
-						currencyType);
-		Map<LocalDate, BigDecimal> dailyMap = toDailyAmountMap(rows, zoneId);
+						currencyType)) {
+			dailyMap = toDailyAmountMap(stream, zoneId);
+		}
 
 		BigDecimal cumulative = BigDecimal.ZERO;
 		List<DailyRow> items = new ArrayList<>();
@@ -432,13 +434,13 @@ public class AnalysisMonthlySummaryQueryService {
 		return result;
 	}
 
-	private Map<LocalDate, BigDecimal> toDailyAmountMap(List<Object[]> rows, ZoneId zoneId) {
-		Map<LocalDate, BigDecimal> map = new HashMap<>();
-		for (Object[] row : rows) {
-			LocalDate date = toLocalDateInZone(row[0], zoneId);
-			map.merge(date, toBigDecimal(row[1]), BigDecimal::add);
-		}
-		return map;
+	private Map<LocalDate, BigDecimal> toDailyAmountMap(
+			java.util.stream.Stream<Object[]> stream, ZoneId zoneId) {
+		return stream.collect(
+				java.util.stream.Collectors.groupingBy(
+						row -> toLocalDateInZone(row[0], zoneId),
+						java.util.stream.Collectors.reducing(
+								BigDecimal.ZERO, row -> toBigDecimal(row[1]), BigDecimal::add)));
 	}
 
 	private LocalDate toLocalDateInZone(Object occurredAt, ZoneId zoneId) {
@@ -505,6 +507,14 @@ public class AnalysisMonthlySummaryQueryService {
 			}
 			return month;
 		} catch (NumberFormatException e) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+	}
+
+	private void validateNotFutureYearMonth(int year, int month, ZoneId zoneId) {
+		YearMonth requested = YearMonth.of(year, month);
+		YearMonth current = YearMonth.from(LocalDate.now(zoneId));
+		if (requested.isAfter(current)) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
 	}

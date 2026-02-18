@@ -33,7 +33,7 @@ public class TemporaryExpense {
 	@Column(name = "file_id")
 	private Long fileId;
 
-	@Column(name = "merchant_name", nullable = false)
+	@Column(name = "merchant_name")
 	private String merchantName;
 
 	@Enumerated(EnumType.STRING)

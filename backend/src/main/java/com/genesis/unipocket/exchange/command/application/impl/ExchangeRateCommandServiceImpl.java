@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -28,8 +29,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandService {
 
 	private static final int MAX_BACKTRACK_DAYS = 3650;
-	private static final String YAHOO_CHART_URL =
-			"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}";
+
+	@Value("${exchange.yahoo.chart-url:https://query1.finance.yahoo.com/v8/finance/chart/{symbol}}")
+	private String yahooChartUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}";
 
 	private final ExchangeRateRepository exchangeRateRepository;
 	private final ExchangeRateQueryService exchangeRateQueryService;
@@ -94,7 +96,7 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 		long period2 = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 		String symbol = "USD" + currencyCode.name() + "=X";
 		String url =
-				UriComponentsBuilder.fromUriString(YAHOO_CHART_URL)
+				UriComponentsBuilder.fromUriString(yahooChartUrl)
 						.queryParam("interval", "1d")
 						.queryParam("period1", period1)
 						.queryParam("period2", period2)

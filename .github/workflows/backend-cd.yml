@@ -37,7 +37,7 @@ jobs:
           RAW_ENV_FILE: ${{ secrets.ENV_FILE }}
           SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
         run: |
-          set -e # 오류 발생 시 즉시 중단
+          set -e
           
           # 1. SSH 설정
           mkdir -p ~/.ssh
@@ -45,14 +45,20 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' | ssh-add -
           ssh-keyscan -H -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          
-          # 2. .env 파일 생성 (가장 안전한 방식)
-          cat <<EOF > .env
-          $RAW_ENV_FILE
-          SPRING_PROFILES_ACTIVE=$SPRING_PROFILES_ACTIVE
-          EOF
-          
-          # 3. 파일 전송 및 실행
-          scp -P ${{ secrets.EC2_PORT }} .env ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.DEPLOY_DIR }}/.env
+
+          # 2. .env 파일 생성
+          printf '%s\n' "$RAW_ENV_FILE" | sed 's/\r$//' > .env
+          printf 'SPRING_PROFILES_ACTIVE=%s\n' "${SPRING_PROFILES_ACTIVE}" >> .env
+
+          awk '
+            /^[[:space:]]*$/ { next }
+            /^[[:space:]]*#/ { next }
+            { print "export " $0 }
+          ' .env > env.sh
+
+          # 4. 파일 전송 (env.sh도 함께 전송)
+          scp -P ${{ secrets.EC2_PORT }} .env env.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.DEPLOY_DIR }}/
           scp -P ${{ secrets.EC2_PORT }} ./build/libs/app.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:${{ secrets.DEPLOY_DIR }}/app.jar
+
+          # 5. 실행
           ssh -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ${{ secrets.DEPLOY_DIR }}/deploy.sh && ${{ secrets.DEPLOY_DIR }}/deploy.sh"

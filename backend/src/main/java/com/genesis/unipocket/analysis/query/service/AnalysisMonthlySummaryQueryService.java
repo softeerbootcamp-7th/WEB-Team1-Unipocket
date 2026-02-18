@@ -3,32 +3,37 @@ package com.genesis.unipocket.analysis.query.service;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
+import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
-import com.genesis.unipocket.analysis.query.persistence.response.CategoryBreakdownRes;
-import com.genesis.unipocket.analysis.query.persistence.response.MonthlySpendSummaryRes;
+import com.genesis.unipocket.analysis.query.persistence.response.AnalysisOverviewRes;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.global.util.AmountFormatUtil;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,16 +50,19 @@ public class AnalysisMonthlySummaryQueryService {
 	private final AnalysisQueryRepository analysisQueryRepository;
 	private final AnalysisBatchAggregationRepository aggregationRepository;
 	private final AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
+	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	private final PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
-	public MonthlySpendSummaryRes getMonthlySpendSummary(
+	public AnalysisOverviewRes getAnalysisOverview(
 			UUID userId,
 			Long accountBookId,
-			int year,
+			String yearText,
 			String monthText,
-			CurrencyType currencyView) {
+			CurrencyType currencyType) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 
+		int year = parseYear(yearText);
 		int month = parseMonth(monthText);
 		Object[] countryCodes = analysisQueryRepository.getAccountBookCountryCodes(accountBookId);
 		CountryCode localCountryCode = (CountryCode) countryCodes[0];
@@ -69,201 +77,271 @@ public class AnalysisMonthlySummaryQueryService {
 						zoneId,
 						false);
 
+		// 1. Monthly Summary Data
 		DailySeries thisSeries =
 				buildDailySeries(
 						accountBookId,
-						currencyView,
+						currencyType,
 						thisRange.startUtc(),
 						thisRange.endUtcExclusive(),
 						thisRange.startLocalDate(),
-						thisRange.endLocalDateInclusive());
+						thisRange.endLocalDateInclusive(),
+						zoneId);
+
 		DailySeries prevSeries =
 				buildDailySeries(
 						accountBookId,
-						currencyView,
+						currencyType,
 						prevRange.startUtc(),
 						prevRange.endUtcExclusive(),
 						prevRange.startLocalDate(),
-						prevRange.endLocalDateInclusive());
+						prevRange.endLocalDateInclusive(),
+						zoneId);
 
-		PeerTotal peerTotal =
-				resolvePeerAverageTotal(
-						localCountryCode, baseCountryCode, thisRange, accountBookId, currencyView);
-		String avgTotal =
-				peerTotal.peerAvailable() ? AmountFormatUtil.format(peerTotal.avgTotal()) : null;
-		String diff =
-				peerTotal.peerAvailable()
-						? AmountFormatUtil.format(thisSeries.total().subtract(peerTotal.avgTotal()))
-						: null;
-
-		return new MonthlySpendSummaryRes(
-				accountBookId,
-				year,
-				month + "월",
-				currencyView,
-				new MonthlySpendSummaryRes.MonthSection(
-						thisRange.startLocalDate().toString(),
-						thisRange.endLocalDateInclusive().toString(),
-						thisSeries.items(),
-						AmountFormatUtil.format(thisSeries.total())),
-				new MonthlySpendSummaryRes.PrevMonthSection(
-						prevRange.yearMonth().getYear(),
-						prevRange.yearMonth().getMonthValue() + "월",
-						prevRange.startLocalDate().toString(),
-						prevRange.endLocalDateInclusive().toString(),
-						prevSeries.items(),
-						AmountFormatUtil.format(prevSeries.total())),
-				new MonthlySpendSummaryRes.Comparison(avgTotal, diff, peerTotal.peerAvailable()));
-	}
-
-	public CategoryBreakdownRes getCategoryBreakdown(
-			UUID userId,
-			Long accountBookId,
-			int year,
-			String monthText,
-			CurrencyType currencyView) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-
-		int month = parseMonth(monthText);
-		Object[] countryCodes = analysisQueryRepository.getAccountBookCountryCodes(accountBookId);
-		CountryCode localCountryCode = (CountryCode) countryCodes[0];
-		CountryCode baseCountryCode = (CountryCode) countryCodes[1];
-		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountryCode);
-
-		MonthRange range = buildMonthRange(year, month, zoneId, true);
+		// 2. Category Snapshot & Peer Context
 		MyCategorySnapshot mySnapshot =
-				resolveMyCategorySnapshot(accountBookId, localCountryCode, range, currencyView);
+				resolveMyCategorySnapshot(accountBookId, localCountryCode, thisRange, currencyType);
 		Map<Category, BigDecimal> myCategoryMap = mySnapshot.categoryMap();
-		BigDecimal myTotal = mySnapshot.total();
 
-		PeerCategoryAvg peerAvg =
-				resolvePeerCategoryAverage(
-						localCountryCode, baseCountryCode, range, accountBookId, currencyView);
+		PairPeerContext peerContext =
+				resolvePairPeerContext(
+						localCountryCode,
+						baseCountryCode,
+						thisRange.yearMonth().atDay(1),
+						toAmountMetricType(currencyType),
+						thisSeries.total(),
+						mySnapshot.monthlyBatchReady());
 
-		List<CategoryBreakdownRes.CategoryItem> categories = new ArrayList<>();
-		for (Category category : Category.values()) {
-			if (category == Category.INCOME) {
-				continue;
-			}
-			BigDecimal mySpend = myCategoryMap.getOrDefault(category, BigDecimal.ZERO);
-			String avgSpend =
-					peerAvg.peerAvailable()
-							? AmountFormatUtil.format(
-									peerAvg.categoryAvgMap()
-											.getOrDefault(category, BigDecimal.ZERO))
-							: null;
-			String diff =
-					peerAvg.peerAvailable()
-							? AmountFormatUtil.format(
-									mySpend.subtract(
-											peerAvg.categoryAvgMap()
-													.getOrDefault(category, BigDecimal.ZERO)))
-							: null;
+		Map<Category, BigDecimal> avgByCategory =
+				resolvePairCategoryAverageMap(
+						localCountryCode,
+						baseCountryCode,
+						thisRange.yearMonth().atDay(1),
+						currencyType,
+						peerContext,
+						myCategoryMap);
 
-			categories.add(
-					new CategoryBreakdownRes.CategoryItem(
-							category, AmountFormatUtil.format(mySpend), avgSpend, diff));
-		}
+		AnalysisOverviewRes.CompareWithAverage compareWithAverage =
+				buildCompareWithAverage(month, thisSeries, peerContext);
+		AnalysisOverviewRes.CompareWithLastMonth compareWithLastMonth =
+				buildCompareWithLastMonth(month, thisSeries, prevRange, prevSeries);
+		AnalysisOverviewRes.CompareByCategory compareByCategory =
+				buildCompareByCategory(myCategoryMap, avgByCategory);
 
-		return new CategoryBreakdownRes(
-				accountBookId,
-				year,
+		return new AnalysisOverviewRes(
+				localCountryCode.name(),
+				compareWithAverage,
+				compareWithLastMonth,
+				compareByCategory);
+	}
+
+	private AnalysisOverviewRes.CompareWithAverage buildCompareWithAverage(
+			int month, DailySeries thisSeries, PairPeerContext peerContext) {
+		String avgTotalStr =
+				peerContext.peerAvailable() ? formatRoundedMoney(peerContext.avgTotal()) : "0";
+		String diffTotalStr =
+				peerContext.peerAvailable()
+						? formatRoundedMoney(thisSeries.total().subtract(peerContext.avgTotal()))
+						: "0";
+
+		return new AnalysisOverviewRes.CompareWithAverage(
+				month, formatRoundedMoney(thisSeries.total()), avgTotalStr, diffTotalStr);
+	}
+
+	private AnalysisOverviewRes.CompareWithLastMonth buildCompareWithLastMonth(
+			int month, DailySeries thisSeries, MonthRange prevRange, DailySeries prevSeries) {
+		int daysElapsed = thisSeries.items().size();
+		int prevDays = prevSeries.items().size();
+		BigDecimal prevMonthSameDayTotal = prevSeries.cumulativeAtSameDay(daysElapsed);
+		BigDecimal diffWithLastMonth = thisSeries.total().subtract(prevMonthSameDayTotal);
+
+		return new AnalysisOverviewRes.CompareWithLastMonth(
+				formatRoundedMoney(diffWithLastMonth),
 				month + "월",
-				currencyView,
-				categories,
-				AmountFormatUtil.format(myTotal),
-				peerAvg.peerAvailable() ? AmountFormatUtil.format(peerAvg.avgTotal()) : null,
-				peerAvg.peerAvailable());
+				daysElapsed,
+				prevRange.yearMonth().getMonthValue() + "월",
+				prevDays,
+				new AnalysisOverviewRes.CompareWithLastMonth.TotalSpent(
+						formatRoundedMoney(thisSeries.total()),
+						formatRoundedMoney(prevSeries.total())),
+				formatRoundedMoney(thisSeries.total()),
+				toDailySpentItems(thisSeries.items()),
+				toDailySpentItems(prevSeries.items()));
 	}
 
-	private PeerCategoryAvg resolvePeerCategoryAverage(
-			CountryCode localCountryCode,
-			CountryCode baseCountryCode,
-			MonthRange range,
-			Long accountBookId,
-			CurrencyType currencyView) {
-		AnalysisMetricType metricType = toAmountMetricType(currencyView);
-		AmountCount peerTotalRow =
-				aggregationRepository.aggregatePeerMonthlyTotalFromMonthly(
-						localCountryCode,
-						baseCountryCode,
-						accountBookId,
-						range.yearMonth().atDay(1),
-						metricType,
-						PEER_QUALITY_TYPE);
-		long peerAccountCount = peerTotalRow.expenseCount();
-		if (peerAccountCount <= 0L) {
-			return PeerCategoryAvg.unavailable();
-		}
-		BigDecimal avgTotal = divide(peerTotalRow.totalAmount(), peerAccountCount);
+	private AnalysisOverviewRes.CompareByCategory buildCompareByCategory(
+			Map<Category, BigDecimal> myCategoryMap, Map<Category, BigDecimal> avgByCategory) {
+		List<AnalysisOverviewRes.CompareByCategory.CategoryItem> categoryItems = new ArrayList<>();
+		int maxDiffCategoryIndex = -1;
+		BigDecimal maxDiffAbs = BigDecimal.valueOf(-1);
+		BigDecimal globalMaxAmount = BigDecimal.ZERO;
+		BigDecimal totalMySpend = BigDecimal.ZERO;
+		BigDecimal totalAvgSpend = BigDecimal.ZERO;
 
-		List<CategoryAmountCount> peerCategoryRows =
-				aggregationRepository.aggregatePeerMonthlyCategoryFromMonthly(
-						localCountryCode,
-						baseCountryCode,
-						accountBookId,
-						range.yearMonth().atDay(1),
-						PEER_QUALITY_TYPE,
-						currencyView);
-		Map<Integer, BigDecimal> peerCategoryTotalMap = new HashMap<>();
-		for (CategoryAmountCount row : peerCategoryRows) {
-			if (row.categoryOrdinal() == null) {
-				continue;
-			}
-			peerCategoryTotalMap.put(row.categoryOrdinal(), row.totalAmount());
-		}
-
-		Map<Category, BigDecimal> avgByCategory = new EnumMap<>(Category.class);
 		for (Category category : Category.values()) {
 			if (category == Category.INCOME) {
 				continue;
 			}
-			BigDecimal peerCategoryTotal =
-					peerCategoryTotalMap.getOrDefault(category.ordinal(), BigDecimal.ZERO);
-			avgByCategory.put(category, divide(peerCategoryTotal, peerAccountCount));
+
+			BigDecimal mySpend = myCategoryMap.getOrDefault(category, BigDecimal.ZERO);
+			BigDecimal avgSpend = avgByCategory.getOrDefault(category, BigDecimal.ZERO);
+			totalMySpend = totalMySpend.add(mySpend);
+			totalAvgSpend = totalAvgSpend.add(avgSpend);
+
+			if (mySpend.compareTo(globalMaxAmount) > 0) {
+				globalMaxAmount = mySpend;
+			}
+			if (avgSpend.compareTo(globalMaxAmount) > 0) {
+				globalMaxAmount = avgSpend;
+			}
+
+			BigDecimal diffAbs = mySpend.subtract(avgSpend).abs();
+			if (diffAbs.compareTo(maxDiffAbs) > 0) {
+				maxDiffAbs = diffAbs;
+				maxDiffCategoryIndex = category.ordinal();
+			}
+
+			categoryItems.add(
+					new AnalysisOverviewRes.CompareByCategory.CategoryItem(
+							category.ordinal(),
+							formatRoundedMoney(mySpend),
+							formatRoundedMoney(avgSpend)));
 		}
-		return PeerCategoryAvg.available(avgTotal, avgByCategory);
+
+		String maxLabel = formatRoundedMoney(globalMaxAmount.multiply(BigDecimal.valueOf(1.2)));
+		boolean isOverSpent = totalMySpend.compareTo(totalAvgSpend) > 0;
+		return new AnalysisOverviewRes.CompareByCategory(
+				maxDiffCategoryIndex, isOverSpent, maxLabel, categoryItems);
 	}
 
-	private PeerTotal resolvePeerAverageTotal(
+	private List<AnalysisOverviewRes.DailySpentItem> toDailySpentItems(List<DailyRow> rows) {
+		return rows.stream()
+				.map(
+						row ->
+								new AnalysisOverviewRes.DailySpentItem(
+										row.date(), formatRoundedMoney(row.cumulativeSpend())))
+				.toList();
+	}
+
+	private Map<Category, BigDecimal> resolvePairCategoryAverageMap(
 			CountryCode localCountryCode,
 			CountryCode baseCountryCode,
-			MonthRange range,
-			Long accountBookId,
-			CurrencyType currencyView) {
-		AmountCount peerTotalRow =
-				aggregationRepository.aggregatePeerMonthlyTotalFromMonthly(
-						localCountryCode,
-						baseCountryCode,
-						accountBookId,
-						range.yearMonth().atDay(1),
-						toAmountMetricType(currencyView),
-						PEER_QUALITY_TYPE);
-		long peerAccountCount = peerTotalRow.expenseCount();
-		if (peerAccountCount <= 0L) {
-			return PeerTotal.unavailable();
+			LocalDate monthStart,
+			CurrencyType currencyType,
+			PairPeerContext peerContext,
+			Map<Category, BigDecimal> myCategoryMap) {
+		Map<Category, BigDecimal> avgByCategory = new EnumMap<>(Category.class);
+		if (!peerContext.peerAvailable()) {
+			return avgByCategory;
 		}
-		return PeerTotal.available(divide(peerTotalRow.totalAmount(), peerAccountCount));
+
+		List<PairMonthlyCategoryAggregateEntity> rows =
+				pairMonthlyCategoryAggregateRepository
+						.findAllByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndCurrencyType(
+								localCountryCode,
+								baseCountryCode,
+								monthStart,
+								PEER_QUALITY_TYPE,
+								currencyType);
+		Map<Category, PairMonthlyCategoryAggregateEntity> rowMap = new EnumMap<>(Category.class);
+		for (PairMonthlyCategoryAggregateEntity row : rows) {
+			rowMap.put(row.getCategory(), row);
+		}
+
+		for (Category category : Category.values()) {
+			if (category == Category.INCOME) {
+				continue;
+			}
+			PairMonthlyCategoryAggregateEntity row = rowMap.get(category);
+			BigDecimal totalAmount = row == null ? BigDecimal.ZERO : row.getTotalAmount();
+			if (peerContext.myIncluded()) {
+				totalAmount =
+						totalAmount.subtract(myCategoryMap.getOrDefault(category, BigDecimal.ZERO));
+			}
+			if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+				totalAmount = BigDecimal.ZERO;
+			}
+			avgByCategory.put(category, divide(totalAmount, peerContext.effectivePeerCount()));
+		}
+		return avgByCategory;
+	}
+
+	private PairPeerContext resolvePairPeerContext(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			LocalDate monthStart,
+			AnalysisMetricType metricType,
+			BigDecimal myTotalAmount,
+			boolean myMonthlyReady) {
+		Optional<PairMonthlyAggregateEntity> optional =
+				pairMonthlyAggregateRepository
+						.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+								localCountryCode,
+								baseCountryCode,
+								monthStart,
+								PEER_QUALITY_TYPE,
+								metricType);
+		if (optional.isEmpty()) {
+			return PairPeerContext.unavailable();
+		}
+
+		PairMonthlyAggregateEntity row = optional.get();
+		long includedAccountCount = row.getIncludedAccountCount();
+		if (includedAccountCount <= 0L) {
+			return PairPeerContext.unavailable();
+		}
+
+		boolean myIncluded =
+				myMonthlyReady
+						&& isWithinBounds(
+								myTotalAmount, row.getIqrLowerBound(), row.getIqrUpperBound());
+
+		BigDecimal totalSum = row.getTotalMetricSum();
+		long effectivePeerCount = includedAccountCount;
+		if (myIncluded) {
+			if (includedAccountCount <= 1L) {
+				return PairPeerContext.unavailable();
+			}
+			effectivePeerCount = includedAccountCount - 1L;
+			totalSum = totalSum.subtract(myTotalAmount);
+			if (totalSum.compareTo(BigDecimal.ZERO) < 0) {
+				totalSum = BigDecimal.ZERO;
+			}
+		}
+		if (effectivePeerCount <= 0L) {
+			return PairPeerContext.unavailable();
+		}
+		return PairPeerContext.available(
+				divide(totalSum, effectivePeerCount), effectivePeerCount, myIncluded);
+	}
+
+	private boolean isWithinBounds(BigDecimal value, BigDecimal lower, BigDecimal upper) {
+		if (value == null) {
+			return false;
+		}
+		if (lower != null && value.compareTo(lower) < 0) {
+			return false;
+		}
+		if (upper != null && value.compareTo(upper) > 0) {
+			return false;
+		}
+		return true;
 	}
 
 	private MyCategorySnapshot resolveMyCategorySnapshot(
 			Long accountBookId,
 			CountryCode localCountryCode,
 			MonthRange range,
-			CurrencyType currencyView) {
-		if (isMonthlyBatchReady(accountBookId, localCountryCode, range, currencyView)) {
-			AmountCount totalRow =
-					aggregationRepository.aggregateAccountMonthlyFromMonthly(
-							accountBookId,
-							range.yearMonth().atDay(1),
-							toAmountMetricType(currencyView),
-							PEER_QUALITY_TYPE);
+			CurrencyType currencyType) {
+		boolean monthlyBatchReady =
+				isMonthlyBatchReady(accountBookId, localCountryCode, range, currencyType);
+		if (monthlyBatchReady) {
 			List<CategoryAmountCount> categoryRows =
 					aggregationRepository.aggregateAccountMonthlyCategoryFromMonthly(
 							accountBookId,
 							range.yearMonth().atDay(1),
 							PEER_QUALITY_TYPE,
-							currencyView);
+							currencyType);
 			Map<Category, BigDecimal> categoryMap = new EnumMap<>(Category.class);
 			for (CategoryAmountCount row : categoryRows) {
 				if (row.categoryOrdinal() == null) {
@@ -279,33 +357,31 @@ public class AnalysisMonthlySummaryQueryService {
 				}
 				categoryMap.put(category, row.totalAmount());
 			}
-			return new MyCategorySnapshot(totalRow.totalAmount(), categoryMap);
+			return new MyCategorySnapshot(categoryMap, true);
 		}
 
 		Map<Category, BigDecimal> realtimeCategoryMap =
 				toMyCategoryMap(
 						analysisQueryRepository.getMyCategorySpent(
 								accountBookId,
-								range.startUtc(),
-								range.endUtcExclusive(),
-								currencyView));
-		BigDecimal realtimeTotal =
-				realtimeCategoryMap.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-		return new MyCategorySnapshot(realtimeTotal, realtimeCategoryMap);
+								toOffsetUtc(range.startUtc()),
+								toOffsetUtc(range.endUtcExclusive()),
+								currencyType));
+		return new MyCategorySnapshot(realtimeCategoryMap, false);
 	}
 
 	private boolean isMonthlyBatchReady(
 			Long accountBookId,
 			CountryCode localCountryCode,
 			MonthRange range,
-			CurrencyType currencyView) {
+			CurrencyType currencyType) {
 		if (isDirtyPending(accountBookId, localCountryCode, range.yearMonth().atDay(1))) {
 			return false;
 		}
 		return aggregationRepository.hasAccountMonthlyAggregate(
 				accountBookId,
 				range.yearMonth().atDay(1),
-				toAmountMetricType(currencyView),
+				toAmountMetricType(currencyType),
 				PEER_QUALITY_TYPE);
 	}
 
@@ -321,28 +397,28 @@ public class AnalysisMonthlySummaryQueryService {
 
 	private DailySeries buildDailySeries(
 			Long accountBookId,
-			CurrencyType currencyView,
+			CurrencyType currencyType,
 			LocalDateTime startUtc,
 			LocalDateTime endUtcExclusive,
 			LocalDate startLocalDate,
-			LocalDate endLocalDateInclusive) {
+			LocalDate endLocalDateInclusive,
+			ZoneId zoneId) {
 		List<Object[]> rows =
-				analysisQueryRepository.getMyDailySpent(
-						accountBookId, startUtc, endUtcExclusive, currencyView);
-		Map<LocalDate, BigDecimal> dailyMap = toDailyAmountMap(rows);
+				analysisQueryRepository.getMySpendEvents(
+						accountBookId,
+						toOffsetUtc(startUtc),
+						toOffsetUtc(endUtcExclusive),
+						currencyType);
+		Map<LocalDate, BigDecimal> dailyMap = toDailyAmountMap(rows, zoneId);
 
 		BigDecimal cumulative = BigDecimal.ZERO;
-		List<MonthlySpendSummaryRes.DailyItem> items = new ArrayList<>();
+		List<DailyRow> items = new ArrayList<>();
 		for (LocalDate date = startLocalDate;
 				!date.isAfter(endLocalDateInclusive);
 				date = date.plusDays(1)) {
 			BigDecimal dailySpend = dailyMap.getOrDefault(date, BigDecimal.ZERO);
 			cumulative = cumulative.add(dailySpend);
-			items.add(
-					new MonthlySpendSummaryRes.DailyItem(
-							date.toString(),
-							AmountFormatUtil.format(dailySpend),
-							AmountFormatUtil.format(cumulative)));
+			items.add(new DailyRow(date.toString(), cumulative));
 		}
 		return new DailySeries(items, cumulative);
 	}
@@ -356,13 +432,22 @@ public class AnalysisMonthlySummaryQueryService {
 		return result;
 	}
 
-	private Map<LocalDate, BigDecimal> toDailyAmountMap(List<Object[]> rows) {
+	private Map<LocalDate, BigDecimal> toDailyAmountMap(List<Object[]> rows, ZoneId zoneId) {
 		Map<LocalDate, BigDecimal> map = new HashMap<>();
 		for (Object[] row : rows) {
-			LocalDate date = toLocalDate(row[0]);
-			map.put(date, toBigDecimal(row[1]));
+			LocalDate date = toLocalDateInZone(row[0], zoneId);
+			map.merge(date, toBigDecimal(row[1]), BigDecimal::add);
 		}
 		return map;
+	}
+
+	private LocalDate toLocalDateInZone(Object occurredAt, ZoneId zoneId) {
+		OffsetDateTime offsetDateTime = OffsetDateTimeConverter.from(occurredAt);
+		return offsetDateTime.atZoneSameInstant(zoneId).toLocalDate();
+	}
+
+	private OffsetDateTime toOffsetUtc(LocalDateTime localDateTime) {
+		return localDateTime.atOffset(ZoneOffset.UTC);
 	}
 
 	private MonthRange buildMonthRange(
@@ -378,16 +463,31 @@ public class AnalysisMonthlySummaryQueryService {
 		LocalDateTime startUtc =
 				startLocalDate
 						.atStartOfDay(zoneId)
-						.withZoneSameInstant(ZoneId.of("UTC"))
+						.withZoneSameInstant(ZoneOffset.UTC)
 						.toLocalDateTime();
 		LocalDateTime endUtcExclusive =
 				endLocalDate
 						.plusDays(1)
 						.atStartOfDay(zoneId)
-						.withZoneSameInstant(ZoneId.of("UTC"))
+						.withZoneSameInstant(ZoneOffset.UTC)
 						.toLocalDateTime();
 
 		return new MonthRange(yearMonth, startLocalDate, endLocalDate, startUtc, endUtcExclusive);
+	}
+
+	private int parseYear(String yearText) {
+		if (yearText == null || yearText.isBlank()) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+		String normalized = yearText.trim();
+		if (!normalized.matches("\\d{4}")) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+		try {
+			return Integer.parseInt(normalized);
+		} catch (NumberFormatException e) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
 	}
 
 	private int parseMonth(String monthText) {
@@ -395,8 +495,8 @@ public class AnalysisMonthlySummaryQueryService {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
 		String normalized = monthText.trim();
-		if (normalized.endsWith("월")) {
-			normalized = normalized.substring(0, normalized.length() - 1);
+		if (!normalized.matches("\\d{1,2}")) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
 		try {
 			int month = Integer.parseInt(normalized);
@@ -409,27 +509,31 @@ public class AnalysisMonthlySummaryQueryService {
 		}
 	}
 
-	private AnalysisMetricType toAmountMetricType(CurrencyType currencyView) {
-		if (currencyView == null) {
+	private AnalysisMetricType toAmountMetricType(CurrencyType currencyType) {
+		if (currencyType == null) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
-		return currencyView == CurrencyType.BASE
+		return currencyType == CurrencyType.BASE
 				? AnalysisMetricType.TOTAL_BASE_AMOUNT
 				: AnalysisMetricType.TOTAL_LOCAL_AMOUNT;
 	}
 
 	private BigDecimal divide(BigDecimal amount, long divisor) {
+		if (divisor <= 0L) {
+			return BigDecimal.ZERO;
+		}
 		return amount.divide(BigDecimal.valueOf(divisor), AVG_SCALE, RoundingMode.HALF_UP);
 	}
 
-	private LocalDate toLocalDate(Object value) {
-		if (value instanceof LocalDate localDate) {
-			return localDate;
+	private String formatRoundedMoney(BigDecimal amount) {
+		if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0) {
+			return "0";
 		}
-		if (value instanceof java.sql.Date sqlDate) {
-			return sqlDate.toLocalDate();
+		BigDecimal rounded = amount.setScale(2, RoundingMode.HALF_UP);
+		if (rounded.stripTrailingZeros().scale() <= 0) {
+			return rounded.toBigInteger().toString();
 		}
-		return LocalDate.parse(value.toString());
+		return rounded.toPlainString();
 	}
 
 	private BigDecimal toBigDecimal(Object value) {
@@ -449,29 +553,33 @@ public class AnalysisMonthlySummaryQueryService {
 			LocalDateTime startUtc,
 			LocalDateTime endUtcExclusive) {}
 
-	private record DailySeries(List<MonthlySpendSummaryRes.DailyItem> items, BigDecimal total) {}
-
-	private record MyCategorySnapshot(BigDecimal total, Map<Category, BigDecimal> categoryMap) {}
-
-	private record PeerCategoryAvg(
-			boolean peerAvailable, BigDecimal avgTotal, Map<Category, BigDecimal> categoryAvgMap) {
-		private static PeerCategoryAvg unavailable() {
-			return new PeerCategoryAvg(false, null, Map.of());
-		}
-
-		private static PeerCategoryAvg available(
-				BigDecimal avgTotal, Map<Category, BigDecimal> categoryAvgMap) {
-			return new PeerCategoryAvg(true, avgTotal, categoryAvgMap);
+	private record DailySeries(List<DailyRow> items, BigDecimal total) {
+		private BigDecimal cumulativeAtSameDay(int daysElapsed) {
+			if (items.isEmpty() || daysElapsed <= 0) {
+				return BigDecimal.ZERO;
+			}
+			int targetIndex = Math.min(daysElapsed, items.size()) - 1;
+			return items.get(targetIndex).cumulativeSpend();
 		}
 	}
 
-	private record PeerTotal(boolean peerAvailable, BigDecimal avgTotal) {
-		private static PeerTotal unavailable() {
-			return new PeerTotal(false, null);
+	private record DailyRow(String date, BigDecimal cumulativeSpend) {}
+
+	private record MyCategorySnapshot(
+			Map<Category, BigDecimal> categoryMap, boolean monthlyBatchReady) {}
+
+	private record PairPeerContext(
+			boolean peerAvailable,
+			BigDecimal avgTotal,
+			long effectivePeerCount,
+			boolean myIncluded) {
+		private static PairPeerContext unavailable() {
+			return new PairPeerContext(false, null, 0L, false);
 		}
 
-		private static PeerTotal available(BigDecimal avgTotal) {
-			return new PeerTotal(true, avgTotal);
+		private static PairPeerContext available(
+				BigDecimal avgTotal, long effectivePeerCount, boolean myIncluded) {
+			return new PairPeerContext(true, avgTotal, effectivePeerCount, myIncluded);
 		}
 	}
 }

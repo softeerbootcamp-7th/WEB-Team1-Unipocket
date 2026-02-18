@@ -39,6 +39,7 @@ export const Cards = {
 } as const;
 
 // 3. Icons
+import Add from '@/assets/Icons/add.svg';
 import AlertCircle from '@/assets/Icons/alert-circle.svg';
 import Analytics from '@/assets/Icons/analytics.svg';
 import Calendar from '@/assets/Icons/calendar.svg';
@@ -65,6 +66,7 @@ import Travel from '@/assets/Icons/travel.svg';
 import UploadFile from '@/assets/Icons/upload-file.svg';
 
 export const Icons = {
+  Add,
   AlertCircle,
   CloseCircle,
   Calendar,

@@ -7,7 +7,7 @@ import java.time.Duration;
  * <b>TempExpense 미디어 접근 포트</b>
  */
 public interface TempExpenseMediaAccessService {
-	PresignedUrlResult issueUploadPath(Long accountBookId, String originalFileName);
+	PresignedUrlResult issueUploadPath(Long accountBookId, String mimeType);
 
 	String issueGetPath(String mediaKey, Duration expiration);
 

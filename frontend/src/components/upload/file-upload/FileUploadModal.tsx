@@ -29,7 +29,13 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
           </div>
         </div>
         <div className="mb-2.5 flex h-65.5 items-center justify-center">
-          <UploadBox type="file" />
+          <UploadBox
+            type="file"
+            onFilesSelected={(files) => {
+              // @TODO: 파일 업로드 로직 구현
+              console.log('Selected files:', files);
+            }}
+          />
         </div>
       </div>
     </Modal>

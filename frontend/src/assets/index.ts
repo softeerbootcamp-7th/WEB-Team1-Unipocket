@@ -52,6 +52,7 @@ import Close from '@/assets/Icons/close.svg';
 import CloseButton from '@/assets/Icons/close-button.svg';
 import CloseCircle from '@/assets/Icons/close-circle.svg';
 import Edit from '@/assets/Icons/edit.svg';
+import Expand from '@/assets/Icons/expand.svg';
 import FileBox from '@/assets/Icons/file-box.svg';
 import Home from '@/assets/Icons/home.svg';
 import Information from '@/assets/Icons/information.svg';
@@ -74,6 +75,7 @@ export const Icons = {
   ChevronForward,
   CheckmarkCircle,
   CloseButton,
+  Expand,
   Logo,
   Loading,
   Analytics,

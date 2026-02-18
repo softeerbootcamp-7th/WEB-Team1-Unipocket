@@ -40,11 +40,13 @@ export const Cards = {
 
 // 3. Icons
 import Add from '@/assets/Icons/add.svg';
+import Alert from '@/assets/Icons/alert.svg';
 import AlertCircle from '@/assets/Icons/alert-circle.svg';
 import Analytics from '@/assets/Icons/analytics.svg';
 import Calendar from '@/assets/Icons/calendar.svg';
 import Camera from '@/assets/Icons/camera.svg';
 import CaretDown from '@/assets/Icons/caret-down.svg';
+import Checkmark from '@/assets/Icons/checkmark.svg';
 import CheckmarkCircle from '@/assets/Icons/checkmark-circle.svg';
 import ChevronBack from '@/assets/Icons/chevron-back.svg';
 import ChevronForward from '@/assets/Icons/chevron-forward.svg';
@@ -69,11 +71,13 @@ import UploadFile from '@/assets/Icons/upload-file.svg';
 
 export const Icons = {
   Add,
+  Alert,
   AlertCircle,
   CloseCircle,
   Calendar,
   ChevronBack,
   ChevronForward,
+  Checkmark,
   CheckmarkCircle,
   CloseButton,
   Expand,

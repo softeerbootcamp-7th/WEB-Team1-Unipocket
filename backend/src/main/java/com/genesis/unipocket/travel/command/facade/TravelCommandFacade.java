@@ -35,7 +35,7 @@ public class TravelCommandFacade {
 			Long accountBookId, Long travelId, TravelRequest request, UUID userId) {
 		userAccountBookValidator.validateUserAccountBook(userId.toString(), accountBookId);
 		UpdateTravelCommand command = UpdateTravelCommand.of(travelId, request);
-		travelCommandService.updateTravel(command);
+		travelCommandService.updateTravel(accountBookId, command);
 	}
 
 	public void patchTravel(Long travelId, TravelUpdateRequest request, UUID userId) {

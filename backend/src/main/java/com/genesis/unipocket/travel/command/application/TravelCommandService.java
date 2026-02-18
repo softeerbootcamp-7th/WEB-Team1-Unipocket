@@ -45,11 +45,15 @@ public class TravelCommandService {
 	}
 
 	@Transactional
-	public void updateTravel(UpdateTravelCommand command) {
+	public void updateTravel(Long accountBookId, UpdateTravelCommand command) {
 		Travel travel =
 				travelRepository
 						.findById(command.travelId())
 						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
+
+		if (!travel.getAccountBookId().equals(accountBookId)) {
+			throw new BusinessException(ErrorCode.TRAVEL_NOT_IN_ACCOUNT_BOOK);
+		}
 
 		travel.update(
 				command.travelPlaceName(),

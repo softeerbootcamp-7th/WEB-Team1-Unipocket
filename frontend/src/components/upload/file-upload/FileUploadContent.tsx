@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { ModalContext } from '@/components/modal/useModalContext';
+import { useModalContext } from '@/components/modal/useModalContext';
 import UploadFile from '@/components/upload/file-upload/UploadFile';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
 const FileUploadContent = () => {
-  const context = useContext(ModalContext);
+  const { setActionReady } = useModalContext();
 
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<'uploading' | 'done'>('uploading');
@@ -30,8 +30,8 @@ const FileUploadContent = () => {
   const isReady = !!file && status === 'done';
 
   useEffect(() => {
-    context?.setActionReady(isReady);
-  }, [isReady, context]);
+    setActionReady(isReady);
+  }, [isReady, setActionReady]);
 
   return (
     <div className="flex w-109 flex-col gap-6">

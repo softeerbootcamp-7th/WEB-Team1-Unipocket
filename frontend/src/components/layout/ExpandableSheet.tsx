@@ -39,7 +39,7 @@ const ExpandableSheet = ({
           height: isExpanded ? expandedHeight : collapsedHeight,
         }}
         exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.6 }}
         className="bg-background-normal absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-2xl"
       >
         {isExpandable && (

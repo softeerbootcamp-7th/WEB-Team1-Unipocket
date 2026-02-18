@@ -2,23 +2,18 @@ import { useMemo } from 'react';
 
 import { renderWidget } from '@/components/chart/widget/renderWidget';
 import type { WidgetType } from '@/components/chart/widget/type';
-import { WidgetItemContext } from '@/components/chart/widget/WidgetContext';
+import {
+  useWidgetContext,
+  WidgetItemContext,
+} from '@/components/chart/widget/WidgetContext';
 
-interface WidgetPickerProps {
-  maxWidgets: number;
-  availableWidgets: WidgetType[];
-  dropZoneProps?: React.HTMLAttributes<HTMLDivElement>;
-}
+const WidgetPicker = () => {
+  const { maxWidgets, availableWidgets, pickerDropZone } = useWidgetContext();
 
-const WidgetPicker = ({
-  maxWidgets,
-  availableWidgets,
-  dropZoneProps,
-}: WidgetPickerProps) => {
   return (
     <div
       className="rounded-modal-20 flex h-full w-full min-w-0 flex-col justify-start gap-5 px-10 py-9 transition-colors"
-      {...dropZoneProps}
+      {...pickerDropZone.dropZoneProps}
     >
       <WidgetPickerHeader maxWidgets={maxWidgets} />
       <div className="w-px min-w-full overflow-x-auto">

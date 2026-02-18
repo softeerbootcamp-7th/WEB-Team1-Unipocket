@@ -121,3 +121,65 @@ export const useDropZone = ({ zone, onDropWidget }: UseDropZoneOptions) => {
     },
   };
 };
+
+// 위젯 사이 Gap Drop 영역
+interface UseGapDropZoneOptions {
+  dropOrder: number;
+  onDropToGap: (data: DragData, dropOrder: number) => void;
+}
+
+export const useGapDropZone = ({
+  dropOrder,
+  onDropToGap,
+}: UseGapDropZoneOptions) => {
+  const [isGapDragOver, setIsGapDragOver] = useState(false);
+  const dragCounterRef = useRef(0);
+
+  const onGapDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current += 1;
+    setIsGapDragOver(true);
+  }, []);
+
+  const onGapDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onGapDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current <= 0) {
+      dragCounterRef.current = 0;
+      setIsGapDragOver(false);
+    }
+  }, []);
+
+  const onGapDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsGapDragOver(false);
+
+      const data = getDragData(e);
+      if (!data) return;
+
+      onDropToGap(data, dropOrder);
+    },
+    [dropOrder, onDropToGap],
+  );
+
+  return {
+    isGapDragOver,
+    gapDropProps: {
+      onDragEnter: onGapDragEnter,
+      onDragOver: onGapDragOver,
+      onDragLeave: onGapDragLeave,
+      onDrop: onGapDrop,
+    },
+  };
+};

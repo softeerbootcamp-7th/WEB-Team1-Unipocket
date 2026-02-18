@@ -216,7 +216,8 @@ class AccountBookControllerIntegrationTest {
 				"baseCountryCode": "KR",
 				"budget": 500000.00,
 				"startDate": "2026-04-01",
-				"endDate": "2026-04-30"
+				"endDate": "2026-04-30",
+				"isMain": false
 			}
 			""";
 
@@ -235,6 +236,40 @@ class AccountBookControllerIntegrationTest {
 		assertThat(updated.getBudget()).isEqualByComparingTo(new BigDecimal("500000.00"));
 		assertThat(updated.getStartDate()).isEqualTo(LocalDate.of(2026, 4, 1));
 		assertThat(updated.getEndDate()).isEqualTo(LocalDate.of(2026, 4, 30));
+	}
+
+	@Test
+	@DisplayName("가계부 수정 - isMain=true 이면 사용자 mainBucketId 갱신")
+	void 가계부_수정_isMain_true_메인_가계부_갱신() throws Exception {
+		Long firstId = createAccountBook();
+		Long secondId = createAccountBook();
+
+		assertThat(userRepository.findById(userId).orElseThrow().getMainBucketId())
+				.isEqualTo(firstId);
+
+		String body =
+				"""
+			{
+				"title": "두번째를 메인으로",
+				"localCountryCode": "US",
+				"baseCountryCode": "KR",
+				"budget": 100000.00,
+				"startDate": "2026-04-01",
+				"endDate": "2026-04-30",
+				"isMain": true
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", secondId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(secondId));
+
+		assertThat(userRepository.findById(userId).orElseThrow().getMainBucketId())
+				.isEqualTo(secondId);
 	}
 
 	@Test

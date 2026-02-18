@@ -6,6 +6,7 @@ import com.genesis.unipocket.accountbook.command.application.command.DeleteAccou
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
 import com.genesis.unipocket.accountbook.command.facade.port.AccountBookDefaultWidgetPort;
+import com.genesis.unipocket.accountbook.command.facade.port.UserMainAccountBookService;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookBudgetUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
@@ -26,6 +27,7 @@ public class AccountBookCommandFacade {
 	private final AccountBookCommandService accountBookCommandService;
 	private final UserQueryService userQueryService;
 	private final AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
+	private final UserMainAccountBookService userMainAccountBookService;
 	private final ExpenseCommandService expenseCommandService;
 	private final AccountBookQueryService accountBookQueryService;
 
@@ -51,6 +53,9 @@ public class AccountBookCommandFacade {
 
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 		var result = accountBookCommandService.update(command);
+		if (req.isMain()) {
+			userMainAccountBookService.updateMainAccountBook(userId, accountBookId);
+		}
 
 		if (baseCountryChanged) {
 			expenseCommandService.updateBaseCurrency(

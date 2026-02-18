@@ -95,7 +95,8 @@ class AccountBookCommandControllerTest {
 						CountryCode.KR,
 						BigDecimal.valueOf(300000),
 						LocalDate.of(2026, 2, 1),
-						LocalDate.of(2026, 2, 28));
+						LocalDate.of(2026, 2, 28),
+						false);
 
 		mockAuthentication(accessToken, userId);
 		AccountBookResponse response =
@@ -171,7 +172,8 @@ class AccountBookCommandControllerTest {
 						CountryCode.KR,
 						BigDecimal.valueOf(300000),
 						LocalDate.of(2026, 2, 1),
-						LocalDate.of(2026, 2, 28));
+						LocalDate.of(2026, 2, 28),
+						false);
 
 		mockAuthentication(accessToken, userId);
 

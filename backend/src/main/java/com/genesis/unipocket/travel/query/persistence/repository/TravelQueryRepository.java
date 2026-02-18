@@ -40,9 +40,9 @@ public class TravelQueryRepository {
 	public List<WidgetOrderDto> findAllByTravelId(Long travelId) {
 		return em.createQuery(
 						"SELECT new"
-							+ " com.genesis.unipocket.travel.query.persistence.response.WidgetQueryResponse(w.widgetType,"
-							+ " w.widgetOrder) FROM TravelWidget w WHERE w.travel.id = :travelId"
-							+ " ORDER BY w.widgetOrder ASC",
+							+ " com.genesis.unipocket.travel.query.persistence.response.WidgetOrderDto(w.widgetType,"
+							+ " w.displayOrder) FROM TravelWidgetEntity w WHERE w.travelId ="
+							+ " :travelId ORDER BY w.displayOrder ASC",
 						WidgetOrderDto.class)
 				.setParameter("travelId", travelId)
 				.getResultList();

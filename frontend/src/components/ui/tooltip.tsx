@@ -4,6 +4,12 @@ import { Tooltip as TooltipPrimitive } from 'radix-ui';
 import { Icons } from '@/assets';
 import { cn } from '@/lib/utils';
 
+export const BUBBLE_CLASS =
+  'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-modal-8 label1-normal-medium z-50 w-fit min-w-16 bg-[#333435] p-2.5 text-balance text-[#F7F7F8]';
+
+export const ARROW_CLASS = 'translate-y-[-1.8px] rotate-180 text-[#333435]';
+export const ARROW_STYLE = { width: 24, height: 8 } as const;
+
 function TooltipProvider({
   delayDuration = 0,
   ...props
@@ -41,18 +47,15 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-modal-8 label1-normal-medium z-50 w-fit min-w-16 origin-(--radix-tooltip-content-transform-origin) bg-[#333435] p-2.5 text-balance text-[#F7F7F8]',
+          BUBBLE_CLASS,
+          'origin-(--radix-tooltip-content-transform-origin)',
           className,
         )}
         {...props}
       >
         {children}
-        {/* <TooltipPrimitive.Arrow className="z-50 size-3 translate-y-[calc(-50%-3px)] rotate-45 rounded-[2px] bg-[#333435] fill-[#333435]" /> */}
         <TooltipPrimitive.Arrow asChild>
-          <Icons.Arrow
-            className="translate-y-[-1.8px] rotate-180 text-[#333435]"
-            style={{ width: 24, height: 8 }}
-          />
+          <Icons.Arrow className={ARROW_CLASS} style={ARROW_STYLE} />
         </TooltipPrimitive.Arrow>
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>

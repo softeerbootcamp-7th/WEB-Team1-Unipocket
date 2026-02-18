@@ -35,14 +35,15 @@ public record ExpenseManualCreateArgs(
 			BigDecimal baseCurrencyAmount,
 			BigDecimal calculatedBaseCurrencyAmount,
 			CurrencyCode calculatedBaseCurrencyCode,
-			BigDecimal exchangeRate) {
+			BigDecimal exchangeRate,
+			BigDecimal localCurrencyAmount) {
 		return new ExpenseManualCreateArgs(
 				command.accountBookId(),
 				command.merchantName(),
 				command.category(),
 				command.userCardId(),
 				command.occurredAt(),
-				command.localCurrencyAmount(),
+				localCurrencyAmount,
 				command.localCurrencyCode(),
 				baseCurrencyAmount,
 				command.baseCurrencyCode(),

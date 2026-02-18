@@ -6,6 +6,7 @@ import com.genesis.unipocket.accountbook.command.application.command.DeleteAccou
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
 import com.genesis.unipocket.accountbook.command.facade.port.AccountBookDefaultWidgetPort;
+import com.genesis.unipocket.accountbook.command.facade.port.UserMainAccountBookService;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookBudgetUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
@@ -26,6 +27,7 @@ public class AccountBookCommandFacade {
 	private final AccountBookCommandService accountBookCommandService;
 	private final UserQueryService userQueryService;
 	private final AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
+	private final UserMainAccountBookService userMainAccountBookService;
 	private final ExpenseCommandService expenseCommandService;
 	private final AccountBookQueryService accountBookQueryService;
 
@@ -46,13 +48,18 @@ public class AccountBookCommandFacade {
 			UUID userId, Long accountBookId, AccountBookUpdateRequest req) {
 
 		var currentAccountBook = accountBookQueryService.getAccountBook(accountBookId);
+		boolean localCountryChanged =
+				!currentAccountBook.localCountryCode().equals(req.localCountryCode());
 		boolean baseCountryChanged =
 				!currentAccountBook.baseCountryCode().equals(req.baseCountryCode());
 
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 		var result = accountBookCommandService.update(command);
+		if (Boolean.TRUE.equals(req.isMain())) {
+			userMainAccountBookService.updateMainAccountBook(userId, accountBookId);
+		}
 
-		if (baseCountryChanged) {
+		if (localCountryChanged || baseCountryChanged) {
 			expenseCommandService.updateBaseCurrency(
 					accountBookId, req.baseCountryCode().getCurrencyCode());
 		}

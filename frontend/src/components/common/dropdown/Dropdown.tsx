@@ -14,7 +14,7 @@ interface Option {
 interface DropDownProps {
   selected: number | null;
   onSelect: (id: number) => void;
-  options?: Option[];
+  options: Option[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
   align?: 'left' | 'right' | 'center';
   itemWidth?: string;
@@ -41,7 +41,7 @@ const DropDown = ({
     setIsOpen(false);
   });
 
-  const selectedName = options?.find((opt) => opt.id === selected)?.name;
+  const selectedName = options.find((opt) => opt.id === selected)?.name;
 
   const handleOptionClick = (id: number) => {
     onSelect(id);
@@ -56,18 +56,21 @@ const DropDown = ({
         size={size}
         className="w-full"
       >
-        {selectedName || options?.[0].name}
+        {selectedName || options[0].name}
       </Filter>
 
       {isOpen && (
         <ul
           className={clsx(
-            'scrollbar rounded-modal-10 border-line-solid-normal bg-background-normal absolute top-full z-50 mt-1.5 max-h-60 overflow-hidden overflow-y-auto border p-1 shadow-lg',
+            'rounded-modal-10 border-line-solid-normal bg-background-normal shadow-lg',
+            'absolute top-full',
+            'scrollbar overflow-x-hidden overflow-y-auto',
+            'mt-1.5 max-h-60 border p-1',
             ALIGN_CLASS[align],
             itemWidth,
           )}
         >
-          {options?.map((option) => (
+          {options.map((option) => (
             <OptionItem
               key={option.id}
               id={option.id}

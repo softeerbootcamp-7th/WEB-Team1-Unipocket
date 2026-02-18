@@ -146,7 +146,8 @@ public class AccountBookCommandServiceTest {
 						CountryCode.KR,
 						BigDecimal.valueOf(1000.00),
 						LocalDate.of(2023, 2, 1),
-						LocalDate.of(2023, 11, 30));
+						LocalDate.of(2023, 11, 30),
+						false);
 
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 
@@ -191,7 +192,8 @@ public class AccountBookCommandServiceTest {
 						CountryCode.KR,
 						BigDecimal.valueOf(1000.00),
 						LocalDate.now(),
-						LocalDate.now());
+						LocalDate.now(),
+						false);
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.empty());
@@ -212,7 +214,8 @@ public class AccountBookCommandServiceTest {
 						CountryCode.KR,
 						BigDecimal.valueOf(1000.00),
 						LocalDate.now(),
-						LocalDate.now());
+						LocalDate.now(),
+						false);
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 
 		AccountBookEntity entity =
@@ -271,7 +274,8 @@ public class AccountBookCommandServiceTest {
 						CountryCode.KR,
 						null, // budget is null
 						LocalDate.of(2023, 2, 1),
-						LocalDate.of(2023, 11, 30));
+						LocalDate.of(2023, 11, 30),
+						false);
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 
 		AccountBookEntity entity =

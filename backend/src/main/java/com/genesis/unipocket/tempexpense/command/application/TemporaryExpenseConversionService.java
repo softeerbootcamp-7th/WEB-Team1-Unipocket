@@ -11,6 +11,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
 import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.util.ArrayList;
@@ -144,10 +145,21 @@ public class TemporaryExpenseConversionService {
 		}
 		CurrencyCode defaultBaseCurrencyCode =
 				accountBookRateInfoProvider.getRateInfo(accountBookId).baseCurrencyCode();
+		List<TempExpenseConvertValidationException.Violation> violations = new ArrayList<>();
 		for (TemporaryExpense expense : expenses) {
 			CurrencyCode resolvedBaseCurrencyCode =
 					resolveBaseCurrencyCode(expense, defaultBaseCurrencyCode);
-			temporaryExpenseValidator.validateConvertible(expense, resolvedBaseCurrencyCode);
+			List<String> missingOrInvalidFields =
+					temporaryExpenseValidator.findMissingOrInvalidFields(
+							expense, resolvedBaseCurrencyCode);
+			if (!missingOrInvalidFields.isEmpty()) {
+				violations.add(
+						new TempExpenseConvertValidationException.Violation(
+								expense.getTempExpenseId(), missingOrInvalidFields));
+			}
+		}
+		if (!violations.isEmpty()) {
+			throw new TempExpenseConvertValidationException(violations);
 		}
 	}
 

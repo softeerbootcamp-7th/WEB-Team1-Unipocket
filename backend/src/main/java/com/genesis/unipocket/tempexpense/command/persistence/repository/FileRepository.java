@@ -3,6 +3,7 @@ package com.genesis.unipocket.tempexpense.command.persistence.repository;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,7 +23,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
 	 */
 	boolean existsByS3Key(String s3Key);
 
-	java.util.Optional<File> findByS3Key(String s3Key);
+	Optional<File> findByS3Key(String s3Key);
 
 	List<File> findByS3KeyIn(List<String> s3Keys);
 

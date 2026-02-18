@@ -22,6 +22,8 @@ import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -246,6 +248,81 @@ class AnalysisQueryControllerIntegrationTest {
 								.queryParam("currencyType", "BASE"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()));
+	}
+
+	@Test
+	void getAnalysisOverview_futureMonthParam_returnsBadRequest() throws Exception {
+		YearMonth nextMonth = YearMonth.now(ZoneId.of("America/New_York")).plusMonths(1);
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/analysis", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("year", String.valueOf(nextMonth.getYear()))
+								.queryParam("month", String.valueOf(nextMonth.getMonthValue()))
+								.queryParam("currencyType", "BASE"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()));
+	}
+
+	@Test
+	void getAnalysisOverview_peerDataUnavailable_returnsOverviewWithoutPeerComparison()
+			throws Exception {
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 10, 0),
+				new BigDecimal("100.00"),
+				new BigDecimal("100.00"),
+				new BigDecimal("100.00"),
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"food");
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/analysis", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("year", "2025")
+								.queryParam("month", "12")
+								.queryParam("currencyType", "BASE"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.compareWithAverage.averageSpentAmount").value("0"))
+				.andExpect(jsonPath("$.compareWithAverage.spentAmountDiff").value("0"))
+				.andExpect(
+						jsonPath("$.compareByCategory.items.length()")
+								.value(9)) // All valid categories
+				.andExpect(
+						jsonPath("$.compareByCategory.items[?(@.categoryIndex == 2)].mySpentAmount")
+								.value("100"))
+				.andExpect(
+						jsonPath(
+										"$.compareByCategory.items[?(@.categoryIndex =="
+												+ " 2)].averageSpentAmount")
+								.value("0"));
+	}
+
+	@Test
+	void getAnalysisOverview_localCurrency_returnsLocalCurrencyFormatted() throws Exception {
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 10, 0),
+				new BigDecimal("100.00"), // Local amount
+				new BigDecimal("120.00"), // Base amount
+				new BigDecimal("120.00"), // Calculated Base amount
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"food");
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/analysis", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("year", "2025")
+								.queryParam("month", "12")
+								.queryParam("currencyType", "LOCAL"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("100"));
 	}
 
 	@Test

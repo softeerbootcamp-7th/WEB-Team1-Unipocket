@@ -14,7 +14,8 @@ public record UpdateAccountBookCommand(
 		CountryCode baseCountryCode,
 		BigDecimal budget,
 		LocalDate startDate,
-		LocalDate endDate) {
+		LocalDate endDate,
+		Boolean isMain) {
 
 	public static UpdateAccountBookCommand of(
 			Long accountBookId, UUID userId, AccountBookUpdateRequest request) {
@@ -26,6 +27,7 @@ public record UpdateAccountBookCommand(
 				request.baseCountryCode(),
 				request.budget(),
 				request.startDate(),
-				request.endDate());
+				request.endDate(),
+				request.isMain());
 	}
 }

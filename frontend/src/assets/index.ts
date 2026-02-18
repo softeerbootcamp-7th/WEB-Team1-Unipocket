@@ -63,6 +63,7 @@ import Phone from '@/assets/Icons/phone.svg';
 import Refresh from '@/assets/Icons/refresh.svg';
 import Swap from '@/assets/Icons/swap.svg';
 import SwapVertical from '@/assets/Icons/swap-vertical.svg';
+import Trash from '@/assets/Icons/trash.svg';
 import Travel from '@/assets/Icons/travel.svg';
 import UploadFile from '@/assets/Icons/upload-file.svg';
 
@@ -81,6 +82,7 @@ export const Icons = {
   Analytics,
   Home,
   Travel,
+  Trash,
   SwapVertical,
   CaretDown,
   Close,

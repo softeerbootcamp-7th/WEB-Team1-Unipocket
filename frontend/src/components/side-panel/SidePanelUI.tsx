@@ -9,6 +9,7 @@ import Chip from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
+import PaymentMethod from '@/components/expense/PaymentMethod';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
@@ -66,11 +67,15 @@ const SidePanelUI = ({
     '-'
   );
 
-  const paymentValue = initialData?.paymentMethod
-    ? initialData.paymentMethod.isCash
-      ? '현금'
-      : initialData.paymentMethod.card?.label || '-'
-    : '-';
+  const paymentValue = initialData?.paymentMethod ? (
+    initialData.paymentMethod.isCash ? (
+      '현금'
+    ) : (
+      <PaymentMethod paymentMethod={initialData.paymentMethod} />
+    )
+  ) : (
+    '-'
+  );
 
   const valueItems = [
     {

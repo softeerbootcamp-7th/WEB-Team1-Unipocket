@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import Chip from '@/components/common/Chip';
+import PaymentMethod from '@/components/expense/PaymentMethod';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -98,7 +99,7 @@ export const columns: ColumnDef<ExpenseResponse>[] = [
     header: () => <>결제 수단</>,
     cell: ({ row }) => {
       const payment = row.original.paymentMethod;
-      return <>{payment.isCash ? '현금' : payment.card?.label || '-'}</>;
+      return <PaymentMethod paymentMethod={payment} />;
     },
   },
   {

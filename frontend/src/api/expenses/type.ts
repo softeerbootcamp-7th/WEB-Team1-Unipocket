@@ -1,5 +1,7 @@
 import type { CategoryType } from '@/types/category';
 
+import type { CardId } from '@/data/card/cardCode';
+
 // 지출 소스 타입
 export type ExpenseSourceType =
   | 'MANUAL'
@@ -7,14 +9,11 @@ export type ExpenseSourceType =
   | 'IMAGE_APP_CAPTURE'
   | 'CSV';
 
-// 카드사 타입
-export type CardCompanyType = string; // 백엔드 CardCompany enum에 맞춰 필요시 구체화
-
 // 결제 수단 응답
 export interface PaymentMethodResponse {
   isCash: boolean;
   card: {
-    company: CardCompanyType;
+    company: CardId;
     label: string;
     lastDigits: string;
   } | null;
@@ -26,7 +25,7 @@ export interface ExpenseResponse {
   accountBookId: number;
   travelId: number | null;
   merchantName: string;
-  displayMerchantName: string;
+  exchangeRate: number | null;
   category: CategoryType;
   paymentMethod: PaymentMethodResponse;
   occurredAt: string; // ISO-8601 format

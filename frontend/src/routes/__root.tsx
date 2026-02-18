@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 
 import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { Toaster } from '@/components/ui/toaster';
 
 export interface MyRouterContext {
   queryClient: QueryClient;
@@ -23,6 +24,7 @@ function RootLayout() {
   return (
     <main className="bg-background-alternative h-full">
       <Outlet />
+      <Toaster />
     </main>
   );
 }

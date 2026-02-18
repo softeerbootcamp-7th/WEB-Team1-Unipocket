@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import type { Expense } from '@/components/landing-page/dummy';
+import type { ExpenseResponse } from '@/api/expenses/type';
 
-function useSidePanelForm(initialData?: Partial<Expense>) {
+function useSidePanelForm(initialData?: Partial<ExpenseResponse>) {
   const [prevId, setPrevId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
@@ -16,7 +16,9 @@ function useSidePanelForm(initialData?: Partial<Expense>) {
     setPrevId(currentExpenseId);
     setTitle(initialData?.merchantName || '');
     setMemo(initialData?.memo || '');
-    setSelectedDateTime(initialData?.date ? new Date(initialData.date) : null);
+    setSelectedDateTime(
+      initialData?.occurredAt ? new Date(initialData.occurredAt) : null,
+    );
     setIsDateTimePickerOpen(false);
   }
 

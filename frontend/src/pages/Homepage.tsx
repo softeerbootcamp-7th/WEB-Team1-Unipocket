@@ -1,27 +1,17 @@
 import { Suspense, useState } from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
 
 import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
 import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
-import { getData } from '@/components/landing-page/dummy';
-import ExpandableSheet from '@/components/layout/ExpandableSheet';
-
-import { mockData } from '@/stores/mock';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
-import { Skeleton } from '@/components/ui/skeleton';
 import ExpenseTable from '@/components/home-page/ExpenseTable';
-
-useAccountBookStore.getState().setAccountBook(mockData);
+import ExpandableSheet from '@/components/layout/ExpandableSheet';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Homepage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: expenses } = useSuspenseQuery({
-    queryKey: ['expenses'],
-    queryFn: getData,
-  });
+
   const {
     isWidgetEditMode,
     toggleEditMode,

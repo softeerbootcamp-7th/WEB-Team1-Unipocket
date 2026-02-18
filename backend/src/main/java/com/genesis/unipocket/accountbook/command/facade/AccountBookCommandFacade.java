@@ -48,6 +48,8 @@ public class AccountBookCommandFacade {
 			UUID userId, Long accountBookId, AccountBookUpdateRequest req) {
 
 		var currentAccountBook = accountBookQueryService.getAccountBook(accountBookId);
+		boolean localCountryChanged =
+				!currentAccountBook.localCountryCode().equals(req.localCountryCode());
 		boolean baseCountryChanged =
 				!currentAccountBook.baseCountryCode().equals(req.baseCountryCode());
 
@@ -57,7 +59,7 @@ public class AccountBookCommandFacade {
 			userMainAccountBookService.updateMainAccountBook(userId, accountBookId);
 		}
 
-		if (baseCountryChanged) {
+		if (localCountryChanged || baseCountryChanged) {
 			expenseCommandService.updateBaseCurrency(
 					accountBookId, req.baseCountryCode().getCurrencyCode());
 		}

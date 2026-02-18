@@ -1,6 +1,5 @@
 import Modal from '@/components/modal/Modal';
-
-import ImageUploadContent from './ImageUploadContent';
+import ImageUploadContent from '@/components/upload/image-upload/ImageUploadContent';
 
 interface ImageUploadModalProps {
   isOpen: boolean;

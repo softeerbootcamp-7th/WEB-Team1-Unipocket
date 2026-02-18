@@ -105,7 +105,10 @@ public enum ErrorCode {
 	TRAVEL_INVALID_DATE_RANGE(
 			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_DATE_RANGE", "여행 종료 날짜는 시작 날짜보다 이후여야 합니다."),
 	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다."),
-
+	TRAVEL_NOT_IN_ACCOUNT_BOOK(
+			HttpStatus.BAD_REQUEST,
+			"400_TRAVEL_NOT_IN_ACCOUNT_BOOK",
+			"여행 정보와 요청 가계부 소속이 올바르지 않습니다."),
 	// Expense Errors
 	EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "404_EXPENSE_NOT_FOUND", "지출 내역을 찾을 수 없습니다."),
 	EXPENSE_UNAUTHORIZED_ACCESS(

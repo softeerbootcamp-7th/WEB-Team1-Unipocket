@@ -1,4 +1,4 @@
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 export interface AccountBookMeta {
   id: number;

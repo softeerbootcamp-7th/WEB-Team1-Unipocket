@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import type { ModalProps } from '@/components/modal/Modal';
 import Modal from '@/components/modal/Modal';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 type LocaleChangeSource = 'country' | 'currency';

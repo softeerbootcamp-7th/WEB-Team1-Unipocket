@@ -4,7 +4,7 @@ import Button from '@/components/common/Button';
 import FolderCard from '@/components/travel-page/FolderCard';
 
 import SeoulImage from '@/assets/images/travel/seoul.jpg';
-import { COUNTRY_CODE } from '@/data/countryCode';
+import { COUNTRY_CODE } from '@/data/country/countryCode';
 
 const folderMap = [
   {

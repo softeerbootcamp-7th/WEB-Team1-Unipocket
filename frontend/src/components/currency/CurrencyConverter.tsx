@@ -7,7 +7,7 @@ import useCurrencyConverter from '@/components/currency/useCurrencyConverter';
 import { ModalContext } from '@/components/modal/useModalContext';
 
 import { Icons } from '@/assets';
-import countryData from '@/data/countryData.json';
+import countryData from '@/data/country/countryData.json';
 
 interface CurrencyOption {
   id: number;

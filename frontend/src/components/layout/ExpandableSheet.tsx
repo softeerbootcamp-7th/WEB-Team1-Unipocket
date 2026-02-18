@@ -8,6 +8,7 @@ interface ExpandableSheetProps extends ComponentPropsWithoutRef<'div'> {
   onToggleExpand: (isExpanded: boolean) => void;
   collapsedHeight: string | number;
   expandedHeight: string | number;
+  isExpandable?: boolean;
 }
 
 const ExpandableSheet = ({
@@ -15,6 +16,7 @@ const ExpandableSheet = ({
   onToggleExpand,
   collapsedHeight = '50vh',
   expandedHeight = '90vh',
+  isExpandable = true,
   children,
 }: ExpandableSheetProps) => {
   const handlePanEnd = (
@@ -40,12 +42,14 @@ const ExpandableSheet = ({
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="bg-background-normal absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-2xl"
       >
-        <motion.div
-          onPanEnd={handlePanEnd}
-          className="relative flex cursor-grab touch-none justify-center py-4 select-none active:cursor-grabbing"
-        >
-          <div className="bg-cool-neutral-95 absolute top-3 h-1.5 w-12 shrink-0 rounded-full" />
-        </motion.div>
+        {isExpandable && (
+          <motion.div
+            onPanEnd={handlePanEnd}
+            className="relative flex cursor-grab touch-none justify-center py-4 select-none active:cursor-grabbing"
+          >
+            <div className="bg-cool-neutral-95 absolute top-3 h-1.5 w-12 shrink-0 rounded-full" />
+          </motion.div>
+        )}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-4">
           {children}
         </div>

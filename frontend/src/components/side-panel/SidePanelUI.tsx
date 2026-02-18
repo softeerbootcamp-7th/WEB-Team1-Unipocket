@@ -17,7 +17,7 @@ import ValueContainer, {
 } from '@/components/side-panel/ValueContainer';
 import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
-import { getCategoryName } from '@/types/category';
+import { CATEGORIES, getCategoryName } from '@/types/category';
 
 import type { ExpenseResponse } from '@/api/expenses/type';
 
@@ -57,7 +57,11 @@ const SidePanelUI = ({
   } = useSidePanelForm(initialData);
 
   const categoryValue = initialData?.category ? (
-    <Chip label={getCategoryName(initialData.category)} />
+    <Chip
+      label={getCategoryName(initialData.category)}
+      bg={CATEGORIES[initialData.category].bg}
+      text={CATEGORIES[initialData.category].text}
+    />
   ) : (
     '-'
   );

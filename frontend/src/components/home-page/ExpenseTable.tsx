@@ -6,7 +6,9 @@ import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
 import MethodFilter from '@/components/data-table/filters/MethodFilter';
 import SortDropdown from '@/components/data-table/filters/SortDropdown';
+import SelectionActionBar from '@/components/data-table/SelectionActionBar';
 import { columns } from '@/components/home-page/columns';
+import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
 import { useGetExpensesSuspenseQuery } from '@/api/expenses/query';
@@ -42,6 +44,8 @@ const ExpenseTable = () => {
             })
           }
         />
+        <SelectionActionBar />
+        <TableSidePanel />
       </DataTableProvider>
     </div>
   );

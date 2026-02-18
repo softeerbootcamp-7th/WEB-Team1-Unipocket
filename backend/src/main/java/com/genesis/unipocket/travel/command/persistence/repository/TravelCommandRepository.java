@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TravelCommandRepository extends JpaRepository<Travel, Long> {
 	List<Travel> findAllByAccountBookId(Long accountBookId);
+
+	boolean existsByIdAndAccountBookId(Long travelId, Long accountBookId);
 }

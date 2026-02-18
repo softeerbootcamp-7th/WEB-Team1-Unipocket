@@ -367,11 +367,11 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(3))
 				.andExpect(jsonPath("$.expenses[0].category").value(9))
-				.andExpect(jsonPath("$.expenses[0].displayMerchantName").value("수입-큼"))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("수입-큼"))
 				.andExpect(jsonPath("$.expenses[1].category").value(2))
-				.andExpect(jsonPath("$.expenses[1].displayMerchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-작음"))
 				.andExpect(jsonPath("$.expenses[2].category").value(2))
-				.andExpect(jsonPath("$.expenses[2].displayMerchantName").value("소비-중간"));
+				.andExpect(jsonPath("$.expenses[2].merchantName").value("소비-중간"));
 	}
 
 	@Test
@@ -393,11 +393,11 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(3))
 				.andExpect(jsonPath("$.expenses[0].category").value(2))
-				.andExpect(jsonPath("$.expenses[0].displayMerchantName").value("소비-중간"))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("소비-중간"))
 				.andExpect(jsonPath("$.expenses[1].category").value(2))
-				.andExpect(jsonPath("$.expenses[1].displayMerchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-작음"))
 				.andExpect(jsonPath("$.expenses[2].category").value(9))
-				.andExpect(jsonPath("$.expenses[2].displayMerchantName").value("수입-큼"));
+				.andExpect(jsonPath("$.expenses[2].merchantName").value("수입-큼"));
 	}
 
 	@Test
@@ -558,7 +558,7 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(1))
 				.andExpect(jsonPath("$.totalCount").value(1))
-				.andExpect(jsonPath("$.expenses[0].displayMerchantName").value("스타벅스"));
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("스타벅스"));
 	}
 
 	@Test

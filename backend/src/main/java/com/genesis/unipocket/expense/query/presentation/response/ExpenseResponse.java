@@ -6,6 +6,7 @@ import com.genesis.unipocket.expense.presentation.support.AmountFormatters;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
+import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
@@ -19,7 +20,7 @@ public record ExpenseResponse(
 		Long accountBookId,
 		Long travelId,
 		String merchantName,
-		String displayMerchantName,
+		BigDecimal exchangeRate,
 		Category category,
 		PaymentMethodResponse paymentMethod,
 		Instant occurredAt,
@@ -39,7 +40,7 @@ public record ExpenseResponse(
 				dto.accountBookId(),
 				dto.travelId(),
 				dto.displayMerchantName(),
-				dto.displayMerchantName(),
+				dto.exchangeRate(),
 				dto.category(),
 				PaymentMethodResponse.from(
 						dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),

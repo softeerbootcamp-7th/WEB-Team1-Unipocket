@@ -42,7 +42,12 @@ const CalendarMonthView = ({
   };
 
   return (
-    <div className="bg-background-normal border-line-normal-normal rounded-modal-12 shadow-semantic-emphasize flex w-fit flex-col items-center gap-3 border px-3 pt-5 pb-4">
+    <div
+      className={clsx(
+        'flex w-fit flex-col items-center gap-3 px-3 pt-5 pb-4',
+        'bg-background-normal border-line-normal-normal rounded-modal-12 shadow-semantic-emphasize border',
+      )}
+    >
       {/* Header */}
       <div className="flex w-full items-center justify-between">
         <h3 className="text-label-normal body1-normal-bold pl-3">

@@ -11,8 +11,9 @@ const FileUploadContent = () => {
   const [status, setStatus] = useState<'uploading' | 'done'>('uploading');
 
   const handleFilesSelected = (selected: File[]) => {
-    if (selected.length === 0) return;
-    setFile(selected[0]);
+    if (selected.length !== 1) return;
+    const file = selected[0];
+    setFile(file);
     setStatus('uploading');
 
     // @TODO: 업로드 로직 구현 후 테스트 코드 제거

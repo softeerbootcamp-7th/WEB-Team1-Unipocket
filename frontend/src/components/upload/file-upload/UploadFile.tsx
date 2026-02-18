@@ -42,10 +42,7 @@ const UploadFile = ({ name, status, onDelete }: UploadFileProps) => {
         )}
       </div>
 
-      <button
-        onClick={onDelete}
-        className="text-neutral-400 transition hover:text-red-500"
-      >
+      <button onClick={onDelete}>
         <Icons.Trash className="text-label-alternative size-5 cursor-pointer" />
       </button>
     </div>

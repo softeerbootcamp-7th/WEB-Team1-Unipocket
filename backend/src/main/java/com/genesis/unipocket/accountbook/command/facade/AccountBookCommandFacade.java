@@ -53,7 +53,7 @@ public class AccountBookCommandFacade {
 
 		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
 		var result = accountBookCommandService.update(command);
-		if (req.isMain()) {
+		if (Boolean.TRUE.equals(req.isMain())) {
 			userMainAccountBookService.updateMainAccountBook(userId, accountBookId);
 		}
 

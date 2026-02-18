@@ -18,7 +18,17 @@ public record AccountBookUpdateRequest(
 		@DecimalMin(value = "0.00", inclusive = true, message = CODE) @Digits(integer = 17, fraction = 2, message = CODE) BigDecimal budget,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate startDate,
 		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate endDate,
-		boolean isMain) {
+		Boolean isMain) {
+
+	public AccountBookUpdateRequest(
+			String title,
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			BigDecimal budget,
+			LocalDate startDate,
+			LocalDate endDate) {
+		this(title, localCountryCode, baseCountryCode, budget, startDate, endDate, null);
+	}
 
 	public static final String CODE = ErrorCode.CodeLiterals.ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED;
 }

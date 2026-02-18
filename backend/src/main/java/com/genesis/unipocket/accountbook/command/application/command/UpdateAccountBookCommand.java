@@ -15,7 +15,7 @@ public record UpdateAccountBookCommand(
 		BigDecimal budget,
 		LocalDate startDate,
 		LocalDate endDate,
-		boolean isMain) {
+		Boolean isMain) {
 
 	public static UpdateAccountBookCommand of(
 			Long accountBookId, UUID userId, AccountBookUpdateRequest request) {

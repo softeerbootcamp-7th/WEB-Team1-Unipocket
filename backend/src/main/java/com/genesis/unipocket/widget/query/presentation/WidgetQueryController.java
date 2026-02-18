@@ -5,6 +5,7 @@ import com.genesis.unipocket.widget.query.presentation.request.WidgetQueryReques
 import com.genesis.unipocket.widget.query.service.WidgetQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,9 @@ public class WidgetQueryController {
 	@Operation(summary = "가계부 위젯 조회", description = "가계부에 대한 위젯 데이터를 조회합니다.")
 	@GetMapping("/widget")
 	public ResponseEntity<Object> getWidget(
-			@LoginUser UUID userId, @PathVariable Long accountBookId, WidgetQueryRequest request) {
+			@LoginUser UUID userId,
+			@PathVariable Long accountBookId,
+			@Valid WidgetQueryRequest request) {
 
 		Object result =
 				widgetQueryService.getWidget(
@@ -44,7 +47,7 @@ public class WidgetQueryController {
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
 			@PathVariable Long travelId,
-			WidgetQueryRequest request) {
+			@Valid WidgetQueryRequest request) {
 
 		Object result =
 				widgetQueryService.getWidget(

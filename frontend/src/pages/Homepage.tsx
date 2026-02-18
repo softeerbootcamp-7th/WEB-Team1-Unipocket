@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
@@ -6,24 +6,13 @@ import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
-import { DataTable } from '@/components/data-table/DataTable';
-import DataTableCellEditor from '@/components/data-table/DataTableCellEditor';
-import { DataTableFilterProvider } from '@/components/data-table/DataTableFilter';
-import DataTableProvider from '@/components/data-table/DataTableProvider';
-import CategoryFilter from '@/components/data-table/filters/CategoryFilter';
-import DateFilter from '@/components/data-table/filters/DateFilter';
-import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
-import MethodFilter from '@/components/data-table/filters/MethodFilter';
-import SortDropdown from '@/components/data-table/filters/SortDropdown';
-import SelectionActionBar from '@/components/data-table/SelectionActionBar';
-import { columns } from '@/components/home-page/columns';
-import { type Expense, getData } from '@/components/landing-page/dummy';
+import { getData } from '@/components/landing-page/dummy';
 import ExpandableSheet from '@/components/layout/ExpandableSheet';
-import TableSidePanel from '@/components/side-panel/TableSidePanel';
-import UploadMenu from '@/components/upload/UploadMenu';
 
 import { mockData } from '@/stores/mock';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { Skeleton } from '@/components/ui/skeleton';
+import ExpenseTable from '@/components/home-page/ExpenseTable';
 
 useAccountBookStore.getState().setAccountBook(mockData);
 
@@ -73,29 +62,9 @@ const Homepage = () => {
               collapsedHeight="100%"
               expandedHeight="93vh"
             >
-              <DataTableProvider columns={columns} data={expenses}>
-                <DataTableFilterProvider>
-                  <DateFilter />
-                  <MerchantFilter />
-                  <CategoryFilter />
-                  <MethodFilter />
-                  <div className="flex-1" />
-                  <SortDropdown />
-                  <UploadMenu />
-                </DataTableFilterProvider>
-                <DataTable
-                  groupBy={(row: Expense) =>
-                    new Date(row.date).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                    })
-                  }
-                />
-                <DataTableCellEditor />
-                <SelectionActionBar />
-                <TableSidePanel />
-              </DataTableProvider>
+              <Suspense fallback={<Skeleton className="h-100 w-full" />}>
+                <ExpenseTable />
+              </Suspense>
             </ExpandableSheet>
           )}
         </div>

@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils';
 export const BUBBLE_CLASS =
   'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-modal-8 label1-normal-medium z-50 w-fit min-w-16 bg-[#333435] p-2.5 text-balance text-[#F7F7F8]';
 
-export const ARROW_CLASS = 'translate-y-[-1.8px] rotate-180 text-[#333435]';
-export const ARROW_STYLE = { width: 24, height: 8 } as const;
+export const ARROW_CLASS = 'translate-y-[-2px] rotate-180 text-[#333435]';
+export const ARROW_STYLE = { width: 20, height: 8 } as const;
 
 function TooltipProvider({
   delayDuration = 0,

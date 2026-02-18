@@ -16,6 +16,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +27,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.support.SimpleTransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * <b>지출내역 서비스 단위 테스트</b>
@@ -42,6 +43,7 @@ class ExpenseCommandServiceTest {
 	@Mock private ExpenseRepository expenseRepository;
 	@Mock private ExchangeRateService exchangeRateService;
 	@Mock private AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
+	@Mock private TransactionOperations transactionOperations;
 
 	@InjectMocks private ExpenseCommandService expenseService;
 
@@ -453,59 +455,48 @@ class ExpenseCommandServiceTest {
 		// given
 		Long accountBookId = 7L;
 		CurrencyCode newBaseCurrency = CurrencyCode.USD;
-		// Mock existing expenses
-		ExpenseEntity expense1 = mock(ExpenseEntity.class);
-		when(expense1.getLocalCurrency()).thenReturn(CurrencyCode.JPY);
-		when(expense1.getLocalAmount()).thenReturn(BigDecimal.valueOf(1000));
-		when(expense1.getOccurredAt()).thenReturn(OffsetDateTime.now());
-		when(expense1.getOriginalBaseCurrency()).thenReturn(CurrencyCode.KRW);
-		when(expense1.getOriginalBaseAmount()).thenReturn(BigDecimal.valueOf(9500));
-
-		ExpenseEntity expense2 = mock(ExpenseEntity.class);
-		when(expense2.getLocalCurrency()).thenReturn(CurrencyCode.KRW);
-		when(expense2.getLocalAmount()).thenReturn(BigDecimal.valueOf(10000));
-		when(expense2.getOccurredAt()).thenReturn(OffsetDateTime.now().minusDays(1));
-		when(expense2.getOriginalBaseCurrency()).thenReturn(CurrencyCode.KRW);
-		when(expense2.getOriginalBaseAmount()).thenReturn(BigDecimal.valueOf(10000));
-
-		Page<ExpenseEntity> page = new PageImpl<>(List.of(expense1, expense2));
-		when(expenseRepository.findByAccountBookId(eq(accountBookId), any(Pageable.class)))
-				.thenReturn(page);
+		LocalDate day1 = LocalDate.of(2026, 2, 1);
+		LocalDate day2 = LocalDate.of(2026, 2, 2);
+		when(expenseRepository.findDistinctLocalCurrencyDatePairsByAccountBookId(accountBookId))
+				.thenReturn(
+						List.of(
+								new Object[] {CurrencyCode.JPY, day1},
+								new Object[] {CurrencyCode.KRW, day2}));
 
 		// Mock exchange rate service
 		when(exchangeRateService.getExchangeRate(eq(CurrencyCode.JPY), eq(newBaseCurrency), any()))
-				.thenReturn(BigDecimal.valueOf(0.0075)); // 1000 JPY -> 7.5 USD
+				.thenReturn(BigDecimal.valueOf(0.0075));
 
 		when(exchangeRateService.getExchangeRate(eq(CurrencyCode.KRW), eq(newBaseCurrency), any()))
-				.thenReturn(BigDecimal.valueOf(0.0008)); // 10000 KRW -> 8.0 USD
+				.thenReturn(BigDecimal.valueOf(0.0008));
+		when(transactionOperations.execute(any()))
+				.thenAnswer(
+						invocation -> {
+							@SuppressWarnings("unchecked")
+							TransactionCallback<Boolean> callback =
+									(TransactionCallback<Boolean>) invocation.getArgument(0);
+							return callback.doInTransaction(new SimpleTransactionStatus());
+						});
 
 		// when
 		expenseService.updateBaseCurrency(accountBookId, newBaseCurrency);
 
 		// then
-		// Verify expense1 update
-		verify(expense1)
-				.updateExchangeInfo(
+		verify(expenseRepository)
+				.bulkUpdateBaseCurrencyByLocalCurrencyAndOccurredAtRange(
+						eq(accountBookId),
 						eq(CurrencyCode.JPY),
-						eq(BigDecimal.valueOf(1000)),
-						eq(CurrencyCode.KRW),
-						eq(BigDecimal.valueOf(9500)),
-						eq(BigDecimal.valueOf(7.50).setScale(2)),
 						eq(newBaseCurrency),
-						eq(BigDecimal.valueOf(0.0075)));
-
-		// Verify expense2 update
-		verify(expense2)
-				.updateExchangeInfo(
+						eq(BigDecimal.valueOf(0.0075)),
+						eq(day1.atStartOfDay().atOffset(java.time.ZoneOffset.UTC)),
+						eq(day1.plusDays(1).atStartOfDay().atOffset(java.time.ZoneOffset.UTC)));
+		verify(expenseRepository)
+				.bulkUpdateBaseCurrencyByLocalCurrencyAndOccurredAtRange(
+						eq(accountBookId),
 						eq(CurrencyCode.KRW),
-						eq(BigDecimal.valueOf(10000)),
-						eq(CurrencyCode.KRW),
-						eq(BigDecimal.valueOf(10000)),
-						eq(BigDecimal.valueOf(8.00).setScale(2)),
 						eq(newBaseCurrency),
-						eq(BigDecimal.valueOf(0.0008)));
-
-		// Verify saveAll called
-		verify(expenseRepository).saveAll(anyList());
+						eq(BigDecimal.valueOf(0.0008)),
+						eq(day2.atStartOfDay().atOffset(java.time.ZoneOffset.UTC)),
+						eq(day2.plusDays(1).atStartOfDay().atOffset(java.time.ZoneOffset.UTC)));
 	}
 }

@@ -4,7 +4,7 @@ import { Icons } from '@/assets';
 
 interface UploadFileProps {
   item: UploadItem;
-  onRemove: (id: string) => void;
+  onRemove: () => void;
 }
 
 const UploadFile = ({ item, onRemove }: UploadFileProps) => {
@@ -44,7 +44,7 @@ const UploadFile = ({ item, onRemove }: UploadFileProps) => {
         )}
       </div>
 
-      <button onClick={() => onRemove(item.id)}>
+      <button onClick={onRemove}>
         <Icons.Trash className="text-label-alternative size-5 cursor-pointer" />
       </button>
     </div>

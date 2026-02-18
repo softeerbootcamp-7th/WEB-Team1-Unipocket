@@ -1,35 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useModalContext } from '@/components/modal/useModalContext';
 import UploadFile from '@/components/upload/file-upload/UploadFile';
-import { type UploadStatus } from '@/components/upload/type';
+import { useFileUpload } from '@/components/upload/file-upload/useFileUpload';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
 const FileUploadContent = () => {
   const { setActionReady } = useModalContext();
-
-  const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<UploadStatus>('uploading');
-
-  const handleFilesSelected = (selected: File[]) => {
-    if (selected.length !== 1) return;
-    const file = selected[0];
-    setFile(file);
-    setStatus('uploading');
-
-    // @TODO: 업로드 로직 구현 후 테스트 코드 제거
-    // 테스트용: 2초 뒤 done 처리
-    setTimeout(() => {
-      setStatus('done');
-    }, 2000);
-  };
-
-  const handleRemove = () => {
-    setFile(null);
-    setStatus('uploading');
-  };
-
-  const isReady = !!file && status === 'done';
+  const { item, handleFilesSelected, removeItem, isReady } = useFileUpload();
 
   useEffect(() => {
     setActionReady(isReady);
@@ -48,16 +26,10 @@ const FileUploadContent = () => {
         </span>
       </div>
       <div className="mb-2.5 h-65.5">
-        {!file && (
+        {!item && (
           <UploadBox type="file" onFilesSelected={handleFilesSelected} />
         )}
-        {file && (
-          <UploadFile
-            key={file.name}
-            item={{ id: file.name, name: file.name, status }}
-            onRemove={handleRemove}
-          />
-        )}
+        {item && <UploadFile key={item.id} item={item} onRemove={removeItem} />}
       </div>
     </div>
   );

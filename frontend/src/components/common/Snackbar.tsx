@@ -8,7 +8,7 @@ type SnackbarStatus = 'loading' | 'success' | 'default';
 
 interface SnackbarProps {
   status?: SnackbarStatus;
-  title: string;
+  title?: string;
   description?: string;
   btnText?: string;
   onAction: () => void;
@@ -29,6 +29,12 @@ const Snackbar = ({
     default: null,
   };
 
+  const titleMap: Record<SnackbarStatus, string> = {
+    loading: '지출 내역 분석 중...',
+    success: '지출 내역 분석 완료',
+    default: '',
+  };
+
   const isLoading = status === 'loading';
   const isSuccess = status === 'success';
   return (
@@ -39,7 +45,7 @@ const Snackbar = ({
       <div className="flex items-center gap-2">
         {iconMap[status]}
         <div className="text-inverse-label flex flex-col items-start justify-center px-0.5">
-          <p className="body2-normal-bold">{title}</p>
+          <p className="body2-normal-bold">{title ?? titleMap[status]}</p>
           {description && <p className="label2-regular">{description}</p>}
         </div>
       </div>

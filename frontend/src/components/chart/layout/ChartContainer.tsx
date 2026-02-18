@@ -29,7 +29,7 @@ const ChartContainer = ({
   return (
     <div
       className={cn(
-        'rounded-modal-16 bg-background-normal shadow-semantic-subtle relative flex h-72 w-67 shrink-0 flex-col gap-2.5 p-2 pt-4',
+        'rounded-modal-16 bg-background-normal shadow-semantic-subtle relative flex h-72 w-67 shrink-0 p-2 pt-4',
         className,
         isDragging && 'opacity-0.5', // 드래그 전 위치에서는 거의 안보이도록 처리
         isWidgetEditMode && dragData && 'cursor-grab',
@@ -40,14 +40,21 @@ const ChartContainer = ({
     >
       {!isPreview && isWidgetEditMode && !isDragging && (
         <Icons.CloseButton
-          className="absolute -top-1.5 -left-2.5 size-7 cursor-pointer"
+          className="absolute -top-1.5 -left-2.5 z-60 size-7 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onRemove?.();
           }}
         />
       )}
-      {children}
+      <div
+        className={cn(
+          'flex h-full w-full flex-col gap-2.5',
+          isWidgetEditMode && 'pointer-events-none',
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 };

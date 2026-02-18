@@ -9,11 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * <b>기준화폐 & 환율 정보 원본</b>
+ * <b>지출의 환율/통화 스냅샷</b>
  * <p>
- * 기준 화폐 변경과 독립적으로 유지되는 정보
- * <p>
- * 이 정보들은 수정되지 않는다.
+ * 기준화폐 변경 시점 정책에 따라 base/calculated 필드가 함께 재계산될 수 있다.
  *
  * @author codingbaraGo
  * @since 2026-02-03
@@ -55,18 +53,19 @@ public class ExchangeInfo {
 		if (localCurrency == null || billingCurrency == null) {
 			throw new IllegalArgumentException("currency must not be null");
 		}
-		if (localAmount == null || localAmount.signum() < 0) {
-			throw new IllegalArgumentException("amount must be positive");
+		if (localAmount == null || localAmount.signum() <= 0) {
+			throw new IllegalArgumentException("localCurrencyAmount must be greater than 0");
 		}
 		if (billingAmount == null && calculatedBillingAmount == null) {
 			throw new IllegalArgumentException(
 					"baseCurrencyAmount or calculatedBaseCurrencyAmount is required");
 		}
-		if (billingAmount != null && billingAmount.signum() < 0) {
-			throw new IllegalArgumentException("baseCurrencyAmount must be positive");
+		if (billingAmount != null && billingAmount.signum() <= 0) {
+			throw new IllegalArgumentException("baseCurrencyAmount must be greater than 0");
 		}
-		if (calculatedBillingAmount != null && calculatedBillingAmount.signum() < 0) {
-			throw new IllegalArgumentException("calculatedBaseCurrencyAmount must be positive");
+		if (calculatedBillingAmount != null && calculatedBillingAmount.signum() <= 0) {
+			throw new IllegalArgumentException(
+					"calculatedBaseCurrencyAmount must be greater than 0");
 		}
 		if (calculatedBillingAmount != null && calculatedBillingCurrency == null) {
 			throw new IllegalArgumentException(

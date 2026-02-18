@@ -106,3 +106,21 @@ analysis:
     dispatch-batch-size: 20
     dispatcher:
       fixed-delay-ms: 6000000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        method.execution.time: true
+      percentiles:
+        method.execution.time: 0.95,0.99
+      slo:
+        method.execution.time: 50ms,100ms,200ms,500ms,1s,2s,5s
+
+observability:
+  execution-time:
+    slow-threshold-ms: 1000

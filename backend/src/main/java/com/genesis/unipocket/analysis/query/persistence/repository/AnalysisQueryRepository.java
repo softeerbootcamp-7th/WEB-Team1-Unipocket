@@ -23,7 +23,7 @@ public class AnalysisQueryRepository {
 				.getSingleResult();
 	}
 
-	public List<Object[]> getMySpendEvents(
+	public java.util.stream.Stream<Object[]> getMySpendEvents(
 			Long accountBookId, OffsetDateTime start, OffsetDateTime end, CurrencyType type) {
 		String amountField = amountJpql(type);
 		return em.createQuery(
@@ -42,7 +42,7 @@ public class AnalysisQueryRepository {
 				.setParameter("start", start)
 				.setParameter("end", end)
 				.setParameter("income", Category.INCOME)
-				.getResultList();
+				.getResultStream();
 	}
 
 	@SuppressWarnings("unchecked")

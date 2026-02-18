@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import type { Expense } from '@/components/landing-page/dummy';
+import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export const columns: ColumnDef<Expense>[] = [
@@ -26,7 +27,14 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'merchantName',
     header: () => <>거래처</>,
-    cell: ({ row }) => <> {row.getValue('merchantName')}</>,
+    cell: ({ row, table }) => (
+      <div className="relative flex items-center">
+        <span>{row.getValue('merchantName')}</span>
+        <div className="absolute right-0 z-10">
+          <SidePanelButton row={row} table={table} />
+        </div>
+      </div>
+    ),
   },
   {
     accessorKey: 'categoryCode',

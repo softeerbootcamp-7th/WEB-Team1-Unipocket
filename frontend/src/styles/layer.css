@@ -1,0 +1,8 @@
+@theme {
+  --z-grouped-header: 10;
+  --z-table-header: 20;
+  --z-header: 30;
+  --z-sidebar: 40;
+  --z-overlay: 50; /* ModalBackdrop, BottomSheet 공통 */
+  --z-priority: 60; /* Toast, ActionBar, Tooltip, Popover 공통 */
+}

@@ -29,6 +29,9 @@ const useWidgetCRUD = (maxWidgets: number) => {
   const [addedWidgets, setAddedWidgets] =
     useState<WidgetItem[]>(MOCK_WIDGET_DATA);
 
+  // 삭제된 위젯 타입 목록 (순서 유지: 가장 최근 삭제된 위젯이 맨 뒤)
+  const [removedWidgets, setRemovedWidgets] = useState<WidgetType[]>([]);
+
   // 표시용 위젯 (실제 위젯 + 남은 슬롯은 BLANK로 채움)
   const displayWidgets: WidgetItem[] = useMemo(() => {
     let used = 0;
@@ -56,8 +59,38 @@ const useWidgetCRUD = (maxWidgets: number) => {
   // 추가 가능한 위젯 타입 목록
   const availableWidgets = useMemo(() => {
     const addedTypes = new Set(addedWidgets.map((w) => w.widgetType));
-    return WIDGET_TYPES.filter((type) => !addedTypes.has(type));
-  }, [addedWidgets]);
+    // 삭제 이력 없는 위젯 (WIDGET_TYPES 원래 순서)
+    const initialAvailableWidgets = WIDGET_TYPES.filter(
+      (type) => !addedTypes.has(type) && !removedWidgets.includes(type),
+    );
+    // 삭제 이력 있는 위젯 (삭제된 순서 유지)
+    const removed = removedWidgets.filter((type) => !addedTypes.has(type));
+    return [...initialAvailableWidgets, ...removed];
+  }, [addedWidgets, removedWidgets]);
+
+  // 특정 위치(targetOrder)에 위젯 삽입
+  const handleInsertWidget = useCallback(
+    (widgetType: WidgetType, targetOrder: number) => {
+      setAddedWidgets((prev) => {
+        // 용량 체크
+        if (getTotalSlots(prev) + getWidgetSpan(widgetType) > maxWidgets) {
+          return prev;
+        }
+
+        const normalized = normalizeOrders(prev);
+
+        // 임시 order와 함께 새 위젯 객체를 생성합니다. 최종 order는 아래에서 재할당됩니다.
+        const newWidget: WidgetItem = { widgetType, order: targetOrder };
+
+        normalized.splice(targetOrder, 0, newWidget);
+
+        return normalized.map((widget, index) => ({ ...widget, order: index }));
+      });
+
+      setRemovedWidgets((prev) => prev.filter((t) => t !== widgetType));
+    },
+    [maxWidgets],
+  );
 
   // 위젯을 맨 뒤에 추가
   const handleAddWidget = useCallback(
@@ -69,20 +102,54 @@ const useWidgetCRUD = (maxWidgets: number) => {
         const normalized = normalizeOrders(prev);
         return [...normalized, { order: normalized.length, widgetType }];
       });
+
+      setRemovedWidgets((prev) => prev.filter((t) => t !== widgetType));
     },
     [maxWidgets],
   );
 
+  // list 내에서 위젯 순서 이동
+  const handleMoveWidget = useCallback((fromOrder: number, toOrder: number) => {
+    // 같은 자리에 놓는 경우 (자기 왼쪽/오른쪽 gap) 무시
+    if (toOrder === fromOrder || toOrder === fromOrder + 1) return;
+
+    setAddedWidgets((prev) => {
+      const normalized = normalizeOrders(prev);
+
+      const fromIndex = normalized.findIndex((w) => w.order === fromOrder);
+      if (fromIndex === -1) {
+        return prev;
+      }
+
+      const [widgetToMove] = normalized.splice(fromIndex, 1);
+
+      // 순서 보정 (앞에서 타겟 위젯이 빠졌으니 -1)
+      const adjustedTo = toOrder > fromOrder ? toOrder - 1 : toOrder;
+
+      normalized.splice(adjustedTo, 0, widgetToMove);
+
+      return normalized.map((widget, index) => ({ ...widget, order: index }));
+    });
+  }, []);
+
   const handleRemoveWidget = useCallback((order: number) => {
-    setAddedWidgets((prev) =>
-      normalizeOrders(prev.filter((w) => w.order !== order)),
-    );
+    setAddedWidgets((prev) => {
+      const target = prev.find((w) => w.order === order);
+      if (target && target.widgetType !== 'BLANK') {
+        const type = target.widgetType as WidgetType;
+        // 삭제 이력에 추가 (이미 있으면 제거 후 맨 뒤에)
+        setRemovedWidgets((old) => [...old.filter((t) => t !== type), type]);
+      }
+      return normalizeOrders(prev.filter((w) => w.order !== order));
+    });
   }, []);
 
   return {
     displayWidgets,
     availableWidgets,
     handleAddWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     handleRemoveWidget,
   };
 };
@@ -118,9 +185,12 @@ export const useWidgetManager = () => {
     displayWidgets,
     availableWidgets,
     handleAddWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     handleRemoveWidget,
   } = useWidgetCRUD(maxWidgets);
 
+  // list 영역 전체 드롭존 (gap에 안 떨어졌을 때 fallback → 맨 뒤에 추가)
   const listDropZone = useDropZone({
     zone: 'list',
     onDropWidget: (data) => handleAddWidget(data.widgetType),
@@ -140,6 +210,8 @@ export const useWidgetManager = () => {
     displayWidgets,
     availableWidgets,
     handleAddWidget,
+    handleInsertWidget,
+    handleMoveWidget,
     handleRemoveWidget,
     listDropZone,
     pickerDropZone,

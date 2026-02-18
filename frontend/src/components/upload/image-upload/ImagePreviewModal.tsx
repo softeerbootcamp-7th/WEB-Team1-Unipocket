@@ -33,7 +33,7 @@ const ImagePreviewModal = ({
 
   return (
     <div
-      className="bg-dimmer-strong/60 fixed inset-0 z-100 flex items-center justify-center"
+      className="bg-dimmer-strong/60 fixed inset-0 z-(--z-overlay) flex items-center justify-center"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

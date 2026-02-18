@@ -15,6 +15,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -28,6 +29,9 @@ public class ObservabilityAspect {
 	private final MeterRegistry meterRegistry;
 	private final ObjectMapper objectMapper;
 	private final Map<MetricTimerKey, Timer> timerCache = new ConcurrentHashMap<>();
+
+	@Value("${observability.execution-time.slow-threshold-ms:1000}")
+	private long slowThresholdMs = 1000L;
 
 	@Pointcut("within(@org.springframework.stereotype.Service *)")
 	public void servicePointcut() {}
@@ -81,36 +85,45 @@ public class ObservabilityAspect {
 		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 		String className = signature.getDeclaringType().getSimpleName();
 		String methodName = signature.getName();
+		long durationMs = TimeUnit.NANOSECONDS.toMillis(durationNanos);
+		boolean slowExecution = durationMs >= slowThresholdMs;
 
-		Map<String, Object> logData = new HashMap<>();
-		logData.put("className", className);
-		logData.put("methodName", methodName);
-		logData.put("durationMs", TimeUnit.NANOSECONDS.toMillis(durationNanos));
-		logData.put("success", success);
+		if (slowExecution || log.isDebugEnabled()) {
+			Map<String, Object> logData = new HashMap<>();
+			logData.put("className", className);
+			logData.put("methodName", methodName);
+			logData.put("durationMs", durationMs);
+			logData.put("success", success);
+			logData.put("slowExecution", slowExecution);
+			logData.put("slowThresholdMs", slowThresholdMs);
 
-		String userId = getUserId();
-		if (userId != null) {
-			logData.put("userId", userId);
-		}
+			String userId = getUserId();
+			if (userId != null) {
+				logData.put("userId", userId);
+			}
 
-		String jobId = MDC.get("jobId"); // Assuming jobId is set in MDC by some filter/interceptor
-		if (jobId != null) {
-			logData.put("jobId", jobId);
-		}
+			String jobId = MDC.get("jobId");
+			if (jobId != null) {
+				logData.put("jobId", jobId);
+			}
 
-		String endpoint = getEndpoint();
-		if (endpoint != null) {
-			logData.put("endpoint", endpoint);
-		}
+			String endpoint = getEndpoint();
+			if (endpoint != null) {
+				logData.put("endpoint", endpoint);
+			}
 
-		if (!success && exception != null) {
-			logData.put("exception", exception.getClass().getSimpleName());
-			logData.put("exceptionMessage", exception.getMessage());
-		}
+			if (!success && exception != null) {
+				logData.put("exception", exception.getClass().getSimpleName());
+				logData.put("exceptionMessage", exception.getMessage());
+			}
 
-		if (log.isDebugEnabled()) {
 			try {
-				log.debug(objectMapper.writeValueAsString(logData));
+				String logMessage = objectMapper.writeValueAsString(logData);
+				if (slowExecution) {
+					log.warn(logMessage);
+				} else {
+					log.debug(logMessage);
+				}
 			} catch (Exception e) {
 				log.error("Failed to log observability data", e);
 			}

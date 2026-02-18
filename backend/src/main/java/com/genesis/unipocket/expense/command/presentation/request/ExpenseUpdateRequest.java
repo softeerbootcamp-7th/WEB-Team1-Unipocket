@@ -2,6 +2,7 @@ package com.genesis.unipocket.expense.command.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,11 +15,12 @@ import java.time.Instant;
  * @since 2026-02-07
  */
 public record ExpenseUpdateRequest(
-		@NotNull String merchantName,
+		@NotBlank String merchantName,
 		Category category,
 		Long userCardId,
 		@NotNull Instant occurredAt,
-		@NotNull BigDecimal localCurrencyAmount,
-		@NotNull CurrencyCode localCurrencyCode,
+		BigDecimal localCurrencyAmount,
+		CurrencyCode localCurrencyCode,
+		BigDecimal baseCurrencyAmount,
 		String memo,
 		Long travelId) {}

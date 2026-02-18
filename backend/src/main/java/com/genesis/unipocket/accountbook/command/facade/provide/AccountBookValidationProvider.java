@@ -10,6 +10,7 @@ import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfo
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,8 @@ public class AccountBookValidationProvider
 				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
 				AccountBookInfoFetchService,
 				AccountBookRateInfoProvider,
-				UserAccountBookValidator {
+				UserAccountBookValidator,
+				com.genesis.unipocket.widget.common.validate.UserAccountBookValidator {
 
 	private final AccountBookCommandRepository accountBookRepository;
 
@@ -48,6 +50,11 @@ public class AccountBookValidationProvider
 	@Override
 	public void validateUserAccountBook(String userId, Long accountBookId) {
 		findAndValidate(accountBookId, userId);
+	}
+
+	@Override
+	public void validateUserAccountBook(UUID userId, Long accountBookId) {
+		findAndValidate(accountBookId, userId.toString());
 	}
 
 	@Override

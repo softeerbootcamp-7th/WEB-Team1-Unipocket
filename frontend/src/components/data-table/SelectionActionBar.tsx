@@ -1,4 +1,5 @@
 import React from 'react';
+import { clsx } from 'clsx';
 
 import { useDataTable } from '@/components/data-table/context';
 
@@ -37,7 +38,13 @@ const SelectionActionBar = () => {
   if (!tableState.selectionMode) return null;
 
   return (
-    <div className="bg-inverse-background text-inverse-label body2-normal-bold fixed bottom-30 left-1/2 w-112.5 -translate-x-1/2 truncate rounded-xl p-3 px-3.5 shadow-2xl">
+    <div
+      className={clsx(
+        'text-inverse-label body2-normal-bold truncate',
+        'fixed bottom-30 left-1/2 z-(--z-priority)',
+        'bg-inverse-background w-112.5 -translate-x-1/2 rounded-xl p-3 px-3.5 shadow-2xl',
+      )}
+    >
       <div className="flex items-center gap-4">
         <span className="mr-auto">{selectedRows.length}개 선택됨</span>
         {actionButtons.map((button, index) => (

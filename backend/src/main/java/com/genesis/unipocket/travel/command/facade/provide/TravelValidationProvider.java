@@ -15,7 +15,8 @@ public class TravelValidationProvider implements UserTravelValidator {
 
 	@Override
 	public void validateTravelInAccountBook(Long accountBookId, Long travelId) {
-		boolean exists = travelCommandRepository.existsByIdAndAccountBookId(travelId, accountBookId);
+		boolean exists =
+				travelCommandRepository.existsByIdAndAccountBookId(travelId, accountBookId);
 		if (!exists) {
 			throw new BusinessException(ErrorCode.TRAVEL_NOT_FOUND);
 		}

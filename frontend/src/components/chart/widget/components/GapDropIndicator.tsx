@@ -36,8 +36,8 @@ const GapDropIndicator = ({
     >
       <div
         className={clsx(
-          'pointer-events-none mx-auto h-36.5 w-1.5 rounded-full transition-colors',
-          isGapDragOver ? 'bg-cool-neutral-90' : 'bg-transparent',
+          'pointer-events-none mx-auto h-[80%] w-1.5 rounded-full transition-colors',
+          isGapDragOver ? 'bg-teal-40/40' : 'bg-transparent',
         )}
       />
     </div>

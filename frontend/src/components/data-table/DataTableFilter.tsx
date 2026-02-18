@@ -1,12 +1,7 @@
-import {
-  type ComponentPropsWithoutRef,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type ComponentPropsWithoutRef, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
-import Tag from '@/components/common/Chip';
+import Chip from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -21,13 +16,14 @@ const DataTableFilterProvider = ({
   return <div className="mb-5 flex items-center gap-3 px-2.5">{children}</div>;
 };
 
-interface DataTableSearchFilterProps<T extends string> {
+interface DataTableSearchFilterProps<T> {
   title: string;
   options: T[];
   selectedOptions: T[];
   setSelectedOptions: (selected: T[]) => void;
+  getOptionLabel?: (option: T) => string; // 옵션이 객체나 숫자일 때, 화면에 보여줄 '글자'를 추출하는 함수
   onInputChange: (term: string) => void;
-  onSelect?: (term: string) => void;
+  onSelect?: (term: T) => void;
   onSelectMultiple?: (terms: T[]) => void;
   // 렌더링 옵션
   renderOption: (option: T, searchTerm: string) => React.ReactNode;
@@ -38,7 +34,7 @@ interface DataTableSearchFilterProps<T extends string> {
   ) => React.ReactNode;
 }
 
-const DataTableSearchFilter = <T extends string>({
+const DataTableSearchFilter = <T,>({
   title,
   options,
   selectedOptions,
@@ -49,6 +45,7 @@ const DataTableSearchFilter = <T extends string>({
   onInputChange,
   onSelect,
   onSelectMultiple,
+  getOptionLabel,
 }: DataTableSearchFilterProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,13 +53,15 @@ const DataTableSearchFilter = <T extends string>({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // 검색 로직
-  const filteredOptions = useMemo(() => {
+  const safeGetLabel = (option: T) =>
+    getOptionLabel ? getOptionLabel(option) : String(option);
+
+  const filteredOptions = (() => {
     if (!searchTerm) return options;
     return options.filter((option) =>
-      option.toLowerCase().includes(searchTerm.toLowerCase()),
+      safeGetLabel(option).toLowerCase().includes(searchTerm.toLowerCase()),
     );
-  }, [options, searchTerm]);
+  })();
 
   // 검색어 변경
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,8 +193,11 @@ const DataTableSearchFilter = <T extends string>({
         >
           {/* 1. 태그 렌더링 */}
           {selectedOptions.map((option) => (
-            <div key={option} className="shrink-0">
-              <Tag type={option} onRemove={() => toggleOption(option)} />
+            <div key={String(option)} className="shrink-0">
+              <Chip
+                label={safeGetLabel(option)}
+                onRemove={() => toggleOption(option)}
+              />
             </div>
           ))}
 
@@ -229,7 +231,7 @@ const DataTableSearchFilter = <T extends string>({
                 {filteredOptions.length > 0 ? (
                   filteredOptions.map((option, index) => (
                     <label
-                      key={option}
+                      key={String(option)}
                       onMouseEnter={() => setActiveIndex(index)}
                       className={clsx(
                         'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',

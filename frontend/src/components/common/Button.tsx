@@ -35,11 +35,11 @@ const Button = ({
     /* --- outlined-inverse --- */
     !disabled &&
       variant === 'outlined-inverse' &&
-      'border border-line-normal-neutral text-inverse-label hover:bg-fill-alternative cursor-pointer',
+      'border border-line-normal-strong text-inverse-label hover:bg-fill-alternative cursor-pointer',
 
     disabled &&
       variant === 'outlined-inverse' &&
-      'border border-line-normal-neutral ',
+      'border border-line-normal-strong text-line-solid-strong',
 
     /* --- solid --- */
     !disabled &&

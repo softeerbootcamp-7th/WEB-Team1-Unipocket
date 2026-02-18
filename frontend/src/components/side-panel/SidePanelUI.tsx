@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -12,6 +12,7 @@ import TextInput from '@/components/common/TextInput';
 import type { Expense } from '@/components/landing-page/dummy';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
+import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
 import ValueContainer, {
   type ValueItemProps,
 } from '@/components/side-panel/ValueContainer';
@@ -41,56 +42,39 @@ const SidePanelUI = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
-  const [title, setTitle] = useState('');
-  const [memo, setMemo] = useState('');
-  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
-  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
-  //const isEditing = false; // @TODO: 수정 시 사용 예정 (useDebouncedEffect 훅 연결)
+  const {
+    title,
+    setTitle,
+    memo,
+    setMemo,
+    selectedDateTime,
+    setSelectedDateTime,
+    isDateTimePickerOpen,
+    setIsDateTimePickerOpen,
+  } = useSidePanelForm(initialData);
 
-  const [prevRowId, setPrevRowId] = useState<string | null>(null);
+  const categoryValue = initialData?.categoryCode ? (
+    <Chip type={initialData.categoryCode} />
+  ) : (
+    '-'
+  );
 
-  if (initialData && initialData.rowId !== prevRowId) {
-    setPrevRowId(initialData.rowId);
-    setTitle(initialData.merchantName || '');
-    setMemo(initialData.memo || '');
-    setSelectedDateTime(initialData.date ? new Date(initialData.date) : null);
-    setIsDateTimePickerOpen(false); // 다른 행 열면 달력은 무조건 닫히게
-  }
+  const paymentValue = initialData?.paymentMethod
+    ? initialData.paymentMethod.isCash
+      ? '현금'
+      : initialData.paymentMethod.card?.label || '-'
+    : '-';
 
-  // activeRow.value 데이터를 기반으로 화면에 그릴 내용을 정의합니다.
-  const rowData = initialData as Expense | undefined;
-
-  const valueItems: ValueItemProps[] = [
+  const valueItems = [
     {
       label: '일시',
-      // 사용자가 달력에서 새 날짜를 선택했다면 그걸 보여주고, 아니면 기존 데이터를 보여줌
       value: selectedDateTime ? formatDateTime(selectedDateTime) : '비어 있음',
-      onClick: () => {
-        setIsDateTimePickerOpen((prev) => !prev);
-      },
+      onClick: () => setIsDateTimePickerOpen((prev) => !prev),
     },
-    {
-      label: '카테고리',
-      value: rowData?.categoryCode ? (
-        <Chip type={rowData.categoryCode} /> // Chip 컴포넌트가 해당 타입을 받게 되어 있다고 가정
-      ) : (
-        '-'
-      ),
-    },
-    {
-      label: '결제 수단',
-      // 현금인지 카드인지에 따라 표시 형식 변경
-      value: rowData?.paymentMethod
-        ? rowData.paymentMethod.isCash
-          ? '현금'
-          : rowData.paymentMethod.card?.label || '-'
-        : '-',
-    },
-    {
-      label: '여행',
-      value: rowData?.travel?.name || '-',
-    },
-  ];
+    { label: '카테고리', value: categoryValue },
+    { label: '결제 수단', value: paymentValue },
+    { label: '여행', value: initialData?.travel?.name ?? '-' },
+  ] as const satisfies ValueItemProps[];
 
   useLayoutEffect(() => {
     if (!titleRef.current) return;
@@ -98,20 +82,16 @@ const SidePanelUI = ({
     titleRef.current.style.height = `${titleRef.current.scrollHeight}px`;
   }, [title]);
 
-  const handleDateTimeSelect = (selected: Date) => {
-    setSelectedDateTime(selected);
-    // setValueItems((prev) =>
-    //   prev.map((item) =>
-    //     item.label === '일시'
-    //       ? { ...item, value: formatDateTime(selected) }
-    //       : item,
-    //   ),
-    // );
-  };
-
-  useClickOutside(panelRef, () => {
-    onClose();
-  });
+  useClickOutside(
+    panelRef,
+    () => {
+      onClose();
+      setIsDateTimePickerOpen(false); // 다른 행 열면 달력은 무조건 닫히게
+    },
+    {
+      ignoreSelector: '[data-slot="popover-content"], [data-slot="table-row"]', // CalendarMonthPopover 외부를 클릭했을 때는 사이드 패널이 닫히지 않도록 예외 처리
+    },
+  );
 
   return (
     <div
@@ -173,7 +153,7 @@ const SidePanelUI = ({
             <div className="absolute top-9 right-0 z-10">
               <DateTimePicker
                 initialDateTime={selectedDateTime}
-                onDateTimeSelect={handleDateTimeSelect}
+                onDateTimeSelect={setSelectedDateTime}
                 onClose={() => setIsDateTimePickerOpen(false)}
               />
             </div>
@@ -188,7 +168,7 @@ const SidePanelUI = ({
           title="메모"
           placeholder="메모를 입력해 주세요."
         />
-        {mode !== 'manual' && (
+        {mode && mode !== 'manual' && (
           <>
             <Divider style="thin" />
             <div className="flex flex-col gap-2">

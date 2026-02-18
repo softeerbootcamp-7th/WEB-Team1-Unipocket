@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 
 import { useModalContext } from '@/components/modal/useModalContext';
 import UploadFile from '@/components/upload/file-upload/UploadFile';
+import { type UploadStatus } from '@/components/upload/type';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
 const FileUploadContent = () => {
   const { setActionReady } = useModalContext();
 
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<'uploading' | 'done'>('uploading');
+  const [status, setStatus] = useState<UploadStatus>('uploading');
 
   const handleFilesSelected = (selected: File[]) => {
     if (selected.length !== 1) return;

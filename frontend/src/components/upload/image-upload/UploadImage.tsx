@@ -2,10 +2,9 @@ import { useState } from 'react';
 import clsx from 'clsx';
 
 import ImagePreviewModal from '@/components/upload/image-upload/ImagePreviewModal';
+import { type UploadStatus } from '@/components/upload/type';
 
 import { Icons } from '@/assets';
-
-export type UploadStatus = 'uploading' | 'done' | 'error';
 
 export interface UploadImageItem {
   id: string;

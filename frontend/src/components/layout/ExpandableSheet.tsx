@@ -32,14 +32,16 @@ const ExpandableSheet = ({
   return (
     <AnimatePresence>
       <motion.div
-        layout
-        initial={{ y: '100%' }}
+        initial={{ height: 0 }}
         animate={{
-          y: 0,
           height: isExpanded ? expandedHeight : collapsedHeight,
         }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+        exit={{ height: 0 }}
+        transition={{
+          type: 'tween',
+          ease: [0.25, 1, 0.5, 1],
+          duration: 0.4,
+        }}
         className="bg-background-normal absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-2xl"
       >
         {isExpandable && (

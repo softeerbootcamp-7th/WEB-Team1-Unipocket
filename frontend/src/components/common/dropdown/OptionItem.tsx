@@ -5,9 +5,16 @@ interface OptionItemProps {
   label: string;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  isMain?: boolean;
 }
 
-const OptionItem = ({ id, label, isSelected, onSelect }: OptionItemProps) => {
+const OptionItem = ({
+  id,
+  label,
+  isSelected,
+  onSelect,
+  isMain,
+}: OptionItemProps) => {
   return (
     <li>
       <button
@@ -21,6 +28,9 @@ const OptionItem = ({ id, label, isSelected, onSelect }: OptionItemProps) => {
         )}
       >
         {label}
+        {isMain && (
+          <span className="label3-medium text-label-neutral ml-2">(기본)</span>
+        )}
       </button>
     </li>
   );

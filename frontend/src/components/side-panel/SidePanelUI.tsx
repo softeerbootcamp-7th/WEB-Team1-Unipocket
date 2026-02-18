@@ -102,9 +102,9 @@ const SidePanelUI = ({
         'fixed top-0 right-0 z-(--z-sidebar)',
         'flex flex-col gap-8 pb-50',
         'scrollbar h-dvh w-100 overflow-auto',
-        'border-line-normal-normal bg-background-normal shadow-panel border-l',
+        'border-line-normal-normal bg-background-normal border-l',
         'transform transition-transform duration-300 ease-out',
-        isOpen ? 'translate-x-0' : 'translate-x-full',
+        isOpen ? 'shadow-panel translate-x-0' : 'translate-x-full',
         !isOpen && 'pointer-events-none', // 완전히 닫혀있을 때 화면 밖에서 클릭을 가로채지 못하게 방어
       )}
     >

@@ -11,16 +11,20 @@ interface AccountBookResponse {
   title: string;
   localCountryCode: CountryCode;
   baseCountryCode: CountryCode;
-  budget: number | null;
+  budget?: number | null;
+  budgetCreatedAt?: string;
+  tempExpenseBatchIds?: string[];
   startDate: string;
   endDate: string;
 }
 
-interface GetAccountBooksResponse {
+interface AccountBook {
   id: number;
   title: string;
   isMain: boolean;
 }
+
+type GetAccountBooksResponse = AccountBook[];
 
 export type {
   AccountBookResponse,

@@ -27,4 +27,54 @@ const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
   });
 };
 
-export { createAccountBook, getAccountBooks };
+const getAccountBookDetail = (
+  accountBookId: number,
+): Promise<AccountBookResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
+const deleteAccountBook = (accountBookId: number): Promise<void> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
+    options: {
+      method: 'DELETE',
+    },
+  });
+};
+
+const updateAccountBook = (
+  accountBookId: number,
+  data: Partial<CreateAccountBookRequest>,
+): Promise<AccountBookResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
+    options: {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    },
+  });
+};
+
+const updateAccountBookBudget = (accountBookId: number, budget: number) => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BUDGET(accountBookId),
+    options: {
+      method: 'PATCH',
+      body: JSON.stringify({ budget }),
+    },
+  });
+};
+
+export {
+  createAccountBook,
+  deleteAccountBook,
+  getAccountBookDetail,
+  getAccountBooks,
+  updateAccountBook,
+  updateAccountBookBudget,
+};

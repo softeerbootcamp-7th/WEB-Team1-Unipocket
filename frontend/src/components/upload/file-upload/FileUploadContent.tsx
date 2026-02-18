@@ -8,17 +8,26 @@ const FileUploadContent = () => {
   const context = useContext(ModalContext);
 
   const [file, setFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<'uploading' | 'done'>('uploading');
 
   const handleFilesSelected = (selected: File[]) => {
     if (selected.length === 0) return;
     setFile(selected[0]);
+    setStatus('uploading');
+
+    // @TODO: 업로드 로직 구현 후 테스트 코드 제거
+    // 테스트용: 2초 뒤 done 처리
+    setTimeout(() => {
+      setStatus('done');
+    }, 2000);
   };
 
   const handleRemove = () => {
     setFile(null);
+    setStatus('uploading');
   };
 
-  const isReady = !!file;
+  const isReady = !!file && status === 'done';
 
   useEffect(() => {
     context?.setActionReady(isReady);
@@ -43,7 +52,7 @@ const FileUploadContent = () => {
         {file && (
           <UploadFile
             name={file.name}
-            status="uploading" // @TODO: 실제 업로드 상태 연결
+            status={status}
             onDelete={handleRemove}
           />
         )}

@@ -1,10 +1,18 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import type { Expense } from '@/components/landing-page/dummy';
+import Chip from '@/components/common/Chip';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
-export const columns: ColumnDef<Expense>[] = [
+import {
+  CATEGORIES,
+  type CategoryType,
+  getCategoryName,
+} from '@/types/category';
+
+import type { ExpenseResponse } from '@/api/expenses/type';
+
+export const columns: ColumnDef<ExpenseResponse>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -37,20 +45,30 @@ export const columns: ColumnDef<Expense>[] = [
     ),
   },
   {
-    accessorKey: 'categoryCode',
+    accessorKey: 'category',
     header: () => <>카테고리</>,
-    cell: ({ row }) => <> {row.getValue('categoryCode')}</>,
+    cell: ({ row }) => {
+      const categoryId = row.getValue('category') as CategoryType;
+      const style = CATEGORIES[categoryId];
+      return (
+        <Chip
+          label={getCategoryName(categoryId)}
+          bg={style?.bg}
+          text={style?.text}
+        />
+      );
+    },
   },
   {
-    accessorKey: 'localCurrency',
+    accessorKey: 'localCurrencyCode',
     header: () => <>현지 통화</>,
-    cell: ({ row }) => <> {row.getValue('localCurrency')}</>,
+    cell: ({ row }) => <> {row.getValue('localCurrencyCode')}</>,
   },
   {
-    accessorKey: 'localAmount',
+    accessorKey: 'localCurrencyAmount',
     header: () => <>현지 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('localAmount'));
+      const amount = parseFloat(row.getValue('localCurrencyAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
@@ -59,10 +77,10 @@ export const columns: ColumnDef<Expense>[] = [
     },
   },
   {
-    accessorKey: 'standardAmount',
+    accessorKey: 'baseCurrencyAmount',
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('standardAmount'));
+      const amount = parseFloat(row.getValue('baseCurrencyAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
@@ -86,6 +104,6 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: 'travel',
     header: () => <>여행</>,
-    cell: ({ row }) => <> {row.original.travel.name}</>,
+    cell: ({ row }) => <> {row.original.travelId}</>,
   },
 ];

@@ -85,11 +85,13 @@ const SidePanelUI = ({
   useClickOutside(
     panelRef,
     () => {
+      if (!isOpen) return;
       onClose();
       setIsDateTimePickerOpen(false); // 다른 행 열면 달력은 무조건 닫히게
     },
     {
       ignoreSelector: '[data-slot="popover-content"], [data-slot="table-row"]', // CalendarMonthPopover 외부를 클릭했을 때는 사이드 패널이 닫히지 않도록 예외 처리
+      enabled: isOpen,
     },
   );
 

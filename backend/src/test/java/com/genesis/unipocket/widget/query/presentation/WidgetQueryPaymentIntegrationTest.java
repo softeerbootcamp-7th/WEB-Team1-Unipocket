@@ -15,6 +15,8 @@ import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepos
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.travel.command.persistence.entity.Travel;
+import com.genesis.unipocket.travel.command.persistence.repository.TravelCommandRepository;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
@@ -47,6 +49,7 @@ class WidgetQueryPaymentIntegrationTest {
 	@Autowired private UserCommandRepository userRepository;
 	@Autowired private AccountBookCommandRepository accountBookRepository;
 	@Autowired private ExpenseRepository expenseRepository;
+	@Autowired private TravelCommandRepository travelCommandRepository;
 
 	private UUID userId;
 	private Long accountBookId;
@@ -111,6 +114,44 @@ class WidgetQueryPaymentIntegrationTest {
 								"",
 								null,
 								BigDecimal.ONE)));
+
+		// base가 null이고 calculated만 있는 케이스
+		expenseRepository.save(
+				ExpenseEntity.manual(
+						new ExpenseManualCreateArgs(
+								accountBookId,
+								"계산기준 결제",
+								Category.FOOD,
+								2L,
+								OffsetDateTime.of(2026, 2, 16, 12, 0, 0, 0, ZoneOffset.UTC),
+								new BigDecimal("1500"),
+								CurrencyCode.KRW,
+								null,
+								CurrencyCode.KRW,
+								new BigDecimal("1500"),
+								CurrencyCode.KRW,
+								"",
+								null,
+								BigDecimal.ONE)));
+
+		// 소비 집계 제외 대상(INCOME)
+		expenseRepository.save(
+				ExpenseEntity.manual(
+						new ExpenseManualCreateArgs(
+								accountBookId,
+								"수입",
+								Category.INCOME,
+								3L,
+								OffsetDateTime.of(2026, 2, 16, 13, 0, 0, 0, ZoneOffset.UTC),
+								new BigDecimal("9999"),
+								CurrencyCode.KRW,
+								new BigDecimal("9999"),
+								CurrencyCode.KRW,
+								null,
+								null,
+								"",
+								null,
+								BigDecimal.ONE)));
 	}
 
 	@Test
@@ -125,5 +166,89 @@ class WidgetQueryPaymentIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.paymentMethodCount").value(2))
 				.andExpect(jsonPath("$.items.length()").value(2));
+	}
+
+	@Test
+	@DisplayName("BUDGET BASE 집계는 base가 null이면 calculated를 fallback으로 사용한다")
+	void budgetWidgetQuery_baseFallbackToCalculated_success() throws Exception {
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/widget", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("widgetType", "BUDGET")
+								.queryParam("currencyType", "BASE")
+								.queryParam("period", "ALL"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseSpentAmount").value("4500"));
+	}
+
+	@Test
+	@DisplayName("소비 집계 위젯은 INCOME 카테고리를 제외한다")
+	void budgetWidgetQuery_excludesIncome_success() throws Exception {
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/widget", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("widgetType", "BUDGET")
+								.queryParam("currencyType", "BASE")
+								.queryParam("period", "ALL"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.baseSpentAmount").value("4500"))
+				.andExpect(jsonPath("$.localSpentAmount").value("4500"));
+	}
+
+	@Test
+	@DisplayName("CATEGORY BASE 집계는 calculated fallback을 사용하고 INCOME을 제외한다")
+	void categoryWidgetQuery_baseFallbackAndExcludeIncome_success() throws Exception {
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/widget", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("widgetType", "CATEGORY")
+								.queryParam("currencyType", "BASE")
+								.queryParam("period", "ALL"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalAmount").value("4500"))
+				.andExpect(jsonPath("$.items.length()").value(1));
+	}
+
+	@Test
+	@DisplayName("여행 위젯 조회 시 travel/accountBook 소속이 다르면 404를 반환한다")
+	void travelWidgetQuery_scopeMismatch_returnsNotFound() throws Exception {
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("widget-payment-other@unipocket.com")
+								.name("widget-payment-other")
+								.mainBucketId(1L)
+								.build());
+
+		AccountBookEntity otherAccountBook =
+				accountBookRepository.save(
+						AccountBookEntity.create(
+								new AccountBookCreateArgs(
+										otherUser,
+										"Other Payment Book",
+										CountryCode.KR,
+										CountryCode.KR,
+										1,
+										null,
+										LocalDate.of(2026, 1, 1),
+										LocalDate.of(2026, 12, 31))));
+
+		Travel otherTravel =
+				travelCommandRepository.save(
+						Travel.builder()
+								.accountBookId(otherAccountBook.getId())
+								.travelPlaceName("Other Travel")
+								.startDate(LocalDate.of(2026, 2, 1))
+								.endDate(LocalDate.of(2026, 2, 3))
+								.build());
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/travels/{travelId}/widget", accountBookId, otherTravel.getId())
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("widgetType", "BUDGET")
+								.queryParam("currencyType", "BASE")
+								.queryParam("period", "ALL"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code").value("404_TRAVEL_NOT_FOUND"));
 	}
 }

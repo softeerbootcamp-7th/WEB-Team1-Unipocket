@@ -4,12 +4,15 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.WidgetType;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.AmountFormatUtil;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import com.genesis.unipocket.global.util.PercentUtil;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import com.genesis.unipocket.widget.common.enums.Period;
 import com.genesis.unipocket.widget.common.validate.UserAccountBookValidator;
+import com.genesis.unipocket.widget.common.validate.UserTravelValidator;
 import com.genesis.unipocket.widget.query.persistence.WidgetQueryRepository;
 import com.genesis.unipocket.widget.query.persistence.response.BudgetWidgetResponse;
 import com.genesis.unipocket.widget.query.persistence.response.CategoryWidgetResponse;
@@ -24,8 +27,9 @@ import com.genesis.unipocket.widget.query.persistence.response.PeriodWidgetRespo
 import com.genesis.unipocket.widget.query.service.PeriodRangeUtil.PeriodSlot;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -47,6 +51,7 @@ public class WidgetQueryService {
 
 	private final WidgetQueryRepository widgetQueryRepository;
 	private final UserAccountBookValidator userAccountBookValidator;
+	private final UserTravelValidator userTravelValidator;
 
 	public Object getWidget(
 			UUID userId,
@@ -57,9 +62,15 @@ public class WidgetQueryService {
 			Period period) {
 
 		userAccountBookValidator.validateUserAccountBook(userId, accountBookId);
+		if (travelId != null) {
+			userTravelValidator.validateTravelInAccountBook(accountBookId, travelId);
+		}
 
 		CurrencyType resolvedCurrencyType = currencyType != null ? currencyType : CurrencyType.BASE;
 		Period resolvedPeriod = period != null ? period : Period.ALL;
+		if (widgetType == null) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
 
 		CountryCode baseCountryCode =
 				widgetQueryRepository.getAccountBookCountryCode(accountBookId, CurrencyType.BASE);
@@ -69,9 +80,9 @@ public class WidgetQueryService {
 		// TODO: 한 국가에 타임존이 여러개인 경우가 있으므로 이 부분에 대한 논의 필요
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountryCode);
 
-		LocalDateTime periodStart = null;
-		LocalDateTime periodEnd = null;
-		LocalDateTime[] range = PeriodRangeUtil.getCurrentPeriodRange(resolvedPeriod, zoneId);
+		OffsetDateTime periodStart = null;
+		OffsetDateTime periodEnd = null;
+		OffsetDateTime[] range = PeriodRangeUtil.getCurrentPeriodRange(resolvedPeriod, zoneId);
 		if (range != null) {
 			periodStart = range[0];
 			periodEnd = range[1];
@@ -216,10 +227,8 @@ public class WidgetQueryService {
 						.atStartOfDay(context.zoneId());
 		ZonedDateTime monthEnd = monthStart.plusMonths(1);
 
-		LocalDateTime utcMonthStart =
-				monthStart.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-		LocalDateTime utcMonthEnd =
-				monthEnd.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+		OffsetDateTime utcMonthStart = monthStart.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
+		OffsetDateTime utcMonthEnd = monthEnd.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
 
 		CountryCode countryCode =
 				context.currencyType() == CurrencyType.LOCAL
@@ -365,6 +374,10 @@ public class WidgetQueryService {
 	}
 
 	private BigDecimal toBigDecimal(Object value) {
+		// NPE 방어
+		if (value == null) {
+			return BigDecimal.ZERO.setScale(2, RoundingMode.DOWN);
+		}
 		if (value instanceof BigDecimal bd) {
 			return bd.setScale(2, RoundingMode.DOWN);
 		}

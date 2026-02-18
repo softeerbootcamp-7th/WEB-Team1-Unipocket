@@ -2,8 +2,9 @@ package com.genesis.unipocket.widget.query.service;
 
 import com.genesis.unipocket.widget.common.enums.Period;
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
@@ -19,9 +20,9 @@ public final class PeriodRangeUtil {
 
 	private PeriodRangeUtil() {}
 
-	public record PeriodSlot(String label, LocalDateTime start, LocalDateTime end) {}
+	public record PeriodSlot(String label, OffsetDateTime start, OffsetDateTime end) {}
 
-	public static LocalDateTime[] getCurrentPeriodRange(Period period, ZoneId zoneId) {
+	public static OffsetDateTime[] getCurrentPeriodRange(Period period, ZoneId zoneId) {
 		if (period == null || period == Period.ALL) {
 			return null;
 		}
@@ -74,7 +75,7 @@ public final class PeriodRangeUtil {
 			ZonedDateTime start = monthStart.minusMonths(i);
 			ZonedDateTime end = start.plusMonths(1);
 			String label = start.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-			LocalDateTime[] utc = toUtcRange(start, end);
+			OffsetDateTime[] utc = toUtcRange(start, end);
 			slots.add(new PeriodSlot(label, utc[0], utc[1]));
 		}
 		return slots;
@@ -95,7 +96,7 @@ public final class PeriodRangeUtil {
 			int year = start.get(weekFields.weekBasedYear());
 			int week = start.get(weekFields.weekOfWeekBasedYear());
 			String label = String.format("%d-W%02d", year, week);
-			LocalDateTime[] utc = toUtcRange(start, end);
+			OffsetDateTime[] utc = toUtcRange(start, end);
 			slots.add(new PeriodSlot(label, utc[0], utc[1]));
 		}
 		return slots;
@@ -109,16 +110,16 @@ public final class PeriodRangeUtil {
 			ZonedDateTime start = dayStart.minusDays(i);
 			ZonedDateTime end = start.plusDays(1);
 			String label = start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-			LocalDateTime[] utc = toUtcRange(start, end);
+			OffsetDateTime[] utc = toUtcRange(start, end);
 			slots.add(new PeriodSlot(label, utc[0], utc[1]));
 		}
 		return slots;
 	}
 
-	private static LocalDateTime[] toUtcRange(ZonedDateTime start, ZonedDateTime end) {
-		return new LocalDateTime[] {
-			start.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime(),
-			end.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime()
+	private static OffsetDateTime[] toUtcRange(ZonedDateTime start, ZonedDateTime end) {
+		return new OffsetDateTime[] {
+			start.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime(),
+			end.withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime()
 		};
 	}
 }

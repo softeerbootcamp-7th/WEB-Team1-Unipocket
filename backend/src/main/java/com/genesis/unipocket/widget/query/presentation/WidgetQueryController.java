@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "위젯 조회 API")
+@Tag(name = "위젯 API")
 @RestController
 @RequestMapping("/account-books/{accountBookId}")
 @RequiredArgsConstructor

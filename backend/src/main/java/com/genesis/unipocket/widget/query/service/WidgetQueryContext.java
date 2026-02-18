@@ -3,7 +3,7 @@ package com.genesis.unipocket.widget.query.service;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import com.genesis.unipocket.widget.common.enums.Period;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
 /**
@@ -15,7 +15,7 @@ public record WidgetQueryContext(
 		CurrencyType currencyType,
 		Period period,
 		ZoneId zoneId,
-		LocalDateTime periodStart,
-		LocalDateTime periodEnd,
+		OffsetDateTime periodStart,
+		OffsetDateTime periodEnd,
 		CountryCode baseCountryCode,
 		CountryCode localCountryCode) {}

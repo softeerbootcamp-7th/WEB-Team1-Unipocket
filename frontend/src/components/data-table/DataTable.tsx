@@ -93,7 +93,7 @@ const DataTable = <TData,>({
                 {/* 날짜 그룹 헤더 행 */}
                 <TableRow
                   data-group-header
-                  className="sticky top-10 z-10 border-none bg-white"
+                  className="sticky top-10 z-(--z-grouped-header) border-none bg-white"
                 >
                   {enableGroupSelection && (
                     <TableCell className="w-12.5 px-3 py-4">

@@ -1,3 +1,5 @@
+import { clsx } from 'clsx';
+
 import { useDataTable } from '@/components/data-table/context';
 
 import { Icons } from '@/assets';
@@ -13,7 +15,13 @@ const ImportToFolderBar = () => {
   const handleImportToFolder = () => {};
 
   return (
-    <div className="bg-background-normal body2-normal-bold rounded-modal-12 shadow-semantic-strong fixed bottom-30 left-1/2 w-125 -translate-x-1/2 truncate px-4 py-2.75">
+    <div
+      className={clsx(
+        'body2-normal-bold truncate',
+        'bg-background-normal rounded-modal-12 shadow-semantic-strong w-125 px-4 py-2.75',
+        'fixed bottom-30 left-1/2 z-(--z-priority) -translate-x-1/2',
+      )}
+    >
       <div className="flex items-center gap-4">
         <span className="mr-auto">{selectedRows.length}개 선택됨</span>
         <button

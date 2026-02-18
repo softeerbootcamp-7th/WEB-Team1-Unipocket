@@ -1,12 +1,14 @@
+import { type UploadItem } from '@/components/upload/type';
+
 import { Icons } from '@/assets';
 
 interface UploadFileProps {
-  name: string;
-  status: 'uploading' | 'done' | 'error';
-  onDelete: () => void;
+  item: UploadItem;
+  onRemove: (id: string) => void;
 }
 
-const UploadFile = ({ name, status, onDelete }: UploadFileProps) => {
+const UploadFile = ({ item, onRemove }: UploadFileProps) => {
+  const { name, status } = item;
   const isUploading = status === 'uploading';
 
   return (
@@ -42,7 +44,7 @@ const UploadFile = ({ name, status, onDelete }: UploadFileProps) => {
         )}
       </div>
 
-      <button onClick={onDelete}>
+      <button onClick={() => onRemove(item.id)}>
         <Icons.Trash className="text-label-alternative size-5 cursor-pointer" />
       </button>
     </div>

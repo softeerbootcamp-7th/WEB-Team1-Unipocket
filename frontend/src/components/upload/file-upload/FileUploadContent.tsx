@@ -53,9 +53,9 @@ const FileUploadContent = () => {
         )}
         {file && (
           <UploadFile
-            name={file.name}
-            status={status}
-            onDelete={handleRemove}
+            key={file.name}
+            item={{ id: file.name, name: file.name, status }}
+            onRemove={handleRemove}
           />
         )}
       </div>

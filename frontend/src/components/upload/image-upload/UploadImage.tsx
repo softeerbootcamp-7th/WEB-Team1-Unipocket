@@ -2,19 +2,12 @@ import { useState } from 'react';
 import clsx from 'clsx';
 
 import ImagePreviewModal from '@/components/upload/image-upload/ImagePreviewModal';
-import { type UploadStatus } from '@/components/upload/type';
+import { type UploadItem } from '@/components/upload/type';
 
 import { Icons } from '@/assets';
 
-export interface UploadImageItem {
-  id: string;
-  name: string;
-  url?: string; // 업로드 완료 시 존재
-  status: UploadStatus;
-}
-
 interface UploadImageProps {
-  item: UploadImageItem;
+  item: UploadItem;
   onRemove: (id: string) => void;
 }
 

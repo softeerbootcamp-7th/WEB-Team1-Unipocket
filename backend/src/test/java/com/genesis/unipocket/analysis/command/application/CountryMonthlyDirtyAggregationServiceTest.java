@@ -64,11 +64,24 @@ class CountryMonthlyDirtyAggregationServiceTest {
 	}
 
 	private List<AccountAmountCount> createMockRows(int count) {
-		List<AccountAmountCount> rows = new ArrayList<>();
+		List<AccountAmountCount> rows = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
-			rows.add(new AccountAmountCount((long) i, BigDecimal.valueOf(100 + i * 10), 1L));
+			rows.add(new AccountAmountCount((long) i, createMockAmount(i), 1L));
 		}
 		return rows;
+	}
+
+	private BigDecimal createMockAmount(int index) {
+		if (index % 11 == 0) {
+			return BigDecimal.valueOf(4000 + index);
+		}
+		if (index % 7 == 0) {
+			return BigDecimal.valueOf(60 + index);
+		}
+		if (index % 5 == 0) {
+			return BigDecimal.valueOf(210);
+		}
+		return BigDecimal.valueOf(150 + (index % 6) * 35L);
 	}
 
 	private Object invokeComputePairIqrBounds(List<AccountAmountCount> rows) throws Exception {

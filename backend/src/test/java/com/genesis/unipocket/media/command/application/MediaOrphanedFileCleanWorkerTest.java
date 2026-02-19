@@ -22,13 +22,18 @@ class MediaOrphanedFileCleanWorkerTest {
 	@Mock private MediaObjectStorage mediaObjectStorage;
 	@Mock private MediaUsedPathProvider provider1;
 	@Mock private MediaUsedPathProvider provider2;
+	@Mock private MediaPathPrefixManager mediaPathPrefixManager;
 
 	@Test
 	@DisplayName("사용 중이지 않은 키만 삭제한다")
 	void clean_deletesOnlyOrphanedKeys() {
 		MediaOrphanedFileCleanWorker worker =
-				new MediaOrphanedFileCleanWorker(mediaObjectStorage, List.of(provider1, provider2));
+				new MediaOrphanedFileCleanWorker(
+						mediaObjectStorage, List.of(provider1, provider2), mediaPathPrefixManager);
 		when(mediaObjectStorage.listAllKeys()).thenReturn(List.of("a", "b", "c"));
+		when(mediaPathPrefixManager.isManagedKey("a")).thenReturn(true);
+		when(mediaPathPrefixManager.isManagedKey("b")).thenReturn(true);
+		when(mediaPathPrefixManager.isManagedKey("c")).thenReturn(true);
 		when(provider1.getUsedPaths()).thenReturn(Set.of("a"));
 		when(provider2.getUsedPaths()).thenReturn(Set.of("c"));
 
@@ -41,8 +46,11 @@ class MediaOrphanedFileCleanWorkerTest {
 	@DisplayName("삭제 대상이 없으면 deleteObjects를 호출하지 않는다")
 	void clean_whenNoOrphans_doNotDelete() {
 		MediaOrphanedFileCleanWorker worker =
-				new MediaOrphanedFileCleanWorker(mediaObjectStorage, List.of(provider1, provider2));
+				new MediaOrphanedFileCleanWorker(
+						mediaObjectStorage, List.of(provider1, provider2), mediaPathPrefixManager);
 		when(mediaObjectStorage.listAllKeys()).thenReturn(List.of("a", "b"));
+		when(mediaPathPrefixManager.isManagedKey("a")).thenReturn(true);
+		when(mediaPathPrefixManager.isManagedKey("b")).thenReturn(true);
 		when(provider1.getUsedPaths()).thenReturn(Set.of("a", "b"));
 		when(provider2.getUsedPaths()).thenReturn(Set.of());
 
@@ -55,8 +63,11 @@ class MediaOrphanedFileCleanWorkerTest {
 	@DisplayName("used path에 null/blank가 있어도 무시한다")
 	void clean_ignoresNullAndBlankUsedPaths() {
 		MediaOrphanedFileCleanWorker worker =
-				new MediaOrphanedFileCleanWorker(mediaObjectStorage, List.of(provider1, provider2));
+				new MediaOrphanedFileCleanWorker(
+						mediaObjectStorage, List.of(provider1, provider2), mediaPathPrefixManager);
 		when(mediaObjectStorage.listAllKeys()).thenReturn(List.of("a", "b"));
+		when(mediaPathPrefixManager.isManagedKey("a")).thenReturn(true);
+		when(mediaPathPrefixManager.isManagedKey("b")).thenReturn(true);
 		when(provider1.getUsedPaths()).thenReturn(Set.of("a", " ", ""));
 		when(provider2.getUsedPaths()).thenReturn(new HashSet<>(Arrays.asList((String) null)));
 

@@ -62,6 +62,9 @@ app:
   media:
     presigned-get-expiration-seconds: ${MEDIA_GET_EXPIRATION}
     presigned-put-expiration-seconds: ${MEDIA_PUT_EXPIRATION}
+    global-prefix: ${MEDIA_GLOBAL_PREFIX:backend}
+    temp-expense-prefix: ${TEMP_EXPENSE_MEDIA_PREFIX:temp-expenses}
+    travel-image-prefix: ${TRAVEL_IMAGE_MEDIA_PREFIX:travels}
   frontend:
     url: ${FRONTEND_URL}
     allowed-origins: ${FRONTEND_ALLOWED_ORIGINS}

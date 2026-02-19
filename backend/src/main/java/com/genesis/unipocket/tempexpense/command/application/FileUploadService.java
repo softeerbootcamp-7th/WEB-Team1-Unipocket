@@ -15,6 +15,8 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.Temporar
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 2026-02-08
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FileUploadService {
 
 	private static final int MAX_IMAGE_UPLOAD_COUNT = 10;
@@ -38,6 +40,9 @@ public class FileUploadService {
 	private final FileRepository fileRepository;
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final TempExpenseMediaAccessService tempExpenseMediaAccessService;
+
+	@Value("${app.media.presigned-put-expiration-seconds:300}")
+	private int presignedPutExpirationSeconds;
 
 	/**
 	 * Presigned URL 생성 및 메타데이터 저장
@@ -75,7 +80,7 @@ public class FileUploadService {
 				savedMeta.getTempExpenseMetaId(),
 				s3Response.presignedUrl(),
 				s3Response.imageKey(),
-				300);
+				presignedPutExpirationSeconds);
 	}
 
 	private FileType resolveFileType(String mimeType, UploadType uploadType) {

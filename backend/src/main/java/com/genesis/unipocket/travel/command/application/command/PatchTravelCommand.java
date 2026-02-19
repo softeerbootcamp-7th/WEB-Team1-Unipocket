@@ -15,11 +15,6 @@ public record PatchTravelCommand(
 			LocalDate startDate,
 			LocalDate endDate,
 			String imageKey) {
-		return new PatchTravelCommand(
-				travelId,
-				travelPlaceName,
-				startDate,
-				endDate,
-				imageKey);
+		return new PatchTravelCommand(travelId, travelPlaceName, startDate, endDate, imageKey);
 	}
 }

@@ -25,11 +25,7 @@ public class ExpenseTravelInfoReader implements TravelInfoReader {
 			return Collections.emptyMap();
 		}
 
-		List<Long> distinctIds =
-				travelIds.stream()
-						.filter(id -> id != null)
-						.distinct()
-						.toList();
+		List<Long> distinctIds = travelIds.stream().filter(id -> id != null).distinct().toList();
 		if (distinctIds.isEmpty()) {
 			return Collections.emptyMap();
 		}

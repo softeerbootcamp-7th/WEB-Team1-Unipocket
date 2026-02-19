@@ -98,7 +98,9 @@ public class ExpenseQueryController {
 		return ResponseEntity.ok(new ExpenseMerchantSearchResponse(merchantNames));
 	}
 
-	@Operation(summary = "지출 파일 열람 URL 발급 API", description = "지출에 연결된 파일의 Presigned GET URL을 발급합니다.")
+	@Operation(
+			summary = "지출 파일 열람 URL 발급 API",
+			description = "지출에 연결된 파일의 Presigned GET URL을 발급합니다.")
 	@GetMapping("/account-books/{accountBookId}/expenses/{expenseId}/file-url")
 	public ResponseEntity<ExpenseFileUrlResponse> getExpenseFileUrl(
 			@LoginUser UUID userId,

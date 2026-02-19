@@ -76,7 +76,9 @@ public class TemporaryExpenseQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "메타 내부 파일 열람 URL 발급", description = "메타 1건에 속한 파일 1건의 Presigned GET URL을 발급합니다.")
+	@Operation(
+			summary = "메타 내부 파일 열람 URL 발급",
+			description = "메타 1건에 속한 파일 1건의 Presigned GET URL을 발급합니다.")
 	@GetMapping(
 			"/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}/file-url")
 	public ResponseEntity<TemporaryExpenseFileUrlResponse> getTemporaryExpenseMetaFileUrl(
@@ -89,7 +91,8 @@ public class TemporaryExpenseQueryController {
 						accountBookId, tempExpenseMetaId, fileId, userId);
 		int expiresInSeconds =
 				temporaryExpenseQueryFacade.getTemporaryExpenseMetaFileUrlExpirationSeconds();
-		return ResponseEntity.ok(new TemporaryExpenseFileUrlResponse(presignedUrl, expiresInSeconds));
+		return ResponseEntity.ok(
+				new TemporaryExpenseFileUrlResponse(presignedUrl, expiresInSeconds));
 	}
 
 	/**

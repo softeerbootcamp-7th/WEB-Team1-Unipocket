@@ -110,9 +110,7 @@ public enum ErrorCode {
 			"400_TRAVEL_NOT_IN_ACCOUNT_BOOK",
 			"여행 정보와 요청 가계부 소속이 올바르지 않습니다."),
 	TRAVEL_INVALID_IMAGE_KEY(
-			HttpStatus.BAD_REQUEST,
-			"400_TRAVEL_INVALID_IMAGE_KEY",
-			"유효하지 않은 여행 이미지 키입니다."),
+			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_IMAGE_KEY", "유효하지 않은 여행 이미지 키입니다."),
 	TRAVEL_IMAGE_NOT_FOUND(
 			HttpStatus.NOT_FOUND, "404_TRAVEL_IMAGE_NOT_FOUND", "여행 이미지를 찾을 수 없습니다."),
 	// Expense Errors

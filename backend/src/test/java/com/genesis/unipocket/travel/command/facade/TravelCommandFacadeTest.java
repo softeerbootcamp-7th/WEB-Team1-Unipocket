@@ -41,8 +41,7 @@ class TravelCommandFacadeTest {
 		when(travel.getAccountBookId()).thenReturn(accountBookId);
 
 		travelCommandFacade.patchTravel(
-				PatchTravelCommand.of(
-						travelId, "Seoul", LocalDate.of(2026, 2, 1), null, null),
+				PatchTravelCommand.of(travelId, "Seoul", LocalDate.of(2026, 2, 1), null, null),
 				userId);
 
 		verify(travelCommandService).getTravel(travelId);

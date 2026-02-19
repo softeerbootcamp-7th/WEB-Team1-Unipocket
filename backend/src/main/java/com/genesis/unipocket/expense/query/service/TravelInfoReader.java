@@ -6,5 +6,6 @@ import java.util.Map;
 
 public interface TravelInfoReader {
 
-	Map<Long, ExpenseTravelResult> readTravelInfoMap(Long accountBookId, Collection<Long> travelIds);
+	Map<Long, ExpenseTravelResult> readTravelInfoMap(
+			Long accountBookId, Collection<Long> travelIds);
 }

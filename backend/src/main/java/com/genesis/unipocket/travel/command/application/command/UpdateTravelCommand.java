@@ -15,11 +15,6 @@ public record UpdateTravelCommand(
 			LocalDate startDate,
 			LocalDate endDate,
 			String imageKey) {
-		return new UpdateTravelCommand(
-				travelId,
-				travelPlaceName,
-				startDate,
-				endDate,
-				imageKey);
+		return new UpdateTravelCommand(travelId, travelPlaceName, startDate, endDate, imageKey);
 	}
 }

@@ -16,10 +16,6 @@ public record CreateTravelCommand(
 			LocalDate endDate,
 			String imageKey) {
 		return new CreateTravelCommand(
-				accountBookId,
-				travelPlaceName,
-				startDate,
-				endDate,
-				imageKey);
+				accountBookId, travelPlaceName, startDate, endDate, imageKey);
 	}
 }

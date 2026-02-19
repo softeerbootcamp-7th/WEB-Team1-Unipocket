@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "여행 폴더 기능")
@@ -40,13 +40,16 @@ public class TravelQueryController {
 				travelQueryService.getTravelDetail(accountBookId, travelId, userId));
 	}
 
-	@Operation(summary = "여행 이미지 열람 URL 발급 API", description = "imageKey로 presigned GET URL을 발급합니다.")
+	@Operation(
+			summary = "여행 이미지 열람 URL 발급 API",
+			description = "imageKey로 presigned GET URL을 발급합니다.")
 	@GetMapping("/image-url")
 	public ResponseEntity<TravelImageViewUrlResponse> getTravelImageUrl(
 			@PathVariable Long accountBookId,
 			@LoginUser UUID userId,
 			@RequestParam String imageKey) {
-		String presignedUrl = travelQueryService.issueTravelImageViewUrl(accountBookId, userId, imageKey);
+		String presignedUrl =
+				travelQueryService.issueTravelImageViewUrl(accountBookId, userId, imageKey);
 		int expiresIn = travelQueryService.getTravelImageViewUrlExpirationSeconds();
 		return ResponseEntity.ok(new TravelImageViewUrlResponse(imageKey, presignedUrl, expiresIn));
 	}

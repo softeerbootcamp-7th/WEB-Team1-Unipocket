@@ -47,8 +47,8 @@ public class TravelQueryRepository {
 						"SELECT new"
 							+ " com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse(t.id,"
 							+ " t.accountBookId, t.travelPlaceName, t.startDate, t.endDate,"
-							+ " t.imageKey) FROM Travel t WHERE t.id IN :travelIds AND t.accountBookId ="
-							+ " :accountBookId",
+							+ " t.imageKey) FROM Travel t WHERE t.id IN :travelIds AND"
+							+ " t.accountBookId = :accountBookId",
 						TravelQueryResponse.class)
 				.setParameter("travelIds", travelIds)
 				.setParameter("accountBookId", accountBookId)
@@ -69,8 +69,8 @@ public class TravelQueryRepository {
 	public boolean existsByAccountBookIdAndImageKey(Long accountBookId, String imageKey) {
 		Long count =
 				em.createQuery(
-								"SELECT COUNT(t) FROM Travel t WHERE t.accountBookId = :accountBookId AND"
-										+ " t.imageKey = :imageKey",
+								"SELECT COUNT(t) FROM Travel t WHERE t.accountBookId ="
+										+ " :accountBookId AND t.imageKey = :imageKey",
 								Long.class)
 						.setParameter("accountBookId", accountBookId)
 						.setParameter("imageKey", imageKey)

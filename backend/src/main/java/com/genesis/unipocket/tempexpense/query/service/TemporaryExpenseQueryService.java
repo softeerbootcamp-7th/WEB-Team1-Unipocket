@@ -159,7 +159,8 @@ public class TemporaryExpenseQueryService {
 				expenses);
 	}
 
-	public String issueTemporaryExpenseFileUrl(Long accountBookId, Long tempExpenseMetaId, Long fileId) {
+	public String issueTemporaryExpenseFileUrl(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId) {
 		File file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
 		return tempExpenseMediaAccessService.issueGetPath(
 				file.getS3Key(), Duration.ofSeconds(presignedGetExpirationSeconds));

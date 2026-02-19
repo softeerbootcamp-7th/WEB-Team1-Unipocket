@@ -28,7 +28,8 @@ public class TravelCommandFacade {
 
 	@Transactional
 	public Long createTravel(CreateTravelCommand command, UUID userId) {
-		userAccountBookValidator.validateUserAccountBook(userId.toString(), command.accountBookId());
+		userAccountBookValidator.validateUserAccountBook(
+				userId.toString(), command.accountBookId());
 		CreateTravelResult result = travelCommandService.createTravel(command);
 
 		Long travelId = result.travelId();

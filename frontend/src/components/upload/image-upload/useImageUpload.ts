@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { UploadImageItem } from '@/components/upload/image-upload/UploadImage';
+import type { UploadItem } from '@/components/upload/type';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
 const MAX_TOTAL = uploadPolicy.image.maxCount;
 
 export const useImageUpload = () => {
-  const [items, setItems] = useState<UploadImageItem[]>([]);
-  const itemsRef = useRef<UploadImageItem[]>([]);
+  const [items, setItems] = useState<UploadItem[]>([]);
+  const itemsRef = useRef<UploadItem[]>([]);
 
   useEffect(() => {
     itemsRef.current = items;
@@ -30,7 +30,7 @@ export const useImageUpload = () => {
       return;
     }
 
-    const newItems: UploadImageItem[] = files.map((file) => ({
+    const newItems: UploadItem[] = files.map((file) => ({
       id: crypto.randomUUID(),
       name: file.name,
       url: URL.createObjectURL(file),

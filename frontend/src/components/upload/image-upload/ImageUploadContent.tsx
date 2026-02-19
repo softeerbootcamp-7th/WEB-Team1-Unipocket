@@ -1,21 +1,21 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { clsx } from 'clsx';
 
 import Divider from '@/components/common/Divider';
-import { ModalContext } from '@/components/modal/useModalContext';
+import { useModalContext } from '@/components/modal/useModalContext';
 import UploadGallery from '@/components/upload/image-upload/UploadGallery';
 import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
 const ImageUploadContent = () => {
-  const context = useContext(ModalContext);
+  const { setActionReady } = useModalContext();
   const { items, handleFilesSelected, removeItem, isAllUploaded } =
     useImageUpload();
   const hasItems = items.length > 0;
 
   useEffect(() => {
-    context?.setActionReady(isAllUploaded);
-  }, [isAllUploaded, context]);
+    setActionReady(isAllUploaded);
+  }, [isAllUploaded, setActionReady]);
 
   return (
     <div className="flex w-242 flex-col gap-6">

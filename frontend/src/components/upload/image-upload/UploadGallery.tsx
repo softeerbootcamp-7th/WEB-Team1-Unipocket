@@ -1,9 +1,8 @@
-import UploadImage, {
-  type UploadImageItem,
-} from '@/components/upload/image-upload/UploadImage';
+import UploadImage from '@/components/upload/image-upload/UploadImage';
+import { type UploadItem } from '@/components/upload/type';
 
 interface UploadGalleryProps {
-  items: UploadImageItem[];
+  items: UploadItem[];
   onRemove: (id: string) => void;
 }
 

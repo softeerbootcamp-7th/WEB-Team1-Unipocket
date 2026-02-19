@@ -64,7 +64,6 @@ const DataTable = <TData,>({
         case 'categoryCode':
           dispatch({ type: 'SET_CATEGORY_CELL', payload });
           break;
-        case 'localCurrency':
         case 'localAmount':
         case 'standardAmount':
           dispatch({ type: 'SET_AMOUNT_CELL', payload });
@@ -72,6 +71,7 @@ const DataTable = <TData,>({
         case 'paymentMethod':
           dispatch({ type: 'SET_PAYMENT_CELL', payload });
           break;
+
         default:
           break;
       }

@@ -1,15 +1,13 @@
 import { useMemo, useState } from 'react';
 
-import Button from '@/components/common/Button';
 import {
   TabContent,
   TabList,
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import AccountBookCountryModal from '@/components/setting-page/modal/AccountBookCountryModal';
+import LocaleSelectModal from '@/components/modal/LocaleSelectModal';
 import AccountBookCreateModal from '@/components/setting-page/modal/AccountBookCreateModal';
-import AccountBookCurrencyModal from '@/components/setting-page/modal/AccountBookCurrencyModal';
 import AccountBookDeleteModal from '@/components/setting-page/modal/AccountBookDeleteModal';
 import AccountBookNameModal from '@/components/setting-page/modal/AccountBookNameModal';
 import AccountBookPeriodModal from '@/components/setting-page/modal/AccountBookPeriodModal';
@@ -233,32 +231,18 @@ const AccountBookSettingsForm = ({
       )}
 
       {isCurrencyModalOpen && (
-        <AccountBookCurrencyModal
-          countryOptions={countryOptions}
-          currentBaseCountryCode={detail.baseCountryCode}
-          isSubmitting={updateAccountBookMutation.isPending}
-          onClose={() => setCurrencyModalOpen(false)}
-          onSubmit={(baseCountryCode) => {
-            updateAccountBookMutation.mutate(
-              { accountBookId: detail.id, data: { baseCountryCode } },
-              { onSuccess: () => setCurrencyModalOpen(false) },
-            );
-          }}
+        <LocaleSelectModal
+          mode="BASE"
+          onSelect={handleBaseCountrySelect}
+          selectedCode={selectedBaseCountry}
         />
       )}
 
       {isCountryModalOpen && (
-        <AccountBookCountryModal
-          countryOptions={countryOptions}
-          currentLocalCountryCode={detail.localCountryCode}
-          isSubmitting={updateAccountBookMutation.isPending}
-          onClose={() => setCountryModalOpen(false)}
-          onSubmit={(localCountryCode) => {
-            updateAccountBookMutation.mutate(
-              { accountBookId: detail.id, data: { localCountryCode } },
-              { onSuccess: () => setCountryModalOpen(false) },
-            );
-          }}
+        <LocaleSelectModal
+          mode="LOCAL"
+          onSelect={handleCountrySelect}
+          selectedCode={selectedCountry}
         />
       )}
 

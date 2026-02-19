@@ -1,5 +1,7 @@
 package com.genesis.unipocket.media.command.application;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,33 +33,24 @@ public class MediaPathPrefixManager {
 	public boolean isManagedKey(String key) {
 		String prefix = ensureTrailingSlash(trimSlashes(globalPrefix));
 		if (prefix.isEmpty()) {
-			return true;
+			return false;
 		}
 		return key != null && key.startsWith(prefix);
 	}
 
 	private String withGlobalPrefix(String prefix) {
-		String base = trimSlashes(globalPrefix);
-		String sub = trimSlashes(prefix);
-		if (base.isEmpty()) {
-			return sub;
-		}
-		if (sub.isEmpty()) {
-			return base;
-		}
-		return base + "/" + sub;
+		return joinPath(globalPrefix, prefix);
 	}
 
 	private String append(String prefix, String tail) {
-		String normalizedPrefix = trimSlashes(prefix);
-		String normalizedTail = trimSlashes(tail);
-		if (normalizedPrefix.isEmpty()) {
-			return normalizedTail;
-		}
-		if (normalizedTail.isEmpty()) {
-			return normalizedPrefix;
-		}
-		return normalizedPrefix + "/" + normalizedTail;
+		return joinPath(prefix, tail);
+	}
+
+	private String joinPath(String... parts) {
+		return Arrays.stream(parts)
+				.map(this::trimSlashes)
+				.filter(part -> !part.isEmpty())
+				.collect(Collectors.joining("/"));
 	}
 
 	private String ensureTrailingSlash(String value) {
@@ -68,13 +61,18 @@ public class MediaPathPrefixManager {
 	}
 
 	private String trimSlashes(String value) {
-		String trimmed = value == null ? "" : value.trim();
-		while (trimmed.startsWith("/")) {
-			trimmed = trimmed.substring(1);
+		if (value == null) {
+			return "";
 		}
-		while (trimmed.endsWith("/")) {
-			trimmed = trimmed.substring(0, trimmed.length() - 1);
+		String trimmed = value.trim();
+		int start = 0;
+		int end = trimmed.length();
+		while (start < end && trimmed.charAt(start) == '/') {
+			start++;
 		}
-		return trimmed;
+		while (end > start && trimmed.charAt(end - 1) == '/') {
+			end--;
+		}
+		return trimmed.substring(start, end);
 	}
 }

@@ -75,4 +75,22 @@ class MediaOrphanedFileCleanWorkerTest {
 
 		verify(mediaObjectStorage).deleteObjects(List.of("b"));
 	}
+
+	@Test
+	@DisplayName("관리되지 않는 키는 삭제 대상에서 제외된다")
+	void clean_doesNotDeleteUnmanagedKeys() {
+		MediaOrphanedFileCleanWorker worker =
+				new MediaOrphanedFileCleanWorker(
+						mediaObjectStorage, List.of(provider1), mediaPathPrefixManager);
+		when(mediaObjectStorage.listAllKeys())
+				.thenReturn(List.of("managed-orphan", "unmanaged-orphan", "used-key"));
+		when(mediaPathPrefixManager.isManagedKey("managed-orphan")).thenReturn(true);
+		when(mediaPathPrefixManager.isManagedKey("unmanaged-orphan")).thenReturn(false);
+		when(mediaPathPrefixManager.isManagedKey("used-key")).thenReturn(true);
+		when(provider1.getUsedPaths()).thenReturn(Set.of("used-key"));
+
+		worker.clean();
+
+		verify(mediaObjectStorage).deleteObjects(List.of("managed-orphan"));
+	}
 }

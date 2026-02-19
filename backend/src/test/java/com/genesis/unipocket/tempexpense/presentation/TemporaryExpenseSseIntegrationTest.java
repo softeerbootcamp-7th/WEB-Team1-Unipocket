@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -44,6 +45,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -60,6 +62,7 @@ class TemporaryExpenseSseIntegrationTest {
 	@Autowired private FileRepository fileRepository;
 	@Autowired private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Autowired private JwtTestHelper jwtTestHelper;
+	@Autowired private TransactionTemplate transactionTemplate;
 
 	@MockitoBean private GeminiService geminiService;
 	@MockitoBean private ExchangeRateService exchangeRateService;
@@ -107,6 +110,18 @@ class TemporaryExpenseSseIntegrationTest {
 						.fileType(File.FileType.IMAGE)
 						.s3Key(s3Key)
 						.build());
+	}
+
+	@AfterEach
+	void cleanAsyncPersistedData() {
+		transactionTemplate.executeWithoutResult(
+				status -> {
+					temporaryExpenseRepository.deleteByTempExpenseMetaId(tempExpenseMetaId);
+					fileRepository.deleteByTempExpenseMetaId(tempExpenseMetaId);
+					tempExpenseMetaRepository.deleteById(tempExpenseMetaId);
+					accountBookRepository.deleteById(accountBookId);
+					userRepository.deleteById(userId);
+				});
 	}
 
 	@Test

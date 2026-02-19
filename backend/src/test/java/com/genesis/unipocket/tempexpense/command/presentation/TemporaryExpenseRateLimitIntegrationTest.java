@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -49,6 +51,7 @@ class TemporaryExpenseRateLimitIntegrationTest {
 	@Autowired private AccountBookCommandRepository accountBookRepository;
 	@Autowired private UserCommandRepository userRepository;
 	@Autowired private TempExpenseMetaRepository tempExpenseMetaRepository;
+	@Autowired private StringRedisTemplate redisTemplate;
 
 	private Long accountBookId;
 	private Long tempExpenseMetaId;
@@ -56,6 +59,8 @@ class TemporaryExpenseRateLimitIntegrationTest {
 
 	@BeforeEach
 	void setUp() {
+		flushRedis();
+
 		UserEntity user =
 				userRepository.save(
 						UserEntity.builder()
@@ -82,6 +87,16 @@ class TemporaryExpenseRateLimitIntegrationTest {
 				tempExpenseMetaRepository.save(
 						TempExpenseMeta.builder().accountBookId(accountBookId).build());
 		tempExpenseMetaId = meta.getTempExpenseMetaId();
+	}
+
+	private void flushRedis() {
+		var connectionFactory = redisTemplate.getConnectionFactory();
+		if (connectionFactory == null) {
+			return;
+		}
+		try (RedisConnection connection = connectionFactory.getConnection()) {
+			connection.serverCommands().flushDb();
+		}
 	}
 
 	@Test

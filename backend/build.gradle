@@ -99,6 +99,7 @@ tasks.register("integrationTest", Test) {
 	}
 
 	systemProperty "spring.profiles.active", "test-it"
+	environment "TESTCONTAINERS_REUSE_ENABLE", "true"
 	shouldRunAfter tasks.named("unitTest")
 }
 

@@ -185,14 +185,16 @@ class AnalysisQueryControllerIntegrationTest {
 								.value("200"))
 				.andExpect(
 						jsonPath(
-										"$.compareByCategory.items[?(@.categoryIndex == 2)].averageSpentAmount")
+										"$.compareByCategory.items[?(@.categoryIndex =="
+												+ " 2)].averageSpentAmount")
 								.value("200"))
 				.andExpect(
 						jsonPath("$.compareByCategory.items[?(@.categoryIndex == 4)].mySpentAmount")
 								.value("300"))
 				.andExpect(
 						jsonPath(
-										"$.compareByCategory.items[?(@.categoryIndex == 4)].averageSpentAmount")
+										"$.compareByCategory.items[?(@.categoryIndex =="
+												+ " 4)].averageSpentAmount")
 								.value("100"));
 	}
 
@@ -243,8 +245,7 @@ class AnalysisQueryControllerIntegrationTest {
 	}
 
 	@Test
-	void getAnalysisOverview_singleAccountBookMonthlyMockData_returnsOk()
-			throws Exception {
+	void getAnalysisOverview_singleAccountBookMonthlyMockData_returnsOk() throws Exception {
 		for (int day = 1; day <= 31; day++) {
 			AnalysisFixtureFactory.saveExpense(
 					expenseRepository,
@@ -273,15 +274,16 @@ class AnalysisQueryControllerIntegrationTest {
 						.andExpect(
 								jsonPath("$.compareWithLastMonth.totalSpent.thisMonthToDate")
 										.value("310"))
-						.andExpect(jsonPath("$.compareWithLastMonth.thisMonthItem.length()").value(31))
+						.andExpect(
+								jsonPath("$.compareWithLastMonth.thisMonthItem.length()").value(31))
 						.andExpect(
 								jsonPath(
-												"$.compareByCategory.items[?(@.categoryIndex == 2)].mySpentAmount")
+												"$.compareByCategory.items[?(@.categoryIndex =="
+														+ " 2)].mySpentAmount")
 										.value("310"))
 						.andReturn();
 
-		System.out.println(
-				"analysis response body: " + result.getResponse().getContentAsString());
+		System.out.println("analysis response body: " + result.getResponse().getContentAsString());
 	}
 
 	@Test

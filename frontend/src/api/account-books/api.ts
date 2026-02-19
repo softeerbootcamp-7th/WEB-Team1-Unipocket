@@ -1,7 +1,10 @@
+import type { CurrencyType } from '@/types/currency';
+
 import type {
   AccountBookDetail,
   AccountBookResponse,
   AccountBookSummary,
+  AnalysisResponse,
   CreateAccountBookRequest,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
@@ -67,6 +70,25 @@ export const setMainAccountBook = (accountBookId: number): Promise<void> => {
     endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId)}/main`,
     options: {
       method: 'PATCH',
+    },
+  });
+};
+
+export const getAnalysis = (
+  accountBookId: number,
+  year: number,
+  month: number,
+  currencyType: CurrencyType,
+): Promise<AnalysisResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.ANALYSIS(accountBookId),
+    params: {
+      year: String(year),
+      month: String(month),
+      currencyType,
+    },
+    options: {
+      method: 'GET',
     },
   });
 };

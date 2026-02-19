@@ -24,7 +24,7 @@ const ExpenseTable = () => {
   });
 
   return (
-    <div className="bg-background-normal relative rounded-2xl px-2 py-4 shadow">
+    <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 py-4">
       <DataTableProvider columns={columns} data={data.expenses}>
         <DataTableFilterProvider>
           <DateFilter />

@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import Switch from '@/components/common/Switch';
 import ReportCategory from '@/components/report-page/category/ReportCategory';
-import mockData from '@/components/report-page/mock';
 import ReportMonthly from '@/components/report-page/monthly/ReportMonthly';
 import ReportMyself from '@/components/report-page/myself/ReportMyself';
 import ReportProvider from '@/components/report-page/ReportProvider';
@@ -17,15 +16,16 @@ import {
 
 import { type CurrencyType } from '@/types/currency';
 
+import { useAnalysisQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
-  const categoryData = mockData.compareByCategory;
-  const myselfData = mockData.compareWithLastMonth;
-  const monthlyData = mockData.compareWithAverage;
+  const accountBookId = useAccountBookStore(
+    (state) => state.accountBook?.id as number,
+  );
 
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
@@ -58,6 +58,14 @@ const ReportPage = () => {
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
+
+  const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
+
+  if (!data) return null;
+
+  const categoryData = data.compareByCategory;
+  const monthlyData = data.compareWithAverage;
+  const myselfData = data.compareWithLastMonth;
 
   return (
     <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">

@@ -6,10 +6,7 @@ import { UPLOAD_STATUS } from '@/components/upload/type';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
 import { ENDPOINTS } from '@/api/config/endpoint';
-import {
-  usePresignedUrlMutation,
-  useStartParseMutation,
-} from '@/api/temporary-expenses/query';
+import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 
 const MAX_TOTAL = uploadPolicy.image.maxCount;
 
@@ -18,9 +15,6 @@ export const useImageUpload = (accountBookId: number) => {
   const itemsRef = useRef<UploadItem[]>([]);
   const eventSourcesRef = useRef<Record<string, EventSource>>({});
   const metaIdRef = useRef<number | undefined>(undefined);
-
-  const presignedMutation = usePresignedUrlMutation(accountBookId);
-  const startParseMutation = useStartParseMutation(accountBookId);
 
   useEffect(() => {
     itemsRef.current = items;
@@ -64,7 +58,7 @@ export const useImageUpload = (accountBookId: number) => {
 
       try {
         // 1. presigned 발급
-        const presigned = await presignedMutation.mutateAsync({
+        const presigned = await getPresignedUrl(accountBookId, {
           fileName: file.name,
           mimeType: file.type,
           uploadType: 'IMAGE',
@@ -84,7 +78,7 @@ export const useImageUpload = (accountBookId: number) => {
         });
 
         // 3️. parse 시작
-        const parse = await startParseMutation.mutateAsync({
+        const parse = await startParse(accountBookId, {
           tempExpenseMetaId: presigned.tempExpenseMetaId,
           s3Keys: [presigned.s3Key],
         });

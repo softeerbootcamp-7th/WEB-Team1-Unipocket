@@ -4,6 +4,7 @@ import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -15,10 +16,11 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExp
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.ZoneOffset;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -92,16 +94,21 @@ public class TemporaryExpenseSingleConversionTxService {
 						null,
 						resolvedAmount.exchangeRate());
 
-		ExpenseEntity expense =
-				ExpenseEntity.convertedFromTemporary(
-						args,
-						source,
-						fileLink,
-						temp.getApprovalNumber(),
-						temp.getCardLastFourDigits());
-
-		ExpenseEntity savedExpense = expenseRepository.save(expense);
-		tempExpenseRepository.delete(temp);
+		ExpenseEntity savedExpense;
+		try {
+			ExpenseEntity expense =
+					ExpenseEntity.convertedFromTemporary(
+							args,
+							source,
+							fileLink,
+							temp.getApprovalNumber(),
+							temp.getCardLastFourDigits());
+			savedExpense = expenseRepository.save(expense);
+			tempExpenseRepository.delete(temp);
+		} catch (IllegalArgumentException e) {
+			throw TempExpenseConvertValidationException.single(
+					temp.getTempExpenseId(), List.of(e.getMessage()));
+		}
 
 		log.info(
 				"Converted temporary expense {} to expense {}",
@@ -114,31 +121,26 @@ public class TemporaryExpenseSingleConversionTxService {
 			TemporaryExpense temp, CurrencyCode resolvedBaseCurrencyCode) {
 		BigDecimal localAmount = temp.getLocalCurrencyAmount();
 		BigDecimal baseAmount = temp.getBaseCurrencyAmount();
-		BigDecimal exchangeRate = temp.getExchangeRate();
+		CurrencyCode localCurrencyCode = temp.getLocalCountryCode();
 
-		if (baseAmount != null) {
-			if (exchangeRate == null && localAmount.compareTo(BigDecimal.ZERO) > 0) {
-				exchangeRate = baseAmount.divide(localAmount, 4, RoundingMode.HALF_UP);
-			}
-			return new ResolvedAmount(baseAmount, null, null, exchangeRate);
-		}
-
-		if (temp.getLocalCountryCode() == resolvedBaseCurrencyCode) {
-			return new ResolvedAmount(null, localAmount, resolvedBaseCurrencyCode, BigDecimal.ONE);
-		}
-
-		if (exchangeRate == null || exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
-			exchangeRate =
+		BigDecimal resolvedRate;
+		if (localCurrencyCode == resolvedBaseCurrencyCode) {
+			resolvedRate = BigDecimal.ONE;
+		} else {
+			// 변환 시점에는 임시 데이터에 저장된 과거 환율을 재사용하지 않고,
+			// 반드시 occurredAt 기준 환율을 다시 조회해 manual 생성 경로와 정합성을 맞춘다.
+			resolvedRate =
 					exchangeRateService.getExchangeRate(
-							temp.getLocalCountryCode(),
+							localCurrencyCode,
 							resolvedBaseCurrencyCode,
 							temp.getOccurredAt().atOffset(ZoneOffset.UTC));
 		}
 
 		BigDecimal calculatedBaseAmount =
-				localAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
+				ExchangeAmountCalculator.calculateBaseAmount(localAmount, resolvedRate);
+
 		return new ResolvedAmount(
-				null, calculatedBaseAmount, resolvedBaseCurrencyCode, exchangeRate);
+				baseAmount, calculatedBaseAmount, resolvedBaseCurrencyCode, resolvedRate);
 	}
 
 	private CurrencyCode resolveBaseCurrencyCode(TemporaryExpense temp, Long accountBookId) {

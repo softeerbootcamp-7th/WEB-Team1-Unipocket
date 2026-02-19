@@ -10,9 +10,9 @@ public record CreateTravelCommand(
 		LocalDate endDate,
 		String imageKey) {
 
-	public static CreateTravelCommand from(TravelRequest request) {
+	public static CreateTravelCommand from(Long accountBookId, TravelRequest request) {
 		return new CreateTravelCommand(
-				request.accountBookId(),
+				accountBookId,
 				request.travelPlaceName(),
 				request.startDate(),
 				request.endDate(),

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.query.service.result;
+package com.genesis.unipocket.expense.application.result;
 
 import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 public record ExpenseResult(
-		Long id,
+		Long expenseId,
 		Long accountBookId,
 		Long travelId,
 		Category category,
@@ -20,7 +20,6 @@ public record ExpenseResult(
 		CurrencyCode localCurrencyCode,
 		BigDecimal localCurrencyAmount,
 		OffsetDateTime occurredAt,
-		String merchantName,
 		String displayMerchantName,
 		String approvalNumber,
 		Long userCardId,
@@ -50,7 +49,6 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),
@@ -85,7 +83,6 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
-				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),

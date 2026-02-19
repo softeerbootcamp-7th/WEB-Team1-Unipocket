@@ -1,36 +1,19 @@
-import { useMemo } from 'react';
+import WidgetListItem from '@/components/chart/widget/components/WidgetListItem';
+import { useWidgetContext } from '@/components/chart/widget/WidgetContext';
 
-import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
-import { renderWidget } from '@/components/chart/widget/renderWidget';
-import type { WidgetItem } from '@/components/chart/widget/type';
-import {
-  useWidgetContext,
-  WidgetItemContext,
-} from '@/components/chart/widget/WidgetContext';
+const WidgetList = () => {
+  const { isWidgetEditMode, displayWidgets, listDropZone } = useWidgetContext();
 
-interface WidgetListProps {
-  displayWidgets: WidgetItem[];
-  handleRemoveWidget: (order: number) => void;
-  dropZoneProps?: React.HTMLAttributes<HTMLDivElement>;
-}
-
-const WidgetList = ({
-  displayWidgets,
-  handleRemoveWidget,
-  dropZoneProps,
-}: WidgetListProps) => {
-  const { isWidgetEditMode } = useWidgetContext();
   return (
     <div
-      className="rounded-modal-20 flex w-full items-center justify-between transition-colors"
-      {...dropZoneProps}
+      className="rounded-modal-20 flex w-full items-center justify-center gap-5 transition-colors"
+      {...(isWidgetEditMode ? listDropZone.dropZoneProps : undefined)}
     >
       {displayWidgets.map((widget, i) => (
         <WidgetListItem
           key={widget.widgetType === 'BLANK' ? `BLANK-${i}` : widget.widgetType}
           widget={widget}
-          isWidgetEditMode={isWidgetEditMode}
-          handleRemoveWidget={handleRemoveWidget}
+          isFirst={i === 0}
         />
       ))}
     </div>
@@ -38,37 +21,3 @@ const WidgetList = ({
 };
 
 export default WidgetList;
-
-interface WidgetListItemProps {
-  widget: WidgetItem;
-  isWidgetEditMode: boolean;
-  handleRemoveWidget: (order: number) => void;
-}
-
-const WidgetListItem = ({
-  widget,
-  isWidgetEditMode,
-  handleRemoveWidget,
-}: WidgetListItemProps) => {
-  const isEditable = isWidgetEditMode && widget.widgetType !== 'BLANK';
-
-  const value = useMemo(
-    () => ({
-      dragData: isEditable
-        ? {
-            widgetType: widget.widgetType as DragData['widgetType'],
-            source: 'list' as const,
-            order: widget.order,
-          }
-        : undefined,
-      onRemove: isEditable ? () => handleRemoveWidget(widget.order) : undefined,
-    }),
-    [isEditable, widget.widgetType, widget.order, handleRemoveWidget],
-  );
-
-  return (
-    <WidgetItemContext.Provider value={value}>
-      {renderWidget(widget)}
-    </WidgetItemContext.Provider>
-  );
-};

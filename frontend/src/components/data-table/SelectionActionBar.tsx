@@ -41,7 +41,7 @@ const SelectionActionBar = () => {
     <div
       className={clsx(
         'text-inverse-label body2-normal-bold truncate',
-        'fixed bottom-30 left-1/2 z-(--z-priority)',
+        'z-priority fixed bottom-30 left-1/2',
         'bg-inverse-background w-112.5 -translate-x-1/2 rounded-xl p-3 px-3.5 shadow-2xl',
       )}
     >

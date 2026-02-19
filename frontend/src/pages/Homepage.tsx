@@ -12,37 +12,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 const Homepage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const {
-    isWidgetEditMode,
-    toggleEditMode,
-    maxWidgets,
-    displayWidgets,
-    availableWidgets,
-    handleRemoveWidget,
-    listDropZone,
-    pickerDropZone,
-  } = useWidgetManager();
+  const widgetManager = useWidgetManager();
+  const { isWidgetEditMode } = widgetManager;
+
   return (
-    <WidgetContext.Provider value={{ isWidgetEditMode, toggleEditMode }}>
+    <WidgetContext.Provider value={widgetManager}>
       <div className="flex min-h-0 flex-1 flex-col gap-5 px-30 pt-8">
         <div className="flex flex-col gap-8">
           <WidgetHeader />
-          <WidgetList
-            displayWidgets={displayWidgets}
-            handleRemoveWidget={handleRemoveWidget}
-            dropZoneProps={
-              isWidgetEditMode ? listDropZone.dropZoneProps : undefined
-            }
-          />
+          <WidgetList />
         </div>
         <div className="relative min-h-0 flex-1">
           {isWidgetEditMode && (
             <ExpandableSheet collapsedHeight="100%" isExpandable={false}>
-              <WidgetPicker
-                maxWidgets={maxWidgets}
-                availableWidgets={availableWidgets}
-                dropZoneProps={pickerDropZone.dropZoneProps}
-              />
+              <WidgetPicker />
             </ExpandableSheet>
           )}
           {!isWidgetEditMode && (

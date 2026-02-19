@@ -61,7 +61,7 @@ const Modal = ({
         <ModalContext.Provider value={contextValue}>
           {/* Backdrop */}
           <motion.div
-            className="bg-dimmer-strong fixed inset-0 z-(--z-overlay) flex items-center justify-center"
+            className="bg-dimmer-strong z-overlay fixed inset-0 flex items-center justify-center"
             onClick={handleBackdropClick}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

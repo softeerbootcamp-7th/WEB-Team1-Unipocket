@@ -65,7 +65,7 @@ const DropDown = ({
         <ul
           className={clsx(
             'rounded-modal-10 border-line-solid-normal bg-background-normal shadow-lg',
-            'absolute top-full',
+            'z-priority absolute top-full',
             'scrollbar overflow-x-hidden overflow-y-auto',
             'mt-1.5 max-h-60 border p-1',
             ALIGN_CLASS[align],

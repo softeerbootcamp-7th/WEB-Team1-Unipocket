@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandService {
 
 	private static final int MAX_BACKTRACK_DAYS = 3650;
+	private static final int FETCH_LOOKBACK_DAYS = 14;
 
 	@Value("${exchange.yahoo.chart-url:https://query1.finance.yahoo.com/v8/finance/chart/{symbol}}")
 	private String yahooChartUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}";
@@ -41,32 +44,39 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 	@Override
 	public BigDecimal resolveAndStoreUsdRelativeRate(
 			CurrencyCode currencyCode, LocalDate targetDate) {
-		LocalDate probeDate = targetDate;
-		int attempt = 0;
-		while (attempt <= MAX_BACKTRACK_DAYS) {
-			Optional<ExchangeRate> dbRate =
-					exchangeRateQueryService.findRateOnDate(currencyCode, probeDate);
+		LocalDate oldestAllowedDate = targetDate.minusDays(MAX_BACKTRACK_DAYS);
+		LocalDate probeEndDate = targetDate;
+
+		while (!probeEndDate.isBefore(oldestAllowedDate)) {
+			LocalDate probeStartDate = probeEndDate.minusDays(FETCH_LOOKBACK_DAYS);
+			if (probeStartDate.isBefore(oldestAllowedDate)) {
+				probeStartDate = oldestAllowedDate;
+			}
+
+			Optional<RateOnDate> dbRate =
+					findLatestDbRateInRange(currencyCode, probeStartDate, probeEndDate);
 			if (dbRate.isPresent()) {
-				BigDecimal rate = dbRate.get().getRate();
+				BigDecimal rate = dbRate.get().rate();
 				saveRateIfMissing(currencyCode, targetDate, rate);
 				return rate;
 			}
 
-			Optional<BigDecimal> yahooRate =
-					fetchUsdRelativeRateFromYahooForDate(currencyCode, probeDate);
+			Map<LocalDate, BigDecimal> yahooRates =
+					fetchUsdRelativeRatesFromYahooForRange(
+							currencyCode, probeStartDate, probeEndDate);
+			saveMissingRates(currencyCode, yahooRates);
+
+			Optional<RateOnDate> yahooRate =
+					findLatestRateInMap(yahooRates, probeStartDate, probeEndDate);
 			if (yahooRate.isPresent()) {
-				BigDecimal rate = yahooRate.get();
-				if (probeDate.isEqual(targetDate)) {
-					saveRateIfMissing(currencyCode, targetDate, rate);
-				} else {
-					saveRateIfMissing(currencyCode, probeDate, rate);
-					saveRateIfMissing(currencyCode, targetDate, rate);
+				RateOnDate found = yahooRate.get();
+				if (!found.date().isEqual(targetDate)) {
+					saveRateIfMissing(currencyCode, targetDate, found.rate());
 				}
-				return rate;
+				return found.rate();
 			}
 
-			probeDate = probeDate.minusDays(1);
-			attempt++;
+			probeEndDate = probeStartDate.minusDays(1);
 		}
 
 		log.warn(
@@ -90,10 +100,40 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 						.build());
 	}
 
-	private Optional<BigDecimal> fetchUsdRelativeRateFromYahooForDate(
-			CurrencyCode currencyCode, LocalDate date) {
-		long period1 = date.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
-		long period2 = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+	private Optional<RateOnDate> findLatestDbRateInRange(
+			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
+		for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
+			Optional<ExchangeRate> dbRate =
+					exchangeRateQueryService.findRateOnDate(currencyCode, date);
+			if (dbRate.isPresent()) {
+				return Optional.of(new RateOnDate(date, dbRate.get().getRate()));
+			}
+		}
+		return Optional.empty();
+	}
+
+	private Optional<RateOnDate> findLatestRateInMap(
+			Map<LocalDate, BigDecimal> ratesByDate, LocalDate startDate, LocalDate endDate) {
+		for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
+			BigDecimal rate = ratesByDate.get(date);
+			if (rate != null) {
+				return Optional.of(new RateOnDate(date, rate));
+			}
+		}
+		return Optional.empty();
+	}
+
+	private void saveMissingRates(
+			CurrencyCode currencyCode, Map<LocalDate, BigDecimal> ratesByDate) {
+		for (Map.Entry<LocalDate, BigDecimal> entry : ratesByDate.entrySet()) {
+			saveRateIfMissing(currencyCode, entry.getKey(), entry.getValue());
+		}
+	}
+
+	private Map<LocalDate, BigDecimal> fetchUsdRelativeRatesFromYahooForRange(
+			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
+		long period1 = startDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+		long period2 = endDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 		String symbol = "USD" + currencyCode.name() + "=X";
 		String url =
 				UriComponentsBuilder.fromUriString(yahooChartUrl)
@@ -107,7 +147,12 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 		try {
 			responseBody = restTemplate.getForObject(url, String.class);
 		} catch (Exception e) {
-			log.error("Yahoo rate request failed. currency={}, date={}", currencyCode, date, e);
+			log.error(
+					"Yahoo rate request failed. currency={}, startDate={}, endDate={}",
+					currencyCode,
+					startDate,
+					endDate,
+					e);
 			throw new BusinessException(ErrorCode.EXCHANGE_RATE_API_ERROR);
 		}
 		if (responseBody == null || responseBody.isBlank()) {
@@ -119,64 +164,68 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 			response = objectMapper.readValue(responseBody, YahooChartResponse.class);
 		} catch (Exception e) {
 			log.error(
-					"Yahoo rate response parse failed. currency={}, date={}",
+					"Yahoo rate response parse failed. currency={}, startDate={}, endDate={}",
 					currencyCode,
-					date,
+					startDate,
+					endDate,
 					e);
 			throw new BusinessException(ErrorCode.EXCHANGE_RATE_API_ERROR);
 		}
 
 		YahooChartResponse.Chart chart = response.chart();
 		if (chart == null) {
-			return Optional.empty();
+			return Map.of();
 		}
 
 		if (chart.error() != null) {
 			log.warn(
-					"Yahoo does not provide symbol data. currency={}, date={}, error={}",
+					"Yahoo does not provide symbol data. currency={}, startDate={}, endDate={},"
+							+ " error={}",
 					currencyCode,
-					date,
+					startDate,
+					endDate,
 					chart.error());
 			throw new BusinessException(ErrorCode.EXCHANGE_RATE_NOT_FOUND);
 		}
 
 		if (chart.result() == null || chart.result().isEmpty()) {
-			return Optional.empty();
+			return Map.of();
 		}
 
-		YahooChartResponse.Result firstResult = chart.result().get(0);
-		if (firstResult == null
-				|| firstResult.timestamp() == null
-				|| firstResult.indicators() == null
-				|| firstResult.indicators().quote() == null
-				|| firstResult.indicators().quote().isEmpty()) {
-			return Optional.empty();
-		}
-
-		YahooChartResponse.Quote firstQuote = firstResult.indicators().quote().get(0);
-		if (firstQuote == null || firstQuote.close() == null) {
-			return Optional.empty();
-		}
-
-		int size = Math.min(firstResult.timestamp().size(), firstQuote.close().size());
-		for (int i = 0; i < size; i++) {
-			Long epochSecond = firstResult.timestamp().get(i);
-			BigDecimal close = firstQuote.close().get(i);
-			if (epochSecond == null || close == null) {
+		Map<LocalDate, BigDecimal> ratesByDate = new HashMap<>();
+		for (YahooChartResponse.Result result : chart.result()) {
+			if (result == null
+					|| result.timestamp() == null
+					|| result.indicators() == null
+					|| result.indicators().quote() == null
+					|| result.indicators().quote().isEmpty()) {
 				continue;
 			}
 
-			LocalDate candidateDate =
-					Instant.ofEpochSecond(epochSecond).atZone(ZoneOffset.UTC).toLocalDate();
-			if (!candidateDate.isEqual(date)) {
+			YahooChartResponse.Quote firstQuote = result.indicators().quote().get(0);
+			if (firstQuote == null || firstQuote.close() == null) {
 				continue;
 			}
 
-			if (close.compareTo(BigDecimal.ZERO) > 0) {
-				return Optional.of(close);
+			int size = Math.min(result.timestamp().size(), firstQuote.close().size());
+			for (int i = 0; i < size; i++) {
+				Long epochSecond = result.timestamp().get(i);
+				BigDecimal close = firstQuote.close().get(i);
+				if (epochSecond == null || close == null || close.compareTo(BigDecimal.ZERO) <= 0) {
+					continue;
+				}
+
+				LocalDate candidateDate =
+						Instant.ofEpochSecond(epochSecond).atZone(ZoneOffset.UTC).toLocalDate();
+				if (candidateDate.isBefore(startDate) || candidateDate.isAfter(endDate)) {
+					continue;
+				}
+				ratesByDate.put(candidateDate, close);
 			}
 		}
 
-		return Optional.empty();
+		return ratesByDate;
 	}
+
+	private record RateOnDate(LocalDate date, BigDecimal rate) {}
 }

@@ -34,6 +34,9 @@ public class TravelQueryService {
 				travelQueryRepository
 						.findById(travelId)
 						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
+		if (!travel.accountBookId().equals(accountBookId)) {
+			throw new BusinessException(ErrorCode.TRAVEL_NOT_FOUND);
+		}
 
 		List<WidgetOrderDto> widgets = travelQueryRepository.findAllByTravelId(travelId);
 

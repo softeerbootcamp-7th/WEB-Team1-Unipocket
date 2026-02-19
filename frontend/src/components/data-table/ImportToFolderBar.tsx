@@ -19,7 +19,7 @@ const ImportToFolderBar = () => {
       className={clsx(
         'body2-normal-bold truncate',
         'bg-background-normal rounded-modal-12 shadow-semantic-strong w-125 px-4 py-2.75',
-        'fixed bottom-30 left-1/2 z-(--z-priority) -translate-x-1/2',
+        'z-priority fixed bottom-30 left-1/2 -translate-x-1/2',
       )}
     >
       <div className="flex items-center gap-4">

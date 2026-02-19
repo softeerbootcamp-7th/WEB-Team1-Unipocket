@@ -5,9 +5,12 @@ export function useClickOutside(
   callback: () => void,
   options?: {
     ignoreSelector?: string;
+    enabled?: boolean;
   },
 ) {
   useEffect(() => {
+    if (options?.enabled === false) return;
+
     function handleClick(event: MouseEvent | TouchEvent) {
       const target = event.target as Node;
 
@@ -30,5 +33,5 @@ export function useClickOutside(
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('touchstart', handleClick);
     };
-  }, [ref, callback, options?.ignoreSelector]);
+  }, [ref, callback, options?.ignoreSelector, options?.enabled]);
 }

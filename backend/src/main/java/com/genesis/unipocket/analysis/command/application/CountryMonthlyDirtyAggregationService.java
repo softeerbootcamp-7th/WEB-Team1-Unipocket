@@ -546,7 +546,7 @@ public class CountryMonthlyDirtyAggregationService {
 	}
 
 	private PairIqrBounds computePairIqrBounds(List<AccountAmountCount> monthlyRows) {
-		if (monthlyRows == null || monthlyRows.size() < 4) {
+		if (monthlyRows == null || monthlyRows.size() < properties.getPeerMinSampleSize()) {
 			return null;
 		}
 		List<BigDecimal> sorted =

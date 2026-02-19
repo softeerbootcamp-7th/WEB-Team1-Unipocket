@@ -23,6 +23,7 @@ export const Cards = {
 import Add from '@/assets/Icons/add.svg';
 import AlertCircle from '@/assets/Icons/alert-circle.svg';
 import Analytics from '@/assets/Icons/analytics.svg';
+import Arrow from '@/assets/Icons/arrow.svg';
 import Calendar from '@/assets/Icons/calendar.svg';
 import Camera from '@/assets/Icons/camera.svg';
 import CaretDown from '@/assets/Icons/caret-down.svg';
@@ -33,6 +34,7 @@ import Close from '@/assets/Icons/close.svg';
 import CloseButton from '@/assets/Icons/close-button.svg';
 import CloseCircle from '@/assets/Icons/close-circle.svg';
 import Edit from '@/assets/Icons/edit.svg';
+import Expand from '@/assets/Icons/expand.svg';
 import FileBox from '@/assets/Icons/file-box.svg';
 import Home from '@/assets/Icons/home.svg';
 import Information from '@/assets/Icons/information.svg';
@@ -48,6 +50,7 @@ import UploadFile from '@/assets/Icons/upload-file.svg';
 
 export const Icons = {
   Add,
+  Arrow,
   AlertCircle,
   CloseCircle,
   Calendar,
@@ -55,6 +58,7 @@ export const Icons = {
   ChevronForward,
   CheckmarkCircle,
   CloseButton,
+  Expand,
   Logo,
   Loading,
   Analytics,

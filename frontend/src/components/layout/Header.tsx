@@ -24,7 +24,7 @@ const Header = () => {
   }, []);
 
   return (
-    <div className="border-line-solid-normal sticky top-0 z-(--z-header) flex justify-between border-b px-8 py-3">
+    <div className="border-line-solid-normal z-header sticky top-0 flex justify-between border-b px-8 py-3">
       <div className="flex items-center">
         {!isInitPath && (
           <Suspense fallback={<Skeleton className="h-10 w-40" />}>

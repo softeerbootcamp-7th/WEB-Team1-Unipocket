@@ -10,6 +10,8 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.auth.support.JwtTestHelper;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.travel.command.persistence.entity.Travel;
+import com.genesis.unipocket.travel.command.persistence.repository.TravelCommandRepository;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.time.LocalDate;
@@ -39,6 +41,7 @@ class WidgetCommandControllerIntegrationTest {
 	@Autowired private JwtTestHelper jwtTestHelper;
 	@Autowired private UserCommandRepository userRepository;
 	@Autowired private AccountBookCommandRepository accountBookRepository;
+	@Autowired private TravelCommandRepository travelCommandRepository;
 
 	private UUID userId;
 	private Long accountBookId;
@@ -88,5 +91,57 @@ class WidgetCommandControllerIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].widgetType").value("BUDGET"))
 				.andExpect(jsonPath("$[1].widgetType").value("PERIOD"));
+	}
+
+	@Test
+	@DisplayName("여행 위젯 수정 API는 travel/accountBook 소속이 다르면 404를 반환한다")
+	void updateTravelWidgets_scopeMismatch_returnsNotFound() throws Exception {
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("widget-command-other@unipocket.com")
+								.name("widget-command-other")
+								.mainBucketId(1L)
+								.build());
+
+		AccountBookEntity otherAccountBook =
+				accountBookRepository.save(
+						AccountBookEntity.create(
+								new AccountBookCreateArgs(
+										otherUser,
+										"Other Book",
+										CountryCode.KR,
+										CountryCode.KR,
+										1,
+										null,
+										LocalDate.of(2026, 1, 1),
+										LocalDate.of(2026, 12, 31))));
+
+		Travel otherTravel =
+				travelCommandRepository.save(
+						Travel.builder()
+								.accountBookId(otherAccountBook.getId())
+								.travelPlaceName("Other Travel")
+								.startDate(LocalDate.of(2026, 2, 1))
+								.endDate(LocalDate.of(2026, 2, 3))
+								.build());
+
+		String body =
+				"""
+			[
+			{"order":0,"widgetType":"BUDGET","currencyType":"BASE","period":"ALL"}
+			]
+			""";
+
+		mockMvc.perform(
+						put(
+										"/account-books/{accountBookId}/travels/{travelId}/widgets",
+										accountBookId,
+										otherTravel.getId())
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code").value("404_TRAVEL_NOT_FOUND"));
 	}
 }

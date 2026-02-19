@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.command.presentation.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 
 /**
@@ -10,7 +11,10 @@ import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
  */
 public record PaymentMethodResponse(boolean isCash, CardResponse card) {
 
-	public record CardResponse(CardCompany company, String label, String lastDigits) {}
+	public record CardResponse(
+			@JsonFormat(shape = JsonFormat.Shape.NUMBER) CardCompany company,
+			String label,
+			String lastDigits) {}
 
 	public static PaymentMethodResponse from(
 			Long userCardId, CardCompany company, String label, String lastDigits) {

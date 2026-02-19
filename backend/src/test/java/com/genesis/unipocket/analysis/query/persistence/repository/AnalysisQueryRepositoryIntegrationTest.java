@@ -98,17 +98,21 @@ class AnalysisQueryRepositoryIntegrationTest {
 				"income");
 
 		List<Object[]> baseRows =
-				analysisQueryRepository.getMySpendEvents(
-						accountBookId,
-						AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 0, 0),
-						AnalysisFixtureFactory.utcDateTime(2025, 12, 31, 23, 59),
-						CurrencyType.BASE);
+				analysisQueryRepository
+						.getMySpendEvents(
+								accountBookId,
+								AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 0, 0),
+								AnalysisFixtureFactory.utcDateTime(2025, 12, 31, 23, 59),
+								CurrencyType.BASE)
+						.toList();
 		List<Object[]> localRows =
-				analysisQueryRepository.getMySpendEvents(
-						accountBookId,
-						AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 0, 0),
-						AnalysisFixtureFactory.utcDateTime(2025, 12, 31, 23, 59),
-						CurrencyType.LOCAL);
+				analysisQueryRepository
+						.getMySpendEvents(
+								accountBookId,
+								AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 0, 0),
+								AnalysisFixtureFactory.utcDateTime(2025, 12, 31, 23, 59),
+								CurrencyType.LOCAL)
+						.toList();
 
 		assertThat(baseRows).hasSize(2);
 		assertThat((BigDecimal) baseRows.get(0)[1]).isEqualByComparingTo(new BigDecimal("75.00"));
@@ -169,5 +173,75 @@ class AnalysisQueryRepositoryIntegrationTest {
 		assertThat(result).containsEntry(Category.FOOD, new BigDecimal("10.00"));
 		assertThat(result).containsEntry(Category.LIVING, new BigDecimal("25.00"));
 		assertThat(result).doesNotContainKey(Category.INCOME);
+	}
+
+	@Test
+	void getMySpendEvents_dateRangeFiltering_includesOnlyEventsWithinRange() {
+		// Before range
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2025, 11, 30, 23, 59),
+				new BigDecimal("10.00"),
+				new BigDecimal("10.00"),
+				new BigDecimal("10.00"),
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"before");
+		// Start of range (Inclusive)
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 0, 0),
+				new BigDecimal("20.00"),
+				new BigDecimal("20.00"),
+				new BigDecimal("20.00"),
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"start");
+		// Middle of range
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2025, 12, 15, 12, 0),
+				new BigDecimal("30.00"),
+				new BigDecimal("30.00"),
+				new BigDecimal("30.00"),
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"middle");
+		// End of range (Exclusive in query if using <, but test setup uses <= behavior
+		// typically for 'end' param if meant as inclusive end of day?
+		// Wait, the repository query uses `e.occurredAt < :end`. So we should pass
+		// strict end time.
+		// Let's test standard "month" range behavior: [start, end)
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2026, 1, 1, 0, 0),
+				new BigDecimal("40.00"),
+				new BigDecimal("40.00"),
+				new BigDecimal("40.00"),
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"after");
+
+		List<Object[]> rows =
+				analysisQueryRepository
+						.getMySpendEvents(
+								accountBookId,
+								AnalysisFixtureFactory.utcDateTime(2025, 12, 1, 0, 0),
+								AnalysisFixtureFactory.utcDateTime(
+										2026, 1, 1, 0, 0), // Exclusive end
+								CurrencyType.BASE)
+						.toList();
+
+		assertThat(rows).hasSize(2);
+		assertThat((BigDecimal) rows.get(0)[1]).isEqualByComparingTo(new BigDecimal("20.00"));
+		assertThat((BigDecimal) rows.get(1)[1]).isEqualByComparingTo(new BigDecimal("30.00"));
 	}
 }

@@ -28,5 +28,4 @@ dist-ssr
 
 
 # Env files
-.env.production
-.env.development
+.env.*

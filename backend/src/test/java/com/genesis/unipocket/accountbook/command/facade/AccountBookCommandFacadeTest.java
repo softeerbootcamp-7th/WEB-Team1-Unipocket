@@ -9,12 +9,10 @@ import static org.mockito.Mockito.when;
 import com.genesis.unipocket.accountbook.command.application.AccountBookCommandService;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.facade.port.AccountBookDefaultWidgetPort;
+import com.genesis.unipocket.accountbook.command.facade.port.ExpenseCurrencySyncService;
+import com.genesis.unipocket.accountbook.command.facade.port.UserInfoReader;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
-import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookQueryResponse;
-import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
-import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
-import com.genesis.unipocket.user.query.service.UserQueryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -29,10 +27,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AccountBookCommandFacadeTest {
 
 	@Mock private AccountBookCommandService accountBookCommandService;
-	@Mock private UserQueryService userQueryService;
+	@Mock private UserInfoReader userInfoReader;
 	@Mock private AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
-	@Mock private ExpenseCommandService expenseCommandService;
-	@Mock private AccountBookQueryService accountBookQueryService;
+	@Mock private ExpenseCurrencySyncService expenseCurrencySyncService;
 
 	@InjectMocks private AccountBookCommandFacade accountBookCommandFacade;
 
@@ -44,11 +41,6 @@ class AccountBookCommandFacadeTest {
 		Long accountBookId = 1L;
 		LocalDate start = LocalDate.of(2026, 1, 1);
 		LocalDate end = LocalDate.of(2026, 12, 31);
-
-		AccountBookQueryResponse current =
-				new AccountBookQueryResponse(
-						accountBookId, "title", CountryCode.US, CountryCode.KR, start, end);
-		when(accountBookQueryService.getAccountBook(accountBookId)).thenReturn(current);
 
 		AccountBookUpdateRequest req =
 				new AccountBookUpdateRequest(
@@ -67,13 +59,14 @@ class AccountBookCommandFacadeTest {
 								CountryCode.JP,
 								CountryCode.KR,
 								start,
-								end));
+								end,
+								true));
 
 		// when
 		var response = accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
 
 		// then
-		verify(expenseCommandService)
+		verify(expenseCurrencySyncService)
 				.updateBaseCurrency(accountBookId, CountryCode.KR.getCurrencyCode());
 		assertThat(response.baseCurrencyCode()).isEqualTo(CountryCode.KR);
 	}
@@ -87,11 +80,6 @@ class AccountBookCommandFacadeTest {
 		LocalDate start = LocalDate.of(2026, 1, 1);
 		LocalDate end = LocalDate.of(2026, 12, 31);
 
-		AccountBookQueryResponse current =
-				new AccountBookQueryResponse(
-						accountBookId, "title", CountryCode.US, CountryCode.KR, start, end);
-		when(accountBookQueryService.getAccountBook(accountBookId)).thenReturn(current);
-
 		AccountBookUpdateRequest req =
 				new AccountBookUpdateRequest(
 						"title2",
@@ -109,13 +97,14 @@ class AccountBookCommandFacadeTest {
 								CountryCode.US,
 								CountryCode.JP,
 								start,
-								end));
+								end,
+								true));
 
 		// when
 		accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
 
 		// then
-		verify(expenseCommandService)
+		verify(expenseCurrencySyncService)
 				.updateBaseCurrency(accountBookId, CountryCode.JP.getCurrencyCode());
 	}
 
@@ -127,11 +116,6 @@ class AccountBookCommandFacadeTest {
 		Long accountBookId = 1L;
 		LocalDate start = LocalDate.of(2026, 1, 1);
 		LocalDate end = LocalDate.of(2026, 12, 31);
-
-		AccountBookQueryResponse current =
-				new AccountBookQueryResponse(
-						accountBookId, "title", CountryCode.US, CountryCode.KR, start, end);
-		when(accountBookQueryService.getAccountBook(accountBookId)).thenReturn(current);
 
 		AccountBookUpdateRequest req =
 				new AccountBookUpdateRequest(
@@ -150,12 +134,13 @@ class AccountBookCommandFacadeTest {
 								CountryCode.US,
 								CountryCode.KR,
 								start,
-								end));
+								end,
+								false));
 
 		// when
 		accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
 
 		// then
-		verify(expenseCommandService, never()).updateBaseCurrency(any(), any());
+		verify(expenseCurrencySyncService, never()).updateBaseCurrency(any(), any());
 	}
 }

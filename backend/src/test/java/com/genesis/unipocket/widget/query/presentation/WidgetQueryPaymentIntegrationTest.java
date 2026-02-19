@@ -206,7 +206,8 @@ class WidgetQueryPaymentIntegrationTest {
 								.queryParam("period", "ALL"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalAmount").value("4500"))
-				.andExpect(jsonPath("$.items.length()").value(1));
+				.andExpect(jsonPath("$.items.length()").value(1))
+				.andExpect(jsonPath("$.items[0].category").value(Category.FOOD.ordinal()));
 	}
 
 	@Test

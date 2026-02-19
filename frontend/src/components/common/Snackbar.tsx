@@ -44,7 +44,7 @@ const Snackbar = ({
     >
       <div className="flex items-center gap-2">
         {iconMap[status]}
-        <div className="text-inverse-label flex flex-col items-start justify-center px-0.5">
+        <div className="text-inverse-label flex flex-col items-start justify-center px-0.5 py-1.25">
           <p className="body2-normal-bold">{title ?? titleMap[status]}</p>
           {description && <p className="label2-regular">{description}</p>}
         </div>

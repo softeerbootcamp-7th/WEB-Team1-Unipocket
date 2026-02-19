@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import clsx from 'clsx';
 
 export interface ButtonProps extends ComponentProps<'button'> {
-  variant?: 'outlined' | 'solid' | 'danger';
+  variant?: 'outlined' | 'outlined-inverse' | 'solid' | 'danger';
   size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
 }
 
@@ -31,6 +31,15 @@ const Button = ({
       'border border-line-normal-neutral text-label-neutral hover:bg-fill-alternative cursor-pointer',
 
     disabled && variant === 'outlined' && 'border border-line-normal-neutral ',
+
+    /* --- outlined-inverse --- */
+    !disabled &&
+      variant === 'outlined-inverse' &&
+      'border border-line-normal-strong text-inverse-label hover:bg-fill-alternative cursor-pointer',
+
+    disabled &&
+      variant === 'outlined-inverse' &&
+      'border border-line-normal-strong text-line-solid-strong',
 
     /* --- solid --- */
     !disabled &&

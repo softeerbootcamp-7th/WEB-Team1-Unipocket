@@ -74,11 +74,34 @@ function PopoverClose({
   return <PopoverPrimitive.Close data-slot="popover-close" {...props} />;
 }
 
+function PopoverContentRaw({
+  className,
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+  return (
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        data-slot="popover-content-raw"
+        className={cn(className)}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  );
+}
+
+function PopoverArrow({
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Arrow>) {
+  return <PopoverPrimitive.Arrow data-slot="popover-arrow" {...props} />;
+}
+
 export {
   Popover,
   PopoverAnchor,
+  PopoverArrow,
   PopoverClose,
   PopoverContent,
+  PopoverContentRaw,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,

@@ -7,5 +7,4 @@ export interface AccountBookMeta {
   baseCountryCode?: CountryCode;
   startDate?: string;
   endDate?: string;
-  isMain: boolean;
 }

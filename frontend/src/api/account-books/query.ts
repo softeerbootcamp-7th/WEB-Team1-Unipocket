@@ -11,45 +11,32 @@ import {
   deleteAccountBook,
   getAccountBookDetail,
   getAccountBooks,
-  setMainAccountBook,
   updateAccountBook,
 } from '@/api/account-books/api';
 import type {
-  AccountBookDetail,
-  AccountBookSummary,
   CreateAccountBookRequest,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
 import { queryClient } from '@/main';
 
-export const accountBooksQueryOptions = queryOptions({
+const accountBooksQueryOptions = queryOptions({
   queryKey: ['accountBooks'],
   queryFn: getAccountBooks,
 });
 
-export const useGetAccountBooksQuery = () => {
+const useGetAccountBooksQuery = () => {
   return useSuspenseQuery(accountBooksQueryOptions);
 };
 
-export const useAccountBooksQuery = () =>
-  useQuery<AccountBookSummary[]>({
+//////
+const useAccountBooksQuery = () =>
+  useQuery({
     queryKey: ['accountBooks'],
     queryFn: getAccountBooks,
     staleTime: 1000 * 30,
   });
 
-export const accountBookDetailQueryOptions = (accountBookId: number | null) => {
-  return queryOptions({
-    queryKey: ['accountBookDetail', accountBookId],
-    queryFn: () => getAccountBookDetail(accountBookId as number),
-    enabled: !!accountBookId,
-  });
-};
-
-export const useAccountBookDetailQuery = (accountBookId: number | null) =>
-  useQuery(accountBookDetailQueryOptions(accountBookId));
-
-export const useCreateAccountBookMutation = () =>
+const useCreateAccountBookMutation = () =>
   useMutation({
     mutationFn: (data: CreateAccountBookRequest) => createAccountBook(data),
     onSuccess: () => {
@@ -61,7 +48,29 @@ export const useCreateAccountBookMutation = () =>
     },
   });
 
-export const useUpdateAccountBookMutation = () =>
+const accountBookDetailQueryOptions = (accountBookId: number | null) =>
+  queryOptions({
+    queryKey: ['accountBookDetail', accountBookId],
+    queryFn: () => getAccountBookDetail(accountBookId as number),
+    enabled: !!accountBookId,
+  });
+
+const useAccountBookDetailQuery = (accountBookId: number | null) =>
+  useQuery(accountBookDetailQueryOptions(accountBookId));
+
+const useDeleteAccountBookMutation = () =>
+  useMutation({
+    mutationFn: (accountBookId: number) => deleteAccountBook(accountBookId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
+      toast.success('가계부가 삭제되었어요.');
+    },
+    onError: () => {
+      toast.error('가계부 삭제에 실패했어요.');
+    },
+  });
+
+const useUpdateAccountBookMutation = () =>
   useMutation({
     mutationFn: ({
       accountBookId,
@@ -82,58 +91,13 @@ export const useUpdateAccountBookMutation = () =>
     },
   });
 
-export const useDeleteAccountBookMutation = () =>
-  useMutation({
-    mutationFn: (accountBookId: number) => deleteAccountBook(accountBookId),
-    onSuccess: (_, accountBookId) => {
-      queryClient.setQueryData<AccountBookSummary[]>(
-        ['accountBooks'],
-        (prev) => {
-          if (!prev) return prev;
-          const deleted = prev.find((book) => book.id === accountBookId);
-          const remaining = prev.filter((book) => book.id !== accountBookId);
-          if (deleted?.isMain && remaining.length > 0) {
-            remaining[0] = { ...remaining[0], isMain: true };
-          }
-          return remaining;
-        },
-      );
-      queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
-      toast.success('가계부가 삭제되었어요.');
-    },
-    onError: () => {
-      toast.error('가계부 삭제에 실패했어요.');
-    },
-  });
-
-export const useSetMainAccountBookMutation = () =>
-  useMutation({
-    mutationFn: (accountBookId: number) => setMainAccountBook(accountBookId),
-    onMutate: async (accountBookId) => {
-      await queryClient.cancelQueries({ queryKey: ['accountBooks'] });
-      const previous = queryClient.getQueryData<AccountBookSummary[]>([
-        'accountBooks',
-      ]);
-      queryClient.setQueryData<AccountBookSummary[]>(
-        ['accountBooks'],
-        (prev) =>
-          prev?.map((book) => ({
-            ...book,
-            isMain: book.id === accountBookId,
-          })) ?? prev,
-      );
-      return { previous };
-    },
-    onError: (_error, _accountBookId, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['accountBooks'], context.previous);
-      }
-      toast.error('메인 가계부 변경에 실패했어요.');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
-      toast.success('메인 가계부가 변경되었어요.');
-    },
-  });
-
-export type { AccountBookDetail };
+export {
+  accountBookDetailQueryOptions,
+  accountBooksQueryOptions,
+  useAccountBookDetailQuery,
+  useAccountBooksQuery,
+  useCreateAccountBookMutation,
+  useDeleteAccountBookMutation,
+  useGetAccountBooksQuery,
+  useUpdateAccountBookMutation,
+};

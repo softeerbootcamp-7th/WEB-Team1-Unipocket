@@ -25,12 +25,11 @@ import {
   useAccountBooksQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
-  useSetMainAccountBookMutation,
   useUpdateAccountBookMutation,
 } from '@/api/account-books/query';
 import type {
-  AccountBookDetail,
-  AccountBookSummary,
+  GetAccountBookDetailResponse,
+  GetAccountBooksResponse,
 } from '@/api/account-books/type';
 import {
   useCardsQuery,
@@ -98,10 +97,10 @@ const MainAccountBookSelection = ({
   accountBooks,
   isLoading,
 }: {
-  accountBooks: AccountBookSummary[];
+  accountBooks: GetAccountBooksResponse;
   isLoading: boolean;
 }) => {
-  const setMainMutation = useSetMainAccountBookMutation();
+  // const setMainMutation = useSetMainAccountBookMutation();
 
   const options = accountBooks.map((book) => ({
     id: book.id,
@@ -112,7 +111,7 @@ const MainAccountBookSelection = ({
 
   const handleSelect = (id: number) => {
     if (id === selectedId) return;
-    setMainMutation.mutate(id);
+    // setMainMutation.mutate(id);
   };
 
   return (
@@ -285,7 +284,7 @@ const AccountBookConfigurator = ({
   accountBooks,
   isLoading,
 }: {
-  accountBooks: AccountBookSummary[];
+  accountBooks: GetAccountBooksResponse;
   isLoading: boolean;
 }) => {
   const createAccountBookMutation = useCreateAccountBookMutation();
@@ -548,7 +547,7 @@ const AccountBookSettingsForm = ({
   onOpenCountryModal,
   onOpenPeriodModal,
 }: {
-  detail: AccountBookDetail;
+  detail: GetAccountBookDetailResponse;
   onOpenNameModal: () => void;
   onOpenDeleteModal: () => void;
   onOpenCurrencyModal: () => void;

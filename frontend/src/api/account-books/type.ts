@@ -1,64 +1,74 @@
 import { type CountryCode } from '@/data/country/countryCode';
 
-interface CreateAccountBookRequest {
-  localCountryCode: CountryCode;
-  startDate: string;
-  endDate: string;
-}
-
-interface AccountBookSummary {
-  id: number;
-  title: string;
-  isMain: boolean;
-}
-
-interface AccountBookDetail {
-  id: number;
-  title: string;
-  localCountryCode: CountryCode;
-  baseCountryCode: CountryCode;
-  budget: number | null;
-  startDate: string;
-  endDate: string;
-  isMain: boolean;
-}
-
-interface UpdateAccountBookRequest {
-  title?: string;
-  localCountryCode?: CountryCode;
-  baseCountryCode?: CountryCode;
-  budget?: number | null;
-  startDate?: string;
-  endDate?: string;
-  isMain?: boolean;
-}
-
-interface AccountBookResponse {
-  id: number;
-  title: string;
-  localCountryCode: CountryCode;
-  baseCountryCode: CountryCode;
-  budget?: number | null;
-  budgetCreatedAt?: string;
-  tempExpenseBatchIds?: string[];
-  startDate: string;
-  endDate: string;
-  isMain: boolean;
-}
-
 interface AccountBook {
   id: number;
   title: string;
+  localCountryCode: CountryCode;
+  baseCountryCode: CountryCode;
+  startDate: string;
+  endDate: string;
+  budget: number | null;
+  budgetCreatedAt: string;
+  tempExpenseBatchIds: string[];
   isMain: boolean;
 }
 
-type GetAccountBooksResponse = AccountBook[];
+type AccountBookResponseBase = Pick<
+  AccountBook,
+  | 'id'
+  | 'title'
+  | 'localCountryCode'
+  | 'baseCountryCode'
+  | 'startDate'
+  | 'endDate'
+>;
+
+type GetAccountBooksResponse = Pick<AccountBook, 'id' | 'title' | 'isMain'>[];
+
+type CreateAccountBookRequest = Required<
+  Pick<AccountBook, 'localCountryCode' | 'startDate' | 'endDate'>
+>;
+
+type CreateAccountBookResponse = Required<AccountBookResponseBase>;
+type GetAccountBookDetailResponse = Required<AccountBookResponseBase>;
+
+type UpdateAccountBookRequest = Partial<
+  Pick<
+    AccountBook,
+    | 'title'
+    | 'localCountryCode'
+    | 'baseCountryCode'
+    | 'budget'
+    | 'startDate'
+    | 'endDate'
+    | 'isMain'
+  >
+>;
+
+type UpdateAccountBookResponse = Required<AccountBookResponseBase>;
+
+type UpdateAccountBookBudgetResponse = Required<
+  Pick<
+    AccountBook,
+    'baseCountryCode' | 'localCountryCode' | 'budget' | 'budgetCreatedAt'
+  > & { accountBookId: number; exchangeRate: number }
+>;
+
+type UpdateAccountBookExchangeRateResponse = Required<
+  Pick<AccountBook, 'baseCountryCode' | 'localCountryCode'> & {
+    budgetCreatedAt: string;
+    exchangeRate: number;
+  }
+>;
 
 export type {
-  AccountBookDetail,
-  AccountBookResponse,
-  AccountBookSummary,
+  AccountBook,
   CreateAccountBookRequest,
+  CreateAccountBookResponse,
+  GetAccountBookDetailResponse,
   GetAccountBooksResponse,
+  UpdateAccountBookBudgetResponse,
+  UpdateAccountBookExchangeRateResponse,
   UpdateAccountBookRequest,
+  UpdateAccountBookResponse,
 };

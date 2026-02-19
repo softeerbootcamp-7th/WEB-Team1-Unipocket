@@ -1,15 +1,28 @@
 import type {
-  AccountBookDetail,
-  AccountBookResponse,
-  AccountBookSummary,
   CreateAccountBookRequest,
+  CreateAccountBookResponse,
+  GetAccountBookDetailResponse,
+  GetAccountBooksResponse,
+  UpdateAccountBookBudgetResponse,
+  UpdateAccountBookExchangeRateResponse,
+  UpdateAccountBookRequest,
+  UpdateAccountBookResponse,
 } from '@/api/account-books/type';
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
 
+export const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
 const createAccountBook = (
   data: CreateAccountBookRequest,
-): Promise<AccountBookResponse> => {
+): Promise<CreateAccountBookResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
     options: {
@@ -19,45 +32,13 @@ const createAccountBook = (
   });
 };
 
-export const getAccountBooks = (): Promise<AccountBookSummary[]> => {
-  return customFetch({
-    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
-    options: {
-      method: 'GET',
-    },
-  });
-};
-
 export const getAccountBookDetail = (
   accountBookId: number,
-): Promise<AccountBookDetail> => {
+): Promise<GetAccountBookDetailResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
     options: {
       method: 'GET',
-    },
-  });
-};
-
-const updateAccountBook = (
-  accountBookId: number,
-  data: Partial<CreateAccountBookRequest>,
-): Promise<AccountBookResponse> => {
-  return customFetch({
-    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
-    options: {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    },
-  });
-};
-
-const updateAccountBookBudget = (accountBookId: number, budget: number) => {
-  return customFetch({
-    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BUDGET(accountBookId),
-    options: {
-      method: 'PATCH',
-      body: JSON.stringify({ budget }),
     },
   });
 };
@@ -71,7 +52,35 @@ const deleteAccountBook = (accountBookId: number): Promise<void> => {
   });
 };
 
-const setMainAccountBook = (accountBookId: number): Promise<void> => {
+const updateAccountBook = (
+  accountBookId: number,
+  data: UpdateAccountBookRequest,
+): Promise<UpdateAccountBookResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
+    options: {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    },
+  });
+};
+
+const updateAccountBookBudget = (
+  accountBookId: number,
+  budget: number,
+): Promise<UpdateAccountBookBudgetResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BUDGET(accountBookId),
+    options: {
+      method: 'PATCH',
+      body: JSON.stringify({ budget }),
+    },
+  });
+};
+
+const updateAccountBookExchangeRate = (
+  accountBookId: number,
+): Promise<UpdateAccountBookExchangeRateResponse> => {
   return customFetch({
     endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId)}/main`,
     options: {
@@ -83,7 +92,7 @@ const setMainAccountBook = (accountBookId: number): Promise<void> => {
 export {
   createAccountBook,
   deleteAccountBook,
-  setMainAccountBook,
   updateAccountBook,
   updateAccountBookBudget,
+  updateAccountBookExchangeRate,
 };

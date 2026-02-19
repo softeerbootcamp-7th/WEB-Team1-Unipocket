@@ -7,10 +7,10 @@ import {
   updateAccountBook,
 } from '@/api/account-books/api';
 import type {
-  AccountBookDetail,
-  AccountBookResponse,
-  AccountBookSummary,
   CreateAccountBookRequest,
+  CreateAccountBookResponse,
+  GetAccountBookDetailResponse,
+  GetAccountBooksResponse,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
 import { ApiError } from '@/api/config/error';
@@ -37,7 +37,7 @@ describe('Account Books API', () => {
   // ─────────────────────────────────────────────────────────────
   describe('getAccountBooks', () => {
     it('가계부 목록을 정상적으로 반환한다', async () => {
-      const mockData: AccountBookSummary[] = [
+      const mockData: GetAccountBooksResponse = [
         { id: 1, title: '유럽 여행 가계부', isMain: true },
         { id: 2, title: '일본 여행 가계부', isMain: false },
       ];
@@ -77,15 +77,13 @@ describe('Account Books API', () => {
       endDate: '2026-02-25',
     };
 
-    const mockCreatedBook: AccountBookResponse = {
+    const mockCreatedBook: CreateAccountBookResponse = {
       id: 1,
       title: '한국 여행',
       localCountryCode: 'KR',
       baseCountryCode: 'KR',
-      budget: null,
       startDate: '2026-02-19',
       endDate: '2026-02-25',
-      isMain: true,
     };
 
     it('가계부를 생성하고 생성된 가계부 정보를 반환한다', async () => {
@@ -133,15 +131,13 @@ describe('Account Books API', () => {
       isMain: true,
     };
 
-    const mockUpdatedBook: AccountBookDetail = {
+    const mockUpdatedBook: GetAccountBookDetailResponse = {
       id: 1,
       title: '수정된 가계부',
       localCountryCode: 'JP',
       baseCountryCode: 'KR',
-      budget: 1_000_000,
       startDate: '2026-03-01',
       endDate: '2026-03-10',
-      isMain: true,
     };
 
     it('가계부 정보를 수정하고 수정된 정보를 반환한다', async () => {
@@ -167,15 +163,13 @@ describe('Account Books API', () => {
         title: '제목만 변경',
         isMain: true,
       };
-      const mockPartialUpdated: AccountBookDetail = {
+      const mockPartialUpdated: GetAccountBookDetailResponse = {
         id: 1,
         title: '제목만 변경',
         localCountryCode: 'KR',
         baseCountryCode: 'KR',
-        budget: null,
         startDate: '2026-02-19',
         endDate: '2026-02-25',
-        isMain: true,
       };
 
       vi.mocked(fetch).mockResolvedValue(

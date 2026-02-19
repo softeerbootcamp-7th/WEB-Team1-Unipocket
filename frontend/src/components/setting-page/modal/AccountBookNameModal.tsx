@@ -4,7 +4,7 @@ import TextInput from '@/components/common/TextInput';
 import Modal from '@/components/modal/Modal';
 import ModalFormContent from '@/components/setting-page/modal/ModalFormContent';
 
-import type { AccountBookSummary } from '@/api/account-books/type';
+import type { GetAccountBooksResponse } from '@/api/account-books/type';
 
 const AccountBookNameModal = ({
   accountBooks,
@@ -14,7 +14,7 @@ const AccountBookNameModal = ({
   onClose,
   onSubmit,
 }: {
-  accountBooks: AccountBookSummary[];
+  accountBooks: GetAccountBooksResponse;
   accountBookId: number | null;
   currentTitle: string;
   isSubmitting: boolean;

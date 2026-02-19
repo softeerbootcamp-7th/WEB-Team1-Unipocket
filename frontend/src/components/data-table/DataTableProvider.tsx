@@ -68,7 +68,7 @@ const DataTableProvider = <TData, TValue = unknown>({
     selectionMode: null,
     rowSelection: {},
     activeRow: null,
-    ...resetCells, // 초기 상태에 적용
+    ...resetCells, // 초기 상태: 모든 에디터 닫힘
   });
 
   // 행 선택 상태에 따른 자동 바 노출 로직 (useEffect)

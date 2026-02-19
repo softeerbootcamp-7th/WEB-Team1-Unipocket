@@ -40,8 +40,8 @@ import {
 } from '@/api/cards/query';
 import type { Card } from '@/api/cards/type';
 import { Cards, Icons } from '@/assets';
-import type { CountryCode } from '@/data/countryCode';
-import countryData from '@/data/countryData.json';
+import type { CountryCode } from '@/data/country/countryCode';
+import countryData from '@/data/country/countryData.json';
 import { getCountryInfo } from '@/lib/country';
 
 const SettingPage = () => {
@@ -108,7 +108,7 @@ const MainAccountBookSelection = ({
     name: book.title,
   }));
 
-  const selectedId = accountBooks.find((book) => book.isMain)?.id ?? null;
+  const selectedId = accountBooks.find((book) => book.isMain)?.id ?? 0;
 
   const handleSelect = (id: number) => {
     if (id === selectedId) return;
@@ -129,7 +129,7 @@ const MainAccountBookSelection = ({
           </p>
         ) : (
           <Dropdown
-            selected={selectedId}
+            selectedId={selectedId}
             onSelect={handleSelect}
             options={options}
           />

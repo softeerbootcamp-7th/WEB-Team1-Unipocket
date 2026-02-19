@@ -160,7 +160,7 @@ class AnalysisQueryControllerIntegrationTest {
 								.queryParam("month", "12")
 								.queryParam("currencyType", "BASE"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.countryCode").value("US"))
+				.andExpect(jsonPath("$.countryCode").value("KR"))
 				.andExpect(jsonPath("$.compareWithAverage.month").value(12))
 				.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("500"))
 				.andExpect(jsonPath("$.compareWithAverage.averageSpentAmount").value("400"))
@@ -268,7 +268,7 @@ class AnalysisQueryControllerIntegrationTest {
 										.queryParam("month", "12")
 										.queryParam("currencyType", "BASE"))
 						.andExpect(status().isOk())
-						.andExpect(jsonPath("$.countryCode").value("US"))
+						.andExpect(jsonPath("$.countryCode").value("KR"))
 						.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("310"))
 						.andExpect(jsonPath("$.compareWithAverage.averageSpentAmount").value("0"))
 						.andExpect(
@@ -370,6 +370,7 @@ class AnalysisQueryControllerIntegrationTest {
 								.queryParam("month", "12")
 								.queryParam("currencyType", "LOCAL"))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.countryCode").value("US"))
 				.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("100"));
 	}
 

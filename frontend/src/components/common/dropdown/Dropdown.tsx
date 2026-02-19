@@ -9,7 +9,6 @@ import Filter from '@/components/common/Filter';
 interface Option {
   id: number;
   name: string;
-  isMain?: boolean;
 }
 
 interface DropDownProps {
@@ -78,7 +77,6 @@ const DropDown = ({
               id={option.id}
               label={option.name}
               isSelected={option.id === currentOption.id}
-              isMain={option.isMain}
               onSelect={handleOptionClick}
             />
           ))}

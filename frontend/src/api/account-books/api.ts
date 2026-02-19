@@ -22,7 +22,7 @@ export const createAccountBook = (
 
 export const getAccountBooks = (): Promise<AccountBookSummary[]> => {
   return customFetch({
-    endpoint: ENDPOINTS.ACCOUNT_BOOKS,
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
     options: {
       method: 'GET',
     },
@@ -33,7 +33,7 @@ export const getAccountBookDetail = (
   accountBookId: number,
 ): Promise<AccountBookDetail> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS}/${accountBookId}`,
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
     options: {
       method: 'GET',
     },
@@ -45,7 +45,7 @@ export const updateAccountBook = (
   data: UpdateAccountBookRequest,
 ): Promise<AccountBookDetail> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS}/${accountBookId}`,
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
     options: {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -55,7 +55,7 @@ export const updateAccountBook = (
 
 export const deleteAccountBook = (accountBookId: number): Promise<void> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS}/${accountBookId}`,
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
     options: {
       method: 'DELETE',
     },
@@ -64,7 +64,7 @@ export const deleteAccountBook = (accountBookId: number): Promise<void> => {
 
 export const setMainAccountBook = (accountBookId: number): Promise<void> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS}/${accountBookId}/main`,
+    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId)}/main`,
     options: {
       method: 'PATCH',
     },

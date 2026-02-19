@@ -9,7 +9,7 @@ import type {
 
 export const getCards = (): Promise<Card[]> => {
   return customFetch({
-    endpoint: ENDPOINTS.USER_CARDS,
+    endpoint: ENDPOINTS.USERS.CARDS,
     options: {
       method: 'GET',
     },
@@ -18,7 +18,7 @@ export const getCards = (): Promise<Card[]> => {
 
 export const createCard = (data: CreateCardRequest): Promise<Card> => {
   return customFetch({
-    endpoint: ENDPOINTS.USER_CARDS,
+    endpoint: ENDPOINTS.USERS.CARDS,
     options: {
       method: 'POST',
       body: JSON.stringify(data),
@@ -28,7 +28,7 @@ export const createCard = (data: CreateCardRequest): Promise<Card> => {
 
 export const deleteCard = (cardId: number): Promise<void> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.USER_CARDS}/${cardId}`,
+    endpoint: ENDPOINTS.USERS.CARD_DETAIL(cardId),
     options: {
       method: 'DELETE',
     },
@@ -40,7 +40,7 @@ export const updateCardNickname = (
   data: UpdateCardNicknameRequest,
 ): Promise<Card> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.USER_CARDS}/${cardId}`,
+    endpoint: ENDPOINTS.USERS.CARD_DETAIL(cardId),
     options: {
       method: 'PATCH',
       body: JSON.stringify(data),

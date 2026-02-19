@@ -31,6 +31,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * 백트래킹/야후 fallback/예외 매핑 동작을 검증하는 단위 테스트.
+ */
 @ExtendWith(MockitoExtension.class)
 class ExchangeRateCommandServiceImplTest {
 
@@ -44,6 +47,7 @@ class ExchangeRateCommandServiceImplTest {
 	@Test
 	@DisplayName("DB에서 과거 날짜 값을 찾으면 targetDate로 저장 후 반환")
 	void resolveAndStoreUsdRelativeRate_usesBacktrackedDbRate() {
+		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -61,10 +65,12 @@ class ExchangeRateCommandServiceImplTest {
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
+		// 실행
 		BigDecimal rate =
 				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 						CurrencyCode.KRW, targetDate);
 
+		// 검증
 		assertThat(rate).isEqualByComparingTo("1300.00");
 		ArgumentCaptor<ExchangeRate> captor = ArgumentCaptor.forClass(ExchangeRate.class);
 		verify(exchangeRateRepository, times(1)).save(captor.capture());
@@ -75,6 +81,7 @@ class ExchangeRateCommandServiceImplTest {
 	@Test
 	@DisplayName("targetDate 환율이 DB에 이미 있으면 외부 호출/재저장 없이 반환")
 	void resolveAndStoreUsdRelativeRate_targetExistsInDb_returnsWithoutFetch() {
+		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 		ExchangeRate targetRate =
 				ExchangeRate.builder()
@@ -86,10 +93,12 @@ class ExchangeRateCommandServiceImplTest {
 						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
 				.thenReturn(Optional.of(targetRate));
 
+		// 실행
 		BigDecimal rate =
 				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 						CurrencyCode.KRW, targetDate);
 
+		// 검증
 		assertThat(rate).isEqualByComparingTo("1310.00");
 		verify(restTemplate, never()).getForObject(any(String.class), eq(String.class));
 		verify(exchangeRateRepository, never()).save(any(ExchangeRate.class));
@@ -98,6 +107,7 @@ class ExchangeRateCommandServiceImplTest {
 	@Test
 	@DisplayName("DB에 없으면 Yahoo를 14일 범위로 1회 조회하고 찾은 날짜와 targetDate 모두 저장")
 	void resolveAndStoreUsdRelativeRate_fetchesYahooByRangeAndStoresBothDates() {
+		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -108,10 +118,12 @@ class ExchangeRateCommandServiceImplTest {
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
+		// 실행
 		BigDecimal rate =
 				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 						CurrencyCode.GBP, targetDate);
 
+		// 검증
 		assertThat(rate).isEqualByComparingTo("0.79");
 		ArgumentCaptor<ExchangeRate> captor = ArgumentCaptor.forClass(ExchangeRate.class);
 		verify(exchangeRateRepository, times(2)).save(captor.capture());
@@ -124,6 +136,7 @@ class ExchangeRateCommandServiceImplTest {
 	@Test
 	@DisplayName("Yahoo가 미지원 심볼을 반환하면 EXCHANGE_RATE_NOT_FOUND")
 	void resolveAndStoreUsdRelativeRate_unsupportedSymbol_throwsNotFound() {
+		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -132,6 +145,7 @@ class ExchangeRateCommandServiceImplTest {
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooUnsupportedSymbolResponse());
 
+		// 실행 + 검증
 		assertThatThrownBy(
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
@@ -143,6 +157,7 @@ class ExchangeRateCommandServiceImplTest {
 	@Test
 	@DisplayName("Yahoo 통신 실패면 EXCHANGE_RATE_API_ERROR")
 	void resolveAndStoreUsdRelativeRate_yahooFailure_throwsApiError() {
+		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -151,6 +166,7 @@ class ExchangeRateCommandServiceImplTest {
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenThrow(new RuntimeException("timeout"));
 
+		// 실행 + 검증
 		assertThatThrownBy(
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
@@ -162,6 +178,7 @@ class ExchangeRateCommandServiceImplTest {
 	@Test
 	@DisplayName("DB 환율이 비정상이면 무시하고 Yahoo fallback으로 처리")
 	void resolveAndStoreUsdRelativeRate_invalidDbRate_fallsBackToYahoo() {
+		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -185,10 +202,12 @@ class ExchangeRateCommandServiceImplTest {
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
+		// 실행
 		BigDecimal rate =
 				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 						CurrencyCode.KRW, targetDate);
 
+		// 검증
 		assertThat(rate).isEqualByComparingTo("1305.00");
 		verify(restTemplate, times(1)).getForObject(any(String.class), eq(String.class));
 		verify(exchangeRateRepository, times(2)).save(any(ExchangeRate.class));

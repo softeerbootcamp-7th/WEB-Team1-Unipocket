@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -404,7 +406,7 @@ public class AnalysisMonthlySummaryQueryService {
 			LocalDate endLocalDateInclusive,
 			ZoneId zoneId) {
 		Map<LocalDate, BigDecimal> dailyMap;
-		try (java.util.stream.Stream<Object[]> stream =
+		try (Stream<Object[]> stream =
 				analysisQueryRepository.getMySpendEvents(
 						accountBookId,
 						toOffsetUtc(startUtc),
@@ -434,12 +436,11 @@ public class AnalysisMonthlySummaryQueryService {
 		return result;
 	}
 
-	private Map<LocalDate, BigDecimal> toDailyAmountMap(
-			java.util.stream.Stream<Object[]> stream, ZoneId zoneId) {
+	private Map<LocalDate, BigDecimal> toDailyAmountMap(Stream<Object[]> stream, ZoneId zoneId) {
 		return stream.collect(
-				java.util.stream.Collectors.groupingBy(
+				Collectors.groupingBy(
 						row -> toLocalDateInZone(row[0], zoneId),
-						java.util.stream.Collectors.reducing(
+						Collectors.reducing(
 								BigDecimal.ZERO, row -> toBigDecimal(row[1]), BigDecimal::add)));
 	}
 

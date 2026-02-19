@@ -54,7 +54,7 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
         width: activeCell.rect.width,
         height: activeCell.rect.height,
       }}
-      className="rounded-modal-12 shadow-semantic-emphasize z-(--z-priority) inline-flex bg-white px-2.5 py-3.5"
+      className="rounded-modal-12 shadow-semantic-emphasize z-priority inline-flex bg-white px-2.5 py-3.5"
     >
       <input
         ref={inputRef}

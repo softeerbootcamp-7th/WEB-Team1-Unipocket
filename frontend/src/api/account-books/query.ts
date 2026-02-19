@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
@@ -17,11 +17,14 @@ import type {
 } from '@/api/account-books/type';
 import { queryClient } from '@/main';
 
-export const useAccountBooksQuery = () =>
-  useQuery<AccountBookSummary[]>({
+export const useAccountBooksSuspenseQuery = () =>
+  useSuspenseQuery<AccountBookSummary[]>({
     queryKey: ['accountBooks'],
     queryFn: getAccountBooks,
     staleTime: 1000 * 30,
+    meta: {
+      errorMessage: '가계부 목록을 불러오지 못했어요.',
+    },
   });
 
 export const useAccountBookDetailQuery = (accountBookId: number | null) =>
@@ -29,6 +32,9 @@ export const useAccountBookDetailQuery = (accountBookId: number | null) =>
     queryKey: ['accountBook', accountBookId],
     queryFn: () => getAccountBookDetail(accountBookId as number),
     enabled: !!accountBookId,
+    meta: {
+      errorMessage: '가계부 상세 정보를 불러오지 못했어요.',
+    },
   });
 
 export const useCreateAccountBookMutation = () =>

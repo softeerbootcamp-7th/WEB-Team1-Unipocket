@@ -12,7 +12,7 @@ export const createAccountBook = (
   data: CreateAccountBookRequest,
 ): Promise<AccountBookResponse> => {
   return customFetch({
-    endpoint: ENDPOINTS.ACCOUNT_BOOKS,
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
     options: {
       method: 'POST',
       body: JSON.stringify(data),

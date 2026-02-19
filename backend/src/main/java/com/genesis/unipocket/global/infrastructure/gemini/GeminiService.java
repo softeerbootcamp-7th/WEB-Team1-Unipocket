@@ -3,15 +3,20 @@ package com.genesis.unipocket.global.infrastructure.gemini;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -26,16 +31,21 @@ import org.springframework.web.client.RestTemplate;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class GeminiService {
 
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 
+	public GeminiService(
+			@Qualifier("geminiRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
+		this.restTemplate = restTemplate;
+		this.objectMapper = objectMapper;
+	}
+
 	@Value("${gemini.api.key}")
 	private String apiKey;
 
-	@Value("${gemini.api.model:gemini-1.5-flash}")
+	@Value("${gemini.api.model}")
 	private String model;
 
 	@Value("${gemini.api.endpoint}")
@@ -44,10 +54,11 @@ public class GeminiService {
 	/**
 	 * 영수증 이미지 파싱 (S3 URL 전달)
 	 *
-	 * @param imageUrl S3 presigned GET URL
+	 * @param imageUrl  S3 presigned GET URL
+	 * @param mimeType  이미지 MIME 타입
 	 * @return 파싱 결과
 	 */
-	public GeminiParseResponse parseReceiptImage(String imageUrl) {
+	public GeminiParseResponse parseReceiptImage(String imageUrl, String mimeType) {
 		log.info("Parsing receipt image from URL: {}", imageUrl);
 
 		String prompt = buildReceiptParsingPrompt();
@@ -58,7 +69,6 @@ public class GeminiService {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
-			// Gemini API request body
 			Map<String, Object> requestBody =
 					Map.of(
 							"contents",
@@ -70,10 +80,10 @@ public class GeminiService {
 													Map.of(
 															"fileData",
 															Map.of(
-																	"mimeType",
-																	"image/jpeg",
-																	"fileUri",
-																	imageUrl))))));
+																	"mimeType", mimeType,
+																	"fileUri", imageUrl))))),
+							"generationConfig",
+							Map.of("responseMimeType", "application/json"));
 
 			HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
@@ -98,15 +108,15 @@ public class GeminiService {
 	}
 
 	/**
-	 * CSV 파일 파싱
+	 * 문서 내용 파싱 (CSV, Excel 변환 텍스트 등)
 	 *
-	 * @param csvContent CSV 문자열
+	 * @param content 문서 텍스트 내용
 	 * @return 파싱 결과
 	 */
-	public GeminiParseResponse parseCsv(String csvContent) {
-		log.info("Parsing CSV content (length: {})", csvContent.length());
+	public GeminiParseResponse parseDocument(String content) {
+		log.info("Parsing document content (length: {})", content.length());
 
-		String prompt = buildCsvParsingPrompt() + "\n\nCSV Content:\n" + csvContent;
+		String prompt = buildDocumentParsingPrompt() + "\n\nDocument Content:\n" + content;
 
 		try {
 			String url = endpoint + "/models/" + model + ":generateContent?key=" + apiKey;
@@ -115,7 +125,11 @@ public class GeminiService {
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			Map<String, Object> requestBody =
-					Map.of("contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
+					Map.of(
+							"contents",
+							List.of(Map.of("parts", List.of(Map.of("text", prompt)))),
+							"generationConfig",
+							Map.of("responseMimeType", "application/json"));
 
 			HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
@@ -134,9 +148,48 @@ public class GeminiService {
 			log.error("Failed to call Gemini API", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
 		} catch (Exception e) {
-			log.error("Unexpected error during CSV parsing", e);
+			log.error("Unexpected error during document parsing", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
 		}
+	}
+
+	/**
+	 * 문서(CSV/Excel 텍스트) 파싱 프롬프트 생성
+	 */
+	private String buildDocumentParsingPrompt() {
+		return """
+				You are an expert at parsing expense documents (CSV, Excel text).
+
+				Parse the provided text content and convert each row/item to the following JSON format:
+
+				{
+				"items": [
+					{
+					"merchantName": "가맹점명 (필수)",
+					"category": "FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
+					"localAmount": "현지 금액 (필수, 숫자만)",
+					"localCurrency": "현지 통화 코드 (필수, KRW, USD, etc)",
+					"baseAmount": "청구(본국) 금액 (있는 경우 작성, 숫자만)",
+					"baseCurrency": "청구(본국) 통화 코드 (있는 경우 작성, KRW, USD, etc)",
+					"occurredAt": "거래일시 (ISO 8601: YYYY-MM-DDTHH:mm:ss)",
+					"cardLastFourDigits": "카드번호 뒷4자리",
+					"approvalNumber": "승인번호 (있는 경우 작성)",
+					"memo": "메모/적요"
+					}
+				]
+				}
+
+				Rules:
+				- Auto-detect headers/columns from the text
+				- Map columns intelligently (e.g., 'Store' -> merchantName, 'Cost' -> localAmount)
+				- Handle various date formats and convert to ISO 8601
+				- If currency is missing, infer from context or default to KRW
+				- Ignore header rows or summary rows (total, etc.)
+				- Use JSON null literal for missing values (do NOT use "null" string)
+				- Use JSON number for numeric amounts (do NOT use commas or currency symbols)
+				- Return a single valid JSON object only (no markdown/code fence/explanations)
+				- If nothing is parseable, return {"items":[]}
+				""";
 	}
 
 	/**
@@ -146,7 +199,6 @@ public class GeminiService {
 		try {
 			JsonNode root = objectMapper.readTree(responseBody);
 
-			// Extract text from response
 			String text =
 					root.path("candidates")
 							.get(0)
@@ -158,7 +210,6 @@ public class GeminiService {
 
 			log.debug("Gemini response text: {}", text);
 
-			// Extract JSON from markdown code block if present
 			String jsonText = text;
 			if (text.contains("```json")) {
 				int start = text.indexOf("```json") + 7;
@@ -170,8 +221,7 @@ public class GeminiService {
 				jsonText = text.substring(start, end).trim();
 			}
 
-			// Parse JSON response
-			JsonNode parsedData = objectMapper.readTree(jsonText);
+			JsonNode parsedData = objectMapper.readTree(sanitizeJsonText(jsonText));
 			JsonNode items = parsedData.path("items");
 
 			List<ParsedExpenseItem> expenseItems = new ArrayList<>();
@@ -181,16 +231,13 @@ public class GeminiService {
 						new ParsedExpenseItem(
 								item.path("merchantName").asText(null),
 								item.path("category").asText(null),
-								item.has("localAmount")
-										? new BigDecimal(item.path("localAmount").asText())
-										: null,
+								parseBigDecimal(item, "localAmount"),
 								item.path("localCurrency").asText(null),
-								item.has("occurredAt")
-										? LocalDateTime.parse(
-												item.path("occurredAt").asText(),
-												DateTimeFormatter.ISO_DATE_TIME)
-										: null,
+								parseBigDecimal(item, "baseAmount"),
+								item.path("baseCurrency").asText(null),
+								parseOccurredAt(item),
 								item.path("cardLastFourDigits").asText(null),
+								item.path("approvalNumber").asText(null),
 								item.path("memo").asText(null));
 
 				expenseItems.add(expenseItem);
@@ -203,6 +250,64 @@ public class GeminiService {
 			return new GeminiParseResponse(
 					false, List.of(), "Response parsing failed: " + e.getMessage());
 		}
+	}
+
+	private BigDecimal parseBigDecimal(JsonNode item, String fieldName) {
+		JsonNode valueNode = item.path(fieldName);
+		if (valueNode.isMissingNode() || valueNode.isNull()) {
+			return null;
+		}
+
+		String raw = valueNode.asText(null);
+		if (raw == null) {
+			return null;
+		}
+
+		String normalized = raw.trim();
+		if (normalized.isEmpty() || "null".equalsIgnoreCase(normalized)) {
+			return null;
+		}
+
+		normalized = normalized.replace(",", "");
+		return new BigDecimal(normalized);
+	}
+
+	private LocalDateTime parseOccurredAt(JsonNode item) {
+		JsonNode occurredAtNode = item.path("occurredAt");
+		if (occurredAtNode.isMissingNode() || occurredAtNode.isNull()) {
+			return null;
+		}
+
+		String raw = occurredAtNode.asText(null);
+		if (raw == null || raw.isBlank() || "null".equalsIgnoreCase(raw.trim())) {
+			return null;
+		}
+
+		String normalized = raw.trim();
+		try {
+			return LocalDateTime.parse(normalized, DateTimeFormatter.ISO_DATE_TIME);
+		} catch (DateTimeParseException ignored) {
+			try {
+				return LocalDate.parse(normalized, DateTimeFormatter.ISO_DATE).atTime(12, 0);
+			} catch (DateTimeParseException e) {
+				log.warn("Failed to parse occurredAt value: {}", normalized);
+				return null;
+			}
+		}
+	}
+
+	private String sanitizeJsonText(String text) {
+		String trimmed = text == null ? "" : text.trim();
+		if (trimmed.isEmpty()) {
+			return "{\"items\":[]}";
+		}
+
+		int firstBrace = trimmed.indexOf('{');
+		int lastBrace = trimmed.lastIndexOf('}');
+		if (firstBrace >= 0 && lastBrace > firstBrace) {
+			return trimmed.substring(firstBrace, lastBrace + 1);
+		}
+		return trimmed;
 	}
 
 	/**
@@ -221,8 +326,11 @@ public class GeminiService {
 					"category": "one of: FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
 					"localAmount": "결제 금액 (숫자만)",
 					"localCurrency": "통화 코드 (KRW, USD, JPY 등)",
+					"baseAmount": "청구 금액 (있는 경우 작성, 숫자만)",
+					"baseCurrency": "청구 통화 코드 (있는 경우 작성, KRW 등)",
 					"occurredAt": "결제 일시 (ISO 8601 format: YYYY-MM-DDTHH:mm:ss)",
 					"cardLastFourDigits": "카드 뒷 4자리 (없으면 null)",
+					"approvalNumber": "승인번호 (있는 경우 작성)",
 					"memo": "추가 메모 (없으면 null)"
 					}
 				]
@@ -234,44 +342,15 @@ public class GeminiService {
 				- Always provide merchantName and localAmount
 				- Default category to "UNCLASSIFIED" if unclear
 				- If payment time is not available, use today's date with 12:00:00
-				- Return ONLY the JSON, no additional text
+				- Use JSON null literal for missing values (do NOT use "null" string)
+				- Use JSON number for numeric amounts (do NOT use commas or currency symbols)
+				- Return a single valid JSON object only (no markdown/code fence/explanations)
+				- If nothing is parseable, return {"items":[]}
 				""";
 	}
 
 	/**
-	 * CSV 파싱 프롬프트 생성
-	 */
-	private String buildCsvParsingPrompt() {
-		return """
-				You are an expert at parsing expense CSV files.
-
-				Parse the provided CSV content and convert each row to the following JSON format:
-
-				{
-				"items": [
-					{
-					"merchantName": "가맹점명",
-					"category": "FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
-					"localAmount": "금액",
-					"localCurrency": "통화 코드",
-					"occurredAt": "거래일시 (ISO 8601)",
-					"cardLastFourDigits": "카드번호 뒷자리",
-					"memo": "메모"
-					}
-				]
-				}
-
-				Rules:
-				- Auto-detect CSV headers
-				- Map columns to appropriate fields intelligently
-				- Handle different date/currency formats
-				- Default missing fields to null
-				- Return ONLY the JSON, no additional text
-				""";
-	}
-
-	/**
-	 * Gemini API 파싱 응답
+	 * Gemini API 파싱 응답 (영수증)
 	 */
 	public record GeminiParseResponse(
 			boolean success, List<ParsedExpenseItem> items, String errorMessage) {}
@@ -284,7 +363,10 @@ public class GeminiService {
 			String category,
 			BigDecimal localAmount,
 			String localCurrency,
+			BigDecimal baseAmount,
+			String baseCurrency,
 			LocalDateTime occurredAt,
 			String cardLastFourDigits,
+			String approvalNumber,
 			String memo) {}
 }

@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.5.9'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'com.diffplug.spotless' version '8.1.0'
+	id 'jacoco'
 }
 
 group = 'com.genesis'
@@ -30,6 +31,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// Redis Driver
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -51,6 +55,10 @@ dependencies {
 	testImplementation 'com.redis:testcontainers-redis:2.2.2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+	// test libraries for local dummy s3
+	testImplementation "org.testcontainers:localstack:1.19.0"
+	testImplementation 'com.github.tomakehurst:wiremock-jre8-standalone:2.35.2'
+
 	// JWT Related Dependencies
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -62,6 +70,9 @@ dependencies {
 	// AWS S3
 	implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+
+	// Apache POI for Excel
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
 	// Swagger / OpenAPI
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
@@ -89,6 +100,37 @@ tasks.register("integrationTest", Test) {
 
 	systemProperty "spring.profiles.active", "test-it"
 	shouldRunAfter tasks.named("unitTest")
+}
+
+jacoco {
+	toolVersion = "0.8.12"
+}
+
+tasks.named("jacocoTestReport", JacocoReport) {
+	dependsOn tasks.named("unitTest"), tasks.named("integrationTest")
+	executionData(fileTree(layout.buildDirectory.dir("jacoco")) { include "*.exec" })
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+}
+
+tasks.register("jacocoAnalysisReport", JacocoReport) {
+	group = "verification"
+	description = "Generates JaCoCo coverage report for analysis domain."
+	dependsOn tasks.named("unitTest"), tasks.named("integrationTest")
+	executionData(fileTree(layout.buildDirectory.dir("jacoco")) { include "*.exec" })
+	sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs))
+	classDirectories.setFrom(
+			files(sourceSets.main.output).asFileTree.matching {
+				include "com/genesis/unipocket/analysis/**"
+			})
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
 }
 
 spotless {

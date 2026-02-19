@@ -69,7 +69,7 @@ const LandingHeader = () => {
   };
 
   return (
-    <nav className="border-fill-normal bg-background-alternative sticky top-0 z-10 hidden items-center justify-between border-b px-8 py-3 md:flex">
+    <nav className="border-fill-normal bg-background-alternative z-header sticky top-0 hidden items-center justify-between border-b px-8 py-3 md:flex">
       {/* 로고 영역 */}
       <Link to="/" hash="home">
         <Icons.LogoText className="h-8 w-25" />

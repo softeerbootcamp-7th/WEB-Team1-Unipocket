@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import {
+  type ChartMode,
   EXPENSE_CHART_COLORS,
   EXPENSE_TITLE_BY_MODE,
   type ExpenseChartMode,
@@ -17,14 +18,13 @@ import ChartHeader from '@/components/chart/layout/ChartHeader';
 
 import { getCountryInfo } from '@/lib/country';
 
-interface ExpenseChartProps {
+interface ExpenseChartProps extends ChartMode {
   mode?: ExpenseChartMode;
-  isLoading?: boolean;
 }
 
 const ExpenseChart = ({
   mode = 'method',
-  isLoading = false,
+  isPreview = false,
 }: ExpenseChartProps) => {
   // 렌더링용 데이터. API 연동 시 변경 필요
   const chartData = useMemo(() => {
@@ -65,10 +65,10 @@ const ExpenseChart = ({
       });
   }, [mode]);
   return (
-    <ChartContainer className="w-67">
+    <ChartContainer className="w-67" isPreview={isPreview}>
       <ChartHeader title={EXPENSE_TITLE_BY_MODE[mode]} />
       <ChartContent
-        isLoading={isLoading || chartData.length === 0}
+        isPreview={isPreview || chartData.length === 0}
         skeleton={<ExpenseChartSkeleton />}
       >
         <ExpenseChartView data={chartData} />

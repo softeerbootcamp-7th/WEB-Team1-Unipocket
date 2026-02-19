@@ -40,12 +40,10 @@ export interface LoginResponse {
   tokenType: string;
 }
 
-export const loginDev = (
-  userId: string = '66e6bfde-9262-4bb8-ab3f-596c53baa480',
-): Promise<LoginResponse> => {
+export const loginDev = (): Promise<LoginResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.LOGIN_DEV,
-    params: { userId },
+    params: { userId: import.meta.env.VITE_USER_ID },
     options: {
       method: 'POST',
     },

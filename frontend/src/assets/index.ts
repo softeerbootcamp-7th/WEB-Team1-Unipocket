@@ -39,8 +39,10 @@ export const Cards = {
 } as const;
 
 // 3. Icons
+import Add from '@/assets/Icons/add.svg';
 import AlertCircle from '@/assets/Icons/alert-circle.svg';
 import Analytics from '@/assets/Icons/analytics.svg';
+import Arrow from '@/assets/Icons/arrow.svg';
 import Calendar from '@/assets/Icons/calendar.svg';
 import Camera from '@/assets/Icons/camera.svg';
 import CaretDown from '@/assets/Icons/caret-down.svg';
@@ -48,8 +50,10 @@ import CheckmarkCircle from '@/assets/Icons/checkmark-circle.svg';
 import ChevronBack from '@/assets/Icons/chevron-back.svg';
 import ChevronForward from '@/assets/Icons/chevron-forward.svg';
 import Close from '@/assets/Icons/close.svg';
+import CloseButton from '@/assets/Icons/close-button.svg';
 import CloseCircle from '@/assets/Icons/close-circle.svg';
 import Edit from '@/assets/Icons/edit.svg';
+import Expand from '@/assets/Icons/expand.svg';
 import FileBox from '@/assets/Icons/file-box.svg';
 import Home from '@/assets/Icons/home.svg';
 import Information from '@/assets/Icons/information.svg';
@@ -59,23 +63,29 @@ import LogoText from '@/assets/Icons/logo-text.svg';
 import Phone from '@/assets/Icons/phone.svg';
 import Refresh from '@/assets/Icons/refresh.svg';
 import Swap from '@/assets/Icons/swap.svg';
+import SwapVertical from '@/assets/Icons/swap-vertical.svg';
 import Trash from '@/assets/Icons/trash.svg';
 import Travel from '@/assets/Icons/travel.svg';
 import Update from '@/assets/Icons/update.svg';
 import UploadFile from '@/assets/Icons/upload-file.svg';
 
 export const Icons = {
+  Add,
+  Arrow,
   AlertCircle,
   CloseCircle,
   Calendar,
   ChevronBack,
   ChevronForward,
   CheckmarkCircle,
+  CloseButton,
+  Expand,
   Logo,
   Loading,
   Analytics,
   Home,
   Travel,
+  SwapVertical,
   CaretDown,
   Close,
   Trash,

@@ -4,9 +4,9 @@ import type { AccountBookMeta } from '@/types/accountBook';
 
 export const mockData: AccountBookMeta = {
   id: 1,
-  title: '🇯🇵 오사카 먹방 여행',
+  title: '🇯🇵 오사카 교환학생',
   localCountryCode: 'JP',
   baseCountryCode: 'KR',
-  startDate: '2024-02-10',
-  endDate: '2024-02-14',
+  startDate: '2025-08-10',
+  endDate: '2026-03-14',
 };

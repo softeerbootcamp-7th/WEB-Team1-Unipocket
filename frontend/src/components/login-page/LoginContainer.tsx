@@ -25,7 +25,7 @@ const LoginButton = ({
       textColor,
     )}
   >
-    <Icon className="h-4.5 w-4.5" />
+    <Icon className="size-4.5" />
     <span className="text-[15px] font-semibold">{text}</span>
   </a>
 );

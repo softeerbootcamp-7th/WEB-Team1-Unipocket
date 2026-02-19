@@ -64,6 +64,11 @@ public enum ErrorCode {
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "404_USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
 	USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "409_USER_ALREADY_EXISTS", "이미 존재하는 사용자입니다."),
 
+	// ========== User Card Errors ==========
+	CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "404_CARD_NOT_FOUND", "카드를 찾을 수 없습니다."),
+	CARD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "400_CARD_LIMIT_EXCEEDED", "카드 등록 한도를 초과했습니다."),
+	CARD_NOT_OWNED(HttpStatus.FORBIDDEN, "403_CARD_NOT_OWNED", "본인의 카드가 아닙니다."),
+
 	// ========== Token Errors ==========
 	TOKEN_REQUIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_REQUIRED", "로그인이 필요합니다."),
 	TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "401_TOKEN_EXPIRED", "토큰이 만료되었습니다."),
@@ -91,6 +96,8 @@ public enum ErrorCode {
 			"현지 통화와 기준 통화는 달라야 합니다."),
 	ACCOUNT_BOOK_INVALID_BUDGET(
 			HttpStatus.BAD_REQUEST, "400_ACCOUNT_BOOK_INVALID_BUDGET", "예산은 0 이상이어야 합니다."),
+	ACCOUNT_BOOK_BUDGET_NOT_SET(
+			HttpStatus.BAD_REQUEST, "400_ACCOUNT_BOOK_BUDGET_NOT_SET", "해당 가계부에 예산이 설정되어 있지 않습니다."),
 	ACCOUNT_BOOK_UNAUTHORIZED_ACCESS(
 			HttpStatus.FORBIDDEN, "403_ACCOUNT_BOOK_UNAUTHORIZED_ACCESS", "해당 가계부에 접근할 권한이 없습니다."),
 
@@ -98,7 +105,10 @@ public enum ErrorCode {
 	TRAVEL_INVALID_DATE_RANGE(
 			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_DATE_RANGE", "여행 종료 날짜는 시작 날짜보다 이후여야 합니다."),
 	TRAVEL_NOT_FOUND(HttpStatus.NOT_FOUND, "404_TRAVEL_NOT_FOUND", "여행 정보를 찾을 수 없습니다."),
-
+	TRAVEL_NOT_IN_ACCOUNT_BOOK(
+			HttpStatus.BAD_REQUEST,
+			"400_TRAVEL_NOT_IN_ACCOUNT_BOOK",
+			"여행 정보와 요청 가계부 소속이 올바르지 않습니다."),
 	// Expense Errors
 	EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "404_EXPENSE_NOT_FOUND", "지출 내역을 찾을 수 없습니다."),
 	EXPENSE_UNAUTHORIZED_ACCESS(
@@ -106,12 +116,67 @@ public enum ErrorCode {
 	EXPENSE_INVALID_CURRENCY(
 			HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_CURRENCY", "유효하지 않은 통화 코드입니다."),
 	EXPENSE_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_AMOUNT", "금액은 0보다 커야 합니다."),
+	EXPENSE_INVALID_MERCHANT_NAME(
+			HttpStatus.BAD_REQUEST, "400_EXPENSE_INVALID_MERCHANT_NAME", "거래처명은 공백일 수 없습니다."),
+	EXPENSE_SAME_CURRENCY_AMOUNT_MISMATCH(
+			HttpStatus.BAD_REQUEST,
+			"400_EXPENSE_SAME_CURRENCY_AMOUNT_MISMATCH",
+			"동일 통화에서는 현지 금액과 기준 금액이 같아야 합니다."),
+	EXPENSE_INVALID_SORT(
+			HttpStatus.BAD_REQUEST,
+			"400_EXPENSE_INVALID_SORT",
+			"유효하지 않은 정렬 기준입니다. ( occurredAt,desc(asc) baseCurrencyAmount,desc(asc) )"),
+	EXPENSE_MERCHANT_SEARCH_RATE_LIMIT_EXCEEDED(
+			HttpStatus.TOO_MANY_REQUESTS,
+			"429_EXPENSE_MERCHANT_SEARCH_RATE_LIMIT_EXCEEDED",
+			"요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+
+	// 환율 관련 에러
 	EXCHANGE_RATE_API_ERROR(
 			HttpStatus.SERVICE_UNAVAILABLE,
 			"503_EXCHANGE_RATE_API_ERROR",
 			"환율 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요."),
 	EXCHANGE_RATE_NOT_FOUND(
-			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다.");
+			HttpStatus.NOT_FOUND, "404_EXCHANGE_RATE_NOT_FOUND", "해당 통화의 환율 정보를 찾을 수 없습니다."),
+
+	// Temp Expense Errors
+	TEMP_EXPENSE_NOT_FOUND(
+			HttpStatus.NOT_FOUND, "404_TEMP_EXPENSE_NOT_FOUND", "임시 지출 내역을 찾을 수 없습니다."),
+	TEMP_EXPENSE_META_NOT_FOUND(
+			HttpStatus.NOT_FOUND, "404_TEMP_EXPENSE_META_NOT_FOUND", "임시 지출 메타데이터를 찾을 수 없습니다."),
+	TEMP_EXPENSE_FILE_NOT_FOUND(
+			HttpStatus.NOT_FOUND, "404_TEMP_EXPENSE_FILE_NOT_FOUND", "임시 지출 파일을 찾을 수 없습니다."),
+	TEMP_EXPENSE_SCOPE_MISMATCH(
+			HttpStatus.BAD_REQUEST,
+			"400_TEMP_EXPENSE_SCOPE_MISMATCH",
+			"요청한 가계부와 임시 지출 리소스의 소속이 일치하지 않습니다."),
+	TEMP_EXPENSE_PARSE_FILES_REQUIRED(
+			HttpStatus.BAD_REQUEST, "400_TEMP_EXPENSE_PARSE_FILES_REQUIRED", "파싱할 파일이 선택되지 않았습니다."),
+	TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED(
+			HttpStatus.BAD_REQUEST,
+			"400_TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED",
+			"파일 업로드 개수 제한을 초과했습니다."),
+	TEMP_EXPENSE_PARSE_TASK_NOT_FOUND(
+			HttpStatus.NOT_FOUND, "404_TEMP_EXPENSE_PARSE_TASK_NOT_FOUND", "파싱 작업을 찾을 수 없습니다."),
+	TEMP_EXPENSE_INVALID_FILE_TYPE(
+			HttpStatus.BAD_REQUEST, "400_TEMP_EXPENSE_INVALID_FILE_TYPE", "지원하지 않는 파일 타입입니다."),
+	TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING(
+			HttpStatus.BAD_REQUEST,
+			"400_TEMP_EXPENSE_CONVERT_REQUIRED_FIELDS_MISSING",
+			"임시 지출 확정을 위한 필수 값이 누락되었습니다."),
+	TEMP_EXPENSE_PARSE_FAILED(
+			HttpStatus.INTERNAL_SERVER_ERROR,
+			"500_TEMP_EXPENSE_PARSE_FAILED",
+			"임시 지출 파싱 처리 중 오류가 발생했습니다."),
+	TEMP_EXPENSE_RATE_LIMIT_EXCEEDED(
+			HttpStatus.TOO_MANY_REQUESTS,
+			"429_TEMP_EXPENSE_RATE_LIMIT_EXCEEDED",
+			"요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+
+	// ========== Widget Errors ==========
+	WIDGET_ORDER_DUPLICATED(
+			HttpStatus.BAD_REQUEST, "400_WIDGET_ORDER_DUPLICATED", "위젯 순서가 중복되었습니다."),
+	WIDGET_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "400_WIDGET_SIZE_EXCEEDED", "위젯 크기 합이 5를 초과합니다.");
 
 	public static class CodeLiterals {
 		public static final String ACCOUNT_BOOK_CREATE_VALIDATION_FAILED =

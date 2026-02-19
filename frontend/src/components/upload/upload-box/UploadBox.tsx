@@ -12,21 +12,26 @@ import { Icons } from '@/assets';
 
 interface UploadBoxProps {
   type: 'image' | 'file';
+  onFilesSelected: (files: File[]) => void;
 }
 
-const UploadBox = ({ type }: UploadBoxProps) => {
+const UploadBox = ({ type, onFilesSelected }: UploadBoxProps) => {
   const policy = uploadPolicy[type];
   const validateFiles = useFileValidator(policy);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { isDragging, bind } = useDragAndDrop(validateFiles);
+  const handleFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const files = validateFiles(fileList);
+    if (!files) return;
+    onFilesSelected(files);
+  };
+
+  const { isDragging, bind } = useDragAndDrop(handleFiles);
 
   // 클릭 업로드
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = validateFiles(e.target.files);
-    if (!files) return;
-
-    console.log('업로드 준비 완료:', files);
+    handleFiles(e.target.files);
     e.target.value = '';
   };
 
@@ -40,7 +45,7 @@ const UploadBox = ({ type }: UploadBoxProps) => {
   return (
     <label
       className={clsx(
-        'bg-background-normal flex cursor-pointer flex-col items-center justify-center gap-5 rounded-lg border-2 border-dashed py-10 transition-colors',
+        'bg-background-normal flex h-full w-full cursor-pointer flex-col items-center justify-center gap-5 rounded-lg border-2 border-dashed py-10 transition-colors',
         isDragging
           ? 'border-blue-400 bg-blue-50'
           : 'hover:bg-background-alternative border-line-normal-strong',

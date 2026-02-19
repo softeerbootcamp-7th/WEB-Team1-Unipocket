@@ -59,7 +59,7 @@ const DateFilter = () => {
   })();
 
   return (
-    <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+    <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen} modal={false}>
       <PopoverTrigger asChild>
         <Filter
           size="md"

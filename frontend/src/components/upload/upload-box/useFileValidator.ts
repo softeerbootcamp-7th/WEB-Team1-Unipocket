@@ -11,11 +11,11 @@ type UploadPolicy = {
 export const uploadPolicy = {
   image: {
     message:
-      '지원 형식: jpg, jpeg, png\n최대 30개까지 업로드할 수 있어요.\n업로드 시 전체 파일 용량 합계는 50MB를 넘을 수 없어요.',
+      '지원 형식: jpg, jpeg, png\n최대 3개까지 업로드할 수 있어요.\n업로드 시 전체 파일 용량 합계는 5MB를 넘을 수 없어요.',
     accept: 'image/jpeg,image/png,image/jpg',
     multiple: true,
-    maxCount: 30,
-    maxTotalSize: 50 * 1024 * 1024,
+    maxCount: 3,
+    maxTotalSize: 5 * 1024 * 1024,
   },
   landingImage: {
     accept: 'image/jpeg,image/png,image/jpg',

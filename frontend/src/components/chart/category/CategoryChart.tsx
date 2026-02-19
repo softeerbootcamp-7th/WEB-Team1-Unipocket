@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import CategoryChartSkeleton from '@/components/chart/category/CategoryChartSkeleton';
 import CategoryChartView from '@/components/chart/category/CategoryChartView';
 import { mockData } from '@/components/chart/category/mock';
-import { CURRENCY_OPTIONS } from '@/components/chart/chartType';
+import { type ChartMode, CURRENCY_OPTIONS } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
@@ -14,7 +14,7 @@ const PERIOD_OPTIONS = [
   { id: 2, name: '월별' },
 ];
 
-const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
+const CategoryChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
     CURRENCY_OPTIONS[0].id,
   );
@@ -32,7 +32,7 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
   }, []);
 
   return (
-    <ChartContainer className="w-139">
+    <ChartContainer className="w-139" isPreview={isPreview}>
       <ChartHeader title="카테고리별 지출">
         <DropDown
           selected={selectedCurrency}
@@ -50,7 +50,7 @@ const CategoryChart = ({ isLoading = false }: { isLoading?: boolean }) => {
 
       {/* stat section */}
       <ChartContent
-        isLoading={isLoading || visibleStats.length === 0}
+        isPreview={isPreview || visibleStats.length === 0}
         skeleton={<CategoryChartSkeleton />}
         className="px-8 py-4"
       >

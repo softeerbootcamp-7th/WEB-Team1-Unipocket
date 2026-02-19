@@ -24,7 +24,9 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const scrollContainer = document.querySelector('.overflow-y-auto');
+    const scrollContainer = document.querySelector(
+      '[data-slot="table-container"]',
+    );
 
     if (scrollContainer instanceof HTMLElement) {
       const originalStyle = scrollContainer.style.overflow;
@@ -40,7 +42,6 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
   }, []);
 
   const handleSave = () => {
-    // API 호출 및 닫기 로직
     dispatch({ type: 'SET_ACTIVE_CELL', payload: null });
   };
 
@@ -53,7 +54,7 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
         width: activeCell.rect.width,
         height: activeCell.rect.height,
       }}
-      className="rounded-modal-12 shadow-semantic-emphasize z-50 inline-flex bg-white px-2.5 py-3.5"
+      className="rounded-modal-12 shadow-semantic-emphasize z-priority inline-flex bg-white px-2.5 py-3.5"
     >
       <input
         ref={inputRef}

@@ -34,6 +34,11 @@ const tableReducer = (state: TableUIState, action: TableUIAction) => {
         ...state,
         activeCell: action.payload,
       };
+    case 'SET_ACTIVE_ROW':
+      return {
+        ...state,
+        activeRow: action.payload,
+      };
     default:
       return state;
   }
@@ -56,6 +61,7 @@ const DataTableProvider = <TData, TValue = unknown>({
     selectionMode: null,
     rowSelection: {},
     activeCell: null,
+    activeRow: null,
   });
 
   // 행 선택 상태에 따른 자동 바 노출 로직 (useEffect)
@@ -81,6 +87,9 @@ const DataTableProvider = <TData, TValue = unknown>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     manualFiltering: false,
+    meta: {
+      dispatch,
+    },
   });
 
   return (
@@ -93,7 +102,9 @@ const DataTableProvider = <TData, TValue = unknown>({
         } as DataTableContextType<unknown>
       }
     >
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {children}
+      </div>
     </DataTableContext.Provider>
   );
 };

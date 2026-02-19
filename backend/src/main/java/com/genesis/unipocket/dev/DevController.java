@@ -1,10 +1,10 @@
 package com.genesis.unipocket.dev;
 
-import com.genesis.unipocket.auth.persistence.repository.SocialAuthRepository;
-import com.genesis.unipocket.auth.service.TokenService;
-import com.genesis.unipocket.user.dto.response.LoginResponse;
-import com.genesis.unipocket.user.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.persistence.repository.UserRepository;
+import com.genesis.unipocket.auth.command.application.TokenService;
+import com.genesis.unipocket.auth.command.persistence.repository.SocialAuthRepository;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.query.persistence.response.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "[DEV] 개발용 API", description = "프론트엔드 개발 편의를 위한 회원가입/토큰 발급 API")
 @RestController
-@RequestMapping("/api/dev")
+@RequestMapping("/dev")
 @RequiredArgsConstructor
 public class DevController {
 
 	private final SocialAuthRepository socialAuthRepository;
-	private final UserRepository userRepository;
+	private final UserCommandRepository userRepository;
 	private final TokenService tokenService;
 
 	public record DevSignUpRequest(String email, String name) {}
@@ -68,7 +68,13 @@ public class DevController {
 	@PostMapping("/token")
 	public ResponseEntity<LoginResponse> issueToken(
 			@Parameter(description = "회원가입 시 발급받은 userId (UUID)") @RequestParam UUID userId) {
-		LoginResponse response = tokenService.createTokens(userId);
+		var result = tokenService.createTokens(userId);
+		LoginResponse response =
+				LoginResponse.of(
+						result.getAccessToken(),
+						result.getRefreshToken(),
+						userId,
+						result.getExpiresIn().intValue());
 		return ResponseEntity.ok(response);
 	}
 }

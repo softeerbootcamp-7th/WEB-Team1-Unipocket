@@ -13,11 +13,12 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthIndexRouteImport } from './routes/_auth/index'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
-import { Route as AppTravelRouteImport } from './routes/_app/travel'
 import { Route as AppSettingRouteImport } from './routes/_app/setting'
 import { Route as AppReportRouteImport } from './routes/_app/report'
 import { Route as AppInitRouteImport } from './routes/_app/init'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
+import { Route as AppTravelIndexRouteImport } from './routes/_app/travel/index'
+import { Route as AppTravelTravelIdRouteImport } from './routes/_app/travel/$travelId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -36,11 +37,6 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRoute,
-} as any)
-const AppTravelRoute = AppTravelRouteImport.update({
-  id: '/travel',
-  path: '/travel',
-  getParentRoute: () => AppRoute,
 } as any)
 const AppSettingRoute = AppSettingRouteImport.update({
   id: '/setting',
@@ -62,6 +58,16 @@ const AppHomeRoute = AppHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTravelIndexRoute = AppTravelIndexRouteImport.update({
+  id: '/travel/',
+  path: '/travel/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTravelTravelIdRoute = AppTravelTravelIdRouteImport.update({
+  id: '/travel/$travelId',
+  path: '/travel/$travelId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthIndexRoute
@@ -69,8 +75,9 @@ export interface FileRoutesByFullPath {
   '/init': typeof AppInitRoute
   '/report': typeof AppReportRoute
   '/setting': typeof AppSettingRoute
-  '/travel': typeof AppTravelRoute
   '/login': typeof AuthLoginRoute
+  '/travel/$travelId': typeof AppTravelTravelIdRoute
+  '/travel/': typeof AppTravelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthIndexRoute
@@ -78,8 +85,9 @@ export interface FileRoutesByTo {
   '/init': typeof AppInitRoute
   '/report': typeof AppReportRoute
   '/setting': typeof AppSettingRoute
-  '/travel': typeof AppTravelRoute
   '/login': typeof AuthLoginRoute
+  '/travel/$travelId': typeof AppTravelTravelIdRoute
+  '/travel': typeof AppTravelIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,9 +97,10 @@ export interface FileRoutesById {
   '/_app/init': typeof AppInitRoute
   '/_app/report': typeof AppReportRoute
   '/_app/setting': typeof AppSettingRoute
-  '/_app/travel': typeof AppTravelRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/': typeof AuthIndexRoute
+  '/_app/travel/$travelId': typeof AppTravelTravelIdRoute
+  '/_app/travel/': typeof AppTravelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,10 +110,19 @@ export interface FileRouteTypes {
     | '/init'
     | '/report'
     | '/setting'
-    | '/travel'
     | '/login'
+    | '/travel/$travelId'
+    | '/travel/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/init' | '/report' | '/setting' | '/travel' | '/login'
+  to:
+    | '/'
+    | '/home'
+    | '/init'
+    | '/report'
+    | '/setting'
+    | '/login'
+    | '/travel/$travelId'
+    | '/travel'
   id:
     | '__root__'
     | '/_app'
@@ -113,9 +131,10 @@ export interface FileRouteTypes {
     | '/_app/init'
     | '/_app/report'
     | '/_app/setting'
-    | '/_app/travel'
     | '/_auth/login'
     | '/_auth/'
+    | '/_app/travel/$travelId'
+    | '/_app/travel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,13 +172,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_app/travel': {
-      id: '/_app/travel'
-      path: '/travel'
-      fullPath: '/travel'
-      preLoaderRoute: typeof AppTravelRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/setting': {
       id: '/_app/setting'
       path: '/setting'
@@ -188,6 +200,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/travel/': {
+      id: '/_app/travel/'
+      path: '/travel'
+      fullPath: '/travel/'
+      preLoaderRoute: typeof AppTravelIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/travel/$travelId': {
+      id: '/_app/travel/$travelId'
+      path: '/travel/$travelId'
+      fullPath: '/travel/$travelId'
+      preLoaderRoute: typeof AppTravelTravelIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -196,7 +222,8 @@ interface AppRouteChildren {
   AppInitRoute: typeof AppInitRoute
   AppReportRoute: typeof AppReportRoute
   AppSettingRoute: typeof AppSettingRoute
-  AppTravelRoute: typeof AppTravelRoute
+  AppTravelTravelIdRoute: typeof AppTravelTravelIdRoute
+  AppTravelIndexRoute: typeof AppTravelIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -204,7 +231,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppInitRoute: AppInitRoute,
   AppReportRoute: AppReportRoute,
   AppSettingRoute: AppSettingRoute,
-  AppTravelRoute: AppTravelRoute,
+  AppTravelTravelIdRoute: AppTravelTravelIdRoute,
+  AppTravelIndexRoute: AppTravelIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

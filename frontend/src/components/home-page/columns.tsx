@@ -5,11 +5,7 @@ import PaymentMethod from '@/components/expense/PaymentMethod';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import {
-  CATEGORIES,
-  type CategoryType,
-  getCategoryName,
-} from '@/types/category';
+import { type CategoryId } from '@/types/category';
 
 import type { ExpenseResponse } from '@/api/expenses/type';
 
@@ -49,15 +45,8 @@ export const columns: ColumnDef<ExpenseResponse>[] = [
     accessorKey: 'category',
     header: () => <>카테고리</>,
     cell: ({ row }) => {
-      const categoryId = row.getValue('category') as CategoryType;
-      const style = CATEGORIES[categoryId];
-      return (
-        <Chip
-          label={getCategoryName(categoryId)}
-          bg={style?.bg}
-          text={style?.text}
-        />
-      );
+      const categoryId = row.getValue('category') as CategoryId;
+      return <Chip id={categoryId} />;
     },
   },
   {

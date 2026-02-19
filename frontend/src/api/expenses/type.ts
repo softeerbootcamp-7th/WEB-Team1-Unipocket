@@ -1,4 +1,4 @@
-import type { CategoryType } from '@/types/category';
+import type { CategoryId } from '@/types/category';
 
 import type { CardId } from '@/data/card/cardCode';
 
@@ -26,7 +26,7 @@ export interface ExpenseResponse {
   travelId: number | null;
   merchantName: string;
   exchangeRate: number | null;
-  category: CategoryType;
+  category: CategoryId;
   paymentMethod: PaymentMethodResponse;
   occurredAt: string; // ISO-8601 format
   localCurrencyAmount: number;
@@ -51,7 +51,7 @@ export interface GetExpensesResponse {
 // 지출 생성/수정 요청
 export interface CreateExpenseRequest {
   merchantName: string;
-  category: CategoryType;
+  category: CategoryId;
   userCardId?: number | null; // 카드 결제 시 카드 ID (null이면 현금)
   occurredAt: string; // ISO-8601 format
   localCurrencyAmount: number;

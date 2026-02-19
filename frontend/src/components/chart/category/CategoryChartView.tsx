@@ -5,7 +5,7 @@ import PieChart from '@/components/chart/charts/PieChart';
 import { CATEGORY_CHART_COLORS } from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 
-import { type CategoryType } from '@/types/category';
+import { type CategoryId } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import type { CountryCode } from '@/data/country/countryCode';
@@ -13,7 +13,7 @@ import type { CountryCode } from '@/data/country/countryCode';
 interface CategoryChartViewProps {
   data: {
     percentage: number;
-    categoryId: CategoryType;
+    categoryId: CategoryId;
     amount: number;
   }[];
   totalAmount: number;

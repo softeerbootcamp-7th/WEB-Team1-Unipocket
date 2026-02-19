@@ -1,7 +1,7 @@
-import { type CategoryType } from '@/types/category';
+import { type CategoryId } from '@/types/category';
 
 interface CategoryItem {
-  categoryIndex: CategoryType;
+  categoryIndex: CategoryId;
   mySpentAmount: string;
   averageSpentAmount: string;
 }

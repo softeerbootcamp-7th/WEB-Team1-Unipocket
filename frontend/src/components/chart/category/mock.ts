@@ -1,9 +1,9 @@
-import type { CategoryType } from '@/types/category';
+import type { CategoryId } from '@/types/category';
 
 import type { CountryCode } from '@/data/country/countryCode';
 
 type CategoryStatisticsItem = {
-  categoryId: CategoryType;
+  categoryId: CategoryId;
   amount: number;
   percent: number;
 };

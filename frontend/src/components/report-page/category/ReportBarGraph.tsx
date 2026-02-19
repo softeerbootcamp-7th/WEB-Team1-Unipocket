@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import ReportBarList from '@/components/report-page/category/ReportBarList';
 import ReportLegend from '@/components/report-page/ReportLegend';
 
-import type { CategoryType } from '@/types/category';
+import type { CategoryId } from '@/types/category';
 
 interface ReportBarGraphProps {
   maxLabel: number;
   items: {
-    categoryIndex: CategoryType;
+    categoryIndex: CategoryId;
     mySpentAmount: string;
     averageSpentAmount: string;
   }[];

@@ -3,33 +3,23 @@ import { useState } from 'react';
 import Chip from '@/components/common/Chip';
 import { DataTableSearchFilter } from '@/components/data-table/DataTableFilter';
 
-import {
-  CATEGORIES,
-  type CategoryType,
-  getCategoryName,
-} from '@/types/category';
+import { CATEGORIES, type CategoryId, getCategoryName } from '@/types/category';
 
 const CategoryFilter = () => {
-  const categoryOptions = Object.keys(CATEGORIES).map(Number) as CategoryType[];
+  const categoryOptions = Object.keys(CATEGORIES).map(Number) as CategoryId[];
 
-  const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>(
+  const [selectedCategories, setSelectedCategories] = useState<CategoryId[]>(
     [],
   );
 
   return (
-    <DataTableSearchFilter<CategoryType>
+    <DataTableSearchFilter<CategoryId>
       title="카테고리"
       options={categoryOptions}
       selectedOptions={selectedCategories}
       setSelectedOptions={setSelectedCategories}
       getOptionLabel={(id) => getCategoryName(id)}
-      renderOption={(categoryId) => (
-        <Chip
-          label={getCategoryName(categoryId)}
-          bg={CATEGORIES[categoryId].bg}
-          text={CATEGORIES[categoryId].text}
-        />
-      )}
+      renderOption={(categoryId) => <Chip id={categoryId} />}
       onInputChange={() => {
         // 타이핑 할 때마다
         // api 호출 작업 예정

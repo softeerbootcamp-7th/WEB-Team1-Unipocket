@@ -1,7 +1,8 @@
-import {
-  type AccountBookResponse,
-  type CreateAccountBookRequest,
-  type GetAccountBooksResponse,
+import type {
+  AccountBookDetail,
+  AccountBookResponse,
+  AccountBookSummary,
+  CreateAccountBookRequest,
 } from '@/api/account-books/type';
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
@@ -18,7 +19,7 @@ const createAccountBook = (
   });
 };
 
-const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
+export const getAccountBooks = (): Promise<AccountBookSummary[]> => {
   return customFetch({
     endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
     options: {
@@ -27,22 +28,13 @@ const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
   });
 };
 
-const getAccountBookDetail = (
+export const getAccountBookDetail = (
   accountBookId: number,
-): Promise<AccountBookResponse> => {
+): Promise<AccountBookDetail> => {
   return customFetch({
     endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
     options: {
       method: 'GET',
-    },
-  });
-};
-
-const deleteAccountBook = (accountBookId: number): Promise<void> => {
-  return customFetch({
-    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
-    options: {
-      method: 'DELETE',
     },
   });
 };
@@ -70,11 +62,28 @@ const updateAccountBookBudget = (accountBookId: number, budget: number) => {
   });
 };
 
+const deleteAccountBook = (accountBookId: number): Promise<void> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId),
+    options: {
+      method: 'DELETE',
+    },
+  });
+};
+
+const setMainAccountBook = (accountBookId: number): Promise<void> => {
+  return customFetch({
+    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId)}/main`,
+    options: {
+      method: 'PATCH',
+    },
+  });
+};
+
 export {
   createAccountBook,
   deleteAccountBook,
-  getAccountBookDetail,
-  getAccountBooks,
+  setMainAccountBook,
   updateAccountBook,
   updateAccountBookBudget,
 };

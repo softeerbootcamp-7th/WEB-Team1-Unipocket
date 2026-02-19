@@ -6,6 +6,32 @@ interface CreateAccountBookRequest {
   endDate: string;
 }
 
+interface AccountBookSummary {
+  id: number;
+  title: string;
+  isMain: boolean;
+}
+
+interface AccountBookDetail {
+  id: number;
+  title: string;
+  localCountryCode: CountryCode;
+  baseCountryCode: CountryCode;
+  budget: number | null;
+  startDate: string;
+  endDate: string;
+  isMain?: boolean;
+}
+
+interface UpdateAccountBookRequest {
+  title?: string;
+  localCountryCode?: CountryCode;
+  baseCountryCode?: CountryCode;
+  budget?: number | null;
+  startDate?: string;
+  endDate?: string;
+}
+
 interface AccountBookResponse {
   id: number;
   title: string;
@@ -16,6 +42,7 @@ interface AccountBookResponse {
   tempExpenseBatchIds?: string[];
   startDate: string;
   endDate: string;
+  isMain?: boolean;
 }
 
 interface AccountBook {
@@ -27,7 +54,10 @@ interface AccountBook {
 type GetAccountBooksResponse = AccountBook[];
 
 export type {
+  AccountBookDetail,
   AccountBookResponse,
+  AccountBookSummary,
   CreateAccountBookRequest,
   GetAccountBooksResponse,
+  UpdateAccountBookRequest,
 };

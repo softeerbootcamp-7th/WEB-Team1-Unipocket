@@ -21,9 +21,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountCategoryAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountPairCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.ExpenseRow;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
-import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.analysis.common.util.QuantileUtil;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -165,164 +163,17 @@ public class CountryMonthlyDirtyAggregationService {
 				dirty.getCountryCode(),
 				monthStart,
 				rawAmountCount,
-				AnalysisQualityType.RAW);
+				AnalysisQualityType.CLEANED);
 		upsertMonthlyCategoryMetrics(
 				dirty.getAccountBookId(),
 				dirty.getCountryCode(),
 				monthStart,
 				rawCategoryRows,
-				AnalysisQualityType.RAW);
-
-		List<ExpenseRow> monthlyRows =
-				aggregationRepository.findExpenseRowsByAccountBook(
-						dirty.getAccountBookId(), startUtc, endUtc);
-		CleanedMonthlyAggregation cleaned = calculateCleaned(monthlyRows);
-		upsertMonthlyMetrics(
-				dirty.getAccountBookId(),
-				dirty.getCountryCode(),
-				monthStart,
-				new AmountPairCount(
-						cleaned.totalLocalAmount(),
-						cleaned.totalBaseAmount(),
-						cleaned.expenseCount()),
-				AnalysisQualityType.CLEANED);
-		upsertMonthlyCategoryMetrics(
-				dirty.getAccountBookId(),
-				dirty.getCountryCode(),
-				monthStart,
-				cleaned.categoryAmountCounts(),
 				AnalysisQualityType.CLEANED);
 
 		dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
 		return new PairMonthKey(
 				accountBook.getLocalCountryCode(), accountBook.getBaseCountryCode(), monthStart);
-	}
-
-	private CleanedMonthlyAggregation calculateCleaned(List<ExpenseRow> rows) {
-		Map<Integer, List<BigDecimal>> localAmountsByCategory = new HashMap<>();
-		Map<Integer, List<BigDecimal>> baseAmountsByCategory = new HashMap<>();
-		List<ValidAmountRow> validRows = new ArrayList<>(rows.size());
-
-		for (ExpenseRow row : rows) {
-			BigDecimal localAmount = row.localAmount();
-			if (localAmount == null) {
-				continue;
-			}
-			if (localAmount.compareTo(properties.getCleanedMinAmount()) < 0) {
-				continue;
-			}
-			if (localAmount.compareTo(properties.getCleanedMaxAmount()) > 0) {
-				continue;
-			}
-			Integer categoryOrdinal = parseCategoryOrdinal(row.categoryValue());
-			if (categoryOrdinal == null) {
-				continue;
-			}
-			BigDecimal baseAmount = row.baseAmount();
-			validRows.add(new ValidAmountRow(categoryOrdinal, localAmount, baseAmount));
-			localAmountsByCategory
-					.computeIfAbsent(categoryOrdinal, unused -> new ArrayList<>())
-					.add(localAmount);
-			if (baseAmount != null && baseAmount.compareTo(BigDecimal.ZERO) > 0) {
-				baseAmountsByCategory
-						.computeIfAbsent(categoryOrdinal, unused -> new ArrayList<>())
-						.add(baseAmount);
-			}
-		}
-
-		Map<Integer, Bounds> localBoundsByCategory =
-				computeBoundsForCategories(localAmountsByCategory);
-		Map<Integer, Bounds> baseBoundsByCategory =
-				computeBoundsForCategories(baseAmountsByCategory);
-
-		BigDecimal totalLocalAmount = BigDecimal.ZERO;
-		BigDecimal totalBaseAmount = BigDecimal.ZERO;
-		long expenseCount = 0L;
-		Map<Integer, CategoryAccumulator> categoryMap = new HashMap<>();
-		for (ValidAmountRow row : validRows) {
-			BigDecimal cleanedLocalAmount =
-					applyBounds(
-							localBoundsByCategory.get(row.categoryOrdinal()), row.localAmount());
-			BigDecimal cleanedBaseAmount =
-					row.baseAmount() == null ? BigDecimal.ZERO : row.baseAmount();
-			if (cleanedBaseAmount.compareTo(BigDecimal.ZERO) > 0) {
-				cleanedBaseAmount =
-						applyBounds(
-								baseBoundsByCategory.get(row.categoryOrdinal()), cleanedBaseAmount);
-			}
-			BigDecimal boundedBaseAmount = cleanedBaseAmount;
-
-			totalLocalAmount = totalLocalAmount.add(cleanedLocalAmount);
-			totalBaseAmount = totalBaseAmount.add(boundedBaseAmount);
-			expenseCount += 1L;
-			categoryMap.compute(
-					row.categoryOrdinal(),
-					(unused, current) ->
-							(current == null ? new CategoryAccumulator() : current)
-									.add(cleanedLocalAmount, boundedBaseAmount, 1L));
-		}
-
-		List<CategoryAmountPairCount> categoryRows = new ArrayList<>(categoryMap.size());
-		for (Map.Entry<Integer, CategoryAccumulator> entry : categoryMap.entrySet()) {
-			categoryRows.add(
-					new CategoryAmountPairCount(
-							entry.getKey(),
-							entry.getValue().localAmount(),
-							entry.getValue().baseAmount(),
-							entry.getValue().count()));
-		}
-		return new CleanedMonthlyAggregation(
-				totalLocalAmount, totalBaseAmount, expenseCount, categoryRows);
-	}
-
-	private Bounds computeBounds(List<BigDecimal> sorted) {
-		if (sorted.isEmpty()) {
-			return Bounds.notApplicable();
-		}
-		if (sorted.size() < properties.getOutlierMinSampleSize()) {
-			return Bounds.notApplicable();
-		}
-		BigDecimal q1 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.25d, MC);
-		BigDecimal q3 = QuantileUtil.linearInterpolatedQuantile(sorted, 0.75d, MC);
-		BigDecimal iqr = q3.subtract(q1, MC);
-		BigDecimal delta =
-				iqr.multiply(BigDecimal.valueOf(properties.getOutlierIqrMultiplier()), MC);
-		BigDecimal lower = q1.subtract(delta, MC);
-		BigDecimal upper = q3.add(delta, MC);
-
-		lower = lower.max(properties.getCleanedMinAmount());
-		upper = upper.min(properties.getCleanedMaxAmount());
-		if (lower.compareTo(upper) > 0) {
-			return Bounds.notApplicable();
-		}
-		return Bounds.applicable(lower, upper);
-	}
-
-	private Map<Integer, Bounds> computeBoundsForCategories(
-			Map<Integer, List<BigDecimal>> amountsByCategory) {
-		Map<Integer, Bounds> boundsByCategory = new HashMap<>(amountsByCategory.size());
-		for (Map.Entry<Integer, List<BigDecimal>> entry : amountsByCategory.entrySet()) {
-			List<BigDecimal> sorted = new ArrayList<>(entry.getValue());
-			sorted.sort(Comparator.naturalOrder());
-			boundsByCategory.put(entry.getKey(), computeBounds(sorted));
-		}
-		return boundsByCategory;
-	}
-
-	private BigDecimal applyBounds(Bounds bounds, BigDecimal amount) {
-		if (amount == null) {
-			return BigDecimal.ZERO;
-		}
-		if (bounds == null || !bounds.applicable()) {
-			return amount;
-		}
-		if (amount.compareTo(bounds.lower()) < 0) {
-			return bounds.lower();
-		}
-		if (amount.compareTo(bounds.upper()) > 0) {
-			return bounds.upper();
-		}
-		return amount;
 	}
 
 	private void upsertMonthlyMetrics(
@@ -345,13 +196,6 @@ public class CountryMonthlyDirtyAggregationService {
 				AnalysisMetricType.TOTAL_BASE_AMOUNT,
 				qualityType,
 				amountCount.totalBaseAmount());
-		upsertMonthlyMetric(
-				accountBookId,
-				countryCode,
-				monthStart,
-				AnalysisMetricType.EXPENSE_COUNT,
-				qualityType,
-				BigDecimal.valueOf(amountCount.expenseCount()));
 	}
 
 	private void upsertMonthlyMetric(
@@ -612,10 +456,6 @@ public class CountryMonthlyDirtyAggregationService {
 						});
 	}
 
-	private Integer parseCategoryOrdinal(Object value) {
-		return CategoryOrdinalParser.parse(value);
-	}
-
 	private Category toCategory(Integer ordinal) {
 		if (ordinal == null || ordinal < 0 || ordinal >= Category.values().length) {
 			throw new IllegalArgumentException("Invalid category ordinal: " + ordinal);
@@ -626,39 +466,6 @@ public class CountryMonthlyDirtyAggregationService {
 	private LocalDateTime toUtc(LocalDate localDate, ZoneId zoneId) {
 		return localDate.atStartOfDay(zoneId).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
 	}
-
-	private record ValidAmountRow(
-			Integer categoryOrdinal, BigDecimal localAmount, BigDecimal baseAmount) {}
-
-	private record Bounds(boolean applicable, BigDecimal lower, BigDecimal upper) {
-		static Bounds applicable(BigDecimal lower, BigDecimal upper) {
-			return new Bounds(true, lower, upper);
-		}
-
-		static Bounds notApplicable() {
-			return new Bounds(false, null, null);
-		}
-	}
-
-	private record CategoryAccumulator(BigDecimal localAmount, BigDecimal baseAmount, long count) {
-		CategoryAccumulator() {
-			this(BigDecimal.ZERO, BigDecimal.ZERO, 0L);
-		}
-
-		CategoryAccumulator add(
-				BigDecimal deltaLocalAmount, BigDecimal deltaBaseAmount, long deltaCount) {
-			return new CategoryAccumulator(
-					localAmount.add(deltaLocalAmount),
-					baseAmount.add(deltaBaseAmount),
-					count + deltaCount);
-		}
-	}
-
-	private record CleanedMonthlyAggregation(
-			BigDecimal totalLocalAmount,
-			BigDecimal totalBaseAmount,
-			long expenseCount,
-			List<CategoryAmountPairCount> categoryAmountCounts) {}
 
 	private record PairMonthKey(
 			CountryCode localCountryCode, CountryCode baseCountryCode, LocalDate targetYearMonth) {}

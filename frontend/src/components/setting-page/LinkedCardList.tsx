@@ -94,7 +94,7 @@ const LinkedCardList = () => {
   return (
     <SettingSection>
       <SettingTitle>국내카드 연동 목록</SettingTitle>
-      <div className="flex w-full flex-1 flex-col">
+      <div className="flex flex-col">
         {cards.length === 0 ? (
           <p className="body2-normal-regular text-label-assistive">
             아직 등록된 카드가 없어요.

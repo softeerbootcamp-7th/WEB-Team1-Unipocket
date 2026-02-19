@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
@@ -27,11 +27,12 @@ export const useAccountBooksSuspenseQuery = () =>
     },
   });
 
-export const useAccountBookDetailQuery = (accountBookId: number | null) =>
-  useQuery<AccountBookDetail>({
+export const useAccountBookDetailSuspenseQuery = (
+  accountBookId: number | null,
+) =>
+  useSuspenseQuery<AccountBookDetail>({
     queryKey: ['accountBook', accountBookId],
     queryFn: () => getAccountBookDetail(accountBookId as number),
-    enabled: !!accountBookId,
     meta: {
       errorMessage: '가계부 상세 정보를 불러오지 못했어요.',
     },

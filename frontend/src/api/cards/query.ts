@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {

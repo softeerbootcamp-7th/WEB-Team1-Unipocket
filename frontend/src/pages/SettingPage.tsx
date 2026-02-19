@@ -22,11 +22,9 @@ const SettingPage = () => {
         <Suspense fallback={<MainAccountBookSkeleton />}>
           <MainAccountBookSelection />
         </Suspense>
-
         <Suspense fallback={<CardListSkeleton />}>
           <LinkedCardList />
         </Suspense>
-
         <Suspense fallback={<ConfiguratorSkeleton />}>
           <AccountBookConfigurator />
         </Suspense>

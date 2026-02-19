@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import clsx from 'clsx';
-import { toast } from 'sonner';
+import { useMemo, useState } from 'react';
 
 import Button from '@/components/common/Button';
+import {
+  TabContent,
+  TabList,
+  TabProvider,
+  TabTrigger,
+} from '@/components/common/Tab';
 import AccountBookCountryModal from '@/components/setting-page/modal/AccountBookCountryModal';
 import AccountBookCreateModal from '@/components/setting-page/modal/AccountBookCreateModal';
 import AccountBookCurrencyModal from '@/components/setting-page/modal/AccountBookCurrencyModal';
@@ -16,7 +20,7 @@ import {
 } from '@/components/setting-page/SettingLayout';
 
 import {
-  useAccountBookDetailQuery,
+  useAccountBookDetailSuspenseQuery,
   useAccountBooksSuspenseQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
@@ -34,39 +38,11 @@ const ConfiguratorSkeleton = () => (
 const AccountBookConfigurator = () => {
   const { data: accountBooks } = useAccountBooksSuspenseQuery();
   const createAccountBookMutation = useCreateAccountBookMutation();
-  const updateAccountBookMutation = useUpdateAccountBookMutation();
-  const deleteAccountBookMutation = useDeleteAccountBookMutation();
 
-  const [selectedAccountBookId, setSelectedAccountBookId] = useState<
-    number | null
-  >(null);
-  const [isNameModalOpen, setNameModalOpen] = useState(false);
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  // 💡 부모는 '새 가계부 만들기' 모달 상태만 관리합니다.
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-  const [isCurrencyModalOpen, setCurrencyModalOpen] = useState(false);
-  const [isCountryModalOpen, setCountryModalOpen] = useState(false);
-  const [isPeriodModalOpen, setPeriodModalOpen] = useState(false);
 
-  const activeAccountBookId = accountBooks.some(
-    (book) => book.id === selectedAccountBookId,
-  )
-    ? selectedAccountBookId
-    : (accountBooks[0]?.id ?? null);
-
-  const {
-    data: accountBookDetail,
-    isLoading: isDetailLoading,
-    isError: isDetailError,
-  } = useAccountBookDetailQuery(activeAccountBookId);
-  const detailErrorShown = useRef(false);
-
-  useEffect(() => {
-    if (isDetailError && !detailErrorShown.current) {
-      toast.error('가계부 상세 정보를 불러오지 못했어요.');
-      detailErrorShown.current = true;
-    }
-  }, [isDetailError]);
-
+  // 국가 목록 데이터 (자식에게 프롭스로 넘겨주기 위해 메모이제이션)
   const countryOptions = useMemo(
     () =>
       Object.entries(countryData).map(([code, data], index) => ({
@@ -87,107 +63,57 @@ const AccountBookConfigurator = () => {
     });
   };
 
-  const mainAccountBook = accountBooks.find((book) => book.isMain);
-  const activeTitle =
-    accountBooks.find((book) => book.id === activeAccountBookId)?.title ?? '';
+  const [activeAccountBookId, setActiveAccountBookId] = useState(
+    accountBooks[0].id.toString(),
+  );
+
+  // 💡 Suspense 쿼리이므로 isLoading 체크가 필요 없습니다.
+  const { data: accountBookDetail } = useAccountBookDetailSuspenseQuery(
+    Number(activeAccountBookId),
+  );
 
   return (
     <SettingSection>
       <SettingTitle>가계부 설정</SettingTitle>
-      <div className="flex w-full flex-1 flex-col">
-        {accountBooks.length === 0 ? (
-          <div className="flex flex-col gap-3">
-            <p className="body2-normal-regular text-label-assistive">
-              아직 가계부가 없어요.
-            </p>
-            <Button
-              size="sm"
-              variant="solid"
-              onClick={() => setCreateModalOpen(true)}
-            >
-              새 가계부 만들기
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="border-line-normal-neutral flex flex-wrap items-end gap-4 border-b">
-              {accountBooks.map((book) => (
-                <button
-                  key={book.id}
-                  onClick={() => setSelectedAccountBookId(book.id)}
-                  className={clsx(
-                    'body2-normal-medium flex items-center gap-1 pb-3',
-                    book.id === activeAccountBookId
-                      ? 'border-label-normal text-label-normal border-b-2'
-                      : 'text-label-assistive',
-                  )}
-                >
+      <TabProvider
+        value={activeAccountBookId}
+        onValueChange={setActiveAccountBookId}
+      >
+        <div className="border-line-normal-neutral flex flex-wrap items-end gap-4 border-b">
+          <TabList>
+            {accountBooks.map((book) => (
+              <TabTrigger key={book.id} value={String(book.id)}>
+                <span className="body2-normal-medium flex items-center gap-1">
                   {book.title}
                   {book.isMain && (
                     <span className="caption1-regular bg-primary-normal rounded-full px-1.5 py-0.5 text-white">
                       메인
                     </span>
                   )}
-                </button>
-              ))}
-              <button
-                onClick={() => setCreateModalOpen(true)}
-                className="body2-normal-regular text-label-assistive pb-3"
-              >
-                + 새 가계부 추가
-              </button>
-            </div>
+                </span>
+              </TabTrigger>
+            ))}
+          </TabList>
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="body2-normal-regular text-label-assistive pb-3.5"
+          >
+            + 새 가계부 추가
+          </button>
+        </div>
 
-            {isDetailLoading || !accountBookDetail ? (
-              <p className="body2-normal-regular text-label-assistive pt-3">
-                가계부 상세 정보를 불러오는 중이에요.
-              </p>
-            ) : (
-              <AccountBookSettingsForm
-                key={accountBookDetail.id}
-                detail={accountBookDetail}
-                onOpenNameModal={() => setNameModalOpen(true)}
-                onOpenDeleteModal={() => setDeleteModalOpen(true)}
-                onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
-                onOpenCountryModal={() => setCountryModalOpen(true)}
-                onOpenPeriodModal={() => setPeriodModalOpen(true)}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {isNameModalOpen && (
-        <AccountBookNameModal
-          accountBooks={accountBooks}
-          accountBookId={activeAccountBookId}
-          currentTitle={accountBookDetail?.title ?? activeTitle}
-          isSubmitting={updateAccountBookMutation.isPending}
-          onClose={() => setNameModalOpen(false)}
-          onSubmit={(title) => {
-            if (!activeAccountBookId) return;
-            updateAccountBookMutation.mutate(
-              { accountBookId: activeAccountBookId, data: { title } },
-              { onSuccess: () => setNameModalOpen(false) },
-            );
-          }}
-        />
-      )}
-
-      {isDeleteModalOpen && (
-        <AccountBookDeleteModal
-          accountBookTitle={activeTitle}
-          isMain={mainAccountBook?.id === activeAccountBookId}
-          isSubmitting={deleteAccountBookMutation.isPending}
-          onClose={() => setDeleteModalOpen(false)}
-          onConfirm={() => {
-            if (!activeAccountBookId) return;
-            deleteAccountBookMutation.mutate(activeAccountBookId, {
-              onSuccess: () => setDeleteModalOpen(false),
-            });
-          }}
-        />
-      )}
+        <TabContent value={activeAccountBookId}>
+          {/* 💡 중복 렌더링되던 부분을 지우고, 자식에게 필요한 데이터를 모두 넘겨줍니다. */}
+          {accountBookDetail && (
+            <AccountBookSettingsForm
+              key={accountBookDetail.id}
+              detail={accountBookDetail}
+              accountBooks={accountBooks}
+              countryOptions={countryOptions}
+            />
+          )}
+        </TabContent>
+      </TabProvider>
 
       {isCreateModalOpen && (
         <AccountBookCreateModal
@@ -196,83 +122,36 @@ const AccountBookConfigurator = () => {
           onSubmit={handleCreateAccountBook}
         />
       )}
-
-      {isCurrencyModalOpen && accountBookDetail && (
-        <AccountBookCurrencyModal
-          countryOptions={countryOptions}
-          currentBaseCountryCode={accountBookDetail.baseCountryCode}
-          isSubmitting={updateAccountBookMutation.isPending}
-          onClose={() => setCurrencyModalOpen(false)}
-          onSubmit={(baseCountryCode) => {
-            if (!activeAccountBookId) return;
-            updateAccountBookMutation.mutate(
-              { accountBookId: activeAccountBookId, data: { baseCountryCode } },
-              { onSuccess: () => setCurrencyModalOpen(false) },
-            );
-          }}
-        />
-      )}
-
-      {isCountryModalOpen && accountBookDetail && (
-        <AccountBookCountryModal
-          countryOptions={countryOptions}
-          currentLocalCountryCode={accountBookDetail.localCountryCode}
-          isSubmitting={updateAccountBookMutation.isPending}
-          onClose={() => setCountryModalOpen(false)}
-          onSubmit={(localCountryCode) => {
-            if (!activeAccountBookId) return;
-            updateAccountBookMutation.mutate(
-              {
-                accountBookId: activeAccountBookId,
-                data: { localCountryCode },
-              },
-              { onSuccess: () => setCountryModalOpen(false) },
-            );
-          }}
-        />
-      )}
-
-      {isPeriodModalOpen && accountBookDetail && (
-        <AccountBookPeriodModal
-          currentStartDate={accountBookDetail.startDate}
-          currentEndDate={accountBookDetail.endDate}
-          isSubmitting={updateAccountBookMutation.isPending}
-          onClose={() => setPeriodModalOpen(false)}
-          onSubmit={(startDate, endDate) => {
-            if (!activeAccountBookId) return;
-            updateAccountBookMutation.mutate(
-              {
-                accountBookId: activeAccountBookId,
-                data: { startDate, endDate },
-              },
-              { onSuccess: () => setPeriodModalOpen(false) },
-            );
-          }}
-        />
-      )}
     </SettingSection>
   );
 };
 
+// 💡 Props 타입 정의: 모달을 여는 함수 대신 필요한 데이터를 받습니다.
 interface AccountBookSettingsFormProps {
   detail: AccountBookDetail;
-  onOpenNameModal: () => void;
-  onOpenDeleteModal: () => void;
-  onOpenCurrencyModal: () => void;
-  onOpenCountryModal: () => void;
-  onOpenPeriodModal: () => void;
+  accountBooks: { id: number; title: string; isMain: boolean }[];
+  countryOptions: { id: number; name: string; code: CountryCode }[];
 }
 
 const AccountBookSettingsForm = ({
   detail,
-  onOpenNameModal,
-  onOpenDeleteModal,
-  onOpenCurrencyModal,
-  onOpenCountryModal,
-  onOpenPeriodModal,
+  accountBooks,
+  countryOptions,
 }: AccountBookSettingsFormProps) => {
+  // 💡 자식 컴포넌트가 자신의 뮤테이션과 모달 상태를 스스로 관리합니다.
+  const updateAccountBookMutation = useUpdateAccountBookMutation();
+  const deleteAccountBookMutation = useDeleteAccountBookMutation();
+
+  const [isNameModalOpen, setNameModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isCurrencyModalOpen, setCurrencyModalOpen] = useState(false);
+  const [isCountryModalOpen, setCountryModalOpen] = useState(false);
+  const [isPeriodModalOpen, setPeriodModalOpen] = useState(false);
+
   const baseCurrencyInfo = getCountryInfo(detail.baseCountryCode);
   const localCountryInfo = getCountryInfo(detail.localCountryCode);
+  const isMain =
+    accountBooks.find((book) => book.id === detail.id)?.isMain ?? false;
 
   const formatDate = (dateStr: string) => dateStr.replace(/-/g, '.');
 
@@ -281,44 +160,123 @@ const AccountBookSettingsForm = ({
     : '-';
 
   const countryDisplay = localCountryInfo?.countryName ?? '-';
-
   const periodDisplay = `${formatDate(detail.startDate)} - ${formatDate(detail.endDate)}`;
 
   return (
-    <div className="flex flex-col">
-      <SettingRow
-        label="이름 수정"
-        value={detail.title}
-        onEdit={onOpenNameModal}
-      />
-      <SettingRow
-        label="기준 통화 변경"
-        value={currencyDisplay}
-        onEdit={onOpenCurrencyModal}
-      />
-      <SettingRow
-        label="국가/통화 변경"
-        value={countryDisplay}
-        onEdit={onOpenCountryModal}
-      />
-      <SettingRow
-        label="카드 연동 기간 변경"
-        value={periodDisplay}
-        onEdit={onOpenPeriodModal}
-      />
-      <button
-        onClick={onOpenDeleteModal}
-        className="body2-normal-regular text-status-negative py-3 text-left"
-      >
-        {detail.title} 삭제
-      </button>
-      <p className="caption1-regular text-label-assistive mt-2">
-        * 한 가계부 안에 가계부를 추가로 만들 수 있어요.
-      </p>
-      <p className="caption1-regular text-label-assistive">
-        * 가계부 삭제 시 가계부에 저장된 모든 내역이 삭제돼요.
-      </p>
-    </div>
+    <>
+      <div className="flex flex-col">
+        <SettingRow
+          label="이름 수정"
+          value={detail.title}
+          onEdit={() => setNameModalOpen(true)}
+        />
+        <SettingRow
+          label="기준 통화 변경"
+          value={currencyDisplay}
+          onEdit={() => setCurrencyModalOpen(true)}
+        />
+        <SettingRow
+          label="국가/통화 변경"
+          value={countryDisplay}
+          onEdit={() => setCountryModalOpen(true)}
+        />
+        <SettingRow
+          label="카드 연동 기간 변경"
+          value={periodDisplay}
+          onEdit={() => setPeriodModalOpen(true)}
+        />
+        <button
+          onClick={() => setDeleteModalOpen(true)}
+          className="body2-normal-regular text-status-negative py-3 text-left"
+        >
+          {detail.title} 삭제
+        </button>
+        <p className="caption1-regular text-label-assistive mt-2">
+          * 한 가계부 안에, 지출 내역, 기준 통화 설정, 국가 설정, 카드 연동 기간
+          정보가 포함되어 있어요.
+        </p>
+        <p className="caption1-regular text-label-assistive">
+          * 두 번째 교환학생을 가거나 가계부를 분리하고 싶다면, 새로운 가계부를
+          추가해주세요.
+        </p>
+      </div>
+
+      {/* 💡 개별 설정 모달들이 Form 컴포넌트 안에 위치합니다. */}
+      {isNameModalOpen && (
+        <AccountBookNameModal
+          accountBooks={accountBooks}
+          accountBookId={detail.id}
+          currentTitle={detail.title}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setNameModalOpen(false)}
+          onSubmit={(title) => {
+            updateAccountBookMutation.mutate(
+              { accountBookId: detail.id, data: { title } },
+              { onSuccess: () => setNameModalOpen(false) },
+            );
+          }}
+        />
+      )}
+
+      {isDeleteModalOpen && (
+        <AccountBookDeleteModal
+          accountBookTitle={detail.title}
+          isMain={isMain}
+          isSubmitting={deleteAccountBookMutation.isPending}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={() => {
+            deleteAccountBookMutation.mutate(detail.id, {
+              onSuccess: () => setDeleteModalOpen(false),
+            });
+          }}
+        />
+      )}
+
+      {isCurrencyModalOpen && (
+        <AccountBookCurrencyModal
+          countryOptions={countryOptions}
+          currentBaseCountryCode={detail.baseCountryCode}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setCurrencyModalOpen(false)}
+          onSubmit={(baseCountryCode) => {
+            updateAccountBookMutation.mutate(
+              { accountBookId: detail.id, data: { baseCountryCode } },
+              { onSuccess: () => setCurrencyModalOpen(false) },
+            );
+          }}
+        />
+      )}
+
+      {isCountryModalOpen && (
+        <AccountBookCountryModal
+          countryOptions={countryOptions}
+          currentLocalCountryCode={detail.localCountryCode}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setCountryModalOpen(false)}
+          onSubmit={(localCountryCode) => {
+            updateAccountBookMutation.mutate(
+              { accountBookId: detail.id, data: { localCountryCode } },
+              { onSuccess: () => setCountryModalOpen(false) },
+            );
+          }}
+        />
+      )}
+
+      {isPeriodModalOpen && (
+        <AccountBookPeriodModal
+          currentStartDate={detail.startDate}
+          currentEndDate={detail.endDate}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setPeriodModalOpen(false)}
+          onSubmit={(startDate, endDate) => {
+            updateAccountBookMutation.mutate(
+              { accountBookId: detail.id, data: { startDate, endDate } },
+              { onSuccess: () => setPeriodModalOpen(false) },
+            );
+          }}
+        />
+      )}
+    </>
   );
 };
 

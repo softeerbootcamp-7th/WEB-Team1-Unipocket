@@ -5,14 +5,14 @@ import type { ActiveCellState } from '@/components/data-table/type';
 
 const AmountCellEditor = () => {
   const { tableState } = useDataTable();
-  const { textCell } = tableState;
+  const { amountCell } = tableState;
 
-  if (!textCell) return null;
+  if (!amountCell) return null;
 
   return (
     <EditorContent
-      key={`${textCell.rowId}-${textCell.columnId}`}
-      textCell={textCell}
+      key={`${amountCell.rowId}-${amountCell.columnId}`}
+      textCell={amountCell}
     />
   );
 };
@@ -42,7 +42,7 @@ const EditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   }, []);
 
   const handleSave = () => {
-    dispatch({ type: 'SET_TEXT_CELL', payload: null });
+    dispatch({ type: 'SET_AMOUNT_CELL', payload: null });
   };
 
   return (

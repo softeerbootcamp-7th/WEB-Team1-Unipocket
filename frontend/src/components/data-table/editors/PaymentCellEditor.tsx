@@ -5,14 +5,14 @@ import type { ActiveCellState } from '@/components/data-table/type';
 
 const PaymentCellEditor = () => {
   const { tableState } = useDataTable();
-  const { textCell } = tableState;
+  const { paymentCell } = tableState;
 
-  if (!textCell) return null;
+  if (!paymentCell) return null;
 
   return (
     <EditorContent
-      key={`${textCell.rowId}-${textCell.columnId}`}
-      textCell={textCell}
+      key={`${paymentCell.rowId}-${paymentCell.columnId}`}
+      textCell={paymentCell}
     />
   );
 };
@@ -42,7 +42,7 @@ const EditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   }, []);
 
   const handleSave = () => {
-    dispatch({ type: 'SET_TEXT_CELL', payload: null });
+    dispatch({ type: 'SET_PAYMENT_CELL', payload: null });
   };
 
   return (

@@ -181,7 +181,7 @@ public class AnalysisMonthlySummaryQueryService {
 		BigDecimal totalAvgSpend = BigDecimal.ZERO;
 
 		for (Category category : Category.values()) {
-			if (category == Category.INCOME) {
+			if (category == Category.INCOME || category == Category.UNCLASSIFIED) {
 				continue;
 			}
 
@@ -251,7 +251,7 @@ public class AnalysisMonthlySummaryQueryService {
 		}
 
 		for (Category category : Category.values()) {
-			if (category == Category.INCOME) {
+			if (category == Category.INCOME || category == Category.UNCLASSIFIED) {
 				continue;
 			}
 			PairMonthlyCategoryAggregateEntity row = rowMap.get(category);
@@ -354,7 +354,7 @@ public class AnalysisMonthlySummaryQueryService {
 					continue;
 				}
 				Category category = Category.values()[row.categoryOrdinal()];
-				if (category == Category.INCOME) {
+				if (category == Category.INCOME || category == Category.UNCLASSIFIED) {
 					continue;
 				}
 				categoryMap.put(category, row.totalAmount());

@@ -21,7 +21,7 @@ interface ActionProps {
   onClick: () => void;
 }
 
-interface Props {
+interface CoachmarkProps {
   children: React.ReactNode;
   content: string;
   secondaryAction: ActionProps;
@@ -37,7 +37,7 @@ const Coachmark = ({
   primaryAction,
   side = 'bottom',
   align = 'start',
-}: Props) => {
+}: CoachmarkProps) => {
   const [open, setOpen] = useState(true);
 
   const handleAction = (callback?: () => void) => () => {

@@ -1,26 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
-import type { ActiveCell } from '@/components/data-table/type';
+import type { ActiveCellState } from '@/components/data-table/type';
 
-const DataTableCellEditor = () => {
+const PaymentCellEditor = () => {
   const { tableState } = useDataTable();
-  const { activeCell } = tableState;
+  const { textCell } = tableState;
 
-  if (!activeCell) return null;
+  if (!textCell) return null;
 
   return (
     <EditorContent
-      key={`${activeCell.rowId}-${activeCell.columnId}`}
-      activeCell={activeCell}
+      key={`${textCell.rowId}-${textCell.columnId}`}
+      textCell={textCell}
     />
   );
 };
 
 // 내부용 컴포넌트
-const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
+const EditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   const { dispatch } = useDataTable();
-  const [value, setValue] = useState(String(activeCell.value));
+  const [value, setValue] = useState(String(textCell.value));
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,17 +42,17 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
   }, []);
 
   const handleSave = () => {
-    dispatch({ type: 'SET_ACTIVE_CELL', payload: null });
+    dispatch({ type: 'SET_TEXT_CELL', payload: null });
   };
 
   return (
     <div
       style={{
         position: 'fixed',
-        top: activeCell.rect.top,
-        left: activeCell.rect.left,
-        width: activeCell.rect.width,
-        height: activeCell.rect.height,
+        top: textCell.rect.top,
+        left: textCell.rect.left,
+        width: textCell.rect.width,
+        height: textCell.rect.height,
       }}
       className="rounded-modal-12 shadow-semantic-emphasize z-priority inline-flex bg-white px-2.5 py-3.5"
     >
@@ -68,4 +68,4 @@ const EditorContent = ({ activeCell }: { activeCell: ActiveCell }) => {
   );
 };
 
-export default DataTableCellEditor;
+export default PaymentCellEditor;

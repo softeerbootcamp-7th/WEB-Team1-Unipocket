@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { PeriodType, WidgetType } from '@/components/chart/widget/type';
+import type { WidgetType } from '@/components/chart/widget/type';
 
 import type { CurrencyType } from '@/types/currency';
+import type { PeriodType } from '@/types/period';
 
 import { getWidget } from '@/api/widget/api';
 import type { WidgetResponse } from '@/api/widget/type';

@@ -73,6 +73,12 @@ public class UserEntity {
 		this.status = (status != null) ? status : UserStatus.ACTIVE;
 	}
 
+	public static UserEntity reference(UUID userId) {
+		UserEntity user = new UserEntity();
+		user.id = userId;
+		return user;
+	}
+
 	public void updateProfile(String name, String profileImgUrl) {
 		this.name = name;
 		this.profileImgUrl = profileImgUrl;

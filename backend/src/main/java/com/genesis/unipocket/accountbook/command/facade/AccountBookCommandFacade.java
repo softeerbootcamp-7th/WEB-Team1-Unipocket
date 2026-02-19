@@ -6,15 +6,13 @@ import com.genesis.unipocket.accountbook.command.application.command.DeleteAccou
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
 import com.genesis.unipocket.accountbook.command.facade.port.AccountBookDefaultWidgetPort;
+import com.genesis.unipocket.accountbook.command.facade.port.ExpenseCurrencySyncService;
+import com.genesis.unipocket.accountbook.command.facade.port.UserInfoReader;
 import com.genesis.unipocket.accountbook.command.facade.port.UserMainAccountBookService;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookBudgetUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.response.AccountBookResponse;
-import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
-import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
-import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
-import com.genesis.unipocket.user.query.service.UserQueryService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,18 +23,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountBookCommandFacade {
 
 	private final AccountBookCommandService accountBookCommandService;
-	private final UserQueryService userQueryService;
+	private final UserInfoReader userInfoReader;
 	private final AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
 	private final UserMainAccountBookService userMainAccountBookService;
-	private final ExpenseCommandService expenseCommandService;
-	private final AccountBookQueryService accountBookQueryService;
+	private final ExpenseCurrencySyncService expenseCurrencySyncService;
 
 	@Transactional
 	public AccountBookResponse createAccountBook(UUID userId, AccountBookCreateRequest req) {
-		UserQueryResponse userResponse = userQueryService.getUserInfo(userId);
+		String userName = userInfoReader.getUserName(userId);
 
 		CreateAccountBookCommand command =
-				CreateAccountBookCommand.of(userId, userResponse.name(), req);
+				new CreateAccountBookCommand(
+						userId, userName, req.localCountryCode(), req.startDate(), req.endDate());
 
 		var result = accountBookCommandService.create(command);
 		accountBookDefaultWidgetPort.setDefaultWidget(result.accountBookId());
@@ -47,20 +45,24 @@ public class AccountBookCommandFacade {
 	public AccountBookResponse updateAccountBook(
 			UUID userId, Long accountBookId, AccountBookUpdateRequest req) {
 
-		var currentAccountBook = accountBookQueryService.getAccountBook(accountBookId);
-		boolean localCountryChanged =
-				!currentAccountBook.localCountryCode().equals(req.localCountryCode());
-		boolean baseCountryChanged =
-				!currentAccountBook.baseCountryCode().equals(req.baseCountryCode());
-
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		UpdateAccountBookCommand command =
+				new UpdateAccountBookCommand(
+						accountBookId,
+						userId,
+						req.title(),
+						req.localCountryCode(),
+						req.baseCountryCode(),
+						req.budget(),
+						req.startDate(),
+						req.endDate(),
+						req.isMain());
 		var result = accountBookCommandService.update(command);
 		if (Boolean.TRUE.equals(req.isMain())) {
 			userMainAccountBookService.updateMainAccountBook(userId, accountBookId);
 		}
 
-		if (localCountryChanged || baseCountryChanged) {
-			expenseCommandService.updateBaseCurrency(
+		if (result.countryChanged()) {
+			expenseCurrencySyncService.updateBaseCurrency(
 					accountBookId, req.baseCountryCode().getCurrencyCode());
 		}
 

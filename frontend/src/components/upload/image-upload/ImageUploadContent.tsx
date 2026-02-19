@@ -7,10 +7,13 @@ import UploadGallery from '@/components/upload/image-upload/UploadGallery';
 import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
+
 const ImageUploadContent = () => {
   const { setActionReady } = useModalContext();
+  const accountBookId = useAccountBookStore((state) => state.accountBook?.id);
   const { items, handleFilesSelected, removeItem, isAllUploaded } =
-    useImageUpload();
+    useImageUpload(accountBookId!);
   const hasItems = items.length > 0;
 
   useEffect(() => {

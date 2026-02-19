@@ -56,17 +56,18 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 
 			Optional<RateOnDate> dbRate =
 					findLatestDbRateInRange(currencyCode, probeStartDate, probeEndDate);
-			if (dbRate.isPresent() && isValidRate(dbRate.get().rate())) {
-				BigDecimal rate = dbRate.get().rate();
-				saveRateIfMissing(currencyCode, targetDate, rate);
-				return rate;
-			}
 			if (dbRate.isPresent()) {
+				RateOnDate foundDbRate = dbRate.get();
+				if (isValidRate(foundDbRate.rate())) {
+					BigDecimal rate = foundDbRate.rate();
+					saveRateIfMissing(currencyCode, targetDate, rate);
+					return rate;
+				}
 				log.warn(
 						"Invalid DB rate ignored. currency={}, date={}, rate={}",
 						currencyCode,
-						dbRate.get().date(),
-						dbRate.get().rate());
+						foundDbRate.date(),
+						foundDbRate.rate());
 			}
 
 			Map<LocalDate, BigDecimal> yahooRates =
@@ -76,19 +77,19 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 
 			Optional<RateOnDate> yahooRate =
 					findLatestRateInMap(yahooRates, probeStartDate, probeEndDate);
-			if (yahooRate.isPresent() && isValidRate(yahooRate.get().rate())) {
-				RateOnDate found = yahooRate.get();
-				if (!found.date().isEqual(targetDate)) {
-					saveRateIfMissing(currencyCode, targetDate, found.rate());
-				}
-				return found.rate();
-			}
 			if (yahooRate.isPresent()) {
+				RateOnDate foundYahooRate = yahooRate.get();
+				if (isValidRate(foundYahooRate.rate())) {
+					if (!foundYahooRate.date().isEqual(targetDate)) {
+						saveRateIfMissing(currencyCode, targetDate, foundYahooRate.rate());
+					}
+					return foundYahooRate.rate();
+				}
 				log.warn(
 						"Invalid Yahoo rate ignored. currency={}, date={}, rate={}",
 						currencyCode,
-						yahooRate.get().date(),
-						yahooRate.get().rate());
+						foundYahooRate.date(),
+						foundYahooRate.rate());
 			}
 
 			probeEndDate = probeStartDate.minusDays(1);

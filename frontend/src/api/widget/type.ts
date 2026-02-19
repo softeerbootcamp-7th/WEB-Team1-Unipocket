@@ -3,6 +3,8 @@ import type { PeriodType, WidgetType } from '@/components/chart/widget/type';
 import type { CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
+import type { CountryCode } from '@/data/countryCode';
+
 export interface GetWidgetRequest {
   accountBookId: string;
   widgetType: WidgetType;
@@ -12,8 +14,8 @@ export interface GetWidgetRequest {
 
 export interface BudgetWidgetResponse {
   budget: string;
-  baseCountryCode: string;
-  localCountryCode: string;
+  baseCountryCode: CountryCode;
+  localCountryCode: CountryCode;
   baseSpentAmount: string;
   localSpentAmount: string;
 }
@@ -24,7 +26,7 @@ export interface PeriodWidgetItem {
 }
 
 export interface PeriodWidgetResponse {
-  countryCode: string;
+  countryCode: CountryCode;
   itemCount: number;
   items: PeriodWidgetItem[];
 }
@@ -37,12 +39,12 @@ export interface CategoryWidgetItem {
 
 export interface CategoryWidgetResponse {
   totalAmount: string;
-  countryCode: string;
+  countryCode: CountryCode;
   items: CategoryWidgetItem[];
 }
 
 export interface ComparisonWidgetResponse {
-  countryCode: string;
+  countryCode: CountryCode;
   month: number;
   mySpentAmount: string;
   averageSpentAmount: string;
@@ -60,7 +62,7 @@ export interface PaymentWidgetResponse {
 }
 
 export interface CurrencyWidgetItem {
-  currencyCode: string;
+  currencyCode: CountryCode;
   percent: number;
 }
 

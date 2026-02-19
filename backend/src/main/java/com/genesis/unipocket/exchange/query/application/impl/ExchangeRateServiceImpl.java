@@ -57,9 +57,10 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 			return BigDecimal.ONE;
 		}
 
-		LocalDate targetDate = dateTime.toLocalDate();
+		// Yahoo chart 1d close is EOD-based, so use previous day close as effective rate date.
+		LocalDate targetDate = dateTime.toLocalDate().minusDays(1);
 		return exchangeRateQueryService
-				.findRateOnDate(currencyCode, targetDate)
+				.findLatestRateInRange(currencyCode, targetDate, targetDate)
 				.map(rate -> rate.getRate())
 				.orElseGet(
 						() ->

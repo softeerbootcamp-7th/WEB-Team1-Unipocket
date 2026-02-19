@@ -211,7 +211,7 @@ public class WidgetQueryService {
 			Category category = (Category) finalRows.get(i)[0];
 			items.add(
 					new CategoryItem(
-							category.getName(),
+							category,
 							AmountFormatUtil.format(toBigDecimal(finalRows.get(i)[1])),
 							percents.get(i)));
 		}

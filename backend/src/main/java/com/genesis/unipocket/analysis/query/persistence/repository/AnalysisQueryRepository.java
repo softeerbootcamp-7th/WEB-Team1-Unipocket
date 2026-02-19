@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,7 +24,7 @@ public class AnalysisQueryRepository {
 				.getSingleResult();
 	}
 
-	public java.util.stream.Stream<Object[]> getMySpendEvents(
+	public Stream<Object[]> getMySpendEvents(
 			Long accountBookId, OffsetDateTime start, OffsetDateTime end, CurrencyType type) {
 		String amountField = amountJpql(type);
 		return em.createQuery(

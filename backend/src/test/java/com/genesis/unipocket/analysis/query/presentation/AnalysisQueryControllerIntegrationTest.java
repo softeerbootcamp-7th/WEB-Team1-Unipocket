@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @AutoConfigureMockMvc
@@ -159,7 +160,7 @@ class AnalysisQueryControllerIntegrationTest {
 								.queryParam("month", "12")
 								.queryParam("currencyType", "BASE"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.countryCode").value("US"))
+				.andExpect(jsonPath("$.countryCode").value("KR"))
 				.andExpect(jsonPath("$.compareWithAverage.month").value(12))
 				.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("500"))
 				.andExpect(jsonPath("$.compareWithAverage.averageSpentAmount").value("400"))
@@ -178,18 +179,23 @@ class AnalysisQueryControllerIntegrationTest {
 				.andExpect(jsonPath("$.compareByCategory.maxLabel").value("360"))
 				.andExpect(
 						jsonPath("$.compareByCategory.items.length()")
-								.value(Category.values().length - 1))
+								.value(Category.values().length - 2))
 				.andExpect(
-						jsonPath("$.compareByCategory.items[2].categoryIndex")
-								.value(Category.FOOD.ordinal()))
-				.andExpect(jsonPath("$.compareByCategory.items[2].mySpentAmount").value("200"))
-				.andExpect(jsonPath("$.compareByCategory.items[2].averageSpentAmount").value("200"))
+						jsonPath("$.compareByCategory.items[?(@.categoryIndex == 2)].mySpentAmount")
+								.value("200"))
 				.andExpect(
-						jsonPath("$.compareByCategory.items[4].categoryIndex")
-								.value(Category.LIVING.ordinal()))
-				.andExpect(jsonPath("$.compareByCategory.items[4].mySpentAmount").value("300"))
+						jsonPath(
+										"$.compareByCategory.items[?(@.categoryIndex =="
+												+ " 2)].averageSpentAmount")
+								.value("200"))
 				.andExpect(
-						jsonPath("$.compareByCategory.items[4].averageSpentAmount").value("100"));
+						jsonPath("$.compareByCategory.items[?(@.categoryIndex == 4)].mySpentAmount")
+								.value("300"))
+				.andExpect(
+						jsonPath(
+										"$.compareByCategory.items[?(@.categoryIndex =="
+												+ " 4)].averageSpentAmount")
+								.value("100"));
 	}
 
 	@Test
@@ -236,6 +242,48 @@ class AnalysisQueryControllerIntegrationTest {
 								.queryParam("currencyType", "BASE"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("50"));
+	}
+
+	@Test
+	void getAnalysisOverview_singleAccountBookMonthlyMockData_returnsOk() throws Exception {
+		for (int day = 1; day <= 31; day++) {
+			AnalysisFixtureFactory.saveExpense(
+					expenseRepository,
+					accountBookId,
+					Category.FOOD,
+					AnalysisFixtureFactory.utcDateTime(2025, 12, day, 10, 0),
+					new BigDecimal("10.00"),
+					new BigDecimal("10.00"),
+					null,
+					CurrencyCode.USD,
+					CurrencyCode.KRW,
+					"monthly-mock-" + day);
+		}
+
+		MvcResult result =
+				mockMvc.perform(
+								get("/account-books/{accountBookId}/analysis", accountBookId)
+										.with(jwtTestHelper.withJwtAuth(userId))
+										.queryParam("year", "2025")
+										.queryParam("month", "12")
+										.queryParam("currencyType", "BASE"))
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("$.countryCode").value("KR"))
+						.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("310"))
+						.andExpect(jsonPath("$.compareWithAverage.averageSpentAmount").value("0"))
+						.andExpect(
+								jsonPath("$.compareWithLastMonth.totalSpent.thisMonthToDate")
+										.value("310"))
+						.andExpect(
+								jsonPath("$.compareWithLastMonth.thisMonthItem.length()").value(31))
+						.andExpect(
+								jsonPath(
+												"$.compareByCategory.items[?(@.categoryIndex =="
+														+ " 2)].mySpentAmount")
+										.value("310"))
+						.andReturn();
+
+		System.out.println("analysis response body: " + result.getResponse().getContentAsString());
 	}
 
 	@Test
@@ -290,7 +338,7 @@ class AnalysisQueryControllerIntegrationTest {
 				.andExpect(jsonPath("$.compareWithAverage.spentAmountDiff").value("0"))
 				.andExpect(
 						jsonPath("$.compareByCategory.items.length()")
-								.value(9)) // All valid categories
+								.value(8)) // UNCLASSIFIED/INCOME 제외
 				.andExpect(
 						jsonPath("$.compareByCategory.items[?(@.categoryIndex == 2)].mySpentAmount")
 								.value("100"))
@@ -322,6 +370,7 @@ class AnalysisQueryControllerIntegrationTest {
 								.queryParam("month", "12")
 								.queryParam("currencyType", "LOCAL"))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.countryCode").value("US"))
 				.andExpect(jsonPath("$.compareWithAverage.mySpentAmount").value("100"));
 	}
 

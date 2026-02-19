@@ -37,6 +37,24 @@ public class TravelQueryRepository {
 				.getResultList();
 	}
 
+	public List<TravelQueryResponse> findAllByIdsAndAccountBookId(
+			List<Long> travelIds, Long accountBookId) {
+		if (travelIds == null || travelIds.isEmpty()) {
+			return List.of();
+		}
+
+		return em.createQuery(
+						"SELECT new"
+							+ " com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse(t.id,"
+							+ " t.accountBookId, t.travelPlaceName, t.startDate, t.endDate,"
+							+ " t.imageKey) FROM Travel t WHERE t.id IN :travelIds AND"
+							+ " t.accountBookId = :accountBookId",
+						TravelQueryResponse.class)
+				.setParameter("travelIds", travelIds)
+				.setParameter("accountBookId", accountBookId)
+				.getResultList();
+	}
+
 	public List<WidgetOrderDto> findAllByTravelId(Long travelId) {
 		return em.createQuery(
 						"SELECT new"
@@ -46,5 +64,17 @@ public class TravelQueryRepository {
 						WidgetOrderDto.class)
 				.setParameter("travelId", travelId)
 				.getResultList();
+	}
+
+	public boolean existsByAccountBookIdAndImageKey(Long accountBookId, String imageKey) {
+		Long count =
+				em.createQuery(
+								"SELECT COUNT(t) FROM Travel t WHERE t.accountBookId ="
+										+ " :accountBookId AND t.imageKey = :imageKey",
+								Long.class)
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("imageKey", imageKey)
+						.getSingleResult();
+		return count != null && count > 0;
 	}
 }

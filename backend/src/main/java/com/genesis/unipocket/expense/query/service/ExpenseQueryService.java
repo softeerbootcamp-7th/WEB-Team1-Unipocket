@@ -1,6 +1,7 @@
 package com.genesis.unipocket.expense.query.service;
 
 import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
 import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
@@ -8,12 +9,17 @@ import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepos
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
+import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 2026-02-03
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ExpenseQueryService {
 
@@ -48,6 +54,11 @@ public class ExpenseQueryService {
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 	private final UserCardFetchService userCardFetchService;
 	private final ExpenseMerchantSearchRateLimitService expenseMerchantSearchRateLimitService;
+	private final MediaObjectStorage mediaObjectStorage;
+	private final TravelInfoReader travelInfoReader;
+
+	@Value("${app.media.presigned-get-expiration-seconds:600}")
+	private int presignedGetExpirationSeconds;
 
 	public ExpenseResult getExpense(Long expenseId, Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
@@ -149,5 +160,37 @@ public class ExpenseQueryService {
 		String normalizedQuery = query.trim();
 		return expenseRepository.findMerchantNameSuggestions(
 				accountBookId, normalizedQuery, PageRequest.of(0, pageSize));
+	}
+
+	public String issueExpenseFileUrl(Long expenseId, Long accountBookId, UUID userId) {
+		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
+
+		String fileLink =
+				entity.getExpenseSourceInfo() != null
+						? entity.getExpenseSourceInfo().getFileLink()
+						: null;
+		if (fileLink == null || fileLink.isBlank()) {
+			throw new BusinessException(ErrorCode.EXPENSE_FILE_LINK_NOT_FOUND);
+		}
+
+		return mediaObjectStorage.getPresignedGetUrl(
+				fileLink, Duration.ofSeconds(presignedGetExpirationSeconds));
+	}
+
+	public int getExpenseFileUrlExpirationSeconds() {
+		return presignedGetExpirationSeconds;
+	}
+
+	public Map<Long, ExpenseTravelResult> getTravelInfoMap(
+			Long accountBookId, Collection<Long> travelIds) {
+		return travelInfoReader.readTravelInfoMap(accountBookId, travelIds);
+	}
+
+	public ExpenseTravelResult getTravelInfo(Long accountBookId, Long travelId) {
+		if (travelId == null) {
+			return null;
+		}
+		return getTravelInfoMap(accountBookId, List.of(travelId)).get(travelId);
 	}
 }

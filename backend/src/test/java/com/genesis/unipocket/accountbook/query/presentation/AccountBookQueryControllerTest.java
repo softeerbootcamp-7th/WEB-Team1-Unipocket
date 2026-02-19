@@ -78,9 +78,6 @@ class AccountBookQueryControllerTest {
 								"메인 가계부",
 								CountryCode.US,
 								CountryCode.KR,
-								BigDecimal.valueOf(300000),
-								LocalDateTime.of(2026, 1, 1, 9, 0, 0),
-								List.of(),
 								LocalDate.of(2026, 1, 1),
 								LocalDate.of(2026, 1, 31)));
 		mockAuthentication(accessToken, userId);
@@ -90,9 +87,7 @@ class AccountBookQueryControllerTest {
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(accountBookId))
-				.andExpect(jsonPath("$.title").value("메인 가계부"))
-				.andExpect(jsonPath("$.budget").value("300000.00"))
-				.andExpect(jsonPath("$.budgetCreatedAt").value("2026-01-01T09:00:00"));
+				.andExpect(jsonPath("$.title").value("메인 가계부"));
 	}
 
 	@Test

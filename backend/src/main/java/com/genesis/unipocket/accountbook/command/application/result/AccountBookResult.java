@@ -10,7 +10,9 @@ public record AccountBookResult(
 		CountryCode localCountryCode,
 		CountryCode baseCurrencyCode,
 		LocalDate startDate,
-		LocalDate endDate) {
+		LocalDate endDate,
+		boolean countryChanged) {
+
 	public static AccountBookResult of(AccountBookEntity entity) {
 		return new AccountBookResult(
 				entity.getId(),
@@ -18,6 +20,18 @@ public record AccountBookResult(
 				entity.getLocalCountryCode(),
 				entity.getBaseCountryCode(),
 				entity.getStartDate(),
-				entity.getEndDate());
+				entity.getEndDate(),
+				false);
+	}
+
+	public static AccountBookResult of(AccountBookEntity entity, boolean countryChanged) {
+		return new AccountBookResult(
+				entity.getId(),
+				entity.getTitle(),
+				entity.getLocalCountryCode(),
+				entity.getBaseCountryCode(),
+				entity.getStartDate(),
+				entity.getEndDate(),
+				countryChanged);
 	}
 }

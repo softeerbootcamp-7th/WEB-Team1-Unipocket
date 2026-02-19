@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface ExchangeRateQueryService {
 
-	Optional<ExchangeRate> findRateOnDate(CurrencyCode currencyCode, LocalDate date);
+	Optional<ExchangeRate> findLatestRateInRange(
+			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate);
 }

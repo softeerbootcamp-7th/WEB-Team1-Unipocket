@@ -4,9 +4,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.travel.command.application.TravelCommandService;
+import com.genesis.unipocket.travel.command.application.command.PatchTravelCommand;
 import com.genesis.unipocket.travel.command.facade.port.TravelDefaultWidgetPort;
+import com.genesis.unipocket.travel.command.facade.port.TravelImageUploadPathIssueService;
 import com.genesis.unipocket.travel.command.persistence.entity.Travel;
-import com.genesis.unipocket.travel.command.presentation.request.TravelUpdateRequest;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -24,6 +25,7 @@ class TravelCommandFacadeTest {
 	@Mock private TravelCommandService travelCommandService;
 	@Mock private UserAccountBookValidator userAccountBookValidator;
 	@Mock private TravelDefaultWidgetPort travelDefaultWidgetPort;
+	@Mock private TravelImageUploadPathIssueService travelImageUploadPathIssueService;
 
 	@InjectMocks private TravelCommandFacade travelCommandFacade;
 
@@ -39,8 +41,7 @@ class TravelCommandFacadeTest {
 		when(travel.getAccountBookId()).thenReturn(accountBookId);
 
 		travelCommandFacade.patchTravel(
-				travelId,
-				new TravelUpdateRequest("Seoul", LocalDate.of(2026, 2, 1), null, null),
+				PatchTravelCommand.of(travelId, "Seoul", LocalDate.of(2026, 2, 1), null, null),
 				userId);
 
 		verify(travelCommandService).getTravel(travelId);

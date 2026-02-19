@@ -17,6 +17,7 @@ import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepo
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,17 +64,18 @@ class AccountBookControllerIntegrationTest {
 								.build());
 		userId = user.getId();
 
-		LocalDateTime today = LocalDate.now().atStartOfDay();
+		LocalDateTime previousCloseDate =
+				OffsetDateTime.now().toLocalDate().minusDays(1).atStartOfDay();
 		exchangeRateRepository.save(
 				ExchangeRate.builder()
 						.currencyCode(CurrencyCode.KRW)
-						.recordedAt(today)
+						.recordedAt(previousCloseDate)
 						.rate(new BigDecimal("1300.00"))
 						.build());
 		exchangeRateRepository.save(
 				ExchangeRate.builder()
 						.currencyCode(CurrencyCode.JPY)
-						.recordedAt(today)
+						.recordedAt(previousCloseDate)
 						.rate(new BigDecimal("150.00"))
 						.build());
 	}

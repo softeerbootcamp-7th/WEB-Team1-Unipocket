@@ -24,7 +24,7 @@ public class ExchangeRateDailyScheduler {
 	private final AtomicBoolean running = new AtomicBoolean(false);
 
 	@Scheduled(
-			cron = "${exchange.scheduler.cron:0 20 0 * * *}",
+			cron = "${exchange.scheduler.cron:0 0 22 * * *}",
 			zone = "${exchange.scheduler.zone:UTC}")
 	public void preloadDailyUsdRelativeRates() {
 		if (!running.compareAndSet(false, true)) {

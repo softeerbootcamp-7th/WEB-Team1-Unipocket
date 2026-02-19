@@ -1,17 +1,21 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import type { CurrencyType } from '@/types/currency';
+
 import {
   createAccountBook,
   deleteAccountBook,
   getAccountBookDetail,
   getAccountBooks,
+  getAnalysis,
   setMainAccountBook,
   updateAccountBook,
 } from '@/api/account-books/api';
 import type {
   AccountBookDetail,
   AccountBookSummary,
+  AnalysisResponse,
   CreateAccountBookRequest,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
@@ -116,6 +120,19 @@ export const useSetMainAccountBookMutation = () =>
       queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
       toast.success('메인 가계부가 변경되었어요.');
     },
+  });
+
+export const useAnalysisQuery = (
+  accountBookId: number | null,
+  year: number,
+  month: number,
+  currencyType: CurrencyType,
+) =>
+  useQuery<AnalysisResponse>({
+    queryKey: ['analysis', accountBookId, year, month, currencyType],
+    queryFn: () =>
+      getAnalysis(accountBookId as number, year, month, currencyType),
+    enabled: !!accountBookId,
   });
 
 export type { AccountBookDetail };

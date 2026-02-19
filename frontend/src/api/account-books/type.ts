@@ -1,3 +1,5 @@
+import { type CategoryId } from '@/types/category';
+
 import { type CountryCode } from '@/data/countryCode';
 
 export interface CreateAccountBookRequest {
@@ -41,4 +43,52 @@ export interface AccountBookResponse {
   startDate: string;
   endDate: string;
   isMain?: boolean;
+}
+
+export interface AnalysisChartItem {
+  date: string;
+  cumulatedAmount: string;
+}
+
+export interface AnalysisCategoryItem {
+  categoryIndex: CategoryId;
+  mySpentAmount: string;
+  averageSpentAmount: string;
+}
+
+export interface AnalysisMonthData {
+  label: string;
+  dayCount: number;
+  totalSpent: string;
+  items: AnalysisChartItem[];
+}
+
+export interface AnalysisResponse {
+  countryCode: string;
+  compareWithAverage: {
+    month: number;
+    mySpentAmount: string;
+    averageSpentAmount: string;
+    spentAmountDiff: string;
+  };
+  compareWithLastMonth: {
+    diff: string;
+    thisMonth: string;
+    thisMonthCount: number;
+    lastMonth: string;
+    lastMonthCount: number;
+    totalSpent: {
+      thisMonthToDate: string;
+      lastMonthTotal: string;
+    };
+    thisMonthSpent: string;
+    thisMonthItem: AnalysisChartItem[];
+    prevMonthItem: AnalysisChartItem[];
+  };
+  compareByCategory: {
+    maxDiffCategoryIndex: CategoryId;
+    isOverSpent: boolean;
+    maxLabel: string;
+    items: AnalysisCategoryItem[];
+  };
 }

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
@@ -11,8 +11,8 @@ import { queryClient } from '@/main';
 
 import type { CreateCardRequest, UpdateCardNicknameRequest } from './type';
 
-export const useCardsQuery = () =>
-  useQuery<Awaited<ReturnType<typeof getCards>>>({
+export const useCardsSuspenseQuery = () =>
+  useSuspenseQuery<Awaited<ReturnType<typeof getCards>>>({
     queryKey: ['cards'],
     queryFn: getCards,
     staleTime: 1000 * 30,

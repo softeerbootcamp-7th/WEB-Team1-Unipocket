@@ -4,7 +4,7 @@ import type { UserResponse } from '@/api/user/type';
 
 export const getUser = (): Promise<UserResponse> => {
   return customFetch({
-    endpoint: ENDPOINTS.GET_USER,
+    endpoint: ENDPOINTS.USERS.ME,
     options: {
       method: 'GET',
     },

@@ -43,6 +43,7 @@ import Add from '@/assets/Icons/add.svg';
 import Alert from '@/assets/Icons/alert.svg';
 import AlertCircle from '@/assets/Icons/alert-circle.svg';
 import Analytics from '@/assets/Icons/analytics.svg';
+import Arrow from '@/assets/Icons/arrow.svg';
 import Calendar from '@/assets/Icons/calendar.svg';
 import Camera from '@/assets/Icons/camera.svg';
 import CaretDown from '@/assets/Icons/caret-down.svg';
@@ -67,11 +68,13 @@ import Swap from '@/assets/Icons/swap.svg';
 import SwapVertical from '@/assets/Icons/swap-vertical.svg';
 import Trash from '@/assets/Icons/trash.svg';
 import Travel from '@/assets/Icons/travel.svg';
+import Update from '@/assets/Icons/update.svg';
 import UploadFile from '@/assets/Icons/upload-file.svg';
 
 export const Icons = {
   Add,
   Alert,
+  Arrow,
   AlertCircle,
   CloseCircle,
   Calendar,
@@ -90,6 +93,8 @@ export const Icons = {
   SwapVertical,
   CaretDown,
   Close,
+  Trash,
+  Update,
   Refresh,
   Phone,
   Camera,

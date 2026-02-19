@@ -32,7 +32,7 @@ const BottomSheet = ({
           onClick={handleBackdropClick}
           // backdrop이 false면 배경색을 투명하게 처리합니다.
           className={clsx(
-            'fixed inset-0 z-(--z-overlay) flex items-end justify-center',
+            'z-overlay fixed inset-0 flex items-end justify-center',
             backdrop ? 'bg-dimmer-strong' : 'bg-transparent',
           )}
         >

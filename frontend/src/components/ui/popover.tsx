@@ -35,7 +35,7 @@ function PopoverContent({
         align={align}
         sideOffset={sideOffset}
         className={cn(
-          'z-(--z-priority) origin-(--radix-popover-content-transform-origin) outline-hidden',
+          'z-priority origin-(--radix-popover-content-transform-origin) outline-hidden',
           'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
           'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
@@ -74,11 +74,34 @@ function PopoverClose({
   return <PopoverPrimitive.Close data-slot="popover-close" {...props} />;
 }
 
+function PopoverContentRaw({
+  className,
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+  return (
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        data-slot="popover-content-raw"
+        className={cn(className)}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  );
+}
+
+function PopoverArrow({
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Arrow>) {
+  return <PopoverPrimitive.Arrow data-slot="popover-arrow" {...props} />;
+}
+
 export {
   Popover,
   PopoverAnchor,
+  PopoverArrow,
   PopoverClose,
   PopoverContent,
+  PopoverContentRaw,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,

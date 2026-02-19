@@ -9,6 +9,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 
 /**
  * <b>지출내역 상세 조회 응답 DTO</b>
@@ -25,6 +26,7 @@ public record ExpenseResponse(
 		Category category,
 		PaymentMethodResponse paymentMethod,
 		Instant occurredAt,
+		OffsetDateTime updatedAt,
 		String localCurrencyAmount,
 		CurrencyCode localCurrencyCode,
 		String baseCurrencyAmount,
@@ -50,6 +52,7 @@ public record ExpenseResponse(
 				PaymentMethodResponse.from(
 						dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),
 				dto.occurredAt().toInstant(),
+				dto.updatedAt(),
 				AmountFormatters.toAmountString(dto.localCurrencyAmount()),
 				dto.localCurrencyCode(),
 				AmountFormatters.toAmountString(dto.baseCurrencyAmount()),

@@ -2,8 +2,8 @@ import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
-import { type ChartItem } from '@/components/report-page/reportType';
 
+import { type AnalysisChartItem } from '@/api/account-books/type';
 import { type CountryCode } from '@/data/countryCode';
 import { getCountryInfo } from '@/lib/country';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
@@ -20,8 +20,8 @@ interface ReportMyselfProps {
       lastMonthTotal: string;
     };
     thisMonthSpent: string;
-    thisMonthItem: ChartItem[];
-    prevMonthItem: ChartItem[];
+    thisMonthItem: AnalysisChartItem[];
+    prevMonthItem: AnalysisChartItem[];
   };
 }
 

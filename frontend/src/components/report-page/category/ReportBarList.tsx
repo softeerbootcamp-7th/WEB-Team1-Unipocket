@@ -1,16 +1,13 @@
 import ReportBarRow from '@/components/report-page/category/ReportBarRow';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
 
-import type { CategoryId } from '@/types/category';
+import { type AnalysisCategoryItem } from '@/api/account-books/type';
 
 interface ReportBarListProps {
   maxLabel: number;
-  items: {
-    categoryIndex: CategoryId;
-    me: number;
-    other: number;
-  }[];
+  items: AnalysisCategoryItem[];
 }
+
 const ReportBarList = ({ items, maxLabel }: ReportBarListProps) => {
   const steps = 6;
   const labels = Array.from(
@@ -25,7 +22,9 @@ const ReportBarList = ({ items, maxLabel }: ReportBarListProps) => {
         {items.map((item) => (
           <ReportBarRow
             key={item.categoryIndex}
-            {...item}
+            categoryIndex={item.categoryIndex}
+            me={Number(item.mySpentAmount)}
+            other={Number(item.averageSpentAmount)}
             maxLabel={maxLabel}
           />
         ))}

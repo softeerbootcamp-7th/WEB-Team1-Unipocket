@@ -2,11 +2,12 @@ import {
   buildAreaPath,
   buildLinePath,
 } from '@/components/report-page/myself/buildPath';
-import { type ChartItem } from '@/components/report-page/reportType';
+
+import { type AnalysisChartItem } from '@/api/account-books/type';
 
 type MonthlyChartData = {
   dayCount: number;
-  items: ChartItem[];
+  items: AnalysisChartItem[];
 };
 
 interface ReportLineChartProps {

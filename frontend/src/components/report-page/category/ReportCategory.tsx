@@ -4,16 +4,14 @@ import ReportContent from '@/components/report-page/layout/ReportContent';
 
 import { type CategoryId, getCategoryName } from '@/types/category';
 
+import { type AnalysisCategoryItem } from '@/api/account-books/type';
+
 interface ReportCategoryProps {
   data: {
     maxDiffCategoryIndex: CategoryId;
     isOverSpent: boolean;
     maxLabel: string;
-    items: {
-      categoryIndex: CategoryId;
-      mySpentAmount: string;
-      averageSpentAmount: string;
-    }[];
+    items: AnalysisCategoryItem[];
   };
 }
 

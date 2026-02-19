@@ -1,7 +1,7 @@
-import { type ChartItem } from '@/components/report-page/reportType';
+import { type AnalysisChartItem } from '@/api/account-books/type';
 
 const buildLineSegments = (
-  data: ChartItem[],
+  data: AnalysisChartItem[],
   stepX: number,
   height: number,
   maxValue: number,
@@ -17,7 +17,7 @@ const buildLineSegments = (
     .join(' ');
 
 export const buildLinePath = (
-  data: ChartItem[],
+  data: AnalysisChartItem[],
   width: number,
   height: number,
   maxValue: number,
@@ -29,7 +29,7 @@ export const buildLinePath = (
 };
 
 export const buildAreaPath = (
-  data: ChartItem[],
+  data: AnalysisChartItem[],
   width: number,
   height: number,
   maxValue: number,

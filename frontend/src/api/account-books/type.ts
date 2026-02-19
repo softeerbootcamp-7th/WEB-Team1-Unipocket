@@ -45,22 +45,15 @@ export interface AccountBookResponse {
   isMain?: boolean;
 }
 
-export interface AnalysisChartItem {
+interface AnalysisChartItem {
   date: string;
   cumulatedAmount: string;
 }
 
-export interface AnalysisCategoryItem {
+interface AnalysisCategoryItem {
   categoryIndex: CategoryId;
   mySpentAmount: string;
   averageSpentAmount: string;
-}
-
-export interface AnalysisMonthData {
-  label: string;
-  dayCount: number;
-  totalSpent: string;
-  items: AnalysisChartItem[];
 }
 
 export interface AnalysisResponse {

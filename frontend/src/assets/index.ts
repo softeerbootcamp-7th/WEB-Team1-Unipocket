@@ -93,7 +93,6 @@ export const Icons = {
   SwapVertical,
   CaretDown,
   Close,
-  Trash,
   Update,
   Refresh,
   Phone,

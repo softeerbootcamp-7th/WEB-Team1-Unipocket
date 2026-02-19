@@ -14,7 +14,7 @@ export const widgetKeys = {
   all: ['widget'] as const,
 
   detail: (
-    accountBookId: number,
+    accountBookId: number | undefined,
     widgetType: WidgetType,
     currencyType?: CurrencyType,
     period?: PeriodType,
@@ -31,9 +31,7 @@ export const useWidgetQuery = <T extends keyof WidgetResponseMap>(
   widgetType: T,
   { currencyType, period, enabled = true }: UseWidgetQueryOptions = {},
 ) => {
-  const accountBookId = useAccountBookStore(
-    (state) => state.accountBook?.id || 1,
-  );
+  const accountBookId = useAccountBookStore((state) => state.accountBook?.id);
 
   return useQuery({
     queryKey: widgetKeys.detail(
@@ -44,7 +42,7 @@ export const useWidgetQuery = <T extends keyof WidgetResponseMap>(
     ),
     queryFn: () =>
       getWidget<WidgetResponseMap[T]>({
-        accountBookId: accountBookId,
+        accountBookId: accountBookId!,
         widgetType,
         currencyType,
         period,

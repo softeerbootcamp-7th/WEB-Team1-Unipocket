@@ -292,6 +292,9 @@ const AccountBookConfigurator = ({
   const [isNameModalOpen, setNameModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isCurrencyModalOpen, setCurrencyModalOpen] = useState(false);
+  const [isCountryModalOpen, setCountryModalOpen] = useState(false);
+  const [isPeriodModalOpen, setPeriodModalOpen] = useState(false);
 
   const activeAccountBookId = accountBooks.some(
     (book) => book.id === selectedAccountBookId,
@@ -340,7 +343,7 @@ const AccountBookConfigurator = ({
   return (
     <SettingSection>
       <SettingTitle>가계부 설정</SettingTitle>
-      <div className="flex w-full flex-1 flex-col gap-4">
+      <div className="flex w-full flex-1 flex-col">
         {isLoading ? (
           <p className="body2-normal-regular text-label-assistive">
             가계부 목록을 불러오는 중이에요.
@@ -360,60 +363,47 @@ const AccountBookConfigurator = ({
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="border-line-normal-neutral flex flex-wrap items-end gap-4 border-b">
               {accountBooks.map((book) => (
                 <button
                   key={book.id}
                   onClick={() => setSelectedAccountBookId(book.id)}
                   className={clsx(
-                    'body2-normal-medium pb-3.5',
+                    'body2-normal-medium flex items-center gap-1 pb-3',
                     book.id === activeAccountBookId
-                      ? 'border-label-normal border-b-2'
+                      ? 'border-label-normal text-label-normal border-b-2'
                       : 'text-label-assistive',
                   )}
                 >
                   {book.title}
                   {book.isMain && (
-                    <span className="caption1-regular text-primary-normal ml-1">
-                      (메인)
+                    <span className="caption1-regular bg-primary-normal rounded-full px-1.5 py-0.5 text-white">
+                      메인
                     </span>
                   )}
                 </button>
               ))}
-              <Button
-                size="sm"
-                variant="outlined"
+              <button
                 onClick={() => setCreateModalOpen(true)}
+                className="body2-normal-regular text-label-assistive pb-3"
               >
-                새 가계부 추가
-              </Button>
+                + 새 가계부 추가
+              </button>
             </div>
 
             {isDetailLoading || !accountBookDetail ? (
-              <p className="body2-normal-regular text-label-assistive">
+              <p className="body2-normal-regular text-label-assistive pt-3">
                 가계부 상세 정보를 불러오는 중이에요.
               </p>
             ) : (
               <AccountBookSettingsForm
-                key={`${accountBookDetail.id}-${accountBookDetail.title}-${accountBookDetail.localCountryCode}-${accountBookDetail.baseCountryCode}-${accountBookDetail.startDate}-${accountBookDetail.endDate}`}
+                key={accountBookDetail.id}
                 detail={accountBookDetail}
-                countryOptions={countryOptions}
-                isSaving={updateAccountBookMutation.isPending}
-                isDeleting={deleteAccountBookMutation.isPending}
                 onOpenNameModal={() => setNameModalOpen(true)}
                 onOpenDeleteModal={() => setDeleteModalOpen(true)}
-                onSave={(updated) =>
-                  updateAccountBookMutation.mutate({
-                    accountBookId: updated.id,
-                    data: {
-                      title: updated.title,
-                      localCountryCode: updated.localCountryCode,
-                      baseCountryCode: updated.baseCountryCode,
-                      startDate: updated.startDate,
-                      endDate: updated.endDate,
-                    },
-                  })
-                }
+                onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
+                onOpenCountryModal={() => setCountryModalOpen(true)}
+                onOpenPeriodModal={() => setPeriodModalOpen(true)}
               />
             )}
           </>
@@ -459,128 +449,153 @@ const AccountBookConfigurator = ({
           onSubmit={handleCreateAccountBook}
         />
       )}
+
+      {isCurrencyModalOpen && accountBookDetail && (
+        <AccountBookCurrencyModal
+          countryOptions={countryOptions}
+          currentBaseCountryCode={accountBookDetail.baseCountryCode}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setCurrencyModalOpen(false)}
+          onSubmit={(baseCountryCode) => {
+            if (!activeAccountBookId) return;
+            updateAccountBookMutation.mutate(
+              { accountBookId: activeAccountBookId, data: { baseCountryCode } },
+              { onSuccess: () => setCurrencyModalOpen(false) },
+            );
+          }}
+        />
+      )}
+
+      {isCountryModalOpen && accountBookDetail && (
+        <AccountBookCountryModal
+          countryOptions={countryOptions}
+          currentLocalCountryCode={accountBookDetail.localCountryCode}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setCountryModalOpen(false)}
+          onSubmit={(localCountryCode) => {
+            if (!activeAccountBookId) return;
+            updateAccountBookMutation.mutate(
+              {
+                accountBookId: activeAccountBookId,
+                data: { localCountryCode },
+              },
+              { onSuccess: () => setCountryModalOpen(false) },
+            );
+          }}
+        />
+      )}
+
+      {isPeriodModalOpen && accountBookDetail && (
+        <AccountBookPeriodModal
+          currentStartDate={accountBookDetail.startDate}
+          currentEndDate={accountBookDetail.endDate}
+          isSubmitting={updateAccountBookMutation.isPending}
+          onClose={() => setPeriodModalOpen(false)}
+          onSubmit={(startDate, endDate) => {
+            if (!activeAccountBookId) return;
+            updateAccountBookMutation.mutate(
+              {
+                accountBookId: activeAccountBookId,
+                data: { startDate, endDate },
+              },
+              { onSuccess: () => setPeriodModalOpen(false) },
+            );
+          }}
+        />
+      )}
     </SettingSection>
+  );
+};
+
+const SettingRow = ({
+  label,
+  value,
+  onEdit,
+}: {
+  label: string;
+  value: string;
+  onEdit: () => void;
+}) => {
+  return (
+    <div className="border-line-normal-neutral flex items-center border-b py-3">
+      <span className="label1-normal-bold text-label-neutral w-40 shrink-0">
+        {label}
+      </span>
+      <span className="body2-normal-regular text-label-normal flex-1">
+        {value}
+      </span>
+      <button
+        onClick={onEdit}
+        className="caption1-regular text-primary-normal shrink-0"
+      >
+        수정
+      </button>
+    </div>
   );
 };
 
 const AccountBookSettingsForm = ({
   detail,
-  countryOptions,
-  isSaving,
-  isDeleting,
   onOpenNameModal,
   onOpenDeleteModal,
-  onSave,
+  onOpenCurrencyModal,
+  onOpenCountryModal,
+  onOpenPeriodModal,
 }: {
   detail: AccountBookDetail;
-  countryOptions: Array<{ id: number; name: string; code: CountryCode }>;
-  isSaving: boolean;
-  isDeleting: boolean;
   onOpenNameModal: () => void;
   onOpenDeleteModal: () => void;
-  onSave: (detail: AccountBookDetail) => void;
+  onOpenCurrencyModal: () => void;
+  onOpenCountryModal: () => void;
+  onOpenPeriodModal: () => void;
 }) => {
-  const [formState, setFormState] = useState<AccountBookDetail>(detail);
+  const baseCurrencyInfo = getCountryInfo(detail.baseCountryCode);
+  const localCountryInfo = getCountryInfo(detail.localCountryCode);
 
-  const selectedCountryId =
-    countryOptions.find((option) => option.code === formState.localCountryCode)
-      ?.id ??
-    countryOptions[0]?.id ??
-    null;
+  const formatDate = (dateStr: string) => dateStr.replace(/-/g, '.');
 
-  const handleCountrySelect = (id: number) => {
-    const selected = countryOptions.find((option) => option.id === id);
-    if (!selected) return;
-    setFormState((prev) => ({
-      ...prev,
-      localCountryCode: selected.code,
-      baseCountryCode: selected.code,
-    }));
-  };
+  const currencyDisplay = baseCurrencyInfo
+    ? `${baseCurrencyInfo.currencyNameKor} ${baseCurrencyInfo.currencySign} ${baseCurrencyInfo.currencyName}`
+    : '-';
+
+  const countryDisplay = localCountryInfo?.countryName ?? '-';
+
+  const periodDisplay = `${formatDate(detail.startDate)} - ${formatDate(detail.endDate)}`;
 
   return (
-    <div className="border-line-normal-neutral flex flex-col gap-4 rounded-xl border p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <p className="label1-normal-bold text-label-neutral">가계부 이름</p>
-          <p className="body2-normal-regular text-label-normal">
-            {formState.title}
-          </p>
-        </div>
-        <Button size="xs" variant="outlined" onClick={onOpenNameModal}>
-          이름 변경
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="label1-normal-bold text-label-neutral">국가 변경</p>
-        <Dropdown
-          selected={selectedCountryId}
-          onSelect={handleCountrySelect}
-          options={countryOptions}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="label1-normal-bold text-label-neutral">통화 정보</p>
-        <div className="text-label-normal flex flex-wrap gap-3 text-sm">
-          <span>
-            현지 통화:{' '}
-            {getCountryInfo(formState.localCountryCode)?.currencyName ?? '-'}
-          </span>
-          <span>
-            기준 통화:{' '}
-            {getCountryInfo(formState.baseCountryCode)?.currencyName ?? '-'}
-          </span>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <p className="label1-normal-bold text-label-neutral">기간 설정</p>
-        <div className="flex flex-wrap gap-3">
-          <input
-            type="date"
-            className="bg-background-normal body2-normal-regular border-line-normal-neutral h-12 rounded-xl border px-3"
-            value={formState.startDate}
-            onChange={(e) =>
-              setFormState((prev) => ({
-                ...prev,
-                startDate: e.target.value,
-              }))
-            }
-          />
-          <input
-            type="date"
-            className="bg-background-normal body2-normal-regular border-line-normal-neutral h-12 rounded-xl border px-3"
-            value={formState.endDate}
-            onChange={(e) =>
-              setFormState((prev) => ({
-                ...prev,
-                endDate: e.target.value,
-              }))
-            }
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button
-          size="sm"
-          variant="solid"
-          onClick={() => onSave(formState)}
-          disabled={isSaving}
-        >
-          변경사항 저장
-        </Button>
-        <Button
-          size="sm"
-          variant="danger"
-          onClick={onOpenDeleteModal}
-          disabled={isDeleting}
-        >
-          가계부 삭제
-        </Button>
-      </div>
+    <div className="flex flex-col">
+      <SettingRow
+        label="이름 수정"
+        value={detail.title}
+        onEdit={onOpenNameModal}
+      />
+      <SettingRow
+        label="기준 통화 변경"
+        value={currencyDisplay}
+        onEdit={onOpenCurrencyModal}
+      />
+      <SettingRow
+        label="국가/통화 변경"
+        value={countryDisplay}
+        onEdit={onOpenCountryModal}
+      />
+      <SettingRow
+        label="카드 연동 기간 변경"
+        value={periodDisplay}
+        onEdit={onOpenPeriodModal}
+      />
+      <button
+        onClick={onOpenDeleteModal}
+        className="body2-normal-regular text-status-negative py-3 text-left"
+      >
+        {detail.title} 삭제
+      </button>
+      <p className="caption1-regular text-label-assistive mt-2">
+        * 한 가계부 안에 가계부를 추가로 만들 수 있어요.
+      </p>
+      <p className="caption1-regular text-label-assistive">
+        * 가계부 삭제 시 가계부에 저장된 모든 내역이 삭제돼요.
+      </p>
     </div>
   );
 };
@@ -905,6 +920,151 @@ const AccountBookCreateModal = ({
               options={countryOptions}
             />
           </div>
+          <div className="flex flex-col gap-2">
+            <p className="label1-normal-bold text-label-neutral">기간 설정</p>
+            <div className="flex flex-wrap gap-3">
+              <input
+                type="date"
+                className="bg-background-normal body2-normal-regular border-line-normal-neutral h-12 rounded-xl border px-3"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+              <input
+                type="date"
+                className="bg-background-normal body2-normal-regular border-line-normal-neutral h-12 rounded-xl border px-3"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </ModalFormContent>
+    </Modal>
+  );
+};
+
+const AccountBookCurrencyModal = ({
+  countryOptions,
+  currentBaseCountryCode,
+  isSubmitting,
+  onClose,
+  onSubmit,
+}: {
+  countryOptions: Array<{ id: number; name: string; code: CountryCode }>;
+  currentBaseCountryCode: CountryCode;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (baseCountryCode: CountryCode) => void;
+}) => {
+  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
+    countryOptions.find((o) => o.code === currentBaseCountryCode)?.id ?? null,
+  );
+
+  const isValid = selectedCountryId !== null;
+
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      onAction={() => {
+        const selected = countryOptions.find((o) => o.id === selectedCountryId);
+        if (selected) onSubmit(selected.code);
+      }}
+      confirmButton={{ label: '저장', variant: 'solid' }}
+    >
+      <ModalFormContent isActionReady={isValid && !isSubmitting}>
+        <div className="flex w-90 flex-col gap-4 px-2">
+          <p className="heading2-bold text-label-normal">기준 통화 변경</p>
+          <div className="flex flex-col gap-2">
+            <p className="label1-normal-bold text-label-neutral">
+              기준 국가 선택
+            </p>
+            <Dropdown
+              selected={selectedCountryId}
+              onSelect={setSelectedCountryId}
+              options={countryOptions}
+            />
+          </div>
+        </div>
+      </ModalFormContent>
+    </Modal>
+  );
+};
+
+const AccountBookCountryModal = ({
+  countryOptions,
+  currentLocalCountryCode,
+  isSubmitting,
+  onClose,
+  onSubmit,
+}: {
+  countryOptions: Array<{ id: number; name: string; code: CountryCode }>;
+  currentLocalCountryCode: CountryCode;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (localCountryCode: CountryCode) => void;
+}) => {
+  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
+    countryOptions.find((o) => o.code === currentLocalCountryCode)?.id ?? null,
+  );
+
+  const isValid = selectedCountryId !== null;
+
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      onAction={() => {
+        const selected = countryOptions.find((o) => o.id === selectedCountryId);
+        if (selected) onSubmit(selected.code);
+      }}
+      confirmButton={{ label: '저장', variant: 'solid' }}
+    >
+      <ModalFormContent isActionReady={isValid && !isSubmitting}>
+        <div className="flex w-90 flex-col gap-4 px-2">
+          <p className="heading2-bold text-label-normal">국가/통화 변경</p>
+          <div className="flex flex-col gap-2">
+            <p className="label1-normal-bold text-label-neutral">국가 선택</p>
+            <Dropdown
+              selected={selectedCountryId}
+              onSelect={setSelectedCountryId}
+              options={countryOptions}
+            />
+          </div>
+        </div>
+      </ModalFormContent>
+    </Modal>
+  );
+};
+
+const AccountBookPeriodModal = ({
+  currentStartDate,
+  currentEndDate,
+  isSubmitting,
+  onClose,
+  onSubmit,
+}: {
+  currentStartDate: string;
+  currentEndDate: string;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (startDate: string, endDate: string) => void;
+}) => {
+  const [startDate, setStartDate] = useState(currentStartDate);
+  const [endDate, setEndDate] = useState(currentEndDate);
+
+  const isValid = startDate.trim().length > 0 && endDate.trim().length > 0;
+
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      onAction={() => onSubmit(startDate, endDate)}
+      confirmButton={{ label: '저장', variant: 'solid' }}
+    >
+      <ModalFormContent isActionReady={isValid && !isSubmitting}>
+        <div className="flex w-90 flex-col gap-4 px-2">
+          <p className="heading2-bold text-label-normal">카드 연동 기간 변경</p>
           <div className="flex flex-col gap-2">
             <p className="label1-normal-bold text-label-neutral">기간 설정</p>
             <div className="flex flex-wrap gap-3">

@@ -4,24 +4,32 @@ import Header from '@/components/layout/Header';
 import Menu from '@/components/layout/menu/Menu';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { accountBooksQueryOptions } from '@/api/account-books/query';
+import {
+  accountBookDetailQueryOptions,
+  accountBooksQueryOptions,
+} from '@/api/account-books/query';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context }) => {
     const { queryClient } = context;
-    const data = await queryClient.ensureQueryData(accountBooksQueryOptions);
+    const accountBooks = await queryClient.ensureQueryData(
+      accountBooksQueryOptions,
+    );
     const { accountBook, setAccountBook } = useAccountBookStore.getState();
 
-    if (!data || data.length === 0) {
+    if (!accountBooks || accountBooks.length === 0) {
       throw redirect({
         to: '/init',
       });
     }
 
     if (!accountBook) {
-      const defaultBook = data.find((book) => book.isMain) || data[0];
-      setAccountBook(defaultBook);
+      const accountBookDetail = await queryClient.ensureQueryData(
+        accountBookDetailQueryOptions(accountBooks[0].id),
+      );
+
+      setAccountBook(accountBookDetail);
     }
   },
   pendingComponent: () => <Skeleton className="h-64" />,

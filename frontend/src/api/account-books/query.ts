@@ -38,12 +38,16 @@ export const useAccountBooksQuery = () =>
     staleTime: 1000 * 30,
   });
 
-export const useAccountBookDetailQuery = (accountBookId: number | null) =>
-  useQuery<AccountBookDetail>({
-    queryKey: ['accountBook', accountBookId],
+export const accountBookDetailQueryOptions = (accountBookId: number | null) => {
+  return queryOptions({
+    queryKey: ['accountBookDetail', accountBookId],
     queryFn: () => getAccountBookDetail(accountBookId as number),
     enabled: !!accountBookId,
   });
+};
+
+export const useAccountBookDetailQuery = (accountBookId: number | null) =>
+  useQuery(accountBookDetailQueryOptions(accountBookId));
 
 export const useCreateAccountBookMutation = () =>
   useMutation({

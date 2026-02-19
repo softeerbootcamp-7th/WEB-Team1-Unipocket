@@ -20,7 +20,7 @@ interface AccountBookDetail {
   budget: number | null;
   startDate: string;
   endDate: string;
-  isMain?: boolean;
+  isMain: boolean;
 }
 
 interface UpdateAccountBookRequest {
@@ -30,6 +30,7 @@ interface UpdateAccountBookRequest {
   budget?: number | null;
   startDate?: string;
   endDate?: string;
+  isMain?: boolean;
 }
 
 interface AccountBookResponse {
@@ -42,7 +43,7 @@ interface AccountBookResponse {
   tempExpenseBatchIds?: string[];
   startDate: string;
   endDate: string;
-  isMain?: boolean;
+  isMain: boolean;
 }
 
 interface AccountBook {

@@ -85,6 +85,7 @@ describe('Account Books API', () => {
       budget: null,
       startDate: '2026-02-19',
       endDate: '2026-02-25',
+      isMain: true,
     };
 
     it('가계부를 생성하고 생성된 가계부 정보를 반환한다', async () => {
@@ -129,6 +130,7 @@ describe('Account Books API', () => {
       budget: 1_000_000,
       startDate: '2026-03-01',
       endDate: '2026-03-10',
+      isMain: true,
     };
 
     const mockUpdatedBook: AccountBookDetail = {
@@ -139,6 +141,7 @@ describe('Account Books API', () => {
       budget: 1_000_000,
       startDate: '2026-03-01',
       endDate: '2026-03-10',
+      isMain: true,
     };
 
     it('가계부 정보를 수정하고 수정된 정보를 반환한다', async () => {
@@ -160,7 +163,10 @@ describe('Account Books API', () => {
     });
 
     it('일부 필드만 수정할 수 있다 (부분 업데이트)', async () => {
-      const partialRequest: UpdateAccountBookRequest = { title: '제목만 변경' };
+      const partialRequest: UpdateAccountBookRequest = {
+        title: '제목만 변경',
+        isMain: true,
+      };
       const mockPartialUpdated: AccountBookDetail = {
         id: 1,
         title: '제목만 변경',
@@ -169,6 +175,7 @@ describe('Account Books API', () => {
         budget: null,
         startDate: '2026-02-19',
         endDate: '2026-02-25',
+        isMain: true,
       };
 
       vi.mocked(fetch).mockResolvedValue(

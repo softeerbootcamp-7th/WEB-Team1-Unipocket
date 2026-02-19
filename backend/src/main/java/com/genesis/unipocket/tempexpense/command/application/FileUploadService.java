@@ -14,7 +14,6 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpe
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

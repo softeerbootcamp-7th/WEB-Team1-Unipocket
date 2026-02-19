@@ -29,8 +29,7 @@ public class TravelImageUploadProvider implements TravelImageUploadPathIssueServ
 
 		PresignedUrlResult response =
 				mediaObjectStorage.getPresignedUrl(
-						mediaPathPrefixManager.getTravelImagePrefix(),
-						mediaContentType);
+						mediaPathPrefixManager.getTravelImagePrefix(), mediaContentType);
 
 		return new TravelImageUploadPathInfo(response.presignedUrl(), response.imageKey());
 	}

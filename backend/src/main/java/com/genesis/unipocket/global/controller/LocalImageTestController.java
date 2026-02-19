@@ -38,7 +38,9 @@ class LocalImageTestController {
 		}
 		if (!fileName.contains(".")) {
 			return ResponseEntity.badRequest()
-					.body(new LocalPresignedIssueResponse(null, null, "fileName extension is required"));
+					.body(
+							new LocalPresignedIssueResponse(
+									null, null, "fileName extension is required"));
 		}
 
 		String extension = fileName.substring(fileName.lastIndexOf("."));

@@ -61,12 +61,6 @@ const ReportPage = () => {
 
   const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
 
-  if (!data) return null;
-
-  const categoryData = data.compareByCategory;
-  const monthlyData = data.compareWithAverage;
-  const myselfData = data.compareWithLastMonth;
-
   return (
     <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
       <div className="flex flex-col gap-3">
@@ -106,21 +100,24 @@ const ReportPage = () => {
           </div>
         </div>
 
-        <div className="flex w-full min-w-283 gap-3.5">
-          <ReportProvider
-            currencyType={currencyType}
-            onCurrencyTypeChange={setCurrencyType}
-          >
-            <div className="flex w-113 flex-col justify-between">
-              <ReportMonthly data={monthlyData} />
-              <ReportMyself data={myselfData} />
-            </div>
+        {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
+        {data && (
+          <div className="flex w-full min-w-283 gap-3.5">
+            <ReportProvider
+              currencyType={currencyType}
+              onCurrencyTypeChange={setCurrencyType}
+            >
+              <div className="flex w-113 flex-col justify-between">
+                <ReportMonthly data={data.compareWithAverage} />
+                <ReportMyself data={data.compareWithLastMonth} />
+              </div>
 
-            <div className="flex-1">
-              <ReportCategory data={categoryData} />
-            </div>
-          </ReportProvider>
-        </div>
+              <div className="flex-1">
+                <ReportCategory data={data.compareByCategory} />
+              </div>
+            </ReportProvider>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { getUser } from '@/api/user/api';
 
 export const logout = () => {
   return customFetch({
-    endpoint: ENDPOINTS.LOGOUT,
+    endpoint: ENDPOINTS.AUTH.LOGOUT,
     options: {
       method: 'POST',
     },
@@ -42,7 +42,7 @@ export interface LoginResponse {
 
 export const loginDev = (): Promise<LoginResponse> => {
   return customFetch({
-    endpoint: ENDPOINTS.LOGIN_DEV,
+    endpoint: ENDPOINTS.AUTH.LOGIN_DEV,
     params: { userId: import.meta.env.VITE_USER_ID },
     options: {
       method: 'POST',

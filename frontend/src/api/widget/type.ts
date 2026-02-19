@@ -7,7 +7,7 @@ import type { PeriodType } from '@/types/period';
 import type { CountryCode } from '@/data/countryCode';
 
 export interface GetWidgetRequest {
-  accountBookId: string;
+  accountBookId: number | string;
   widgetType: WidgetType;
   currencyType?: CurrencyType;
   period?: PeriodType;
@@ -72,10 +72,11 @@ export interface CurrencyWidgetResponse {
   items: CurrencyWidgetItem[];
 }
 
-export type WidgetResponse =
-  | BudgetWidgetResponse
-  | PeriodWidgetResponse
-  | CategoryWidgetResponse
-  | ComparisonWidgetResponse
-  | PaymentWidgetResponse
-  | CurrencyWidgetResponse;
+export interface WidgetResponseMap {
+  BUDGET: BudgetWidgetResponse;
+  PERIOD: PeriodWidgetResponse;
+  CATEGORY: CategoryWidgetResponse;
+  COMPARISON: ComparisonWidgetResponse;
+  PAYMENT: PaymentWidgetResponse;
+  CURRENCY: CurrencyWidgetResponse;
+}

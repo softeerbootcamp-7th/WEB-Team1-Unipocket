@@ -6,14 +6,15 @@ import type { CurrencyType } from '@/types/currency';
 import type { PeriodType } from '@/types/period';
 
 import { getWidget } from '@/api/widget/api';
-import type { WidgetResponse } from '@/api/widget/type';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
+
+import type { WidgetResponseMap } from './type';
 
 export const widgetKeys = {
   all: ['widget'] as const,
 
   detail: (
-    accountBookId: string,
+    accountBookId: number,
     widgetType: WidgetType,
     currencyType?: CurrencyType,
     period?: PeriodType,
@@ -26,22 +27,24 @@ interface UseWidgetQueryOptions {
   enabled?: boolean;
 }
 
-export const useWidgetQuery = <T extends WidgetResponse>(
-  widgetType: WidgetType,
+export const useWidgetQuery = <T extends keyof WidgetResponseMap>(
+  widgetType: T,
   { currencyType, period, enabled = true }: UseWidgetQueryOptions = {},
 ) => {
-  const accountBookId = useAccountBookStore((state) => state.accountBook?.id);
+  const accountBookId = useAccountBookStore(
+    (state) => state.accountBook?.id || 1,
+  );
 
   return useQuery({
     queryKey: widgetKeys.detail(
-      String(accountBookId),
+      accountBookId,
       widgetType,
       currencyType,
       period,
     ),
     queryFn: () =>
-      getWidget<T>({
-        accountBookId: String(accountBookId),
+      getWidget<WidgetResponseMap[T]>({
+        accountBookId: accountBookId,
         widgetType,
         currencyType,
         period,

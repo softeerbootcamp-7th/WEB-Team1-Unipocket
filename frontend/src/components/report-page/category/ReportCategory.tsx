@@ -21,6 +21,11 @@ const ReportCategory = ({ data }: ReportCategoryProps) => {
   const category = getCategoryName(data.maxDiffCategoryIndex);
   const maxLabelValue = Number(data.maxLabel);
 
+  // @TODO: 백엔드에서 미분류 카테고리 삭제 예정 (이후 아래 코드 삭제 필요)
+  const filteredItems = data.items.filter(
+    (item) => getCategoryName(item.categoryIndex) !== '미분류',
+  );
+
   return (
     <ReportContainer title="월별 지출 비교">
       <ReportContent className="h-162.5 w-full gap-7">
@@ -29,7 +34,7 @@ const ReportCategory = ({ data }: ReportCategoryProps) => {
           <span className="text-primary-strong">{category}</span> 소비가 유독{' '}
           {data.isOverSpent ? '많아요' : '적어요'}
         </h3>
-        <ReportBarGraph maxLabel={maxLabelValue} items={data.items} />
+        <ReportBarGraph maxLabel={maxLabelValue} items={filteredItems} />
       </ReportContent>
     </ReportContainer>
   );

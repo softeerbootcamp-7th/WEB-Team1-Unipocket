@@ -1,12 +1,15 @@
 import ComparisonCard from '@/components/chart/comparison/ComparisonCard';
-import { mockData } from '@/components/chart/comparison/mock';
 
-import { type CurrencyType } from '@/types/currency';
-
+import type { CountryCode } from '@/data/countryCode';
 import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 
 interface ComparisonChartViewProps {
-  selectedId: number;
+  month: number;
+  countryCode: CountryCode;
+  average: number;
+  me: number;
+  isLocal: boolean;
+  localCountryCode: CountryCode;
 }
 
 const barWidth = {
@@ -15,23 +18,25 @@ const barWidth = {
   equal: 'w-19',
 } as const;
 
-const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
-  const selectedCurrency: CurrencyType = selectedId === 1 ? 'BASE' : 'LOCAL';
-  const data = selectedCurrency === 'BASE' ? mockData.base : mockData.local;
-  const isLocal = selectedCurrency === 'LOCAL';
+const ComparisonChartView = ({
+  month,
+  countryCode,
+  average,
+  me,
+  isLocal,
+  localCountryCode,
+}: ComparisonChartViewProps) => {
+  const diff = Math.abs(average - me);
+  const isLess = me < average;
+  const isEqual = me === average;
 
-  const diff = Math.abs(data.average - data.me);
-  const isLess = data.me < data.average;
-  const isEqual = data.me === data.average;
-
-  const unit = getCountryInfo(data.countryCode)?.currencyUnitKor || '';
-  const localCountryName =
-    getCountryInfo(mockData.local.countryCode)?.countryName || '';
-  const formattedDiff = formatCurrencyAmount(diff, data.countryCode, 0);
+  const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
+  const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
+  const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]
-    : data.average > data.me
+    : average > me
       ? [barWidth.large, barWidth.small]
       : [barWidth.small, barWidth.large];
 
@@ -55,22 +60,22 @@ const ComparisonChartView = ({ selectedId }: ComparisonChartViewProps) => {
 
       <div className="flex h-26.5 flex-col gap-3">
         <span className="caption2-medium text-label-assistive">
-          기준 : {mockData.month}월
+          기준 : {month}월
         </span>
         <ComparisonCard
           variant="average"
           barWidth={averageBarWidth}
           label={`${localCountryName} 교환학생 평균`}
-          amount={data.average}
-          countryCode={data.countryCode}
+          amount={average}
+          countryCode={countryCode}
           isLocal={isLocal}
         />
         <ComparisonCard
           variant="me"
           barWidth={meBarWidth}
           label="나"
-          amount={data.me}
-          countryCode={data.countryCode}
+          amount={me}
+          countryCode={countryCode}
           isLocal={isLocal}
         />
       </div>

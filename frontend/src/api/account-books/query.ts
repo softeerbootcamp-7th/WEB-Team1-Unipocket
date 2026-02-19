@@ -133,6 +133,7 @@ export const useAnalysisQuery = (
     queryFn: () =>
       getAnalysis(accountBookId as number, year, month, currencyType),
     enabled: !!accountBookId,
+    placeholderData: (previousData) => previousData,
   });
 
 export type { AccountBookDetail };

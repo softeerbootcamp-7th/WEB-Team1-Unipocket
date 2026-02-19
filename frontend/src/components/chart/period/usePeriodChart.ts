@@ -12,6 +12,7 @@ import {
 } from '@/components/chart/widgetPeriod';
 
 import type { CurrencyType } from '@/types/currency';
+import { getPeriodTypeById } from '@/types/period';
 
 import { useWidgetQuery } from '@/api/widget/query';
 import type { CountryCode } from '@/data/countryCode';
@@ -34,9 +35,7 @@ export const usePeriodChart = (isPreview: boolean) => {
   const currencyType: CurrencyType =
     selectedCurrency === CURRENCY_OPTIONS[0].id ? 'BASE' : 'LOCAL';
 
-  const periodType: PeriodChartType = PERIOD_WIDGET_OPTIONS.find(
-    (opt) => opt.id === selectedPeriod,
-  )!.type;
+  const periodType = getPeriodTypeById(selectedPeriod) as PeriodChartType;
 
   const currentCountryCode: CountryCode =
     (currencyType === 'BASE' ? baseCountryCode : localCountryCode) ?? 'KR';

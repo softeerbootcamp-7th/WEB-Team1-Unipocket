@@ -19,7 +19,8 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
     CURRENCY_OPTIONS[0].id,
   );
 
-  const currencyType: CurrencyType = selectedCurrency === 1 ? 'BASE' : 'LOCAL';
+  const currencyType: CurrencyType =
+    CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type ?? 'BASE';
   const { data, isLoading } = useWidgetQuery('COMPARISON', { currencyType });
 
   const localCountryCode = useAccountBookStore(

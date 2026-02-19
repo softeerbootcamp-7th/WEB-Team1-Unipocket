@@ -11,7 +11,7 @@ import { CATEGORY_PERIOD_OPTIONS } from '@/components/chart/widgetPeriod';
 import DropDown from '@/components/common/dropdown/Dropdown';
 
 import type { CurrencyType } from '@/types/currency';
-import type { PeriodType } from '@/types/period';
+import { getPeriodTypeById, type PeriodType } from '@/types/period';
 
 import { useWidgetQuery } from '@/api/widget/query';
 
@@ -25,9 +25,7 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
 
   const currencyType: CurrencyType =
     CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type || 'BASE';
-  const periodType: PeriodType =
-    CATEGORY_PERIOD_OPTIONS.find((opt) => opt.id === selectedPeriod)?.type ||
-    'ALL';
+  const periodType: PeriodType = getPeriodTypeById(selectedPeriod);
 
   const { data, isLoading } = useWidgetQuery('CATEGORY', {
     currencyType,

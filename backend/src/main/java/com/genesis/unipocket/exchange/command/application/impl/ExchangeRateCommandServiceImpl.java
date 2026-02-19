@@ -19,6 +19,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -53,28 +54,42 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 				probeStartDate = oldestAllowedDate;
 			}
 
-			Optional<RateOnDate> dbRate =
-					findLatestDbRateInRange(currencyCode, probeStartDate, probeEndDate);
-			if (dbRate.isPresent()) {
-				BigDecimal rate = dbRate.get().rate();
-				saveRateIfMissing(currencyCode, targetDate, rate);
-				return rate;
-			}
+				Optional<RateOnDate> dbRate =
+						findLatestDbRateInRange(currencyCode, probeStartDate, probeEndDate);
+				if (dbRate.isPresent() && isValidRate(dbRate.get().rate())) {
+					BigDecimal rate = dbRate.get().rate();
+					saveRateIfMissing(currencyCode, targetDate, rate);
+					return rate;
+				}
+				if (dbRate.isPresent()) {
+					log.warn(
+							"Invalid DB rate ignored. currency={}, date={}, rate={}",
+							currencyCode,
+							dbRate.get().date(),
+							dbRate.get().rate());
+				}
 
 			Map<LocalDate, BigDecimal> yahooRates =
 					fetchUsdRelativeRatesFromYahooForRange(
 							currencyCode, probeStartDate, probeEndDate);
 			saveMissingRates(currencyCode, yahooRates);
 
-			Optional<RateOnDate> yahooRate =
-					findLatestRateInMap(yahooRates, probeStartDate, probeEndDate);
-			if (yahooRate.isPresent()) {
-				RateOnDate found = yahooRate.get();
-				if (!found.date().isEqual(targetDate)) {
-					saveRateIfMissing(currencyCode, targetDate, found.rate());
+				Optional<RateOnDate> yahooRate =
+						findLatestRateInMap(yahooRates, probeStartDate, probeEndDate);
+				if (yahooRate.isPresent() && isValidRate(yahooRate.get().rate())) {
+					RateOnDate found = yahooRate.get();
+					if (!found.date().isEqual(targetDate)) {
+						saveRateIfMissing(currencyCode, targetDate, found.rate());
+					}
+					return found.rate();
 				}
-				return found.rate();
-			}
+				if (yahooRate.isPresent()) {
+					log.warn(
+							"Invalid Yahoo rate ignored. currency={}, date={}, rate={}",
+							currencyCode,
+							yahooRate.get().date(),
+							yahooRate.get().rate());
+				}
 
 			probeEndDate = probeStartDate.minusDays(1);
 		}
@@ -89,27 +104,42 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 	}
 
 	private void saveRateIfMissing(CurrencyCode currencyCode, LocalDate date, BigDecimal rate) {
-		if (exchangeRateQueryService.findRateOnDate(currencyCode, date).isPresent()) {
+		if (!isValidRate(rate)) {
+			log.warn(
+					"Skip saving invalid rate. currency={}, date={}, rate={}",
+					currencyCode,
+					date,
+					rate);
 			return;
 		}
-		exchangeRateRepository.save(
-				ExchangeRate.builder()
-						.currencyCode(currencyCode)
-						.recordedAt(date.atStartOfDay())
-						.rate(rate)
-						.build());
+		if (exchangeRateQueryService
+				.findLatestRateInRange(currencyCode, date, date)
+				.isPresent()) {
+			return;
+		}
+		try {
+			exchangeRateRepository.save(
+					ExchangeRate.builder()
+							.currencyCode(currencyCode)
+							.recordedAt(date.atStartOfDay())
+							.rate(rate)
+							.build());
+		} catch (DataIntegrityViolationException e) {
+			log.warn(
+					"Skip duplicate rate insert due to concurrent write. currency={}, date={}",
+					currencyCode,
+					date);
+		}
 	}
 
 	private Optional<RateOnDate> findLatestDbRateInRange(
 			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
-		for (LocalDate date = endDate; !date.isBefore(startDate); date = date.minusDays(1)) {
-			Optional<ExchangeRate> dbRate =
-					exchangeRateQueryService.findRateOnDate(currencyCode, date);
-			if (dbRate.isPresent()) {
-				return Optional.of(new RateOnDate(date, dbRate.get().getRate()));
-			}
-		}
-		return Optional.empty();
+		return exchangeRateQueryService
+				.findLatestRateInRange(currencyCode, startDate, endDate)
+				.map(
+						dbRate ->
+								new RateOnDate(
+										dbRate.getRecordedAt().toLocalDate(), dbRate.getRate()));
 	}
 
 	private Optional<RateOnDate> findLatestRateInMap(
@@ -225,6 +255,10 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 		}
 
 		return ratesByDate;
+	}
+
+	private boolean isValidRate(BigDecimal rate) {
+		return rate != null && rate.compareTo(BigDecimal.ZERO) > 0;
 	}
 
 	private record RateOnDate(LocalDate date, BigDecimal rate) {}

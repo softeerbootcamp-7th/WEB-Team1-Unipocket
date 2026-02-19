@@ -46,20 +46,18 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_usesBacktrackedDbRate() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findRateOnDate(any(CurrencyCode.class), any(LocalDate.class)))
-				.thenAnswer(
-						invocation -> {
-							LocalDate date = invocation.getArgument(1);
-							if (date.equals(LocalDate.of(2026, 2, 10))) {
-								return Optional.of(
-										ExchangeRate.builder()
-												.currencyCode(CurrencyCode.KRW)
-												.recordedAt(LocalDateTime.of(2026, 2, 10, 0, 0))
-												.rate(new BigDecimal("1300.00"))
-												.build());
-							}
-							return Optional.empty();
-						});
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+				.thenReturn(
+						Optional.of(
+								ExchangeRate.builder()
+										.currencyCode(CurrencyCode.KRW)
+										.recordedAt(LocalDateTime.of(2026, 2, 10, 0, 0))
+										.rate(new BigDecimal("1300.00"))
+										.build()));
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), eq(targetDate), eq(targetDate)))
+				.thenReturn(Optional.empty());
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -78,14 +76,15 @@ class ExchangeRateCommandServiceImplTest {
 	@DisplayName("targetDate 환율이 DB에 이미 있으면 외부 호출/재저장 없이 반환")
 	void resolveAndStoreUsdRelativeRate_targetExistsInDb_returnsWithoutFetch() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), eq(targetDate)))
-				.thenReturn(
-						Optional.of(
-								ExchangeRate.builder()
-										.currencyCode(CurrencyCode.KRW)
-										.recordedAt(targetDate.atStartOfDay())
-										.rate(new BigDecimal("1310.00"))
-										.build()));
+		ExchangeRate targetRate =
+				ExchangeRate.builder()
+						.currencyCode(CurrencyCode.KRW)
+						.recordedAt(targetDate.atStartOfDay())
+						.rate(new BigDecimal("1310.00"))
+						.build();
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+				.thenReturn(Optional.of(targetRate));
 
 		BigDecimal rate =
 				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
@@ -101,7 +100,8 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_fetchesYahooByRangeAndStoresBothDates() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.GBP), any(LocalDate.class)))
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.GBP), any(LocalDate.class), any(LocalDate.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooSingleDayResponse(LocalDate.of(2026, 2, 11), "0.79"));
@@ -126,7 +126,8 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_unsupportedSymbol_throwsNotFound() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), any(LocalDate.class)))
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooUnsupportedSymbolResponse());
@@ -144,7 +145,8 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_yahooFailure_throwsApiError() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), any(LocalDate.class)))
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenThrow(new RuntimeException("timeout"));
@@ -153,8 +155,43 @@ class ExchangeRateCommandServiceImplTest {
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 										CurrencyCode.KRW, targetDate))
-				.isInstanceOf(BusinessException.class)
-				.hasFieldOrPropertyWithValue("code", ErrorCode.EXCHANGE_RATE_API_ERROR);
+					.isInstanceOf(BusinessException.class)
+					.hasFieldOrPropertyWithValue("code", ErrorCode.EXCHANGE_RATE_API_ERROR);
+	}
+
+	@Test
+	@DisplayName("DB 환율이 비정상이면 무시하고 Yahoo fallback으로 처리")
+	void resolveAndStoreUsdRelativeRate_invalidDbRate_fallsBackToYahoo() {
+		LocalDate targetDate = LocalDate.of(2026, 2, 12);
+
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+				.thenAnswer(
+						invocation -> {
+							LocalDate start = invocation.getArgument(1);
+							LocalDate end = invocation.getArgument(2);
+							if (start.equals(end)) {
+								return Optional.empty();
+							}
+							return Optional.of(
+									ExchangeRate.builder()
+											.currencyCode(CurrencyCode.KRW)
+											.recordedAt(LocalDateTime.of(2026, 2, 10, 0, 0))
+											.rate(new BigDecimal("-1300.00"))
+											.build());
+						});
+		when(restTemplate.getForObject(any(String.class), eq(String.class)))
+				.thenReturn(yahooSingleDayResponse(LocalDate.of(2026, 2, 11), "1305.00"));
+		when(exchangeRateRepository.save(any(ExchangeRate.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		BigDecimal rate =
+				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
+						CurrencyCode.KRW, targetDate);
+
+		assertThat(rate).isEqualByComparingTo("1305.00");
+		verify(restTemplate, times(1)).getForObject(any(String.class), eq(String.class));
+		verify(exchangeRateRepository, times(2)).save(any(ExchangeRate.class));
 	}
 
 	private String yahooEmptyResponse() {

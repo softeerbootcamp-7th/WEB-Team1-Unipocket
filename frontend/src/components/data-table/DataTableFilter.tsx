@@ -10,6 +10,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
+import { type CategoryId, getCategoryName } from '@/types/category';
+
 const DataTableFilterProvider = ({
   children,
 }: ComponentPropsWithoutRef<'div'>) => {
@@ -21,10 +23,10 @@ interface DataTableSearchFilterProps<T> {
   options: T[];
   selectedOptions: T[];
   setSelectedOptions: (selected: T[]) => void;
-  getOptionLabel?: (option: T) => string; // 옵션이 객체나 숫자일 때, 화면에 보여줄 '글자'를 추출하는 함수
   onInputChange: (term: string) => void;
   onSelect?: (term: T) => void;
   onSelectMultiple?: (terms: T[]) => void;
+  isCategory?: boolean;
   // 렌더링 옵션
   renderOption: (option: T, searchTerm: string) => React.ReactNode;
   renderEmptyState?: () => React.ReactNode;
@@ -41,11 +43,11 @@ const DataTableSearchFilter = <T,>({
   setSelectedOptions,
   renderOption,
   renderEmptyState,
+  isCategory = false,
   renderSearchAllTrigger,
   onInputChange,
   onSelect,
   onSelectMultiple,
-  getOptionLabel,
 }: DataTableSearchFilterProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,13 +55,10 @@ const DataTableSearchFilter = <T,>({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const safeGetLabel = (option: T) =>
-    getOptionLabel ? getOptionLabel(option) : String(option);
-
   const filteredOptions = (() => {
     if (!searchTerm) return options;
     return options.filter((option) =>
-      safeGetLabel(option).toLowerCase().includes(searchTerm.toLowerCase()),
+      String(option).toLowerCase().includes(searchTerm.toLowerCase()),
     );
   })();
 
@@ -160,8 +159,15 @@ const DataTableSearchFilter = <T,>({
 
   const getLabel = () => {
     if (!isActive) return title;
-    if (selectedOptions.length === 1) return `${title}: ${selectedOptions[0]}`;
-    return `${title}: ${selectedOptions[0]} 외 ${selectedOptions.length - 1}건`;
+    const firstOption = selectedOptions[0];
+    const firstLabel = isCategory
+      ? getCategoryName(firstOption as unknown as CategoryId)
+      : String(firstOption);
+
+    if (selectedOptions.length === 1) {
+      return `${title}: ${firstLabel}`;
+    }
+    return `${title}: ${firstLabel} 외 ${selectedOptions.length - 1}건`;
   };
 
   return (
@@ -194,10 +200,17 @@ const DataTableSearchFilter = <T,>({
           {/* 1. 태그 렌더링 */}
           {selectedOptions.map((option) => (
             <div key={String(option)} className="shrink-0">
-              <Chip
-                label={safeGetLabel(option)}
-                onRemove={() => toggleOption(option)}
-              />
+              {isCategory ? (
+                <Chip
+                  id={option as unknown as CategoryId}
+                  onRemove={() => toggleOption(option)}
+                />
+              ) : (
+                <Chip
+                  label={String(option)}
+                  onRemove={() => toggleOption(option)}
+                />
+              )}
             </div>
           ))}
 

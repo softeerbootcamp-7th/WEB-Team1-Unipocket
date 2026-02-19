@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Chip from '@/components/common/Chip';
 import { DataTableSearchFilter } from '@/components/data-table/DataTableFilter';
 
-import { CATEGORIES, type CategoryId, getCategoryName } from '@/types/category';
+import { CATEGORIES, type CategoryId } from '@/types/category';
 
 const CategoryFilter = () => {
   const categoryOptions = Object.keys(CATEGORIES).map(Number) as CategoryId[];
@@ -18,7 +18,7 @@ const CategoryFilter = () => {
       options={categoryOptions}
       selectedOptions={selectedCategories}
       setSelectedOptions={setSelectedCategories}
-      getOptionLabel={(id) => getCategoryName(id)}
+      isCategory
       renderOption={(categoryId) => <Chip id={categoryId} />}
       onInputChange={() => {
         // 타이핑 할 때마다

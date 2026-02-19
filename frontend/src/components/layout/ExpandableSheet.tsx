@@ -52,7 +52,7 @@ const ExpandableSheet = ({
             <div className="bg-cool-neutral-95 absolute top-3 h-1.5 w-12 shrink-0 rounded-full" />
           </motion.div>
         )}
-        <div className="flex min-h-0 flex-1 flex-col px-2 pb-4">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col px-2">{children}</div>
       </motion.div>
     </AnimatePresence>
   );

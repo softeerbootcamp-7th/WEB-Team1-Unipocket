@@ -27,9 +27,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Yahoo 엔드포인트를 WireMock으로 대체해 통신/파싱 실패 처리를 검증하는 통합 테스트.
- */
 @SpringBootTest
 @ActiveProfiles("test-it")
 @Import(TestcontainersConfiguration.class)
@@ -60,7 +57,6 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 
 	@Test
 	void resolveAndStoreUsdRelativeRate_validYahooPayload_returnsRateAndPersists() {
-		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 		long epoch = targetDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 
@@ -86,12 +82,10 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 												"""
 														.formatted(epoch))));
 
-		// 실행
 		BigDecimal rate =
 				exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 						CurrencyCode.KRW, targetDate);
 
-		// 검증
 		assertThat(rate).isEqualByComparingTo("1300.12");
 		assertThat(exchangeRateRepository.findAll())
 				.anyMatch(
@@ -103,13 +97,11 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 
 	@Test
 	void resolveAndStoreUsdRelativeRate_yahooServerError_throwsExchangeRateApiError() {
-		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 		wireMock.stubFor(
 				get(urlPathMatching("/v8/finance/chart/USDKRW.*"))
 						.willReturn(aResponse().withStatus(500).withBody("internal error")));
 
-		// 실행 + 검증
 		assertThatThrownBy(
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
@@ -120,7 +112,6 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 
 	@Test
 	void resolveAndStoreUsdRelativeRate_invalidYahooPayload_throwsExchangeRateApiError() {
-		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 		wireMock.stubFor(
 				get(urlPathMatching("/v8/finance/chart/USDJPY.*"))
@@ -130,7 +121,6 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 										.withHeader("Content-Type", "application/json")
 										.withBody("{ this-is-invalid-json }")));
 
-		// 실행 + 검증
 		assertThatThrownBy(
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
@@ -141,7 +131,6 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 
 	@Test
 	void resolveAndStoreUsdRelativeRate_yahooTimeout_throwsExchangeRateApiError() {
-		// 준비
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 		long epoch = targetDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
 		wireMock.stubFor(
@@ -167,7 +156,6 @@ class ExchangeRateCommandServiceWireMockIntegrationTest {
 												"""
 														.formatted(epoch))));
 
-		// 실행 + 검증
 		assertThatThrownBy(
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(

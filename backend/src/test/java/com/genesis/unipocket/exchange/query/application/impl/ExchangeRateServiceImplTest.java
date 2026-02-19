@@ -29,9 +29,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/**
- * query 우선 조회/fallback 동작과 금액 변환 검증 로직을 테스트한다.
- */
 @ExtendWith(MockitoExtension.class)
 class ExchangeRateServiceImplTest {
 
@@ -43,12 +40,10 @@ class ExchangeRateServiceImplTest {
 	@Test
 	@DisplayName("동일 통화면 1 반환")
 	void getExchangeRate_sameCurrency_returnsOne() {
-		// 실행
 		BigDecimal rate =
 				exchangeRateService.getExchangeRate(
 						CurrencyCode.KRW, CurrencyCode.KRW, OffsetDateTime.now());
 
-		// 검증
 		assertThat(rate).isEqualTo(BigDecimal.ONE);
 		verifyNoInteractions(exchangeRateQueryService, exchangeRateCommandService);
 	}
@@ -56,7 +51,6 @@ class ExchangeRateServiceImplTest {
 	@Test
 	@DisplayName("조회 데이터가 있으면 query만 사용")
 	void getExchangeRate_usesQueryWhenExists() {
-		// 준비
 		OffsetDateTime dateTime = OffsetDateTime.of(2026, 2, 12, 10, 0, 0, 0, ZoneOffset.UTC);
 		LocalDate targetDate = dateTime.toLocalDate().minusDays(1);
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -68,11 +62,9 @@ class ExchangeRateServiceImplTest {
 				.thenReturn(
 						Optional.of(rate(CurrencyCode.GBP, dateTime.toLocalDateTime(), "0.79")));
 
-		// 실행
 		BigDecimal result =
 				exchangeRateService.getExchangeRate(CurrencyCode.KRW, CurrencyCode.GBP, dateTime);
 
-		// 검증
 		assertThat(result)
 				.isEqualByComparingTo(
 						new BigDecimal("0.79")
@@ -91,7 +83,6 @@ class ExchangeRateServiceImplTest {
 	@Test
 	@DisplayName("조회 데이터가 없으면 command로 보정 후 계산")
 	void getExchangeRate_usesCommandWhenMissing() {
-		// 준비
 		OffsetDateTime dateTime = OffsetDateTime.of(2026, 2, 12, 10, 0, 0, 0, ZoneOffset.UTC);
 		LocalDate targetDate = dateTime.toLocalDate().minusDays(1);
 		when(exchangeRateQueryService.findLatestRateInRange(
@@ -107,11 +98,9 @@ class ExchangeRateServiceImplTest {
 						eq(CurrencyCode.GBP), eq(targetDate)))
 				.thenReturn(new BigDecimal("0.79"));
 
-		// 실행
 		BigDecimal result =
 				exchangeRateService.getExchangeRate(CurrencyCode.KRW, CurrencyCode.GBP, dateTime);
 
-		// 검증
 		assertThat(result)
 				.isEqualByComparingTo(
 						new BigDecimal("0.79")
@@ -128,7 +117,6 @@ class ExchangeRateServiceImplTest {
 	@Test
 	@DisplayName("금액 0 이하면 예외")
 	void convertAmount_invalidAmount_throwsException() {
-		// 실행 + 검증
 		assertThatThrownBy(
 						() ->
 								exchangeRateService.convertAmount(

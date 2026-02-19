@@ -92,7 +92,9 @@ type CreateManualExpenseRequest = Required<
   > & { userCardId: number; travelId: number }
 >;
 
-type GetExpensesResponse = Required<Expense[]>;
+interface GetExpensesResponse {
+  expenses: Expense[];
+}
 
 type CreateManualExpenseResponse = Required<ExpenseResponseBase>;
 

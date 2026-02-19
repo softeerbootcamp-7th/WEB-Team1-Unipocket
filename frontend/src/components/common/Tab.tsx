@@ -34,23 +34,47 @@ const useTab = () => {
   return context;
 };
 
-interface TabProviderProps extends ComponentPropsWithoutRef<'div'> {
-  defaultValue: string;
+interface TabProviderProps extends Omit<
+  ComponentPropsWithoutRef<'div'>,
+  'defaultValue'
+> {
+  defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
   variant?: TabVariant;
 }
 
 const TabProvider = ({
   children,
-  defaultValue,
+  defaultValue = '',
+  value: controlledValue,
+  onValueChange,
   variant = 'underline',
 }: TabProviderProps) => {
-  const [currentValue, setCurrentValue] = useState(defaultValue);
+  // 1. 내부 비제어 상태 (value가 없을 때 사용됨)
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+
+  // 2. 제어 모드인지 판단 (외부에서 value prop을 넘겼는가?)
+  const isControlled = controlledValue !== undefined;
+
+  // 3. 현재 렌더링할 최종 value 결정
+  const currentValue = isControlled ? controlledValue : uncontrolledValue;
+
+  // 4. 상태 변경 함수 (제어/비제어 분기 처리)
+  const handleValueChange = (newValue: string) => {
+    // 비제어 모드일 때만 내부 상태를 업데이트합니다.
+    if (!isControlled) {
+      setUncontrolledValue(newValue);
+    }
+    // 제어/비제어 상관없이 변경 콜백이 있으면 무조건 실행해 줍니다.
+    onValueChange?.(newValue);
+  };
 
   return (
     <TabContext.Provider
       value={{
         currentValue,
-        setCurrentValue,
+        setCurrentValue: handleValueChange,
         variant,
       }}
     >

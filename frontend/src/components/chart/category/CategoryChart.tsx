@@ -62,9 +62,9 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
         <CategoryChartView
           key={`${currencyType}-${periodType}`}
           data={visibleStats}
-          totalAmount={Number(data?.totalAmount ?? 0)}
+          totalAmount={Number(data!.totalAmount)}
           currencyType={currencyType}
-          countryCode={data?.countryCode ?? 'KR'}
+          countryCode={data!.countryCode}
         />
       </ChartContent>
     </ChartContainer>

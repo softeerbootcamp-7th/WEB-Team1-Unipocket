@@ -11,7 +11,6 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 import type { CurrencyType } from '@/types/currency';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { CountryCode } from '@/data/countryCode';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ComparisonChart = ({ isPreview = false }: ChartMode) => {
@@ -24,8 +23,8 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
   const { data, isLoading } = useWidgetQuery('COMPARISON', { currencyType });
 
   const localCountryCode = useAccountBookStore(
-    (state) => state.accountBook?.localCountryCode,
-  ) as CountryCode | undefined;
+    (state) => state.accountBook!.localCountryCode,
+  );
 
   const showSkeleton = isPreview || isLoading || !data;
 
@@ -53,7 +52,7 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
             average={Number(data.averageSpentAmount)}
             me={Number(data.mySpentAmount)}
             isLocal={currencyType === 'LOCAL'}
-            localCountryCode={localCountryCode ?? 'US'}
+            localCountryCode={localCountryCode}
           />
         )}
       </ChartContent>

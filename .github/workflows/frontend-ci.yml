@@ -39,6 +39,8 @@ jobs:
 
       - name: Run tests
         run: pnpm exec vitest --run
+        env:
+          VITE_API_BASE_URL: http://localhost
 
       - name: Build
         run: pnpm build

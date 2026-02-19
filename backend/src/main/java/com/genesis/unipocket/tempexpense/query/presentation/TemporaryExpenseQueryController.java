@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.tempexpense.query.facade.TemporaryExpenseQueryFacade;
+import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseFileUrlResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,6 +74,25 @@ public class TemporaryExpenseQueryController {
 				temporaryExpenseQueryFacade.getTemporaryExpenseMetaFile(
 						accountBookId, tempExpenseMetaId, fileId, userId);
 		return ResponseEntity.ok(response);
+	}
+
+	@Operation(
+			summary = "메타 내부 파일 열람 URL 발급",
+			description = "메타 1건에 속한 파일 1건의 Presigned GET URL을 발급합니다.")
+	@GetMapping(
+			"/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}/file-url")
+	public ResponseEntity<TemporaryExpenseFileUrlResponse> getTemporaryExpenseMetaFileUrl(
+			@PathVariable Long accountBookId,
+			@PathVariable Long tempExpenseMetaId,
+			@PathVariable Long fileId,
+			@LoginUser UUID userId) {
+		String presignedUrl =
+				temporaryExpenseQueryFacade.getTemporaryExpenseMetaFileUrl(
+						accountBookId, tempExpenseMetaId, fileId, userId);
+		int expiresInSeconds =
+				temporaryExpenseQueryFacade.getTemporaryExpenseMetaFileUrlExpirationSeconds();
+		return ResponseEntity.ok(
+				new TemporaryExpenseFileUrlResponse(presignedUrl, expiresInSeconds));
 	}
 
 	/**

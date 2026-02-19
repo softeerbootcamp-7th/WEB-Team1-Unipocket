@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
@@ -19,10 +20,10 @@ import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryServ
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -37,10 +38,21 @@ class TemporaryExpenseQueryServiceTest {
 	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Mock private FileRepository fileRepository;
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
+	@Mock private TempExpenseMediaAccessService tempExpenseMediaAccessService;
 
-	@InjectMocks private TemporaryExpenseQueryService service;
+	private TemporaryExpenseQueryService service;
 
 	private static final Long ACCOUNT_BOOK_ID = 1L;
+
+	@BeforeEach
+	void setUp() {
+		service =
+				new TemporaryExpenseQueryService(
+						temporaryExpenseRepository,
+						fileRepository,
+						tempExpenseMetaRepository,
+						tempExpenseMediaAccessService);
+	}
 
 	@Test
 	@DisplayName("메타 목록 조회 - 파일 수/상태 집계가 정상 동작한다")

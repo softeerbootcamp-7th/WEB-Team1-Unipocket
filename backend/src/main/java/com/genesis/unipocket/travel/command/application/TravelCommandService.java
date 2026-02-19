@@ -2,6 +2,8 @@ package com.genesis.unipocket.travel.command.application;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.media.command.application.MediaObjectStorage;
+import com.genesis.unipocket.media.command.application.MediaPathPrefixManager;
 import com.genesis.unipocket.travel.command.application.command.CreateTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.PatchTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.UpdateTravelCommand;
@@ -20,9 +22,13 @@ public class TravelCommandService {
 
 	private final TravelCommandRepository travelRepository;
 	private final TravelWidgetJpaRepository travelWidgetJpaRepository;
+	private final MediaObjectStorage mediaObjectStorage;
+	private final MediaPathPrefixManager mediaPathPrefixManager;
 
 	@Transactional
 	public CreateTravelResult createTravel(CreateTravelCommand command) {
+		validateImageKey(command.imageKey());
+
 		Travel travel =
 				Travel.builder()
 						.accountBookId(command.accountBookId())
@@ -55,6 +61,8 @@ public class TravelCommandService {
 			throw new BusinessException(ErrorCode.TRAVEL_NOT_IN_ACCOUNT_BOOK);
 		}
 
+		validateImageKey(command.imageKey());
+
 		travel.update(
 				command.travelPlaceName(),
 				command.startDate(),
@@ -84,6 +92,7 @@ public class TravelCommandService {
 			travel.updateName(command.travelPlaceName());
 		}
 		if (command.imageKey() != null) {
+			validateImageKey(command.imageKey());
 			travel.updateImage(command.imageKey());
 		}
 		if (command.startDate() != null && command.endDate() != null) {
@@ -92,6 +101,19 @@ public class TravelCommandService {
 			travel.updatePeriod(command.startDate(), travel.getEndDate());
 		} else if (command.endDate() != null) {
 			travel.updatePeriod(travel.getStartDate(), command.endDate());
+		}
+	}
+
+	private void validateImageKey(String imageKey) {
+		if (imageKey == null || imageKey.isBlank()) {
+			return;
+		}
+
+		if (!mediaPathPrefixManager.isTravelImageKey(imageKey)) {
+			throw new BusinessException(ErrorCode.TRAVEL_INVALID_IMAGE_KEY);
+		}
+		if (!mediaObjectStorage.exists(imageKey)) {
+			throw new BusinessException(ErrorCode.TRAVEL_IMAGE_NOT_FOUND);
 		}
 	}
 }

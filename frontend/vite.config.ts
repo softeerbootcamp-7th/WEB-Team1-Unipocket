@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react-swc';
@@ -25,6 +26,11 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: [{ find: '@', replacement: '/src' }],
     },
+    test: {
+      globals: true,
+      environment: 'node',
+      alias: [{ find: '@', replacement: '/src' }],
+    },
     server: {
       proxy: {
         '/api': {
@@ -33,10 +39,6 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
-    },
-    test: {
-      environment: 'jsdom',
-      globals: true,
     },
   };
 });

@@ -14,6 +14,20 @@ interface SnackbarProps {
   onAction: () => void;
 }
 
+const iconMap = {
+  loading: (
+    <Icons.Loading className="text-inverse-label size-5.5 animate-spin" />
+  ),
+  success: <Icons.CheckmarkCircle className="size-5.5" />,
+  default: null,
+};
+
+const titleMap: Record<SnackbarStatus, string> = {
+  loading: '지출 내역 분석 중...',
+  success: '지출 내역 분석 완료',
+  default: '',
+};
+
 const Snackbar = ({
   status = 'default',
   title,
@@ -21,20 +35,6 @@ const Snackbar = ({
   btnText = '결과 확인',
   onAction,
 }: SnackbarProps) => {
-  const iconMap = {
-    loading: (
-      <Icons.Loading className="text-inverse-label size-5.5 animate-spin" />
-    ),
-    success: <Icons.CheckmarkCircle className="size-5.5" />,
-    default: null,
-  };
-
-  const titleMap: Record<SnackbarStatus, string> = {
-    loading: '지출 내역 분석 중...',
-    success: '지출 내역 분석 완료',
-    default: '',
-  };
-
   const isLoading = status === 'loading';
   const isSuccess = status === 'success';
   return (

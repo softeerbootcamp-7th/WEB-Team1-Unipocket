@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 
-import type { CategoryType } from '@/types/category';
+import { type CategoryType, getCategoryName } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import type { CountryCode } from '@/data/country/countryCode';
@@ -11,7 +11,7 @@ import type { CountryCode } from '@/data/country/countryCode';
 interface CategoryLegendItemProps {
   currencyType: CurrencyType;
   countryCode: CountryCode;
-  categoryName: CategoryType;
+  categoryId: CategoryType;
   percentage: number;
   amount: number;
   color: string;
@@ -20,7 +20,7 @@ interface CategoryLegendItemProps {
 const CategoryLegendItem = ({
   currencyType,
   countryCode,
-  categoryName,
+  categoryId,
   percentage,
   amount,
   color,
@@ -30,7 +30,7 @@ const CategoryLegendItem = ({
       <div className="h-3.5 w-3.5" style={{ backgroundColor: color }} />
       <div className="flex items-center gap-2.5">
         <span className="label1-normal-medium text-label-normal min-w-9">
-          {categoryName}
+          {getCategoryName(categoryId)}
         </span>
         <span className="figure-body2-14-semibold text-label-alternative min-w-7.5 text-end">
           {percentage}%

@@ -11,19 +11,13 @@ import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 export const widgetKeys = {
   all: ['widget'] as const,
+
   detail: (
     accountBookId: string,
     widgetType: WidgetType,
     currencyType?: CurrencyType,
     period?: PeriodType,
-  ) =>
-    [
-      'widget',
-      accountBookId,
-      widgetType,
-      ...(currencyType ? [currencyType] : []),
-      ...(period ? [period] : []),
-    ] as const,
+  ) => ['widget', accountBookId, widgetType, { currencyType, period }] as const,
 };
 
 interface UseWidgetQueryOptions {

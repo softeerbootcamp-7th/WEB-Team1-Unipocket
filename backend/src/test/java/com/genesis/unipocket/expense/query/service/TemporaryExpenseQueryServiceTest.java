@@ -51,8 +51,7 @@ class TemporaryExpenseQueryServiceTest {
 						temporaryExpenseRepository,
 						fileRepository,
 						tempExpenseMetaRepository,
-						tempExpenseMediaAccessService,
-						600);
+						tempExpenseMediaAccessService);
 	}
 
 	@Test

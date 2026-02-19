@@ -2,7 +2,7 @@ import { useState } from 'react';
 import clsx from 'clsx';
 
 import ImagePreviewModal from '@/components/upload/image-upload/ImagePreviewModal';
-import { type UploadItem } from '@/components/upload/type';
+import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 
 import { Icons } from '@/assets';
 
@@ -15,7 +15,7 @@ const UploadImage = ({ item, onRemove }: UploadImageProps) => {
   const [isHover, setIsHover] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const isUploading = item.status === 'uploading';
+  const isUploading = item.status === UPLOAD_STATUS.UPLOADING;
   const fileExtension = item.name.split('.').pop()?.toUpperCase() || '';
 
   return (

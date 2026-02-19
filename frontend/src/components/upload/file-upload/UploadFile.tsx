@@ -1,4 +1,4 @@
-import { type UploadItem } from '@/components/upload/type';
+import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 
 import { Icons } from '@/assets';
 
@@ -9,7 +9,7 @@ interface UploadFileProps {
 
 const UploadFile = ({ item, onRemove }: UploadFileProps) => {
   const { name, status } = item;
-  const isUploading = status === 'uploading';
+  const isUploading = status === UPLOAD_STATUS.UPLOADING;
 
   return (
     <div className="border-line-normal-neutral flex items-center justify-between rounded-2xl border p-4">
@@ -25,7 +25,7 @@ const UploadFile = ({ item, onRemove }: UploadFileProps) => {
           </div>
         )}
 
-        {status === 'done' && (
+        {status === UPLOAD_STATUS.DONE && (
           <div className="flex items-center gap-1">
             <Icons.Checkmark className="size-4" />
             <span className="label2-medium text-status-positive">
@@ -34,7 +34,7 @@ const UploadFile = ({ item, onRemove }: UploadFileProps) => {
           </div>
         )}
 
-        {status === 'error' && (
+        {status === UPLOAD_STATUS.ERROR && (
           <div className="flex items-center gap-1">
             <Icons.Alert className="size-4" />
             <span className="label2-medium text-status-negative">

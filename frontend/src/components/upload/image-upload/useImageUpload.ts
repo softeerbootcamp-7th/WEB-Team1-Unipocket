@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import type { UploadItem } from '@/components/upload/type';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
@@ -25,8 +26,7 @@ export const useImageUpload = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (items.length + files.length > MAX_TOTAL) {
-      //@TODO: Toast로 변경
-      alert(`최대 ${MAX_TOTAL}개까지 업로드할 수 있어요.`);
+      toast.error(`최대 ${MAX_TOTAL}개까지 업로드할 수 있어요.`);
       return;
     }
 

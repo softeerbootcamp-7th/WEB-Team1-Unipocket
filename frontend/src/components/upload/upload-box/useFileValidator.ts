@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { toast } from 'sonner';
 
 type UploadPolicy = {
   message?: string;
@@ -42,12 +43,12 @@ export const useFileValidator = (policy: UploadPolicy) => {
 
       // 1. 개수 제한
       if (!policy.multiple && files.length > 1) {
-        alert('한 번에 하나의 파일만 업로드할 수 있어요.');
+        toast.error('한 번에 하나의 파일만 업로드할 수 있어요.');
         return null;
       }
 
       if (files.length > policy.maxCount) {
-        alert(`최대 ${policy.maxCount}개까지 업로드할 수 있어요.`);
+        toast.error(`최대 ${policy.maxCount}개까지 업로드할 수 있어요.`);
         return null;
       }
 
@@ -66,7 +67,7 @@ export const useFileValidator = (policy: UploadPolicy) => {
       });
 
       if (hasInvalid) {
-        alert('지원하지 않는 파일 형식이 포함되어 있어요.');
+        toast.error('지원하지 않는 파일 형식이 포함되어 있어요.');
         return null;
       }
 
@@ -74,7 +75,7 @@ export const useFileValidator = (policy: UploadPolicy) => {
       const totalSize = files.reduce((sum, file) => sum + file.size, 0);
       if (totalSize > policy.maxTotalSize) {
         const maxMB = policy.maxTotalSize / (1024 * 1024);
-        alert(`전체 파일 용량은 ${maxMB}MB를 초과할 수 없어요.`);
+        toast.error(`전체 파일 용량은 ${maxMB}MB를 초과할 수 없어요.`);
         return null;
       }
 

@@ -40,7 +40,8 @@ public class ExchangeRateDailyScheduler {
 					continue;
 				}
 				try {
-					exchangeRateCommandService.resolveAndStoreUsdRelativeRate(currencyCode, targetDate);
+					exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
+							currencyCode, targetDate);
 					successCount++;
 				} catch (Exception e) {
 					failureCount++;
@@ -52,7 +53,8 @@ public class ExchangeRateDailyScheduler {
 				}
 			}
 			log.info(
-					"Daily exchange preload completed. targetDate={}, successCount={}, failureCount={}",
+					"Daily exchange preload completed. targetDate={}, successCount={},"
+							+ " failureCount={}",
 					targetDate,
 					successCount,
 					failureCount);

@@ -54,42 +54,42 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 				probeStartDate = oldestAllowedDate;
 			}
 
-				Optional<RateOnDate> dbRate =
-						findLatestDbRateInRange(currencyCode, probeStartDate, probeEndDate);
-				if (dbRate.isPresent() && isValidRate(dbRate.get().rate())) {
-					BigDecimal rate = dbRate.get().rate();
-					saveRateIfMissing(currencyCode, targetDate, rate);
-					return rate;
-				}
-				if (dbRate.isPresent()) {
-					log.warn(
-							"Invalid DB rate ignored. currency={}, date={}, rate={}",
-							currencyCode,
-							dbRate.get().date(),
-							dbRate.get().rate());
-				}
+			Optional<RateOnDate> dbRate =
+					findLatestDbRateInRange(currencyCode, probeStartDate, probeEndDate);
+			if (dbRate.isPresent() && isValidRate(dbRate.get().rate())) {
+				BigDecimal rate = dbRate.get().rate();
+				saveRateIfMissing(currencyCode, targetDate, rate);
+				return rate;
+			}
+			if (dbRate.isPresent()) {
+				log.warn(
+						"Invalid DB rate ignored. currency={}, date={}, rate={}",
+						currencyCode,
+						dbRate.get().date(),
+						dbRate.get().rate());
+			}
 
 			Map<LocalDate, BigDecimal> yahooRates =
 					fetchUsdRelativeRatesFromYahooForRange(
 							currencyCode, probeStartDate, probeEndDate);
 			saveMissingRates(currencyCode, yahooRates);
 
-				Optional<RateOnDate> yahooRate =
-						findLatestRateInMap(yahooRates, probeStartDate, probeEndDate);
-				if (yahooRate.isPresent() && isValidRate(yahooRate.get().rate())) {
-					RateOnDate found = yahooRate.get();
-					if (!found.date().isEqual(targetDate)) {
-						saveRateIfMissing(currencyCode, targetDate, found.rate());
-					}
-					return found.rate();
+			Optional<RateOnDate> yahooRate =
+					findLatestRateInMap(yahooRates, probeStartDate, probeEndDate);
+			if (yahooRate.isPresent() && isValidRate(yahooRate.get().rate())) {
+				RateOnDate found = yahooRate.get();
+				if (!found.date().isEqual(targetDate)) {
+					saveRateIfMissing(currencyCode, targetDate, found.rate());
 				}
-				if (yahooRate.isPresent()) {
-					log.warn(
-							"Invalid Yahoo rate ignored. currency={}, date={}, rate={}",
-							currencyCode,
-							yahooRate.get().date(),
-							yahooRate.get().rate());
-				}
+				return found.rate();
+			}
+			if (yahooRate.isPresent()) {
+				log.warn(
+						"Invalid Yahoo rate ignored. currency={}, date={}, rate={}",
+						currencyCode,
+						yahooRate.get().date(),
+						yahooRate.get().rate());
+			}
 
 			probeEndDate = probeStartDate.minusDays(1);
 		}
@@ -112,9 +112,7 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 					rate);
 			return;
 		}
-		if (exchangeRateQueryService
-				.findLatestRateInRange(currencyCode, date, date)
-				.isPresent()) {
+		if (exchangeRateQueryService.findLatestRateInRange(currencyCode, date, date).isPresent()) {
 			return;
 		}
 		try {

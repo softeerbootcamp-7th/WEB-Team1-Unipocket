@@ -155,8 +155,8 @@ class ExchangeRateCommandServiceImplTest {
 						() ->
 								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
 										CurrencyCode.KRW, targetDate))
-					.isInstanceOf(BusinessException.class)
-					.hasFieldOrPropertyWithValue("code", ErrorCode.EXCHANGE_RATE_API_ERROR);
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.EXCHANGE_RATE_API_ERROR);
 	}
 
 	@Test

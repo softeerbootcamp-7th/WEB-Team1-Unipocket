@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { transformCategoryChartData } from '@/components/chart/category/category.utils';
 import CategoryChartSkeleton from '@/components/chart/category/CategoryChartSkeleton';
 import CategoryChartView from '@/components/chart/category/CategoryChartView';
 import { type ChartMode, CURRENCY_OPTIONS } from '@/components/chart/chartType';
@@ -34,16 +35,7 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
     { currencyType, period: periodType },
   );
 
-  const visibleStats = useMemo(() => {
-    if (!data) return [];
-    return data.items
-      .map((item) => ({
-        percentage: item.percent,
-        categoryName: item.categoryName,
-        amount: Number(item.amount),
-      }))
-      .filter((item) => item.percentage > 0);
-  }, [data]);
+  const visibleStats = useMemo(() => transformCategoryChartData(data), [data]);
 
   const showSkeleton = isPreview || isLoading || !data;
 
@@ -71,6 +63,7 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
         className="px-8 py-4"
       >
         <CategoryChartView
+          key={`${currencyType}-${periodType}`}
           data={visibleStats}
           totalAmount={Number(data?.totalAmount ?? 0)}
           currencyType={currencyType}

@@ -1,31 +1,13 @@
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
 
+import type { CategoryChartViewProps } from '@/components/chart/category/category.utils';
 import CategoryLegendItem from '@/components/chart/category/CategoryLegendItem';
 import PieChart from '@/components/chart/charts/PieChart';
-import { CATEGORY_CHART_COLORS } from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
-
-import type { CategoryType } from '@/types/category';
-import type { CurrencyType } from '@/types/currency';
-
-import type { CountryCode } from '@/data/countryCode';
-
-interface CategoryChartViewProps {
-  data: {
-    percentage: number;
-    categoryName: CategoryType;
-    amount: number;
-  }[];
-  totalAmount: number;
-  colors?: string[];
-  currencyType: CurrencyType;
-  countryCode: CountryCode;
-}
 
 const CategoryChartView = ({
   data,
   totalAmount,
-  colors = CATEGORY_CHART_COLORS,
   currencyType,
   countryCode,
 }: CategoryChartViewProps) => {
@@ -42,9 +24,9 @@ const CategoryChartView = ({
     [countryCode, totalAmount],
   );
 
-  const pieChartData = data.map((item, index) => ({
+  const pieChartData = data.map((item) => ({
     percentage: item.percentage,
-    color: colors[index % colors.length],
+    color: item.color,
   }));
 
   return (
@@ -62,7 +44,7 @@ const CategoryChartView = ({
         </div>
       </PieChart>
       <div className="flex flex-col items-start justify-center gap-1">
-        {data.map((item, idx) => (
+        {data.map((item) => (
           <CategoryLegendItem
             key={item.categoryName}
             currencyType={currencyType}
@@ -70,7 +52,7 @@ const CategoryChartView = ({
             categoryName={item.categoryName}
             percentage={item.percentage}
             amount={item.amount}
-            color={colors[idx % colors.length]}
+            color={item.color}
           />
         ))}
       </div>

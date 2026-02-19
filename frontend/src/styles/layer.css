@@ -6,3 +6,27 @@
   --z-overlay: 50; /* ModalBackdrop, BottomSheet 공통 */
   --z-priority: 60; /* Toast, ActionBar, Tooltip, Popover 공통 */
 }
+
+@utility z-grouped-header {
+  z-index: var(--z-grouped-header);
+}
+
+@utility z-table-header {
+  z-index: var(--z-table-header);
+}
+
+@utility z-header {
+  z-index: var(--z-header);
+}
+
+@utility z-sidebar {
+  z-index: var(--z-sidebar);
+}
+
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+
+@utility z-priority {
+  z-index: var(--z-priority);
+}

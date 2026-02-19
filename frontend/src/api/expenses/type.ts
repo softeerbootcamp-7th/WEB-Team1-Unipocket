@@ -1,16 +1,22 @@
 import type { CategoryId } from '@/types/category';
 
 import type { CardId } from '@/data/card/cardCode';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 
-// 지출 소스 타입
-export type ExpenseSourceType =
+type ExpenseSourceType =
   | 'MANUAL'
   | 'IMAGE_RECEIPT'
   | 'IMAGE_APP_CAPTURE'
   | 'CSV';
 
+interface Travel {
+  id: number;
+  name: string;
+  imageKey: string | null;
+}
+
 // 결제 수단 응답
-export interface PaymentMethodResponse {
+interface PaymentMethod {
   isCash: boolean;
   card: {
     company: CardId;
@@ -19,20 +25,20 @@ export interface PaymentMethodResponse {
   } | null;
 }
 
-// 지출 내역 상세 응답
-export interface ExpenseResponse {
+interface Expense {
   expenseId: number;
   accountBookId: number;
-  travelId: number | null;
+  travel: Travel | null;
   merchantName: string;
-  exchangeRate: number | null;
+  exchangeRate: number;
   category: CategoryId;
-  paymentMethod: PaymentMethodResponse;
-  occurredAt: string; // ISO-8601 format
+  paymentMethod: PaymentMethod;
+  occurredAt: string;
+  updatedAt: string;
   localCurrencyAmount: number;
-  localCurrencyCode: string;
+  localCurrencyCode: CurrencyCode;
   baseCurrencyAmount: number;
-  baseCurrencyCode: string;
+  baseCurrencyCode: CurrencyCode;
   memo: string | null;
   source: ExpenseSourceType;
   approvalNumber: string | null;
@@ -40,41 +46,90 @@ export interface ExpenseResponse {
   fileLink: string | null;
 }
 
-// 지출 내역 목록 조회 응답
-export interface GetExpensesResponse {
-  expenses: ExpenseResponse[];
-  totalCount: number;
-  page: number;
-  size: number;
-}
+type ExpenseResponseBase = Pick<
+  Expense,
+  | 'expenseId'
+  | 'accountBookId'
+  | 'merchantName'
+  | 'category'
+  | 'paymentMethod'
+  | 'localCurrencyAmount'
+  | 'localCurrencyCode'
+  | 'baseCurrencyAmount'
+  | 'baseCurrencyCode'
+  | 'occurredAt'
+>;
 
-// 지출 생성/수정 요청
-export interface CreateExpenseRequest {
-  merchantName: string;
-  category: CategoryId;
-  userCardId?: number | null; // 카드 결제 시 카드 ID (null이면 현금)
-  occurredAt: string; // ISO-8601 format
-  localCurrencyAmount: number;
-  localCurrencyCode: string;
-  memo?: string | null;
-  travelId?: number | null;
-}
+type GetExpenseDetailResponse = Required<Expense>;
 
-// 지출 검색 필터
-export interface ExpenseSearchFilter {
-  startDate?: string; // ISO-8601 format
-  endDate?: string;
-  category?: number;
-  minAmount?: number;
-  maxAmount?: number;
-  merchantName?: string;
-  travelId?: number;
-  page?: number;
-  size?: number;
-  sort?: string; // 예: "occurredAt,desc"
-}
+type UpdateExpenseRequest = Partial<
+  Pick<
+    Expense,
+    | 'merchantName'
+    | 'category'
+    | 'occurredAt'
+    | 'localCurrencyAmount'
+    | 'localCurrencyCode'
+    | 'baseCurrencyAmount'
+    | 'memo'
+  > & { userCardId: number; travelId: number }
+>;
+
+type UpdateExpenseResponse = Required<
+  Omit<Expense, 'travel' | 'updatedAt'> & { travelId: number | null }
+>;
+
+type CreateManualExpenseRequest = Required<
+  Pick<
+    Expense,
+    | 'merchantName'
+    | 'category'
+    | 'occurredAt'
+    | 'localCurrencyAmount'
+    | 'localCurrencyCode'
+    | 'baseCurrencyAmount'
+    | 'memo'
+  > & { userCardId: number; travelId: number }
+>;
+
+type GetExpensesResponse = Required<Expense[]>;
+
+type CreateManualExpenseResponse = Required<ExpenseResponseBase>;
+
+type ExpenseSearchFilter = Partial<
+  Pick<Expense, 'category' | 'merchantName'> & {
+    startDate: string;
+    endDate: string;
+    minAmount: number;
+    maxAmount: number;
+    travelId: number;
+    category: CategoryId;
+    page: number;
+    size: number;
+    sort: string[];
+  }
+>;
+
+type GetExpenseFileUrlResponse = {
+  presignedUrl: string;
+  expiredsInSeconds: number;
+};
 
 // 거래처명 검색 응답
-export interface MerchantNamesResponse {
+interface SearchMerchantNamesResponse {
   merchantNames: string[];
 }
+
+export type {
+  CreateManualExpenseRequest,
+  CreateManualExpenseResponse,
+  Expense,
+  ExpenseSearchFilter,
+  GetExpenseDetailResponse,
+  GetExpenseFileUrlResponse,
+  GetExpensesResponse,
+  PaymentMethod,
+  SearchMerchantNamesResponse,
+  UpdateExpenseRequest,
+  UpdateExpenseResponse,
+};

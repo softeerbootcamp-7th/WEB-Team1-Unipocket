@@ -15,7 +15,7 @@ import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
 import LandingUploadBox from '@/components/upload/upload-box/LandingUploadBox';
 
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 import { LandingImages } from '@/assets';
 
 const LandingPage = () => {
@@ -188,7 +188,7 @@ const DemoSection = () => {
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
                       enableGroupSelection={false}
-                      groupBy={(row: ExpenseResponse) =>
+                      groupBy={(row: Expense) =>
                         new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                           year: 'numeric',
                           month: '2-digit',
@@ -212,7 +212,7 @@ const DemoSection = () => {
                   <DataTableProvider columns={columns} data={data}>
                     <DataTable
                       enableGroupSelection={false}
-                      groupBy={(row: ExpenseResponse) =>
+                      groupBy={(row: Expense) =>
                         new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                           year: 'numeric',
                           month: '2-digit',

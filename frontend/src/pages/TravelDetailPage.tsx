@@ -18,7 +18,7 @@ import ExpenseCard from '@/components/home-page/ExpenseCard';
 import { getData } from '@/components/landing-page/dummy';
 import BottomSheet from '@/components/layout/BottomSheet';
 
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 import { Icons } from '@/assets';
 
 const TripSummary = () => {
@@ -82,7 +82,7 @@ const TravelDetailPage = () => {
             </Button>
           </DataTableFilterProvider>
           <DataTable
-            groupBy={(row: ExpenseResponse) =>
+            groupBy={(row: Expense) =>
               new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: '2-digit',
@@ -108,7 +108,7 @@ const TravelDetailPage = () => {
             <SortDropdown />
           </DataTableFilterProvider>
           <DataTable
-            groupBy={(row: ExpenseResponse) =>
+            groupBy={(row: Expense) =>
               new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: '2-digit',

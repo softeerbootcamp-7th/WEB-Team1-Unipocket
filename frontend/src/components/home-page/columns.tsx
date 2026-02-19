@@ -1,15 +1,15 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import Chip from '@/components/common/Chip';
-import PaymentMethod from '@/components/expense/PaymentMethod';
+import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { type CategoryId } from '@/types/category';
 
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 
-export const columns: ColumnDef<ExpenseResponse>[] = [
+export const columns: ColumnDef<Expense>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -88,12 +88,12 @@ export const columns: ColumnDef<ExpenseResponse>[] = [
     header: () => <>결제 수단</>,
     cell: ({ row }) => {
       const payment = row.original.paymentMethod;
-      return <PaymentMethod paymentMethod={payment} />;
+      return <PaymentMethodDisplay paymentMethod={payment} />;
     },
   },
   {
     id: 'travel',
     header: () => <>여행</>,
-    cell: ({ row }) => <> {row.original.travelId}</>,
+    cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
   },
 ];

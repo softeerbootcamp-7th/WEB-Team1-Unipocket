@@ -1,137 +1,157 @@
 import {
+  queryOptions,
   useMutation,
-  type UseMutationOptions,
   useQuery,
-  type UseQueryOptions,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import {
-  createExpense,
+  createManualExpense,
   deleteExpense,
   getExpenseDetail,
+  getExpenseFileUrl,
   getExpenses,
   searchMerchantNames,
   updateExpense,
 } from '@/api/expenses/api';
 import type {
-  CreateExpenseRequest,
-  ExpenseResponse,
+  CreateManualExpenseRequest,
   ExpenseSearchFilter,
-  GetExpensesResponse,
-  MerchantNamesResponse,
+  UpdateExpenseRequest,
 } from '@/api/expenses/type';
+import { queryClient } from '@/main';
 
-/** 지출 내역 목록 조회 Query */
-export const useGetExpensesQuery = (
+// --- Query Options ---
+
+/** 지출 상세 Query Options */
+const expenseDetailQueryOptions = (
   accountBookId: number | string,
-  filter?: ExpenseSearchFilter,
-  options?: Omit<UseQueryOptions<GetExpensesResponse>, 'queryKey' | 'queryFn'>,
-) => {
-  return useQuery({
-    queryKey: ['expenses', accountBookId, filter],
-    queryFn: () => getExpenses(accountBookId, filter),
-    ...options,
+  expenseId: number | string,
+) =>
+  queryOptions({
+    queryKey: ['expense', accountBookId, expenseId],
+    queryFn: () => getExpenseDetail(accountBookId, expenseId),
   });
-};
 
-/** 지출 내역 목록 조회 Suspense Query */
-export const useGetExpensesSuspenseQuery = (
-  accountBookId: number | string,
-  filter?: ExpenseSearchFilter,
-) => {
-  return useSuspenseQuery({
-    queryKey: ['expenses', accountBookId, filter],
-    queryFn: () => getExpenses(accountBookId, filter),
-  });
-};
+// --- Hooks ---
 
-/** 지출 상세 조회 Query */
+/** 지출 상세 조회 (일반) */
 export const useGetExpenseDetailQuery = (
   accountBookId: number | string,
   expenseId: number | string,
-  options?: Omit<UseQueryOptions<ExpenseResponse>, 'queryKey' | 'queryFn'>,
-) => {
-  return useQuery({
-    queryKey: ['expense', accountBookId, expenseId],
-    queryFn: () => getExpenseDetail(accountBookId, expenseId),
-    ...options,
-  });
-};
+) => useQuery(expenseDetailQueryOptions(accountBookId, expenseId));
 
-/** 지출 상세 조회 Suspense Query */
-export const useGetExpenseDetailSuspenseQuery = (
+// --- Mutations ---
+
+/** 지출 수정 Mutation */
+export const useUpdateExpenseMutation = () =>
+  useMutation({
+    mutationFn: ({
+      accountBookId,
+      expenseId,
+      data,
+    }: {
+      accountBookId: number | string;
+      expenseId: number | string;
+      data: UpdateExpenseRequest;
+    }) => updateExpense(accountBookId, expenseId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['expenses', variables.accountBookId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['expense', variables.accountBookId, variables.expenseId],
+      });
+      toast.success('지출 내역이 수정되었어요.');
+    },
+    onError: () => {
+      toast.error('지출 수정에 실패했어요.');
+    },
+  });
+
+/** 지출 삭제 Mutation */
+export const useDeleteExpenseMutation = () =>
+  useMutation({
+    mutationFn: ({
+      accountBookId,
+      expenseId,
+    }: {
+      accountBookId: number | string;
+      expenseId: number | string;
+    }) => deleteExpense(accountBookId, expenseId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['expenses', variables.accountBookId],
+      });
+      toast.success('지출 내역이 삭제되었어요.');
+    },
+    onError: () => {
+      toast.error('지출 삭제에 실패했어요.');
+    },
+  });
+
+/** 지출 생성 Mutation */
+export const useCreateManualExpenseMutation = () =>
+  useMutation({
+    mutationFn: ({
+      accountBookId,
+      data,
+    }: {
+      accountBookId: number | string;
+      data: CreateManualExpenseRequest;
+    }) => createManualExpense(accountBookId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['expenses', variables.accountBookId],
+      });
+      toast.success('지출 내역이 생성되었어요.');
+    },
+    onError: () => {
+      toast.error('지출 생성에 실패했어요.');
+    },
+  });
+
+/** 지출 목록 Query Options */
+const expensesQueryOptions = (
+  accountBookId: number | string,
+  filter?: ExpenseSearchFilter,
+) =>
+  queryOptions({
+    queryKey: ['expenses', accountBookId, filter],
+    queryFn: () => getExpenses(accountBookId, filter),
+  });
+
+/** 지출 내역 목록 조회 (Suspense) */
+export const useGetExpensesQuery = (
+  accountBookId: number | string,
+  filter?: ExpenseSearchFilter,
+) => useSuspenseQuery(expensesQueryOptions(accountBookId, filter));
+
+/** 지출 파일 URL 조회 Query */
+export const useGetExpenseFileUrlQuery = (
   accountBookId: number | string,
   expenseId: number | string,
-) => {
-  return useSuspenseQuery({
-    queryKey: ['expense', accountBookId, expenseId],
-    queryFn: () => getExpenseDetail(accountBookId, expenseId),
+) => useQuery(expenseFileUrlQueryOptions(accountBookId, expenseId));
+
+/** 지출 파일 URL Query Options */
+const expenseFileUrlQueryOptions = (
+  accountBookId: number | string,
+  expenseId: number | string,
+) =>
+  queryOptions({
+    queryKey: ['expenseFileUrl', accountBookId, expenseId],
+    queryFn: () => getExpenseFileUrl(accountBookId, expenseId),
   });
-};
 
 /** 거래처명 검색 Query */
 export const useSearchMerchantNamesQuery = (
   accountBookId: number | string,
   query: string,
   limit?: number,
-  options?: Omit<
-    UseQueryOptions<MerchantNamesResponse>,
-    'queryKey' | 'queryFn'
-  >,
-) => {
-  return useQuery({
+) =>
+  useQuery({
     queryKey: ['merchantNames', accountBookId, query, limit],
     queryFn: () => searchMerchantNames(accountBookId, query, limit),
-    enabled: query.length > 0, // 검색어가 있을 때만 실행
-    ...options,
+    enabled: query.length > 0,
   });
-};
-
-/** 지출 생성 Mutation */
-export const useCreateExpenseMutation = (
-  options?: UseMutationOptions<
-    ExpenseResponse,
-    Error,
-    { accountBookId: number | string; data: CreateExpenseRequest }
-  >,
-) => {
-  return useMutation({
-    mutationFn: ({ accountBookId, data }) => createExpense(accountBookId, data),
-    ...options,
-  });
-};
-
-/** 지출 수정 Mutation */
-export const useUpdateExpenseMutation = (
-  options?: UseMutationOptions<
-    ExpenseResponse,
-    Error,
-    {
-      accountBookId: number | string;
-      expenseId: number | string;
-      data: CreateExpenseRequest;
-    }
-  >,
-) => {
-  return useMutation({
-    mutationFn: ({ accountBookId, expenseId, data }) =>
-      updateExpense(accountBookId, expenseId, data),
-    ...options,
-  });
-};
-
-/** 지출 삭제 Mutation */
-export const useDeleteExpenseMutation = (
-  options?: UseMutationOptions<
-    void,
-    Error,
-    { accountBookId: number | string; expenseId: number | string }
-  >,
-) => {
-  return useMutation({
-    mutationFn: ({ accountBookId, expenseId }) =>
-      deleteExpense(accountBookId, expenseId),
-    ...options,
-  });
-};

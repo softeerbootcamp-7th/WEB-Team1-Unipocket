@@ -11,21 +11,21 @@ import { columns } from '@/components/home-page/columns';
 import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
-import { useGetExpensesSuspenseQuery } from '@/api/expenses/query';
-import type { ExpenseResponse } from '@/api/expenses/type';
+import { useGetExpensesQuery } from '@/api/expenses/query';
+import type { Expense } from '@/api/expenses/type';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ExpenseTable = () => {
   const { accountBook } = useAccountBookStore();
 
-  const { data } = useGetExpensesSuspenseQuery(accountBook!.id, {
+  const { data } = useGetExpensesQuery(accountBook!.id, {
     page: 0,
     size: 50,
   });
 
   return (
     <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
-      <DataTableProvider columns={columns} data={data.expenses}>
+      <DataTableProvider columns={columns} data={data}>
         <DataTableFilterProvider>
           <DateFilter />
           <MerchantFilter />
@@ -36,7 +36,7 @@ const ExpenseTable = () => {
           <UploadMenu />
         </DataTableFilterProvider>
         <DataTable
-          groupBy={(row: ExpenseResponse) =>
+          groupBy={(row: Expense) =>
             new Date(row.occurredAt).toLocaleDateString('ko-KR', {
               year: 'numeric',
               month: '2-digit',

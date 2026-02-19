@@ -9,7 +9,7 @@ import Chip from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
-import PaymentMethod from '@/components/expense/PaymentMethod';
+import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
@@ -18,7 +18,7 @@ import ValueContainer, {
 } from '@/components/side-panel/ValueContainer';
 import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 
 const uploadTitleMap: Record<
   Exclude<UploadEntryType, 'manual' | null>,
@@ -32,7 +32,7 @@ interface SidePanelUIProps {
   mode?: UploadEntryType;
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<ExpenseResponse>;
+  initialData?: Partial<Expense>;
 }
 
 const SidePanelUI = ({
@@ -65,7 +65,7 @@ const SidePanelUI = ({
     initialData.paymentMethod.isCash ? (
       '현금'
     ) : (
-      <PaymentMethod paymentMethod={initialData.paymentMethod} />
+      <PaymentMethodDisplay paymentMethod={initialData.paymentMethod} />
     )
   ) : (
     '-'
@@ -80,7 +80,7 @@ const SidePanelUI = ({
 
     { label: '카테고리', value: categoryValue },
     { label: '결제 수단', value: paymentValue },
-    { label: '여행', value: initialData?.travelId ?? '-' },
+    { label: '여행', value: initialData?.travel?.name ?? '-' },
   ] as const satisfies ValueItemProps[];
 
   useLayoutEffect(() => {

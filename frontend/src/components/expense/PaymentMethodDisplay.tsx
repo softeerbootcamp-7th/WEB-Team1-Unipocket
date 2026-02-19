@@ -1,11 +1,11 @@
-import type { PaymentMethodResponse } from '@/api/expenses/type';
+import type { PaymentMethod } from '@/api/expenses/type';
 import { CARDS } from '@/data/card/cardCode';
 
-interface PaymentMethodProps {
-  paymentMethod: PaymentMethodResponse;
+interface PaymentMethodDisplayProps {
+  paymentMethod: PaymentMethod;
 }
 
-const PaymentMethod = ({ paymentMethod }: PaymentMethodProps) => {
+const PaymentMethodDisplay = ({ paymentMethod }: PaymentMethodDisplayProps) => {
   // 1. 현금인 경우
   if (paymentMethod.isCash) {
     return <span className="label1-normal-medium text-label-normal">현금</span>;
@@ -31,4 +31,4 @@ const PaymentMethod = ({ paymentMethod }: PaymentMethodProps) => {
   );
 };
 
-export default PaymentMethod;
+export default PaymentMethodDisplay;

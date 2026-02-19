@@ -1,8 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 
-export const columns: ColumnDef<ExpenseResponse>[] = [
+export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'merchantName',
     header: () => <>거래처</>,
@@ -58,6 +58,6 @@ export const columns: ColumnDef<ExpenseResponse>[] = [
   {
     id: 'travel',
     header: () => <>여행</>,
-    cell: ({ row }) => <> {row.original.travelId || '-'}</>,
+    cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
   },
 ];

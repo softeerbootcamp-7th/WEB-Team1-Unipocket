@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 
-function useSidePanelForm(initialData?: Partial<ExpenseResponse>) {
+function useSidePanelForm(initialData?: Partial<Expense>) {
   const [prevId, setPrevId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');

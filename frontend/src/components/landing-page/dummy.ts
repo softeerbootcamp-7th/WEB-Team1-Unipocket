@@ -1,4 +1,4 @@
-import type { ExpenseResponse } from '@/api/expenses/type';
+import type { Expense } from '@/api/expenses/type';
 
 // export interface Travel {
 //   id: number;
@@ -44,12 +44,17 @@ import type { ExpenseResponse } from '@/api/expenses/type';
 //   file: string;
 // }
 
-export function getData(): ExpenseResponse[] {
+export function getData(): Expense[] {
   return [
     {
       expenseId: 680,
       accountBookId: 900019,
-      travelId: null,
+      travel: {
+        id: 1,
+        name: '제주도 여행',
+        imageKey: 'travel-1.jpg',
+      },
+      updatedAt: '2026-02-17T10:15:30Z',
       merchantName: '7-Eleven',
       category: 5,
       paymentMethod: {
@@ -75,8 +80,13 @@ export function getData(): ExpenseResponse[] {
     {
       expenseId: 15280,
       accountBookId: 900019,
-      travelId: null,
+      travel: {
+        id: 1,
+        name: '제주도 여행',
+        imageKey: 'travel-1.jpg',
+      },
       merchantName: 'Yogiyo',
+      updatedAt: '2026-02-17T10:15:30Z',
       exchangeRate: 1.0,
       category: 5,
       paymentMethod: {
@@ -97,7 +107,12 @@ export function getData(): ExpenseResponse[] {
     {
       expenseId: 7980,
       accountBookId: 900019,
-      travelId: null,
+      updatedAt: '2026-02-17T10:15:30Z',
+      travel: {
+        id: 1,
+        name: '제주도 여행',
+        imageKey: 'travel-1.jpg',
+      },
       merchantName: 'Lotte Mart',
       exchangeRate: 1.0,
       category: 9,

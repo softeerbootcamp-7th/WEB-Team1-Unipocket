@@ -1,65 +1,22 @@
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
 import {
-  type CreateExpenseRequest,
-  type ExpenseResponse,
+  type CreateManualExpenseRequest,
+  type CreateManualExpenseResponse,
   type ExpenseSearchFilter,
+  type GetExpenseDetailResponse,
+  type GetExpenseFileUrlResponse,
   type GetExpensesResponse,
-  type MerchantNamesResponse,
+  type SearchMerchantNamesResponse,
+  type UpdateExpenseRequest,
+  type UpdateExpenseResponse,
 } from '@/api/expenses/type';
-
-/** 특정 가계부의 지출 내역 목록 조회 (필터링, 페이징 지원) */
-const getExpenses = (
-  accountBookId: number | string,
-  filter?: ExpenseSearchFilter,
-): Promise<GetExpensesResponse> => {
-  // filter를 params로 변환 (모든 값을 string으로)
-  const params: Record<string, string> = {};
-
-  if (filter) {
-    if (filter.startDate) params.startDate = filter.startDate;
-    if (filter.endDate) params.endDate = filter.endDate;
-    if (filter.category) params.category = filter.category.toString();
-    if (filter.minAmount !== undefined)
-      params.minAmount = filter.minAmount.toString();
-    if (filter.maxAmount !== undefined)
-      params.maxAmount = filter.maxAmount.toString();
-    if (filter.merchantName) params.merchantName = filter.merchantName;
-    if (filter.travelId !== undefined)
-      params.travelId = filter.travelId.toString();
-    if (filter.page !== undefined) params.page = filter.page.toString();
-    if (filter.size !== undefined) params.size = filter.size.toString();
-    if (filter.sort) params.sort = filter.sort;
-  }
-
-  return customFetch({
-    endpoint: ENDPOINTS.EXPENSES.BASE(accountBookId),
-    params: Object.keys(params).length > 0 ? params : undefined,
-    options: {
-      method: 'GET',
-    },
-  });
-};
-
-/** 지출 내역 수동 등록 */
-const createExpense = (
-  accountBookId: number | string,
-  data: CreateExpenseRequest,
-): Promise<ExpenseResponse> => {
-  return customFetch({
-    endpoint: ENDPOINTS.EXPENSES.MANUAL_UPLOAD(accountBookId),
-    options: {
-      method: 'POST',
-      body: JSON.stringify(data),
-    },
-  });
-};
 
 /** 특정 지출 상세 조회 */
 const getExpenseDetail = (
   accountBookId: number | string,
   expenseId: number | string,
-): Promise<ExpenseResponse> => {
+): Promise<GetExpenseDetailResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.EXPENSES.DETAIL(accountBookId, expenseId),
     options: {
@@ -72,8 +29,8 @@ const getExpenseDetail = (
 const updateExpense = (
   accountBookId: number | string,
   expenseId: number | string,
-  data: CreateExpenseRequest,
-): Promise<ExpenseResponse> => {
+  data: UpdateExpenseRequest,
+): Promise<UpdateExpenseResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.EXPENSES.DETAIL(accountBookId, expenseId),
     options: {
@@ -82,7 +39,6 @@ const updateExpense = (
     },
   });
 };
-
 /** 지출 내역 삭제 */
 const deleteExpense = (
   accountBookId: number | string,
@@ -96,12 +52,78 @@ const deleteExpense = (
   });
 };
 
+const createManualExpense = (
+  accountBookId: number | string,
+  data: CreateManualExpenseRequest,
+): Promise<CreateManualExpenseResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.EXPENSES.MANUAL_UPLOAD(accountBookId),
+    options: {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  });
+};
+
+const getExpenses = (
+  accountBookId: number | string,
+  filter?: ExpenseSearchFilter,
+): Promise<GetExpensesResponse> => {
+  const params: Record<string, string> = {};
+
+  if (filter) {
+    if (filter.startDate) params.startDate = filter.startDate;
+    if (filter.endDate) params.endDate = filter.endDate;
+    if (filter.merchantName) params.merchantName = filter.merchantName;
+    if (filter.category !== undefined && filter.category !== null) {
+      params.category = filter.category.toString();
+    }
+    if (filter.travelId !== undefined && filter.travelId !== null) {
+      params.travelId = filter.travelId.toString();
+    }
+    if (filter.minAmount !== undefined && filter.minAmount !== null) {
+      params.minAmount = filter.minAmount.toString();
+    }
+    if (filter.maxAmount !== undefined && filter.maxAmount !== null) {
+      params.maxAmount = filter.maxAmount.toString();
+    }
+    if (filter.page !== undefined) {
+      params.page = filter.page.toString();
+    }
+    if (filter.size !== undefined) {
+      params.size = filter.size.toString();
+    }
+    if (filter.sort && filter.sort.length > 0) {
+      params.sort = filter.sort.join(',');
+    }
+  }
+  return customFetch({
+    endpoint: ENDPOINTS.EXPENSES.BASE(accountBookId),
+    params: Object.keys(params).length > 0 ? params : undefined,
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
+const getExpenseFileUrl = (
+  accountBookId: number | string,
+  expenseId: number | string,
+): Promise<GetExpenseFileUrlResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.EXPENSES.FILE_URL(accountBookId, expenseId),
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
 /** 거래처명 자동완성 검색 */
 const searchMerchantNames = (
   accountBookId: number | string,
   query: string,
   limit?: number,
-): Promise<MerchantNamesResponse> => {
+): Promise<SearchMerchantNamesResponse> => {
   const params: Record<string, string> = { q: query };
   if (limit !== undefined) {
     params.limit = limit.toString();
@@ -117,9 +139,10 @@ const searchMerchantNames = (
 };
 
 export {
-  createExpense,
+  createManualExpense,
   deleteExpense,
   getExpenseDetail,
+  getExpenseFileUrl,
   getExpenses,
   searchMerchantNames,
   updateExpense,

@@ -4,6 +4,7 @@ import {
   generateMonthlyLabels,
   generateWeeklyLabels,
 } from '@/components/chart/period/period.utils';
+import type { PeriodChartType } from '@/components/chart/widgetPeriod';
 
 // ─── 월별 mock (6개월) ──────────────────────────
 const monthlyLabels = generateMonthlyLabels();
@@ -27,3 +28,9 @@ export const MOCK_DAILY_DATA: PeriodData[] = dailyLabels.map((label, i) => ({
   label,
   value: [60000, 30000, 80000, 50000, 70000, 90000, 20000][i] ?? 0,
 }));
+
+export const MOCK_DATA_MAP: Record<PeriodChartType, PeriodData[]> = {
+  MONTHLY: MOCK_MONTHLY_DATA,
+  WEEKLY: MOCK_WEEKLY_DATA,
+  DAILY: MOCK_DAILY_DATA,
+};

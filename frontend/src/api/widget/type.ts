@@ -1,10 +1,10 @@
 import type { WidgetType } from '@/components/chart/widget/type';
 
-import type { CategoryType } from '@/types/category';
+import type { CategoryId } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
+import type { PeriodType } from '@/types/period';
 
 import type { CountryCode } from '@/data/countryCode';
-import type { PeriodType } from '@/types/period';
 
 export interface GetWidgetRequest {
   accountBookId: string;
@@ -33,7 +33,7 @@ export interface PeriodWidgetResponse {
 }
 
 export interface CategoryWidgetItem {
-  categoryName: CategoryType;
+  category: CategoryId;
   amount: string;
   percent: number;
 }

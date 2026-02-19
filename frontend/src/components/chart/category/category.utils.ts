@@ -1,6 +1,6 @@
 import { CATEGORY_CHART_COLORS } from '@/components/chart/chartType';
 
-import type { CategoryType } from '@/types/category';
+import { type CategoryType, getCategoryName } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import type { CategoryWidgetResponse } from '@/api/widget/type';
@@ -29,7 +29,7 @@ export function transformCategoryChartData(
     .filter((item) => item.percent > 0)
     .map((item, idx) => ({
       percentage: item.percent,
-      categoryName: item.categoryName,
+      categoryName: getCategoryName(item.category),
       amount: Number(item.amount),
       color: CATEGORY_CHART_COLORS[idx % CATEGORY_CHART_COLORS.length],
     }));

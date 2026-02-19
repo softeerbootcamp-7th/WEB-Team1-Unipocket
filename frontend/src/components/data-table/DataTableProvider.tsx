@@ -20,6 +20,13 @@ const applyUpdater = <T,>(updater: Updater<T>, old: T) => {
     : updater;
 };
 
+const resetCells = {
+  textCell: null,
+  categoryCell: null,
+  amountCell: null,
+  paymentCell: null,
+};
+
 const tableReducer = (state: TableUIState, action: TableUIAction) => {
   switch (action.type) {
     case 'SET_SELECTION_MODE':
@@ -29,16 +36,16 @@ const tableReducer = (state: TableUIState, action: TableUIAction) => {
         ...state,
         rowSelection: applyUpdater(action.payload, state.rowSelection),
       };
-    case 'SET_ACTIVE_CELL':
-      return {
-        ...state,
-        activeCell: action.payload,
-      };
+    case 'SET_TEXT_CELL':
+      return { ...state, ...resetCells, textCell: action.payload };
+    case 'SET_CATEGORY_CELL':
+      return { ...state, ...resetCells, categoryCell: action.payload };
+    case 'SET_AMOUNT_CELL':
+      return { ...state, ...resetCells, amountCell: action.payload };
+    case 'SET_PAYMENT_CELL':
+      return { ...state, ...resetCells, paymentCell: action.payload };
     case 'SET_ACTIVE_ROW':
-      return {
-        ...state,
-        activeRow: action.payload,
-      };
+      return { ...state, activeRow: action.payload };
     default:
       return state;
   }
@@ -60,8 +67,8 @@ const DataTableProvider = <TData, TValue = unknown>({
   const [tableState, dispatch] = useReducer(tableReducer, {
     selectionMode: null,
     rowSelection: {},
-    activeCell: null,
     activeRow: null,
+    ...resetCells, // 초기 상태에 적용
   });
 
   // 행 선택 상태에 따른 자동 바 노출 로직 (useEffect)

@@ -46,7 +46,7 @@ public class ExchangeRateDailyScheduler {
 				} catch (Exception e) {
 					failureCount++;
 					log.warn(
-							"Daily exchange preload failed. currency={}, targetDate={}",
+							"Daily exchange preload failed (stacktrace follows). currency={}, targetDate={}",
 							currencyCode,
 							targetDate,
 							e);

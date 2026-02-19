@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.query.service;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
@@ -12,10 +13,12 @@ import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,10 @@ public class TemporaryExpenseQueryService {
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final FileRepository fileRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
+	private final TempExpenseMediaAccessService tempExpenseMediaAccessService;
+
+	@Value("${app.media.presigned-get-expiration-seconds:600}")
+	private int presignedGetExpirationSeconds;
 
 	/**
 	 * 가계부에 속한 메타 목록 조회
@@ -138,6 +145,31 @@ public class TemporaryExpenseQueryService {
 	 */
 	public TemporaryExpenseMetaFilesResponse.FileExpenses getTemporaryExpenseMetaFile(
 			Long accountBookId, Long tempExpenseMetaId, Long fileId) {
+		File file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
+
+		List<TemporaryExpenseResponse> expenses =
+				temporaryExpenseRepository.findByFileIdIn(List.of(fileId)).stream()
+						.map(TemporaryExpenseResponse::from)
+						.toList();
+
+		return new TemporaryExpenseMetaFilesResponse.FileExpenses(
+				file.getFileId(),
+				file.getS3Key(),
+				file.getFileType() != null ? file.getFileType().name() : null,
+				expenses);
+	}
+
+	public String issueTemporaryExpenseFileUrl(Long accountBookId, Long tempExpenseMetaId, Long fileId) {
+		File file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
+		return tempExpenseMediaAccessService.issueGetPath(
+				file.getS3Key(), Duration.ofSeconds(presignedGetExpirationSeconds));
+	}
+
+	public int getTemporaryExpenseFileUrlExpirationSeconds() {
+		return presignedGetExpirationSeconds;
+	}
+
+	private File getValidatedFile(Long accountBookId, Long tempExpenseMetaId, Long fileId) {
 		TempExpenseMeta meta =
 				tempExpenseMetaRepository
 						.findById(tempExpenseMetaId)
@@ -155,16 +187,6 @@ public class TemporaryExpenseQueryService {
 		if (!tempExpenseMetaId.equals(file.getTempExpenseMetaId())) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
 		}
-
-		List<TemporaryExpenseResponse> expenses =
-				temporaryExpenseRepository.findByFileIdIn(List.of(fileId)).stream()
-						.map(TemporaryExpenseResponse::from)
-						.toList();
-
-		return new TemporaryExpenseMetaFilesResponse.FileExpenses(
-				file.getFileId(),
-				file.getS3Key(),
-				file.getFileType() != null ? file.getFileType().name() : null,
-				expenses);
+		return file;
 	}
 }

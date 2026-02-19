@@ -3,6 +3,7 @@ package com.genesis.unipocket.travel.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.travel.query.persistence.response.TravelDetailQueryResponse;
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
+import com.genesis.unipocket.travel.query.presentation.response.TravelImageViewUrlResponse;
 import com.genesis.unipocket.travel.query.service.TravelQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,5 +38,16 @@ public class TravelQueryController {
 			@PathVariable Long accountBookId, @PathVariable Long travelId, @LoginUser UUID userId) {
 		return ResponseEntity.ok(
 				travelQueryService.getTravelDetail(accountBookId, travelId, userId));
+	}
+
+	@Operation(summary = "여행 이미지 열람 URL 발급 API", description = "imageKey로 presigned GET URL을 발급합니다.")
+	@GetMapping("/image-url")
+	public ResponseEntity<TravelImageViewUrlResponse> getTravelImageUrl(
+			@PathVariable Long accountBookId,
+			@LoginUser UUID userId,
+			@RequestParam String imageKey) {
+		String presignedUrl = travelQueryService.issueTravelImageViewUrl(accountBookId, userId, imageKey);
+		int expiresIn = travelQueryService.getTravelImageViewUrlExpirationSeconds();
+		return ResponseEntity.ok(new TravelImageViewUrlResponse(imageKey, presignedUrl, expiresIn));
 	}
 }

@@ -10,6 +10,7 @@ import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,8 @@ class ExpenseQueryServiceMerchantSearchTest {
 	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
 	@Mock private UserCardFetchService userCardFetchService;
 	@Mock private ExpenseMerchantSearchRateLimitService expenseMerchantSearchRateLimitService;
+	@Mock private MediaObjectStorage mediaObjectStorage;
+	@Mock private TravelInfoReader travelInfoReader;
 
 	@InjectMocks private ExpenseQueryService expenseQueryService;
 

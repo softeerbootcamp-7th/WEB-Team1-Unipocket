@@ -42,6 +42,17 @@ public class TemporaryExpenseQueryFacade {
 				accountBookId, tempExpenseMetaId, fileId);
 	}
 
+	public String getTemporaryExpenseMetaFileUrl(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId, UUID userId) {
+		validateOwnership(accountBookId, userId);
+		return temporaryExpenseQueryService.issueTemporaryExpenseFileUrl(
+				accountBookId, tempExpenseMetaId, fileId);
+	}
+
+	public int getTemporaryExpenseMetaFileUrlExpirationSeconds() {
+		return temporaryExpenseQueryService.getTemporaryExpenseFileUrlExpirationSeconds();
+	}
+
 	public SseEmitter streamParsingProgress(Long accountBookId, String taskId, UUID userId) {
 		validateOwnership(accountBookId, userId);
 

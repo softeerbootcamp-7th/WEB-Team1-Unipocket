@@ -1,6 +1,7 @@
 package com.genesis.unipocket.expense.query.presentation.response;
 
 import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
 import com.genesis.unipocket.expense.command.presentation.response.PaymentMethodResponse;
 import com.genesis.unipocket.expense.presentation.support.AmountFormatters;
 import com.genesis.unipocket.global.common.enums.Category;
@@ -18,7 +19,7 @@ import java.time.Instant;
 public record ExpenseResponse(
 		Long expenseId,
 		Long accountBookId,
-		Long travelId,
+		Travel travel,
 		String merchantName,
 		BigDecimal exchangeRate,
 		Category category,
@@ -35,10 +36,14 @@ public record ExpenseResponse(
 		String fileLink) {
 
 	public static ExpenseResponse from(ExpenseResult dto) {
+		return from(dto, null);
+	}
+
+	public static ExpenseResponse from(ExpenseResult dto, ExpenseTravelResult travel) {
 		return new ExpenseResponse(
 				dto.expenseId(),
 				dto.accountBookId(),
-				dto.travelId(),
+				Travel.from(travel),
 				dto.displayMerchantName(),
 				dto.exchangeRate(),
 				dto.category(),
@@ -54,5 +59,14 @@ public record ExpenseResponse(
 				dto.approvalNumber(),
 				dto.cardNumber(),
 				dto.fileLink());
+	}
+
+	public record Travel(Long id, String name, String imageKey) {
+		public static Travel from(ExpenseTravelResult travel) {
+			if (travel == null) {
+				return null;
+			}
+			return new Travel(travel.id(), travel.name(), travel.imageKey());
+		}
 	}
 }

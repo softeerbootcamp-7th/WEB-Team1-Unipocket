@@ -10,10 +10,9 @@ import Button from '@/components/common/Button';
 import BudgetSetupModal from '@/components/modal/BudgetSetupModal';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { BudgetWidgetResponse } from '@/api/widget/type';
 
 const BudgetChart = ({ isPreview = false }: ChartMode) => {
-  const { data, isLoading } = useWidgetQuery<BudgetWidgetResponse>('BUDGET');
+  const { data, isLoading } = useWidgetQuery('BUDGET');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showSkeleton = isPreview || isLoading || !data;

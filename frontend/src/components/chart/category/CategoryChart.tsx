@@ -14,7 +14,6 @@ import type { CurrencyType } from '@/types/currency';
 import type { PeriodType } from '@/types/period';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { CategoryWidgetResponse } from '@/api/widget/type';
 
 const CategoryChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
@@ -30,10 +29,10 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
     CATEGORY_PERIOD_OPTIONS.find((opt) => opt.id === selectedPeriod)?.type ||
     'ALL';
 
-  const { data, isLoading } = useWidgetQuery<CategoryWidgetResponse>(
-    'CATEGORY',
-    { currencyType, period: periodType },
-  );
+  const { data, isLoading } = useWidgetQuery('CATEGORY', {
+    currencyType,
+    period: periodType,
+  });
 
   const visibleStats = useMemo(() => transformCategoryChartData(data), [data]);
 

@@ -16,10 +16,6 @@ import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type {
-  CurrencyWidgetResponse,
-  PaymentWidgetResponse,
-} from '@/api/widget/type';
 
 interface ExpenseChartProps extends ChartMode {
   mode?: ExpenseChartMode;
@@ -30,12 +26,16 @@ const ExpenseChart = ({
   isPreview = false,
 }: ExpenseChartProps) => {
   const isMethod = mode === 'method';
-  const { data: paymentData, isLoading: isPaymentLoading } =
-    useWidgetQuery<PaymentWidgetResponse>('PAYMENT', { enabled: isMethod });
-  const { data: currencyData, isLoading: isCurrencyLoading } =
-    useWidgetQuery<CurrencyWidgetResponse>('CURRENCY', {
+  const { data: paymentData, isLoading: isPaymentLoading } = useWidgetQuery(
+    'PAYMENT',
+    { enabled: isMethod },
+  );
+  const { data: currencyData, isLoading: isCurrencyLoading } = useWidgetQuery(
+    'CURRENCY',
+    {
       enabled: !isMethod,
-    });
+    },
+  );
 
   const isLoading = isMethod ? isPaymentLoading : isCurrencyLoading;
 

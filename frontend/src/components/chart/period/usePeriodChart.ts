@@ -14,7 +14,6 @@ import {
 import type { CurrencyType } from '@/types/currency';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { PeriodWidgetResponse } from '@/api/widget/type';
 import type { CountryCode } from '@/data/countryCode';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
@@ -42,13 +41,10 @@ export const usePeriodChart = (isPreview: boolean) => {
   const currentCountryCode: CountryCode =
     (currencyType === 'BASE' ? baseCountryCode : localCountryCode) ?? 'KR';
 
-  const { data: apiData, isLoading } = useWidgetQuery<PeriodWidgetResponse>(
-    'PERIOD',
-    {
-      period: periodType,
-      currencyType: periodType === 'WEEKLY' ? currencyType : undefined,
-    },
-  );
+  const { data: apiData, isLoading } = useWidgetQuery('PERIOD', {
+    period: periodType,
+    currencyType: periodType === 'WEEKLY' ? currencyType : undefined,
+  });
 
   const showSkeleton = isPreview || isLoading || !apiData;
   const chartData: PeriodData[] = showSkeleton

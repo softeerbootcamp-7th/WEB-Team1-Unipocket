@@ -11,7 +11,6 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 import type { CurrencyType } from '@/types/currency';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { ComparisonWidgetResponse } from '@/api/widget/type';
 import type { CountryCode } from '@/data/countryCode';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
@@ -21,10 +20,7 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
   );
 
   const currencyType: CurrencyType = selectedCurrency === 1 ? 'BASE' : 'LOCAL';
-  const { data, isLoading } = useWidgetQuery<ComparisonWidgetResponse>(
-    'COMPARISON',
-    { currencyType },
-  );
+  const { data, isLoading } = useWidgetQuery('COMPARISON', { currencyType });
 
   const localCountryCode = useAccountBookStore(
     (state) => state.accountBook?.localCountryCode,

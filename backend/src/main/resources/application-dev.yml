@@ -107,6 +107,12 @@ analysis:
     dispatcher:
       fixed-delay-ms: 6000000
 
+exchange:
+  scheduler:
+    enabled: true
+    cron: "0 0 22 * * *"
+    zone: UTC
+
 management:
   endpoints:
     web:

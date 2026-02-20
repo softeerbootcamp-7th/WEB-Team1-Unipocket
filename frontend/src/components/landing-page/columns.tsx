@@ -6,10 +6,16 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'merchantName',
     header: () => <>거래처</>,
+    meta: {
+      cellEditor: 'text',
+    },
     cell: ({ row }) => <> {row.getValue('merchantName')}</>,
   },
   {
     accessorKey: 'categoryCode',
+    meta: {
+      cellEditor: 'category',
+    },
     header: () => <>카테고리</>,
     cell: ({ row }) => <> {row.getValue('categoryCode')}</>,
   },
@@ -21,6 +27,9 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'localAmount',
     header: () => <>현지 금액</>,
+    meta: {
+      cellEditor: 'amount',
+    },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('localAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
@@ -32,6 +41,9 @@ export const columns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'standardAmount',
+    meta: {
+      cellEditor: 'amount',
+    },
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('standardAmount'));
@@ -50,6 +62,9 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: 'paymentMethod',
     header: () => <>결제 수단</>,
+    meta: {
+      cellEditor: 'method',
+    },
     cell: ({ row }) => {
       const payment = row.original.paymentMethod;
       return <>{payment.isCash ? '현금' : payment.card?.label || '-'}</>;
@@ -58,6 +73,9 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: 'travel',
     header: () => <>여행</>,
+    meta: {
+      cellEditor: 'text',
+    },
     cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
   },
 ];

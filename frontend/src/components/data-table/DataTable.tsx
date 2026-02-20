@@ -44,8 +44,9 @@ const DataTable = <TData,>({
       cell: Cell<TData, unknown>,
       currentTarget: EventTarget & HTMLTableCellElement,
     ) => {
-      const columnId = cell.column.id;
+      const editorType = cell.column.columnDef.meta?.cellEditor;
 
+      const columnId = cell.column.id;
       if (columnId === 'select') return;
 
       const rect = currentTarget.getBoundingClientRect();
@@ -56,22 +57,19 @@ const DataTable = <TData,>({
         value: cell.getValue(),
       };
 
-      switch (columnId) {
-        case 'merchantName':
-        case 'travel':
+      switch (editorType) {
+        case 'text':
           dispatch({ type: 'SET_TEXT_CELL', payload });
           break;
         case 'category':
           dispatch({ type: 'SET_CATEGORY_CELL', payload });
           break;
-        case 'localAmount':
-        case 'standardAmount':
+        case 'amount':
           dispatch({ type: 'SET_AMOUNT_CELL', payload });
           break;
-        case 'paymentMethod':
+        case 'method':
           dispatch({ type: 'SET_PAYMENT_CELL', payload });
           break;
-
         default:
           break;
       }

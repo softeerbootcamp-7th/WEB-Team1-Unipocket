@@ -3,22 +3,17 @@ import { clsx } from 'clsx';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
-import { formatDateTime } from '@/components/calendar/date.utils';
 import Button from '@/components/common/Button';
-import { CategoryChip } from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
 import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
-import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
-import { EmptyValue } from '@/components/side-panel/EmptyValue';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import type { SidePanelFormValues } from '@/components/side-panel/type';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
-import ValueContainer, {
-  type ValueItemProps,
-} from '@/components/side-panel/ValueContainer';
+import { useSidePanelValues } from '@/components/side-panel/useSidePanelValues';
+import ValueContainer from '@/components/side-panel/ValueContainer';
 import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
 import type { Expense } from '@/api/expenses/type';
@@ -66,37 +61,11 @@ const SidePanelUI = ({
   );
   const [resetKey, setResetKey] = useState(0);
 
-  const categoryValue = initialData?.category ? (
-    <CategoryChip categoryId={initialData.category} />
-  ) : (
-    <EmptyValue />
-  );
-
-  const paymentValue = initialData?.paymentMethod ? (
-    initialData.paymentMethod.isCash ? (
-      '현금'
-    ) : (
-      <PaymentMethodDisplay paymentMethod={initialData.paymentMethod} />
-    )
-  ) : (
-    <EmptyValue />
-  );
-
-  const valueItems = [
-    {
-      label: '일시',
-      value: selectedDateTime ? (
-        formatDateTime(selectedDateTime)
-      ) : (
-        <EmptyValue />
-      ),
-      onClick: () => setIsDateTimePickerOpen((prev) => !prev),
-    },
-
-    { label: '카테고리', value: categoryValue },
-    { label: '결제 수단', value: paymentValue },
-    { label: '여행', value: initialData?.travel?.name ?? <EmptyValue /> },
-  ] as const satisfies ValueItemProps[];
+  const valueItems = useSidePanelValues({
+    initialData,
+    selectedDateTime,
+    onDateTimeClick: () => setIsDateTimePickerOpen((prev) => !prev),
+  });
 
   const handleReset = () => {
     resetForm();

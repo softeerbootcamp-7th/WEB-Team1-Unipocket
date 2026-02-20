@@ -1,8 +1,12 @@
 import { isRedirect, redirect } from '@tanstack/react-router';
 
+import type { LoginResponse } from '@/api/auth/type';
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
-import { getUser } from '@/api/user/api';
+import { getUser } from '@/api/users/api';
+import type { UserStatus } from '@/api/users/type';
+
+const INACTIVE_USER_STATUSES: UserStatus[] = ['BANNED', 'DELETED', 'INACTIVE'];
 
 export const logout = () => {
   return customFetch({
@@ -13,33 +17,6 @@ export const logout = () => {
   });
 };
 
-export const redirectIfAuthenticated = async () => {
-  try {
-    // useQuery 사용하지 않는 이유는 캐싱된 데이터를 사용하지 않고
-    // 항상 최신 인증 상태를 확인하기 위함
-    const user = await getUser();
-    if (user) {
-      throw redirect({
-        to: '/home',
-      });
-    }
-  } catch (error) {
-    // redirect 에러는 다시 throw하여 라우터가 처리하도록 함
-    if (isRedirect(error)) {
-      throw error;
-    }
-    // 인증되지 않은 상태(401 등)이면 아무 작업도 하지 않음
-  }
-};
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  userId: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
 export const loginDev = (): Promise<LoginResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.AUTH.LOGIN_DEV,
@@ -48,4 +25,38 @@ export const loginDev = (): Promise<LoginResponse> => {
       method: 'POST',
     },
   });
+};
+
+export const requireGuest = async () => {
+  try {
+    const user = await getUser().catch(() => null); // 에러 발생 시 비회원으로 간주
+
+    if (user) {
+      if (!user || INACTIVE_USER_STATUSES.includes(user.status)) {
+        return; // 정지/탈퇴 유저는 _auth(랜딩)에 머물게 둠
+      }
+
+      // 온보딩(가계부 생성) 필요 여부에 따라 리다이렉트
+      throw redirect({
+        to: user.needsOnboarding ? '/init' : '/home',
+      });
+    }
+  } catch (error) {
+    if (isRedirect(error)) throw error;
+  }
+};
+
+export const requireAuth = async () => {
+  try {
+    const user = await getUser().catch(() => null);
+
+    // 1. 비회원이거나 정지된 계정은 랜딩('/')으로 쫓아냄
+    if (!user || INACTIVE_USER_STATUSES.includes(user.status)) {
+      throw redirect({ to: '/' });
+    }
+
+    return user;
+  } catch (error) {
+    if (isRedirect(error)) throw error;
+  }
 };

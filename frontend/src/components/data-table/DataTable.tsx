@@ -61,7 +61,7 @@ const DataTable = <TData,>({
         case 'travel':
           dispatch({ type: 'SET_TEXT_CELL', payload });
           break;
-        case 'categoryCode':
+        case 'category':
           dispatch({ type: 'SET_CATEGORY_CELL', payload });
           break;
         case 'localAmount':

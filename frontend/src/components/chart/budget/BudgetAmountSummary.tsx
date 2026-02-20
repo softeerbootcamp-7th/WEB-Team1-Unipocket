@@ -6,6 +6,7 @@ import type { CountryCode } from '@/data/country/countryCode';
 interface BudgetAmountSummaryProps {
   totalBudget: number;
   usedBudget: number;
+  localUsedBudget: number;
   baseCode: CountryCode;
   localCode: CountryCode;
 }
@@ -13,6 +14,7 @@ interface BudgetAmountSummaryProps {
 const BudgetAmountSummary = ({
   totalBudget,
   usedBudget,
+  localUsedBudget,
   baseCode,
   localCode,
 }: BudgetAmountSummaryProps) => {
@@ -39,7 +41,7 @@ const BudgetAmountSummary = ({
           <CurrencyBadge countryCode={localCode} />
           <CurrencyAmountDisplay
             countryCode={localCode}
-            amount={usedBudget}
+            amount={localUsedBudget}
             className="text-label-neutral"
           />
         </div>

@@ -1,3 +1,9 @@
+import type { PeriodData } from '@/components/chart/chartType';
+
+import type { PeriodType } from '@/types/period';
+
+import type { PeriodWidgetItem } from '@/api/widget/type';
+
 /**
  * 기간별 차트에서 사용하는 날짜 유틸 함수들
  */
@@ -78,4 +84,42 @@ export const generateDailyLabels = (today: Date = new Date()): string[] => {
     labels.push(`${d.getMonth() + 1}/${d.getDate()}`);
   }
   return labels;
+};
+
+// ─── API 응답 → 차트 데이터 변환 ─────────────────────────
+
+/** ISO 주번호(2026-W04) → 해당 주 월요일 Date */
+const isoWeekToDate = (year: number, week: number): Date => {
+  const jan4 = new Date(year, 0, 4);
+  const monday1 = new Date(jan4);
+  monday1.setDate(jan4.getDate() - ((jan4.getDay() || 7) - 1));
+  monday1.setDate(monday1.getDate() + (week - 1) * 7);
+  return monday1;
+};
+
+/** period 문자열 → 차트 라벨 변환기 (periodType별) */
+const periodLabelParsers: Record<PeriodType, (period: string) => string> = {
+  MONTHLY: (p) => `${parseInt(p.split('-')[1], 10)}`,
+  WEEKLY: (p) => {
+    const [y, w] = p.split('-W').map(Number);
+    const date = isoWeekToDate(y, w);
+    return `${date.getMonth() + 1}월 ${getWeekOfMonth(date)}주`;
+  },
+  DAILY: (p) => {
+    const [, m, d] = p.split('-');
+    return `${parseInt(m, 10)}/${parseInt(d, 10)}`;
+  },
+  ALL: (p) => p,
+};
+
+/** API 응답의 PeriodWidgetItem[] → 차트용 PeriodData[] */
+export const parsePeriodItems = (
+  items: PeriodWidgetItem[],
+  periodType: PeriodType,
+): PeriodData[] => {
+  const toLabel = periodLabelParsers[periodType];
+  return items.map((item) => ({
+    label: toLabel(item.period),
+    value: Number(item.amount),
+  }));
 };

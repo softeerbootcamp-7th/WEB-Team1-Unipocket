@@ -11,7 +11,11 @@ import {
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
+    if (location.pathname === '/init') {
+      return;
+    }
+
     const { queryClient } = context;
     const accountBooks = await queryClient.ensureQueryData(
       accountBooksQueryOptions,

@@ -23,7 +23,7 @@ const PaymentMethodDisplay = ({ paymentMethod }: PaymentMethodDisplayProps) => {
 
   return (
     <div className="flex items-center gap-2">
-      {Logo && <Logo className="size-5 shrink-0" />}
+      {Logo && <img src={Logo} alt="카드 로고" className="size-5 shrink-0" />}
       <span className="text-label-normal label1-normal-medium">
         {cardInfo?.code} {label?.slice(0, 2)} {lastDigits?.slice(-3)}
       </span>

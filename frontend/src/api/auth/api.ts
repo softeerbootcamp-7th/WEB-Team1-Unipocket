@@ -1,8 +1,9 @@
 import { isRedirect, redirect } from '@tanstack/react-router';
 
+import type { LoginResponse } from '@/api/auth/type';
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
-import { getUser } from '@/api/user/api';
+import { getUser } from '@/api/users/api';
 
 export const logout = () => {
   return customFetch({
@@ -13,33 +14,6 @@ export const logout = () => {
   });
 };
 
-export const redirectIfAuthenticated = async () => {
-  try {
-    // useQuery 사용하지 않는 이유는 캐싱된 데이터를 사용하지 않고
-    // 항상 최신 인증 상태를 확인하기 위함
-    const user = await getUser();
-    if (user) {
-      throw redirect({
-        to: '/home',
-      });
-    }
-  } catch (error) {
-    // redirect 에러는 다시 throw하여 라우터가 처리하도록 함
-    if (isRedirect(error)) {
-      throw error;
-    }
-    // 인증되지 않은 상태(401 등)이면 아무 작업도 하지 않음
-  }
-};
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  userId: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
 export const loginDev = (): Promise<LoginResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.AUTH.LOGIN_DEV,
@@ -48,4 +22,57 @@ export const loginDev = (): Promise<LoginResponse> => {
       method: 'POST',
     },
   });
+};
+
+// ==========================================
+// 3. Non-API Functions (Route Guards / Utils)
+// ==========================================
+export const redirectIfAuthenticated = async () => {
+  try {
+    const user = await getUser();
+    if (user) {
+      throw redirect({
+        to: '/home',
+      });
+    }
+  } catch (error) {
+    if (isRedirect(error)) {
+      throw error;
+    }
+  }
+};
+
+export const redirectIfNeedsOnboarding = async () => {
+  try {
+    const user = await getUser();
+    if (user && user.needsOnboarding) {
+      throw redirect({
+        to: '/init',
+      });
+    }
+  } catch (error) {
+    if (isRedirect(error)) {
+      throw error;
+    }
+  }
+};
+
+export const redirectIfBannedOrDeleted = async () => {
+  try {
+    const user = await getUser();
+    if (
+      user &&
+      (user.status === 'BANNED' ||
+        user.status === 'DELETED' ||
+        user.status === 'INACTIVE')
+    ) {
+      throw redirect({
+        to: '/',
+      });
+    }
+  } catch (error) {
+    if (isRedirect(error)) {
+      throw error;
+    }
+  }
 };

@@ -1,25 +1,24 @@
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
 
 import { logout } from '@/api/auth/api';
-import { getUser } from '@/api/user/api';
+import { getUser } from '@/api/users/api';
+import { userQueryOptions } from '@/api/users/query';
 import { queryClient } from '@/main';
 
-export const useLogoutMutation = () => {
-  const navigate = useNavigate();
-
-  return useMutation({
-    mutationFn: logout,
-    throwOnError: true,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getUser'] });
-      navigate({ to: '/login' });
-    },
+// --- Queries ---
+export const useGetUserQuery = () => {
+  return useSuspenseQuery({
+    queryKey: userQueryOptions.queryKey,
+    queryFn: getUser,
   });
 };
 
-export const useGetUserQuery = () =>
-  useSuspenseQuery({
-    queryKey: ['getUser'],
-    queryFn: getUser,
+// --- Mutations ---
+export const useLogoutMutation = () => {
+  return useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userQueryOptions.queryKey });
+    },
   });
+};

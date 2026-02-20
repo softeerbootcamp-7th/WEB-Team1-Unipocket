@@ -6,7 +6,10 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import type { CurrencyType } from '@/types/currency';
+
 import {
+  getAnalysis,
   createAccountBook,
   deleteAccountBook,
   getAccountBookDetail,
@@ -14,6 +17,7 @@ import {
   updateAccountBook,
 } from '@/api/account-books/api';
 import type {
+  GetAnalysisResponse,
   CreateAccountBookRequest,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
@@ -87,9 +91,24 @@ const useUpdateAccountBookMutation = () =>
     },
   });
 
+const useAnalysisQuery = (
+  accountBookId: number | null,
+  year: number,
+  month: number,
+  currencyType: CurrencyType,
+) =>
+  useQuery<GetAnalysisResponse>({
+    queryKey: ['analysis', accountBookId, year, month, currencyType],
+    queryFn: () =>
+      getAnalysis(accountBookId as number, year, month, currencyType),
+    enabled: !!accountBookId,
+    placeholderData: (previousData) => previousData,
+  });
+
 export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
+  useAnalysisQuery,
   useAccountBookDetailQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,

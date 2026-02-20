@@ -1,4 +1,7 @@
+import type { CurrencyType } from '@/types/currency';
+
 import type {
+  GetAnalysisResponse,
   CreateAccountBookRequest,
   CreateAccountBookResponse,
   GetAccountBookDetailResponse,
@@ -11,7 +14,7 @@ import type {
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
 
-export const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
+const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.ACCOUNT_BOOKS.BASE,
     options: {
@@ -32,7 +35,7 @@ const createAccountBook = (
   });
 };
 
-export const getAccountBookDetail = (
+const getAccountBookDetail = (
   accountBookId: number,
 ): Promise<GetAccountBookDetailResponse> => {
   return customFetch({
@@ -89,10 +92,32 @@ const updateAccountBookExchangeRate = (
   });
 };
 
+const getAnalysis = (
+  accountBookId: number,
+  year: number,
+  month: number,
+  currencyType: CurrencyType,
+): Promise<GetAnalysisResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.ANALYSIS(accountBookId),
+    params: {
+      year: String(year),
+      month: String(month),
+      currencyType,
+    },
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
 export {
+  getAccountBooks,
+  getAccountBookDetail,
   createAccountBook,
   deleteAccountBook,
   updateAccountBook,
   updateAccountBookBudget,
   updateAccountBookExchangeRate,
+  getAnalysis,
 };

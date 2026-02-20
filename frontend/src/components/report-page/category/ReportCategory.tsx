@@ -4,21 +4,19 @@ import ReportContent from '@/components/report-page/layout/ReportContent';
 
 import { CATEGORIES, type CategoryId } from '@/types/category';
 
+import { type AnalysisCategoryItem } from '@/api/account-books/type';
+
 interface ReportCategoryProps {
   data: {
-    maxDiffCategoryId: CategoryId;
+    maxDiffCategoryIndex: CategoryId;
     isOverSpent: boolean;
     maxLabel: string;
-    items: {
-      categoryId: CategoryId;
-      mySpentAmount: string;
-      averageSpentAmount: string;
-    }[];
+    items: AnalysisCategoryItem[];
   };
 }
 
 const ReportCategory = ({ data }: ReportCategoryProps) => {
-  const category = CATEGORIES[data.maxDiffCategoryId].name;
+  const category = CATEGORIES[data.maxDiffCategoryIndex].name;
   const maxLabelValue = Number(data.maxLabel);
 
   return (

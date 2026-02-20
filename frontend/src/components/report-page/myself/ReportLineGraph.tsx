@@ -1,12 +1,13 @@
 import ReportLineChart from '@/components/report-page/myself/ReportLineChart';
 import ReportLegend from '@/components/report-page/ReportLegend';
-import { type ChartItem } from '@/components/report-page/reportType';
 import VerticalGrid from '@/components/report-page/VerticalGrid';
+
+import { type AnalysisChartItem } from '@/api/account-books/type';
 
 type MonthlyGraphData = {
   label: string;
   dayCount: number;
-  items: ChartItem[];
+  items: AnalysisChartItem[];
 };
 
 interface ReportLineGraphProps {

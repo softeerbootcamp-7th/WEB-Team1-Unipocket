@@ -8,28 +8,40 @@ import {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
 } from '@/api/account-books/query';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookStore } from '@/stores/accountBookStore';
 
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
+    if (location.pathname === '/init') {
+      return;
+    }
+
     const { queryClient } = context;
     const accountBooks = await queryClient.ensureQueryData(
       accountBooksQueryOptions,
     );
-    const { accountBook, setAccountBook } = useAccountBookStore.getState();
+    const { accountBook, setAccountBook, clearAccountBook } =
+      useAccountBookStore.getState();
 
     if (!accountBooks || accountBooks.length === 0) {
-      throw redirect({
-        to: '/init',
-      });
+      clearAccountBook();
+      throw redirect({ to: '/init' });
     }
 
-    if (!accountBook) {
-      const accountBookDetail = await queryClient.ensureQueryData(
-        accountBookDetailQueryOptions(accountBooks[0].id),
-      );
+    let targetId = accountBook?.id;
 
+    if (!targetId || !accountBooks.some((ab) => ab.id === targetId)) {
+      targetId = accountBooks[0].id;
+    }
+
+    try {
+      const accountBookDetail = await queryClient.ensureQueryData(
+        accountBookDetailQueryOptions(targetId),
+      );
       setAccountBook(accountBookDetail);
+    } catch (error) {
+      clearAccountBook();
+      throw error;
     }
   },
   pendingComponent: () => <Skeleton className="h-64" />,

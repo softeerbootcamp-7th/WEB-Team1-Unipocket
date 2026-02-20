@@ -4,7 +4,7 @@ import ReportContent from '@/components/report-page/layout/ReportContent';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/useAccountBookStore';
 
 const barWidth = {
   large: 'w-46',
@@ -22,15 +22,7 @@ interface ReportMonthlyProps {
 
 const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   const { currencyType } = useReportContext();
-  const accountBook = useAccountBookStore((state) => state.accountBook);
-  if (
-    !accountBook ||
-    !accountBook.localCountryCode ||
-    !accountBook.baseCountryCode
-  )
-    return null;
-
-  const { localCountryCode, baseCountryCode } = accountBook;
+  const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
   const countryCode =
     currencyType === 'LOCAL' ? localCountryCode : baseCountryCode;
 

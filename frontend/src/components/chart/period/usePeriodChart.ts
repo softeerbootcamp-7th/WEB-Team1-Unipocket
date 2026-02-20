@@ -15,8 +15,7 @@ import type { CurrencyType } from '@/types/currency';
 import { getPeriodTypeById } from '@/types/period';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { CountryCode } from '@/data/country/countryCode';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookCountryCode } from '@/stores/useAccountBookStore';
 
 export const usePeriodChart = (isPreview: boolean) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
@@ -25,20 +24,11 @@ export const usePeriodChart = (isPreview: boolean) => {
   const [selectedPeriod, setSelectedPeriod] = useState(
     PERIOD_WIDGET_OPTIONS[0].id,
   );
-  const localCountryCode = useAccountBookStore(
-    (state) => state.accountBook?.localCountryCode,
-  );
-  const baseCountryCode = useAccountBookStore(
-    (state) => state.accountBook?.baseCountryCode,
-  );
-
   const currencyType: CurrencyType =
     selectedCurrency === CURRENCY_OPTIONS[0].id ? 'BASE' : 'LOCAL';
+  const currentCountryCode = useAccountBookCountryCode(currencyType);
 
   const periodType = getPeriodTypeById(selectedPeriod) as PeriodChartType;
-
-  const currentCountryCode: CountryCode =
-    (currencyType === 'BASE' ? baseCountryCode : localCountryCode) ?? 'KR';
 
   const { data: apiData, isLoading } = useWidgetQuery('PERIOD', {
     period: periodType,

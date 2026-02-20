@@ -18,21 +18,17 @@ import { type CurrencyType } from '@/types/currency';
 
 import { useAnalysisQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/useAccountBookStore';
 
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
-  const accountBookId = useAccountBookStore(
-    (state) => state.accountBook?.id as number,
-  );
+  const accountBookId = useRequiredAccountBook().id;
 
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
-  const startDate = useAccountBookStore(
-    (state) => state.accountBook?.startDate,
-  );
-  const endDate = useAccountBookStore((state) => state.accountBook?.endDate);
+  const startDate = useRequiredAccountBook().startDate;
+  const endDate = useRequiredAccountBook().endDate;
 
   const startYearMonth = parseYearMonth(startDate);
   const endYearMonth = parseYearMonth(endDate);

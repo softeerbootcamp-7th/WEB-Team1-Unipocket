@@ -11,7 +11,7 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 import type { CurrencyType } from '@/types/currency';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/useAccountBookStore';
 
 const ComparisonChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState<number>(
@@ -22,9 +22,7 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
     CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type ?? 'BASE';
   const { data, isLoading } = useWidgetQuery('COMPARISON', { currencyType });
 
-  const localCountryCode = useAccountBookStore(
-    (state) => state.accountBook!.localCountryCode,
-  );
+  const localCountryCode = useRequiredAccountBook().localCountryCode;
 
   const showSkeleton = isPreview || isLoading || !data;
 

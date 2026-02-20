@@ -39,7 +39,7 @@ const Header = () => {
             <Icons.Refresh className="text-label-neutral h-4 w-4 cursor-pointer" />
           </div>
         )}
-        <Button onClick={() => {}}>모바일</Button>
+        {!isInitPath && <Button onClick={() => {}}>모바일</Button>}
         <ProfilePopover />
       </div>
     </div>

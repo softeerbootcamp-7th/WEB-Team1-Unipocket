@@ -64,12 +64,12 @@ public record ExpenseResponse(
 				dto.fileLink());
 	}
 
-	public record Travel(Long id, String name, String imageKey) {
+	public record Travel(Long travelId, String name, String imageKey) {
 		public static Travel from(ExpenseTravelResult travel) {
 			if (travel == null) {
 				return null;
 			}
-			return new Travel(travel.id(), travel.name(), travel.imageKey());
+			return new Travel(travel.travelId(), travel.name(), travel.imageKey());
 		}
 	}
 }

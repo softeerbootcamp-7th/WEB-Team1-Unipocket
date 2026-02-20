@@ -32,7 +32,7 @@ export const Route = createFileRoute('/_app')({
       setAccountBook(accountBookDetail);
     }
   },
-  pendingComponent: () => <Skeleton className="h-64" />,
+  pendingComponent: () => <Skeleton className="h-dvh" />,
   component: AppLayout,
 });
 

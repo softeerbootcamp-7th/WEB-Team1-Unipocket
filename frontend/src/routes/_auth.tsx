@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
     await redirectIfAuthenticated();
   },
-  pendingComponent: () => <Skeleton className="h-64" />,
+  pendingComponent: () => <Skeleton className="h-dvh" />,
   component: AppLayout,
 });
 

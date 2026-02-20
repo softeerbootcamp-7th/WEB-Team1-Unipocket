@@ -57,11 +57,13 @@ const SidePanelUI = ({
     setSelectedDateTime,
     isDateTimePickerOpen,
     setIsDateTimePickerOpen,
+    resetForm,
   } = useSidePanelForm(initialData);
 
   const [currencyValues, setCurrencyValues] = useState<CurrencyValues | null>(
     null,
   );
+  const [resetKey, setResetKey] = useState(0);
 
   const categoryValue = initialData?.category ? (
     <CategoryChip categoryId={initialData.category} />
@@ -106,6 +108,10 @@ const SidePanelUI = ({
       memo,
       travelId: initialData?.travel?.id ?? undefined, // @TODO: 실제 선택 상태로 교체
     });
+
+    resetForm();
+    setCurrencyValues(null);
+    setResetKey((k) => k + 1);
   };
 
   useLayoutEffect(() => {
@@ -187,6 +193,7 @@ const SidePanelUI = ({
         </div>
         <Divider style="thin" />
         <MoneyContainer
+          key={resetKey}
           rateUpdatedAt={selectedDateTime ?? undefined}
           onValuesChange={setCurrencyValues}
         />

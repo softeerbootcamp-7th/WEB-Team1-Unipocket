@@ -34,7 +34,8 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
 
   const visibleStats = useMemo(() => transformCategoryChartData(data), [data]);
 
-  const showSkeleton = isPreview || isLoading || !data;
+  const showSkeleton =
+    isPreview || isLoading || !data || visibleStats.length === 0;
 
   return (
     <ChartContainer className="w-139" isPreview={isPreview}>
@@ -55,7 +56,7 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
 
       {/* stat section */}
       <ChartContent
-        isPreview={showSkeleton || visibleStats.length === 0}
+        isPreview={showSkeleton}
         skeleton={<CategoryChartSkeleton />}
         className="px-8 py-4"
       >

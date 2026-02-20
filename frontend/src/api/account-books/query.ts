@@ -20,27 +20,20 @@ import type {
 import { queryClient } from '@/main';
 
 const accountBooksQueryOptions = queryOptions({
-  queryKey: ['accountBooks'],
+  queryKey: ['accountBooks', 'list'],
   queryFn: getAccountBooks,
+  staleTime: 1000 * 30,
 });
 
 const useGetAccountBooksQuery = () => {
   return useSuspenseQuery(accountBooksQueryOptions);
 };
 
-//////
-const useAccountBooksQuery = () =>
-  useQuery({
-    queryKey: ['accountBooks'],
-    queryFn: getAccountBooks,
-    staleTime: 1000 * 30,
-  });
-
 const useCreateAccountBookMutation = () =>
   useMutation({
     mutationFn: (data: CreateAccountBookRequest) => createAccountBook(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
       toast.success('가계부가 생성되었어요.');
     },
     onError: () => {
@@ -50,7 +43,7 @@ const useCreateAccountBookMutation = () =>
 
 const accountBookDetailQueryOptions = (accountBookId: number | null) =>
   queryOptions({
-    queryKey: ['accountBookDetail', accountBookId],
+    queryKey: ['accountBooks', 'detail', accountBookId],
     queryFn: () => getAccountBookDetail(accountBookId as number),
     enabled: !!accountBookId,
   });
@@ -61,8 +54,11 @@ const useAccountBookDetailQuery = (accountBookId: number | null) =>
 const useDeleteAccountBookMutation = () =>
   useMutation({
     mutationFn: (accountBookId: number) => deleteAccountBook(accountBookId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
+    onSuccess: (_, accountBookId) => {
+      queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
+      queryClient.removeQueries({
+        queryKey: ['accountBooks', 'detail', accountBookId],
+      });
       toast.success('가계부가 삭제되었어요.');
     },
     onError: () => {
@@ -80,9 +76,9 @@ const useUpdateAccountBookMutation = () =>
       data: UpdateAccountBookRequest;
     }) => updateAccountBook(accountBookId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks'] });
+      queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
       queryClient.invalidateQueries({
-        queryKey: ['accountBook', variables.accountBookId],
+        queryKey: ['accountBooks', 'detail', variables.accountBookId],
       });
       toast.success('가계부가 수정되었어요.');
     },
@@ -95,7 +91,6 @@ export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
   useAccountBookDetailQuery,
-  useAccountBooksQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
   useGetAccountBooksQuery,

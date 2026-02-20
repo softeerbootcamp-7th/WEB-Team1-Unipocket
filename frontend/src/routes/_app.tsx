@@ -16,8 +16,11 @@ export const Route = createFileRoute('/_app')({
     // 1. 로그인 여부 및 정지 계정 검사 (통과 못하면 '/'로 리다이렉트됨)
     const user = await requireAuth();
 
-    // 2. '/init' 페이지에 있다면 이후 가계부 조회 로직을 스킵
+    // 2. '/init' 페이지에 있다면 이후 가계부 조회 로직을 스킵, needsOnboarding이 true인 경우에만 접근 가능
     if (location.pathname === '/init') {
+      if (!user?.needsOnboarding) {
+        throw redirect({ to: '/home' });
+      }
       return;
     }
 

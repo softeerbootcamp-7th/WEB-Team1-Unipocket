@@ -168,7 +168,7 @@ class AccountBookCommandControllerTest {
 								.content(requestBody)
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("제목만 수정"));
 	}
 

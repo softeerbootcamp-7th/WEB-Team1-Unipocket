@@ -291,7 +291,7 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("부분수정 제목"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.baseCurrencyCode").value("KR"))

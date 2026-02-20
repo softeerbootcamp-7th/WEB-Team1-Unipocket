@@ -8,8 +8,15 @@ import { ModalContext } from '@/components/modal/useModalContext';
 
 import { Icons } from '@/assets';
 import countryData from '@/data/country/countryData.json';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 import { getCountryInfo } from '@/lib/country';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
+
+export interface CurrencyValues {
+  localAmount: number;
+  localCurrencyCode: CurrencyCode;
+  baseAmount: number;
+}
 
 interface CurrencyOption {
   id: number;
@@ -31,6 +38,7 @@ const RATE = 1464; // USD -> KRW
 interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
   rateUpdatedAt?: Date;
+  onValuesChange?: (values: CurrencyValues) => void;
 }
 
 const formatRateDate = (date: Date): string => {
@@ -41,6 +49,7 @@ const formatRateDate = (date: Date): string => {
 const CurrencyConverter = ({
   showCurrencyDropdown = false,
   rateUpdatedAt,
+  onValuesChange,
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
@@ -70,6 +79,16 @@ const CurrencyConverter = ({
       modalContext.setActionReady(isValid);
     }
   }, [isValid, modalContext]);
+
+  useEffect(() => {
+    if (!onValuesChange || !isValid) return;
+    const parse = (s: string) => parseFloat(s.replace(/,/g, ''));
+    onValuesChange({
+      localAmount: parse(localCurrency),
+      localCurrencyCode: localCurrencyName as CurrencyCode,
+      baseAmount: parse(baseCurrency),
+    });
+  }, [localCurrency, baseCurrency, localCurrencyName, isValid, onValuesChange]);
 
   return (
     <div className="flex h-62 flex-col gap-3">

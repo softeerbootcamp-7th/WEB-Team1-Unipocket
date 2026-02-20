@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -9,6 +9,7 @@ import { CategoryChip } from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
+import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
@@ -58,6 +59,10 @@ const SidePanelUI = ({
     setIsDateTimePickerOpen,
   } = useSidePanelForm(initialData);
 
+  const [currencyValues, setCurrencyValues] = useState<CurrencyValues | null>(
+    null,
+  );
+
   const categoryValue = initialData?.category ? (
     <CategoryChip categoryId={initialData.category} />
   ) : (
@@ -93,14 +98,13 @@ const SidePanelUI = ({
     onSubmit({
       merchantName: title,
       category: initialData?.category ?? 1, // @TODO: 실제 선택 상태로 교체
-      //userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태
-      userCardId: undefined,
+      userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태로 교체
       occurredAt: selectedDateTime,
-      localCurrencyAmount: 12, // @TODO: MoneyContainer에서 가져오기
-      localCurrencyCode: 'USD', // @TODO: 여행 기반 코드
-      baseCurrencyAmount: 17568, // @TODO
+      localCurrencyAmount: currencyValues?.localAmount ?? 0,
+      localCurrencyCode: currencyValues?.localCurrencyCode ?? 'USD',
+      baseCurrencyAmount: currencyValues?.baseAmount ?? 0,
       memo,
-      travelId: initialData?.travel?.id ?? undefined,
+      travelId: initialData?.travel?.id ?? undefined, // @TODO: 실제 선택 상태로 교체
     });
   };
 
@@ -182,7 +186,10 @@ const SidePanelUI = ({
           )}
         </div>
         <Divider style="thin" />
-        <MoneyContainer rateUpdatedAt={selectedDateTime ?? undefined} />
+        <MoneyContainer
+          rateUpdatedAt={selectedDateTime ?? undefined}
+          onValuesChange={setCurrencyValues}
+        />
         <Divider style="thin" />
         <TextInput
           value={memo}

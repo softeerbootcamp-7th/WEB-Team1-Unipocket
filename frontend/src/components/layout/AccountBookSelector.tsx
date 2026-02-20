@@ -1,6 +1,10 @@
 import Dropdown from '@/components/common/dropdown/Dropdown';
 
-import { useGetAccountBooksQuery } from '@/api/account-books/query';
+import {
+  accountBookDetailQueryOptions,
+  useGetAccountBooksQuery,
+} from '@/api/account-books/query';
+import { queryClient } from '@/main';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const AccountBookSelector = () => {
@@ -11,15 +15,19 @@ const AccountBookSelector = () => {
     return null;
   }
 
-  const accountBookOptions = data.map((book) => ({
-    ...book,
-    name: book.title,
+  const accountBookOptions = data.map(({ id, title }) => ({
+    id,
+    name: title,
   }));
 
-  const handleOnSelect = (selectedId: number) => {
+  const handleOnSelect = async (selectedId: number) => {
     const selectedAccountBook = data.find((book) => book.id === selectedId);
-    if (selectedAccountBook) {
-      setAccountBook(selectedAccountBook);
+    if (!accountBook) {
+      const accountBookDetail = await queryClient.ensureQueryData(
+        accountBookDetailQueryOptions(selectedAccountBook!.id),
+      );
+
+      setAccountBook(accountBookDetail);
     }
   };
 

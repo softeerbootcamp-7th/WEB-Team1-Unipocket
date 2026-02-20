@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
-import type { AccountBookMeta } from '@/types/accountBook';
+import type { GetAccountBookDetailResponse } from '@/api/account-books/type';
 
 interface AccountBookState {
-  accountBook: AccountBookMeta | null;
-  setAccountBook: (data: AccountBookMeta) => void;
-  updateAccountBook: (updateField: Partial<AccountBookMeta>) => void;
+  accountBook: GetAccountBookDetailResponse | null;
+  setAccountBook: (data: GetAccountBookDetailResponse) => void;
+  updateAccountBook: (
+    updateField: Partial<GetAccountBookDetailResponse>,
+  ) => void;
   clearAccountBook: () => void;
 }
 

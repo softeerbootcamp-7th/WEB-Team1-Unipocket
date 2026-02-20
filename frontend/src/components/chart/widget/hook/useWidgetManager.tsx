@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useDropZone } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
-import { MOCK_WIDGET_DATA } from '@/components/chart/widget/mock';
 import {
   WIDGET_TYPES,
   type WidgetItem,
   type WidgetType,
 } from '@/components/chart/widget/type';
+
+import {
+  useUpdateWidgetLayoutMutation,
+  useWidgetLayoutQuery,
+} from '@/api/widget/query';
 
 const WIDGET_MAX_SLOT_BREAKPOINT = 1500;
 const MIN_WIDGET_SLOTS = 4;
@@ -24,10 +28,24 @@ const normalizeOrders = (widgets: WidgetItem[]): WidgetItem[] =>
     .map((w, i) => ({ ...w, order: i }));
 
 // 위젯 CRUD + 표시 로직
-const useWidgetCRUD = (maxWidgets: number) => {
-  // TODO: 추가된 위젯 목록 (API 연동 전까지 mock 활용)
-  const [addedWidgets, setAddedWidgets] =
-    useState<WidgetItem[]>(MOCK_WIDGET_DATA);
+const useWidgetCRUD = (
+  maxWidgets: number,
+  initialData: WidgetItem[] | undefined,
+  isWidgetEditMode: boolean,
+) => {
+  const [addedWidgets, setAddedWidgets] = useState<WidgetItem[]>(
+    initialData ?? [],
+  );
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+
+  if (initialData && initialData !== prevInitialData) {
+    setPrevInitialData(initialData);
+
+    // 사용자가 편집 중이 아닐 때만 서버 데이터로 로컬 상태를 동기화
+    if (!isWidgetEditMode) {
+      setAddedWidgets(initialData);
+    }
+  }
 
   // 삭제된 위젯 타입 목록 (순서 유지: 가장 최근 삭제된 위젯이 맨 뒤)
   const [removedWidgets, setRemovedWidgets] = useState<WidgetType[]>([]);
@@ -146,6 +164,7 @@ const useWidgetCRUD = (maxWidgets: number) => {
 
   return {
     displayWidgets,
+    addedWidgets,
     availableWidgets,
     handleAddWidget,
     handleInsertWidget,
@@ -165,6 +184,9 @@ export const useWidgetManager = () => {
   const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
   const [maxWidgets, setMaxWidgets] = useState(getMaxWidgets());
 
+  const { data: layoutData } = useWidgetLayoutQuery();
+  const { mutate: saveLayout } = useUpdateWidgetLayoutMutation();
+
   useEffect(() => {
     const updateLayout = () => {
       const newMax = getMaxWidgets();
@@ -176,19 +198,36 @@ export const useWidgetManager = () => {
     return () => window.removeEventListener('resize', updateLayout);
   }, []);
 
-  const toggleEditMode = useCallback(
-    () => setIsWidgetEditMode((prev) => !prev),
-    [],
-  );
-
   const {
     displayWidgets,
+    addedWidgets,
     availableWidgets,
     handleAddWidget,
     handleInsertWidget,
     handleMoveWidget,
     handleRemoveWidget,
-  } = useWidgetCRUD(maxWidgets);
+  } = useWidgetCRUD(maxWidgets, layoutData, isWidgetEditMode);
+
+  const toggleEditMode = useCallback(() => {
+    if (isWidgetEditMode) {
+      // 편집 모드 종료 시 서버에 저장
+      const payload = addedWidgets
+        .filter(
+          (w): w is WidgetItem & { widgetType: WidgetType } =>
+            w.widgetType !== 'BLANK',
+        )
+        .map(({ order, widgetType, currencyType, period }) => ({
+          order,
+          widgetType,
+          ...(currencyType && { currencyType }),
+          ...(period && { period }),
+        }));
+
+      saveLayout(payload);
+    }
+
+    setIsWidgetEditMode((prev) => !prev);
+  }, [isWidgetEditMode, addedWidgets, saveLayout]);
 
   // list 영역 전체 드롭존 (gap에 안 떨어졌을 때 fallback → 맨 뒤에 추가)
   const listDropZone = useDropZone({

@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import { loginDev } from '@/api/auth/api';
 import { AuthLogos } from '@/assets';
@@ -16,8 +17,8 @@ const LoginContainerTemp = () => {
       document.cookie = `access_token=${accessToken}; max-age=${expiresIn}; ${baseOptions}`;
       document.cookie = `refresh_token=${refreshToken}; max-age=${REFRESH_EXPIRY}; ${baseOptions}`;
       navigate({ to: '/home' });
-    } catch (error) {
-      console.error('로그인 실패:', error);
+    } catch {
+      toast.error('로그인에 실패했습니다. 다시 시도해주세요.');
     }
   };
   return (
@@ -27,7 +28,7 @@ const LoginContainerTemp = () => {
     >
       <AuthLogos.Mingyu className="h-4.5 w-4.5" />
       <span className="text-primary-heavy text-[15px] font-semibold">
-        성민규로 로그인
+        게스트로 로그인
       </span>
     </button>
   );

@@ -15,9 +15,10 @@ import ImportToFolderBar from '@/components/data-table/ImportToFolderBar';
 import SelectionActionBar from '@/components/data-table/SelectionActionBar';
 import { columns } from '@/components/home-page/columns';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
-import { type Expense, getData } from '@/components/landing-page/dummy';
+import { getData } from '@/components/landing-page/dummy';
 import BottomSheet from '@/components/layout/BottomSheet';
 
+import type { Expense } from '@/api/expenses/type';
 import { Icons } from '@/assets';
 
 const TripSummary = () => {
@@ -82,7 +83,7 @@ const TravelDetailPage = () => {
           </DataTableFilterProvider>
           <DataTable
             groupBy={(row: Expense) =>
-              new Date(row.date).toLocaleDateString('ko-KR', {
+              new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
@@ -108,7 +109,7 @@ const TravelDetailPage = () => {
           </DataTableFilterProvider>
           <DataTable
             groupBy={(row: Expense) =>
-              new Date(row.date).toLocaleDateString('ko-KR', {
+              new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',

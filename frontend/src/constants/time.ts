@@ -1,5 +1,5 @@
-import type { CountryCode } from '@/data/countryCode';
-import timeData from '@/data/countryTime.json';
+import type { CountryCode } from '@/data/country/countryCode';
+import timeData from '@/data/country/countryTime.json';
 
 export type TimeRegion =
   | 'KOREA'

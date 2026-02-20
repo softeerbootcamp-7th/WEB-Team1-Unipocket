@@ -4,7 +4,8 @@ import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { type AnalysisChartItem } from '@/api/account-books/type';
-import { type CountryCode } from '@/data/countryCode';
+import { type CountryCode } from '@/data/country/countryCode';
+
 import { getCountryInfo } from '@/lib/country';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 

@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +68,7 @@ public class AnalysisMonthlySummaryQueryService {
 		Object[] countryCodes = analysisQueryRepository.getAccountBookCountryCodes(accountBookId);
 		CountryCode localCountryCode = (CountryCode) countryCodes[0];
 		CountryCode baseCountryCode = (CountryCode) countryCodes[1];
+		validateCountryCodes(localCountryCode, baseCountryCode, currencyType);
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountryCode);
 		validateNotFutureYearMonth(year, month, zoneId);
 
@@ -127,12 +130,38 @@ public class AnalysisMonthlySummaryQueryService {
 				buildCompareWithLastMonth(month, thisSeries, prevRange, prevSeries);
 		AnalysisOverviewRes.CompareByCategory compareByCategory =
 				buildCompareByCategory(myCategoryMap, avgByCategory);
+		CountryCode responseCountryCode =
+				resolveResponseCountryCode(localCountryCode, baseCountryCode, currencyType);
 
 		return new AnalysisOverviewRes(
-				localCountryCode.name(),
+				responseCountryCode.name(),
 				compareWithAverage,
 				compareWithLastMonth,
 				compareByCategory);
+	}
+
+	private CountryCode resolveResponseCountryCode(
+			CountryCode localCountryCode, CountryCode baseCountryCode, CurrencyType currencyType) {
+		if (currencyType == CurrencyType.BASE) {
+			if (baseCountryCode == null) {
+				throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+			}
+			return baseCountryCode;
+		}
+		if (localCountryCode == null) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+		return localCountryCode;
+	}
+
+	private void validateCountryCodes(
+			CountryCode localCountryCode, CountryCode baseCountryCode, CurrencyType currencyType) {
+		if (localCountryCode == null) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+		if (currencyType == CurrencyType.BASE && baseCountryCode == null) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
 	}
 
 	private AnalysisOverviewRes.CompareWithAverage buildCompareWithAverage(
@@ -179,7 +208,7 @@ public class AnalysisMonthlySummaryQueryService {
 		BigDecimal totalAvgSpend = BigDecimal.ZERO;
 
 		for (Category category : Category.values()) {
-			if (category == Category.INCOME) {
+			if (category == Category.INCOME || category == Category.UNCLASSIFIED) {
 				continue;
 			}
 
@@ -249,7 +278,7 @@ public class AnalysisMonthlySummaryQueryService {
 		}
 
 		for (Category category : Category.values()) {
-			if (category == Category.INCOME) {
+			if (category == Category.INCOME || category == Category.UNCLASSIFIED) {
 				continue;
 			}
 			PairMonthlyCategoryAggregateEntity row = rowMap.get(category);
@@ -352,7 +381,7 @@ public class AnalysisMonthlySummaryQueryService {
 					continue;
 				}
 				Category category = Category.values()[row.categoryOrdinal()];
-				if (category == Category.INCOME) {
+				if (category == Category.INCOME || category == Category.UNCLASSIFIED) {
 					continue;
 				}
 				categoryMap.put(category, row.totalAmount());
@@ -404,7 +433,7 @@ public class AnalysisMonthlySummaryQueryService {
 			LocalDate endLocalDateInclusive,
 			ZoneId zoneId) {
 		Map<LocalDate, BigDecimal> dailyMap;
-		try (java.util.stream.Stream<Object[]> stream =
+		try (Stream<Object[]> stream =
 				analysisQueryRepository.getMySpendEvents(
 						accountBookId,
 						toOffsetUtc(startUtc),
@@ -434,12 +463,11 @@ public class AnalysisMonthlySummaryQueryService {
 		return result;
 	}
 
-	private Map<LocalDate, BigDecimal> toDailyAmountMap(
-			java.util.stream.Stream<Object[]> stream, ZoneId zoneId) {
+	private Map<LocalDate, BigDecimal> toDailyAmountMap(Stream<Object[]> stream, ZoneId zoneId) {
 		return stream.collect(
-				java.util.stream.Collectors.groupingBy(
+				Collectors.groupingBy(
 						row -> toLocalDateInZone(row[0], zoneId),
-						java.util.stream.Collectors.reducing(
+						Collectors.reducing(
 								BigDecimal.ZERO, row -> toBigDecimal(row[1]), BigDecimal::add)));
 	}
 

@@ -35,12 +35,10 @@ public class S3Service {
 	private final S3Template s3Template; // 일반적인 업로드/다운로드용
 	private final S3Presigner s3Presigner; // Presigned URL 생성용
 
-	public PresignedUrlResult getPresignedUrl(String prefix, String originalFileName) {
-		String extension = extractExtension(originalFileName);
-		MediaContentType mediaContentType =
-				MediaContentType.fromExtension(extension)
-						.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
-
+	public PresignedUrlResult getPresignedUrl(String prefix, MediaContentType mediaContentType) {
+		if (mediaContentType == null) {
+			throw new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE);
+		}
 		String normalizedPrefix = prefix == null || prefix.isBlank() ? "" : prefix.trim();
 
 		String key =
@@ -116,12 +114,5 @@ public class S3Service {
 		} catch (java.io.IOException e) {
 			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
-	}
-
-	private String extractExtension(String fileName) {
-		if (fileName == null || fileName.isBlank() || !fileName.contains(".")) {
-			throw new IllegalArgumentException("fileName with extension is required");
-		}
-		return fileName.substring(fileName.lastIndexOf("."));
 	}
 }

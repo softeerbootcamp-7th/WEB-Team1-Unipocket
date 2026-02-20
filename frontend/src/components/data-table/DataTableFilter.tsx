@@ -1,12 +1,7 @@
-import {
-  type ComponentPropsWithoutRef,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type ComponentPropsWithoutRef, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
-import Tag from '@/components/common/Chip';
+import Chip, { CategoryChip } from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -15,20 +10,23 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
+import { CATEGORIES, type CategoryId } from '@/types/category';
+
 const DataTableFilterProvider = ({
   children,
 }: ComponentPropsWithoutRef<'div'>) => {
   return <div className="mb-5 flex items-center gap-3 px-2.5">{children}</div>;
 };
 
-interface DataTableSearchFilterProps<T extends string> {
+interface DataTableSearchFilterProps<T> {
   title: string;
   options: T[];
   selectedOptions: T[];
   setSelectedOptions: (selected: T[]) => void;
   onInputChange: (term: string) => void;
-  onSelect?: (term: string) => void;
+  onSelect?: (term: T) => void;
   onSelectMultiple?: (terms: T[]) => void;
+  isCategory?: boolean;
   // 렌더링 옵션
   renderOption: (option: T, searchTerm: string) => React.ReactNode;
   renderEmptyState?: () => React.ReactNode;
@@ -38,13 +36,14 @@ interface DataTableSearchFilterProps<T extends string> {
   ) => React.ReactNode;
 }
 
-const DataTableSearchFilter = <T extends string>({
+const DataTableSearchFilter = <T,>({
   title,
   options,
   selectedOptions,
   setSelectedOptions,
   renderOption,
   renderEmptyState,
+  isCategory = false,
   renderSearchAllTrigger,
   onInputChange,
   onSelect,
@@ -56,13 +55,12 @@ const DataTableSearchFilter = <T extends string>({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // 검색 로직
-  const filteredOptions = useMemo(() => {
+  const filteredOptions = (() => {
     if (!searchTerm) return options;
     return options.filter((option) =>
-      option.toLowerCase().includes(searchTerm.toLowerCase()),
+      String(option).toLowerCase().includes(searchTerm.toLowerCase()),
     );
-  }, [options, searchTerm]);
+  })();
 
   // 검색어 변경
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,8 +159,15 @@ const DataTableSearchFilter = <T extends string>({
 
   const getLabel = () => {
     if (!isActive) return title;
-    if (selectedOptions.length === 1) return `${title}: ${selectedOptions[0]}`;
-    return `${title}: ${selectedOptions[0]} 외 ${selectedOptions.length - 1}건`;
+    const firstOption = selectedOptions[0];
+    const firstLabel = isCategory
+      ? CATEGORIES[firstOption as unknown as CategoryId].name
+      : String(firstOption);
+
+    if (selectedOptions.length === 1) {
+      return `${title}: ${firstLabel}`;
+    }
+    return `${title}: ${firstLabel} 외 ${selectedOptions.length - 1}건`;
   };
 
   return (
@@ -194,8 +199,18 @@ const DataTableSearchFilter = <T extends string>({
         >
           {/* 1. 태그 렌더링 */}
           {selectedOptions.map((option) => (
-            <div key={option} className="shrink-0">
-              <Tag type={option} onRemove={() => toggleOption(option)} />
+            <div key={String(option)} className="shrink-0">
+              {isCategory ? (
+                <CategoryChip
+                  categoryId={option as unknown as CategoryId}
+                  onRemove={() => toggleOption(option)}
+                />
+              ) : (
+                <Chip
+                  label={String(option)}
+                  onRemove={() => toggleOption(option)}
+                />
+              )}
             </div>
           ))}
 
@@ -229,7 +244,7 @@ const DataTableSearchFilter = <T extends string>({
                 {filteredOptions.length > 0 ? (
                   filteredOptions.map((option, index) => (
                     <label
-                      key={option}
+                      key={String(option)}
                       onMouseEnter={() => setActiveIndex(index)}
                       className={clsx(
                         'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',

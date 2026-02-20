@@ -1,5 +1,6 @@
 package com.genesis.unipocket.media.command.application;
 
+import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import java.time.Duration;
 import java.util.List;
@@ -10,7 +11,9 @@ public interface MediaObjectStorage {
 
 	String getPresignedGetUrl(String mediaKey, Duration expiration);
 
-	PresignedUrlResult getPresignedUrl(String prefix, String originalFileName);
+	boolean exists(String mediaKey);
+
+	PresignedUrlResult getPresignedUrl(String prefix, MediaContentType mediaContentType);
 
 	byte[] download(String mediaKey);
 

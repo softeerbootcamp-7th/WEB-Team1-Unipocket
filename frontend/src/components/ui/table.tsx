@@ -6,7 +6,7 @@ function Table({ ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
-      className="scrollbar min-h-0 flex-1 flex-col overflow-auto"
+      className="scrollbar flex min-h-0 flex-1 flex-col overflow-auto"
     >
       <table data-slot="table" className="w-full" {...props} />
     </div>
@@ -56,7 +56,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
       className={cn(
         'group/row',
         'bg-background-normal border-b transition-colors',
-        'hover:bg-fill-alternative data-group-header:hover:bg-transparent',
+        'hover:bg-fill-alternative data-group-header:hover:bg-background-normal',
         'data-[state=selected]:bg-primary-normal/8 data-[state=selected]:hover:bg-primary-normal/12',
         'data-[state=error]:bg-status-negative/8 data-[state=error]:hover:bg-status-negative/12',
         className,

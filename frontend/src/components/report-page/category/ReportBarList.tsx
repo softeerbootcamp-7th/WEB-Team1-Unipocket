@@ -22,7 +22,7 @@ const ReportBarList = ({ items, maxLabel }: ReportBarListProps) => {
         {items.map((item) => (
           <ReportBarRow
             key={item.categoryIndex}
-            categoryIndex={item.categoryIndex}
+            categoryId={item.categoryIndex}
             me={Number(item.mySpentAmount)}
             other={Number(item.averageSpentAmount)}
             maxLabel={maxLabel}

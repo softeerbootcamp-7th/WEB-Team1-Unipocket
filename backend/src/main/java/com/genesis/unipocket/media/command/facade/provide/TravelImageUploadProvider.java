@@ -2,6 +2,7 @@ package com.genesis.unipocket.media.command.facade.provide;
 
 import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.application.MediaObjectStorage;
+import com.genesis.unipocket.media.command.application.MediaPathPrefixManager;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import com.genesis.unipocket.travel.command.facade.port.TravelImageUploadPathIssueService;
 import com.genesis.unipocket.travel.command.facade.port.dto.TravelImageUploadPathInfo;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class TravelImageUploadProvider implements TravelImageUploadPathIssueService {
 
 	private final MediaObjectStorage mediaObjectStorage;
+	private final MediaPathPrefixManager mediaPathPrefixManager;
 
 	@Override
 	public TravelImageUploadPathInfo issueTravelImageUploadPath(
@@ -26,7 +28,8 @@ public class TravelImageUploadProvider implements TravelImageUploadPathIssueServ
 		// TODO: Travel 도메인 내에서 accountBook 을 지원해주는지 확인하는 포트 및 구현체 필요
 
 		PresignedUrlResult response =
-				mediaObjectStorage.getPresignedUrl("travels", "upload" + mediaContentType.getExt());
+				mediaObjectStorage.getPresignedUrl(
+						mediaPathPrefixManager.getTravelImagePrefix(), mediaContentType);
 
 		return new TravelImageUploadPathInfo(response.presignedUrl(), response.imageKey());
 	}

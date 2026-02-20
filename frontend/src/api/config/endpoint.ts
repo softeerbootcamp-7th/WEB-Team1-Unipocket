@@ -68,6 +68,8 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/expenses/manual`,
     DETAIL: (accountBookId: number | string, expenseId: number | string) =>
       `account-books/${accountBookId}/expenses/${expenseId}`,
+    FILE_URL: (accountBookId: number | string, expenseId: number | string) =>
+      `account-books/${accountBookId}/expenses/${expenseId}/file-url`,
     MERCHANT_SEARCH: (accountBookId: number | string) =>
       `account-books/${accountBookId}/expenses/merchant-names`, // 거래처명 자동완성 검색 (GET)
   },

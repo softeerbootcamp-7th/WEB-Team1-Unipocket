@@ -1,8 +1,13 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import type { Expense } from '@/components/landing-page/dummy';
+import { CategoryChip } from '@/components/common/Chip';
+import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
+
+import { type CategoryId } from '@/types/category';
+
+import type { Expense } from '@/api/expenses/type';
 
 export const columns: ColumnDef<Expense>[] = [
   {
@@ -37,20 +42,23 @@ export const columns: ColumnDef<Expense>[] = [
     ),
   },
   {
-    accessorKey: 'categoryCode',
+    accessorKey: 'category',
     header: () => <>카테고리</>,
-    cell: ({ row }) => <> {row.getValue('categoryCode')}</>,
+    cell: ({ row }) => {
+      const categoryId = row.getValue('category') as CategoryId;
+      return <CategoryChip categoryId={categoryId} />;
+    },
   },
   {
-    accessorKey: 'localCurrency',
+    accessorKey: 'localCurrencyCode',
     header: () => <>현지 통화</>,
-    cell: ({ row }) => <> {row.getValue('localCurrency')}</>,
+    cell: ({ row }) => <> {row.getValue('localCurrencyCode')}</>,
   },
   {
-    accessorKey: 'localAmount',
+    accessorKey: 'localCurrencyAmount',
     header: () => <>현지 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('localAmount'));
+      const amount = parseFloat(row.getValue('localCurrencyAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
@@ -59,10 +67,10 @@ export const columns: ColumnDef<Expense>[] = [
     },
   },
   {
-    accessorKey: 'standardAmount',
+    accessorKey: 'baseCurrencyAmount',
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('standardAmount'));
+      const amount = parseFloat(row.getValue('baseCurrencyAmount'));
       const formatted = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
@@ -80,12 +88,12 @@ export const columns: ColumnDef<Expense>[] = [
     header: () => <>결제 수단</>,
     cell: ({ row }) => {
       const payment = row.original.paymentMethod;
-      return <>{payment.isCash ? '현금' : payment.card?.label || '-'}</>;
+      return <PaymentMethodDisplay paymentMethod={payment} />;
     },
   },
   {
     id: 'travel',
     header: () => <>여행</>,
-    cell: ({ row }) => <> {row.original.travel.name}</>,
+    cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
   },
 ];

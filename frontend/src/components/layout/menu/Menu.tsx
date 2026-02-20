@@ -1,4 +1,4 @@
-import { Link, useRouterState } from '@tanstack/react-router';
+import { Link, useMatchRoute, useRouterState } from '@tanstack/react-router';
 
 import MenuItem from '@/components/layout/menu/MenuItem';
 
@@ -15,7 +15,8 @@ const Menu = () => {
     select: (state) => state.location.pathname,
   });
 
-  const isInitPath = pathname.includes('/init');
+  const matchRoute = useMatchRoute();
+  const isInitPath = !!matchRoute({ to: '/init' });
 
   return (
     <nav className="border-line-normal-normal bg-background-normal sticky top-0 bottom-0 left-0 flex w-16 flex-col items-center gap-9 border-r px-4 py-3">

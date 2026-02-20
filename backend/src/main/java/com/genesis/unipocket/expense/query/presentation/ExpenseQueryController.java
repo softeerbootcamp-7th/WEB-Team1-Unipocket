@@ -2,7 +2,9 @@ package com.genesis.unipocket.expense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
+import com.genesis.unipocket.expense.query.presentation.response.ExpenseFileUrlResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
@@ -10,6 +12,7 @@ import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,7 +48,8 @@ public class ExpenseQueryController {
 			@PathVariable Long expenseId) {
 
 		ExpenseResult dto = expenseQueryService.getExpense(expenseId, accountBookId, userId);
-		ExpenseResponse response = ExpenseResponse.from(dto);
+		var travel = expenseQueryService.getTravelInfo(accountBookId, dto.travelId());
+		ExpenseResponse response = ExpenseResponse.from(dto, travel);
 		return ResponseEntity.ok(response);
 	}
 
@@ -61,8 +65,15 @@ public class ExpenseQueryController {
 		Page<ExpenseResult> dtoPage =
 				expenseQueryService.getExpenses(accountBookId, userId, filter, pageable);
 
+		Map<Long, ExpenseTravelResult> travelInfoMap =
+				expenseQueryService.getTravelInfoMap(
+						accountBookId,
+						dtoPage.getContent().stream().map(ExpenseResult::travelId).toList());
+
 		List<ExpenseResponse> responses =
-				dtoPage.getContent().stream().map(ExpenseResponse::from).toList();
+				dtoPage.getContent().stream()
+						.map(dto -> ExpenseResponse.from(dto, travelInfoMap.get(dto.travelId())))
+						.toList();
 
 		ExpenseListResponse response =
 				ExpenseListResponse.of(
@@ -85,5 +96,19 @@ public class ExpenseQueryController {
 		List<String> merchantNames =
 				expenseQueryService.searchMerchantNames(accountBookId, userId, query, limit);
 		return ResponseEntity.ok(new ExpenseMerchantSearchResponse(merchantNames));
+	}
+
+	@Operation(
+			summary = "지출 파일 열람 URL 발급 API",
+			description = "지출에 연결된 파일의 Presigned GET URL을 발급합니다.")
+	@GetMapping("/account-books/{accountBookId}/expenses/{expenseId}/file-url")
+	public ResponseEntity<ExpenseFileUrlResponse> getExpenseFileUrl(
+			@LoginUser UUID userId,
+			@PathVariable Long accountBookId,
+			@PathVariable Long expenseId) {
+		String presignedUrl =
+				expenseQueryService.issueExpenseFileUrl(expenseId, accountBookId, userId);
+		int expiresInSeconds = expenseQueryService.getExpenseFileUrlExpirationSeconds();
+		return ResponseEntity.ok(new ExpenseFileUrlResponse(presignedUrl, expiresInSeconds));
 	}
 }

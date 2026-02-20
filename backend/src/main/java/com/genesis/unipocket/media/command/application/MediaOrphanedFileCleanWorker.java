@@ -25,10 +25,13 @@ public class MediaOrphanedFileCleanWorker {
 
 	private final MediaObjectStorage mediaObjectStorage;
 	private final List<MediaUsedPathProvider> mediaUsedPathProviders;
+	private final MediaPathPrefixManager mediaPathPrefixManager;
 
 	@Scheduled(cron = "${media.cleanup.cron}")
 	public void clean() {
 		List<String> allKeys = mediaObjectStorage.listAllKeys();
+		List<String> managedKeys =
+				allKeys.stream().filter(mediaPathPrefixManager::isManagedKey).toList();
 		Set<String> usedKeys =
 				mediaUsedPathProviders.stream()
 						.map(MediaUsedPathProvider::getUsedPaths)
@@ -36,7 +39,7 @@ public class MediaOrphanedFileCleanWorker {
 						.filter(path -> path != null && !path.isBlank())
 						.collect(Collectors.toSet());
 
-		List<String> targetKeys = identifyOrphanedKeys(allKeys, usedKeys);
+		List<String> targetKeys = identifyOrphanedKeys(managedKeys, usedKeys);
 		if (targetKeys.isEmpty()) {
 			return;
 		}

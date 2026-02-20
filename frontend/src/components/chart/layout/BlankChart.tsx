@@ -8,7 +8,7 @@ const BlankChart = () => {
     <div className="rounded-modal-16 border-line-solid-normal flex h-72 w-67 items-center justify-center border">
       {!isWidgetEditMode && (
         <button type="button" onClick={toggleEditMode}>
-          <Icons.Add className="text-line-solid-strong size-6" />
+          <Icons.Add className="text-line-solid-strong size-6 cursor-pointer" />
         </button>
       )}
     </div>

@@ -1,6 +1,6 @@
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 interface FolderCardProps {
   label: string;

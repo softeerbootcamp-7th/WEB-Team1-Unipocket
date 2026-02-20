@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import Switch from '@/components/common/Switch';
 import ReportCategory from '@/components/report-page/category/ReportCategory';
-import mockData from '@/components/report-page/mock';
 import ReportMonthly from '@/components/report-page/monthly/ReportMonthly';
 import ReportMyself from '@/components/report-page/myself/ReportMyself';
 import ReportProvider from '@/components/report-page/ReportProvider';
@@ -17,22 +16,19 @@ import {
 
 import { type CurrencyType } from '@/types/currency';
 
+import { useAnalysisQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
-  const categoryData = mockData.compareByCategory;
-  const myselfData = mockData.compareWithLastMonth;
-  const monthlyData = mockData.compareWithAverage;
+  const accountBookId = useRequiredAccountBook().id;
 
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
-  const startDate = useAccountBookStore(
-    (state) => state.accountBook?.startDate,
-  );
-  const endDate = useAccountBookStore((state) => state.accountBook?.endDate);
+  const startDate = useRequiredAccountBook().startDate;
+  const endDate = useRequiredAccountBook().endDate;
 
   const startYearMonth = parseYearMonth(startDate);
   const endYearMonth = parseYearMonth(endDate);
@@ -58,6 +54,8 @@ const ReportPage = () => {
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
+
+  const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
 
   return (
     <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
@@ -98,21 +96,24 @@ const ReportPage = () => {
           </div>
         </div>
 
-        <div className="flex w-full min-w-283 gap-3.5">
-          <ReportProvider
-            currencyType={currencyType}
-            onCurrencyTypeChange={setCurrencyType}
-          >
-            <div className="flex w-113 flex-col justify-between">
-              <ReportMonthly data={monthlyData} />
-              <ReportMyself data={myselfData} />
-            </div>
+        {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
+        {data && (
+          <div className="flex w-full min-w-283 gap-3.5">
+            <ReportProvider
+              currencyType={currencyType}
+              onCurrencyTypeChange={setCurrencyType}
+            >
+              <div className="flex w-113 flex-col justify-between">
+                <ReportMonthly data={data.compareWithAverage} />
+                <ReportMyself data={data.compareWithLastMonth} />
+              </div>
 
-            <div className="flex-1">
-              <ReportCategory data={categoryData} />
-            </div>
-          </ReportProvider>
-        </div>
+              <div className="flex-1">
+                <ReportCategory data={data.compareByCategory} />
+              </div>
+            </ReportProvider>
+          </div>
+        )}
       </div>
     </div>
   );

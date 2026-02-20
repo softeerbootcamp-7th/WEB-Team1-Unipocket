@@ -2,40 +2,51 @@ import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
-import { type ChartItem } from '@/components/report-page/reportType';
 
-import { type CountryCode } from '@/data/countryCode';
+import { type AnalysisChartItem } from '@/api/account-books/type';
 import { getCountryInfo } from '@/lib/country';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
-
-type MonthlyData = {
-  label: string;
-  dayCount: number;
-  totalSpent: string;
-  items: ChartItem[];
-};
+import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 interface ReportMyselfProps {
   data: {
     diff: string;
-    thisMonth: MonthlyData;
-    lastMonth: MonthlyData;
+    thisMonth: string;
+    thisMonthCount: number;
+    lastMonth: string;
+    lastMonthCount: number;
+    totalSpent: {
+      thisMonthToDate: string;
+      lastMonthTotal: string;
+    };
+    thisMonthSpent: string;
+    thisMonthItem: AnalysisChartItem[];
+    prevMonthItem: AnalysisChartItem[];
   };
 }
 
 const ReportMyself = ({ data }: ReportMyselfProps) => {
   const { currencyType } = useReportContext();
-  const countryCode = useAccountBookStore((state) =>
-    currencyType === 'LOCAL'
-      ? state.accountBook?.localCountryCode
-      : state.accountBook?.baseCountryCode,
-  ) as CountryCode;
+  const countryCode = useAccountBookCountryCode(currencyType);
 
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
 
+  const thisMonthData = {
+    label: data.thisMonth,
+    dayCount: data.thisMonthCount,
+    totalSpent: data.totalSpent.thisMonthToDate,
+    items: data.thisMonthItem,
+  };
+
+  const lastMonthData = {
+    label: data.lastMonth,
+    dayCount: data.lastMonthCount,
+    totalSpent: data.totalSpent.lastMonthTotal,
+    items: data.prevMonthItem,
+  };
+
   const maxValue = Math.max(
-    Number(data.lastMonth.totalSpent),
-    Number(data.thisMonth.totalSpent),
+    Number(lastMonthData.totalSpent),
+    Number(thisMonthData.totalSpent),
   );
 
   return (
@@ -51,13 +62,13 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
             쓰는 중이에요
           </h3>
           <span className="body1-normal-medium text-label-alternative">
-            오늘까지 {data.thisMonth.totalSpent}
+            오늘까지 {thisMonthData.totalSpent}
             {unit} 썼어요
           </span>
         </div>
         <ReportLineGraph
-          thisMonth={data.thisMonth}
-          lastMonth={data.lastMonth}
+          thisMonth={thisMonthData}
+          lastMonth={lastMonthData}
           maxValue={maxValue}
         />
       </ReportContent>

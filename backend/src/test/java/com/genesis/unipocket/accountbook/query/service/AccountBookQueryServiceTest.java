@@ -10,15 +10,14 @@ import static org.mockito.Mockito.verify;
 import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateResponse;
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateSource;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookQueryResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.accountbook.query.service.port.ExchangeRateReader;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,8 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AccountBookQueryServiceTest {
 
 	@Mock private AccountBookQueryRepository repository;
-	@Mock private UserCommandRepository userRepository;
-	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private ExchangeRateReader exchangeRateReader;
 
 	@InjectMocks private AccountBookQueryService accountBookQueryService;
 
@@ -83,10 +81,7 @@ class AccountBookQueryServiceTest {
 	void getAccountBooks_Success() {
 		AccountBookSummaryResponse response1 = new AccountBookSummaryResponse(1L, "Title1", true);
 		AccountBookSummaryResponse response2 = new AccountBookSummaryResponse(2L, "Title2", false);
-		UserEntity user =
-				UserEntity.builder().name("tester").email("t@t.com").mainBucketId(1L).build();
-		given(userRepository.findById(UUID.fromString(userId))).willReturn(Optional.of(user));
-		given(repository.findAllByUserId(UUID.fromString(userId), 1L))
+		given(repository.findAllByUserId(UUID.fromString(userId)))
 				.willReturn(List.of(response1, response2));
 
 		List<AccountBookSummaryResponse> result = accountBookQueryService.getAccountBooks(userId);
@@ -105,9 +100,6 @@ class AccountBookQueryServiceTest {
 						"Title",
 						CountryCode.US,
 						CountryCode.KR,
-						BigDecimal.valueOf(10000),
-						LocalDateTime.of(2026, 2, 12, 8, 0, 0),
-						List.of(),
 						LocalDate.now(),
 						LocalDate.now());
 
@@ -138,22 +130,14 @@ class AccountBookQueryServiceTest {
 	@DisplayName("가계부 기준/상대 국가 환율 조회 - 성공")
 	void getAccountBookExchangeRate_Success() {
 		Long accountBookId = 1L;
-		AccountBookDetailResponse accountBookDetailResponse =
-				new AccountBookDetailResponse(
-						accountBookId,
-						"Title",
-						CountryCode.US,
-						CountryCode.KR,
-						BigDecimal.valueOf(10000),
-						LocalDateTime.of(2026, 2, 12, 8, 0, 0),
-						List.of(),
-						LocalDate.now(),
-						LocalDate.now());
+		AccountBookExchangeRateSource accountBookExchangeRateSource =
+				new AccountBookExchangeRateSource(
+						CountryCode.US, CountryCode.KR, LocalDateTime.of(2026, 2, 12, 8, 0, 0));
 
-		given(repository.findDetailById(UUID.fromString(userId), accountBookId))
-				.willReturn(Optional.of(accountBookDetailResponse));
+		given(repository.findExchangeRateSourceById(UUID.fromString(userId), accountBookId))
+				.willReturn(Optional.of(accountBookExchangeRateSource));
 		given(
-						exchangeRateService.getExchangeRate(
+						exchangeRateReader.getExchangeRate(
 								eq(CurrencyCode.KRW),
 								eq(CurrencyCode.USD),
 								any(OffsetDateTime.class)))
@@ -173,22 +157,14 @@ class AccountBookQueryServiceTest {
 	void getAccountBookExchangeRate_Success_WithOccurredAt() {
 		Long accountBookId = 1L;
 		LocalDateTime occurredAt = LocalDateTime.of(2026, 2, 13, 10, 30, 0);
-		AccountBookDetailResponse accountBookDetailResponse =
-				new AccountBookDetailResponse(
-						accountBookId,
-						"Title",
-						CountryCode.US,
-						CountryCode.KR,
-						BigDecimal.valueOf(10000),
-						LocalDateTime.of(2026, 2, 12, 8, 0, 0),
-						List.of(),
-						LocalDate.now(),
-						LocalDate.now());
+		AccountBookExchangeRateSource accountBookExchangeRateSource =
+				new AccountBookExchangeRateSource(
+						CountryCode.US, CountryCode.KR, LocalDateTime.of(2026, 2, 12, 8, 0, 0));
 
-		given(repository.findDetailById(UUID.fromString(userId), accountBookId))
-				.willReturn(Optional.of(accountBookDetailResponse));
+		given(repository.findExchangeRateSourceById(UUID.fromString(userId), accountBookId))
+				.willReturn(Optional.of(accountBookExchangeRateSource));
 		given(
-						exchangeRateService.getExchangeRate(
+						exchangeRateReader.getExchangeRate(
 								eq(CurrencyCode.KRW),
 								eq(CurrencyCode.USD),
 								eq(occurredAt.atOffset(ZoneOffset.UTC))))
@@ -202,7 +178,7 @@ class AccountBookQueryServiceTest {
 		assertThat(result.localCountryCode()).isEqualTo(CountryCode.US);
 		assertThat(result.exchangeRate()).isEqualByComparingTo("0.00075");
 		assertThat(result.budgetCreatedAt()).isEqualTo(LocalDateTime.of(2026, 2, 12, 8, 0, 0));
-		verify(exchangeRateService)
+		verify(exchangeRateReader)
 				.getExchangeRate(
 						CurrencyCode.KRW, CurrencyCode.USD, occurredAt.atOffset(ZoneOffset.UTC));
 	}
@@ -211,22 +187,13 @@ class AccountBookQueryServiceTest {
 	@DisplayName("가계부 기준/상대 국가 환율 조회 - 예산 미설정이어도 조회 성공")
 	void getAccountBookExchangeRate_Success_WhenBudgetNotSet() {
 		Long accountBookId = 1L;
-		AccountBookDetailResponse accountBookDetailResponse =
-				new AccountBookDetailResponse(
-						accountBookId,
-						"Title",
-						CountryCode.US,
-						CountryCode.KR,
-						null,
-						null,
-						List.of(),
-						LocalDate.now(),
-						LocalDate.now());
+		AccountBookExchangeRateSource accountBookExchangeRateSource =
+				new AccountBookExchangeRateSource(CountryCode.US, CountryCode.KR, null);
 
-		given(repository.findDetailById(UUID.fromString(userId), accountBookId))
-				.willReturn(Optional.of(accountBookDetailResponse));
+		given(repository.findExchangeRateSourceById(UUID.fromString(userId), accountBookId))
+				.willReturn(Optional.of(accountBookExchangeRateSource));
 		given(
-						exchangeRateService.getExchangeRate(
+						exchangeRateReader.getExchangeRate(
 								eq(CurrencyCode.KRW),
 								eq(CurrencyCode.USD),
 								any(OffsetDateTime.class)))

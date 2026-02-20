@@ -9,6 +9,9 @@ import static org.mockito.Mockito.verify;
 import com.genesis.unipocket.accountbook.command.application.command.CreateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
+import com.genesis.unipocket.accountbook.command.application.port.AccountBookExchangeRateReader;
+import com.genesis.unipocket.accountbook.command.application.port.AccountBookUserReader;
+import com.genesis.unipocket.accountbook.command.application.port.dto.AccountBookUserInfo;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
@@ -17,12 +20,10 @@ import com.genesis.unipocket.accountbook.command.persistence.repository.AccountB
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookCreateRequest;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,9 +43,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class AccountBookCommandServiceTest {
 
 	@Mock private AccountBookCommandRepository repository;
-	@Mock private UserCommandRepository userRepository;
+	@Mock private AccountBookUserReader accountBookUserReader;
 	@Mock private AccountBookValidator validator;
-	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private AccountBookExchangeRateReader accountBookExchangeRateReader;
 	@Mock private AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 
 	@InjectMocks private AccountBookCommandService accountBookCommandService;
@@ -60,10 +61,13 @@ public class AccountBookCommandServiceTest {
 				new AccountBookCreateRequest(
 						CountryCode.US, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
 
-		CreateAccountBookCommand command = CreateAccountBookCommand.of(userId, username, req);
+		CreateAccountBookCommand command =
+				new CreateAccountBookCommand(
+						userId, username, req.localCountryCode(), req.startDate(), req.endDate());
 
 		UserEntity user = createUser(userId, 0L);
-		given(userRepository.findById(userId)).willReturn(Optional.of(user));
+		given(accountBookUserReader.getUser(userId))
+				.willReturn(new AccountBookUserInfo(user.getId(), user.hasMainBucket()));
 		given(repository.findNamesStartingWith(any(), any())).willReturn(Collections.emptyList());
 		given(repository.countByUser_Id(userId)).willReturn(0L);
 		given(repository.save(any(AccountBookEntity.class)))
@@ -89,7 +93,7 @@ public class AccountBookCommandServiceTest {
 		assertThat(result.accountBookId()).isEqualTo(1L);
 		verify(validator).validate(any(AccountBookEntity.class));
 		verify(repository).save(any(AccountBookEntity.class));
-		assertThat(user.getMainBucketId()).isEqualTo(1L);
+		verify(accountBookUserReader).updateMainAccountBook(userId, 1L);
 	}
 
 	@Test
@@ -100,11 +104,14 @@ public class AccountBookCommandServiceTest {
 				new AccountBookCreateRequest(
 						CountryCode.US, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 12, 31));
 
-		CreateAccountBookCommand command = CreateAccountBookCommand.of(userId, username, req);
+		CreateAccountBookCommand command =
+				new CreateAccountBookCommand(
+						userId, username, req.localCountryCode(), req.startDate(), req.endDate());
 
 		String baseTitle = username + "의 가계부";
 		UserEntity user = createUser(userId, 1L);
-		given(userRepository.findById(userId)).willReturn(Optional.of(user));
+		given(accountBookUserReader.getUser(userId))
+				.willReturn(new AccountBookUserInfo(user.getId(), user.hasMainBucket()));
 		given(repository.findNamesStartingWith(userId, baseTitle))
 				.willReturn(List.of(baseTitle + "1", baseTitle + "2"));
 		given(repository.countByUser_Id(userId)).willReturn(2L);
@@ -149,7 +156,17 @@ public class AccountBookCommandServiceTest {
 						LocalDate.of(2023, 11, 30),
 						false);
 
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		UpdateAccountBookCommand command =
+				new UpdateAccountBookCommand(
+						accountBookId,
+						userId,
+						req.title(),
+						req.localCountryCode(),
+						req.baseCountryCode(),
+						req.budget(),
+						req.startDate(),
+						req.endDate(),
+						req.isMain());
 
 		AccountBookEntity entity =
 				AccountBookEntity.create(
@@ -194,7 +211,17 @@ public class AccountBookCommandServiceTest {
 						LocalDate.now(),
 						LocalDate.now(),
 						false);
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		UpdateAccountBookCommand command =
+				new UpdateAccountBookCommand(
+						accountBookId,
+						userId,
+						req.title(),
+						req.localCountryCode(),
+						req.baseCountryCode(),
+						req.budget(),
+						req.startDate(),
+						req.endDate(),
+						req.isMain());
 
 		given(repository.findById(accountBookId)).willReturn(Optional.empty());
 
@@ -216,7 +243,17 @@ public class AccountBookCommandServiceTest {
 						LocalDate.now(),
 						LocalDate.now(),
 						false);
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		UpdateAccountBookCommand command =
+				new UpdateAccountBookCommand(
+						accountBookId,
+						userId,
+						req.title(),
+						req.localCountryCode(),
+						req.baseCountryCode(),
+						req.budget(),
+						req.startDate(),
+						req.endDate(),
+						req.isMain());
 
 		AccountBookEntity entity =
 				AccountBookEntity.create(
@@ -276,7 +313,17 @@ public class AccountBookCommandServiceTest {
 						LocalDate.of(2023, 2, 1),
 						LocalDate.of(2023, 11, 30),
 						false);
-		UpdateAccountBookCommand command = UpdateAccountBookCommand.of(accountBookId, userId, req);
+		UpdateAccountBookCommand command =
+				new UpdateAccountBookCommand(
+						accountBookId,
+						userId,
+						req.title(),
+						req.localCountryCode(),
+						req.baseCountryCode(),
+						req.budget(),
+						req.startDate(),
+						req.endDate(),
+						req.isMain());
 
 		AccountBookEntity entity =
 				AccountBookEntity.create(
@@ -325,7 +372,7 @@ public class AccountBookCommandServiceTest {
 		idField.set(entity, accountBookId);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
-		given(exchangeRateService.getExchangeRate(any(), any(), any()))
+		given(accountBookExchangeRateReader.getExchangeRate(any(), any(), any()))
 				.willReturn(BigDecimal.valueOf(0.11));
 
 		var result =

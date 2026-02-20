@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMatches } from '@tanstack/react-router';
+import { useMatchRoute } from '@tanstack/react-router';
 import clsx from 'clsx';
 
 import Control from '@/components/common/Control';
@@ -7,7 +7,7 @@ import LocaleConfirmModal from '@/components/modal/LocaleConfirmModal';
 
 import type { CurrencyType } from '@/types/currency';
 
-import { COUNTRY_CODE, type CountryCode } from '@/data/countryCode';
+import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 interface CountryItemProps {
@@ -65,8 +65,8 @@ const LocaleSelectModal = ({
   onSelect,
   selectedCode: propSelectedCode,
 }: LocaleSelectModalProps) => {
-  const matches = useMatches();
-  const isInitPath = matches.some((match) => match.routeId === '/_app/init');
+  const matchRoute = useMatchRoute();
+  const isInitPath = !!matchRoute({ to: '/init' });
   const [selectedCode, setSelectedCode] = useState<CountryCode | null>(
     propSelectedCode,
   );

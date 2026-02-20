@@ -3,11 +3,12 @@ import { createFileRoute, Outlet } from '@tanstack/react-router';
 import LandingHeader from '@/components/landing-page/LandingHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { redirectIfAuthenticated } from '@/api/auth/api';
+import { requireGuest } from '@/api/auth/api';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
-    await redirectIfAuthenticated();
+    // 이미 로그인된 유저라면 여기서 /home 또는 /init으로 튕겨나갑니다.
+    await requireGuest();
   },
   pendingComponent: () => <Skeleton className="h-64" />,
   component: AppLayout,

@@ -8,6 +8,7 @@ import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public record ExpenseResult(
 		Long expenseId,
@@ -20,6 +21,7 @@ public record ExpenseResult(
 		CurrencyCode localCurrencyCode,
 		BigDecimal localCurrencyAmount,
 		OffsetDateTime occurredAt,
+		OffsetDateTime updatedAt,
 		String displayMerchantName,
 		String approvalNumber,
 		Long userCardId,
@@ -49,6 +51,7 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
+				entity.getUpdatedAt().atOffset(ZoneOffset.UTC),
 				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),
@@ -83,6 +86,7 @@ public record ExpenseResult(
 						? entity.getExchangeInfo().getLocalCurrencyAmount()
 						: null,
 				entity.getOccurredAt(),
+				entity.getUpdatedAt().atOffset(ZoneOffset.UTC),
 				entity.getMerchant() != null ? entity.getMerchant().getDisplayMerchantName() : null,
 				entity.getApprovalNumber(),
 				entity.getUserCardId(),

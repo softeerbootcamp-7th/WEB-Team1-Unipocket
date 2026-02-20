@@ -19,11 +19,12 @@ public class ExchangeRateQueryServiceImpl implements ExchangeRateQueryService {
 	private final ExchangeRateRepository exchangeRateRepository;
 
 	@Override
-	public Optional<ExchangeRate> findRateOnDate(CurrencyCode currencyCode, LocalDate date) {
-		LocalDateTime startOfDay = date.atStartOfDay();
-		LocalDateTime nextDayStart = date.plusDays(1).atStartOfDay();
+	public Optional<ExchangeRate> findLatestRateInRange(
+			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
+		LocalDateTime startOfRange = startDate.atStartOfDay();
+		LocalDateTime endExclusive = endDate.plusDays(1).atStartOfDay();
 		return exchangeRateRepository
 				.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-						currencyCode, startOfDay, nextDayStart);
+						currencyCode, startOfRange, endExclusive);
 	}
 }

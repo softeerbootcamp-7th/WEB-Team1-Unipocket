@@ -96,11 +96,13 @@ const LandingHeader = () => {
           </div>
 
           {/* 프로필 영역 */}
-          <img
-            src={ProfileImage}
-            alt="프로필"
-            className="h-8 w-8 rounded-full object-cover"
-          />
+          <Link to="/login">
+            <img
+              src={ProfileImage}
+              alt="프로필"
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          </Link>
         </>
       )}
     </nav>

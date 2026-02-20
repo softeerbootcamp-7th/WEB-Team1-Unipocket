@@ -87,7 +87,7 @@ const SortDropdown = () => {
               align="left"
               itemWidth={DROPDOWN_WIDTH_CLASS}
               options={criteriaOptions}
-              selected={selectedCriteriaId}
+              selectedId={selectedCriteriaId}
               onSelect={handleCriteriaSelect}
             />
           </div>
@@ -97,7 +97,7 @@ const SortDropdown = () => {
               align="left"
               itemWidth={DROPDOWN_WIDTH_CLASS}
               options={orderOptions}
-              selected={selectedOrderId}
+              selectedId={selectedOrderId}
               onSelect={handleOrderSelect}
             />
           </div>

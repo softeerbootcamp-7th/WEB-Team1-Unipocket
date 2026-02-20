@@ -1,6 +1,6 @@
-import type { CountryCode } from '@/data/countryCode';
-import countryData from '@/data/countryData.json';
-import { COUNTRY_LOCALE_MAP } from '@/data/countryLocale';
+import type { CountryCode } from '@/data/country/countryCode';
+import countryData from '@/data/country/countryData.json';
+import { COUNTRY_LOCALE_MAP } from '@/data/country/countryLocale';
 
 export interface CountryInfo {
   code: CountryCode;
@@ -12,6 +12,8 @@ export interface CountryInfo {
   currencyUnitKor: string;
 }
 
+const CDN_URL = import.meta.env.VITE_CDN_URL;
+
 export const getCountryInfo = (code: CountryCode): CountryInfo | null => {
   const data = countryData[code as keyof typeof countryData];
   if (!data) return null;
@@ -19,6 +21,7 @@ export const getCountryInfo = (code: CountryCode): CountryInfo | null => {
   return {
     code,
     ...data,
+    imageUrl: `${CDN_URL}${data.imageUrl}`,
   };
 };
 

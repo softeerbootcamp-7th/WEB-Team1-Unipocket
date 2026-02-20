@@ -4,7 +4,7 @@ import Dropdown from '@/components/common/dropdown/Dropdown';
 import Modal from '@/components/modal/Modal';
 import ModalFormContent from '@/components/setting-page/modal/ModalFormContent';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 const AccountBookCountryModal = ({
   countryOptions,
@@ -19,11 +19,11 @@ const AccountBookCountryModal = ({
   onClose: () => void;
   onSubmit: (localCountryCode: CountryCode) => void;
 }) => {
-  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
-    countryOptions.find((o) => o.code === currentLocalCountryCode)?.id ?? null,
+  const [selectedCountryId, setSelectedCountryId] = useState(
+    countryOptions.find((o) => o.code === currentLocalCountryCode)?.id ?? 0,
   );
 
-  const isValid = selectedCountryId !== null;
+  const isValid = selectedCountryId !== 0;
 
   return (
     <Modal
@@ -41,7 +41,7 @@ const AccountBookCountryModal = ({
           <div className="flex flex-col gap-2">
             <p className="label1-normal-bold text-label-neutral">국가 선택</p>
             <Dropdown
-              selected={selectedCountryId}
+              selectedId={selectedCountryId}
               onSelect={setSelectedCountryId}
               options={countryOptions}
             />

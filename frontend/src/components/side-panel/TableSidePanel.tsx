@@ -1,6 +1,7 @@
 import { useDataTable } from '@/components/data-table/context';
-import type { Expense } from '@/components/landing-page/dummy';
 import SidePanelUI from '@/components/side-panel/SidePanelUI';
+
+import type { Expense } from '@/api/expenses/type';
 
 const TableSidePanel = () => {
   const { tableState, dispatch } = useDataTable();

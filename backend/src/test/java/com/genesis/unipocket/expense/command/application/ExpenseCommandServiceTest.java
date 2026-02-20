@@ -17,6 +17,7 @@ import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.support.SimpleTransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionOperations;
@@ -92,6 +94,7 @@ class ExpenseCommandServiceTest {
 		when(expenseEntity.getExpenseId()).thenReturn(expenseId);
 
 		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
+		when(expenseEntity.getUpdatedAt()).thenReturn(LocalDateTime.now());
 
 		ExpenseUpdateCommand command =
 				new ExpenseUpdateCommand(
@@ -128,7 +131,7 @@ class ExpenseCommandServiceTest {
 		OffsetDateTime occurredAt = OffsetDateTime.now();
 		when(exchangeRateService.getExchangeRate(any(), any(), any())).thenReturn(BigDecimal.ONE);
 		when(expenseRepository.save(any(ExpenseEntity.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+				.thenAnswer(invocation -> withAuditFields(invocation.getArgument(0)));
 
 		ExpenseCreateCommand command =
 				new ExpenseCreateCommand(
@@ -165,7 +168,7 @@ class ExpenseCommandServiceTest {
 		when(exchangeRateService.getExchangeRate(any(), any(), any()))
 				.thenReturn(new BigDecimal("1.1000"));
 		when(expenseRepository.save(any(ExpenseEntity.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+				.thenAnswer(invocation -> withAuditFields(invocation.getArgument(0)));
 
 		ExpenseCreateCommand command =
 				new ExpenseCreateCommand(
@@ -314,6 +317,7 @@ class ExpenseCommandServiceTest {
 		when(expenseEntity.getExpenseId()).thenReturn(expenseId);
 
 		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
+		when(expenseEntity.getUpdatedAt()).thenReturn(LocalDateTime.now());
 
 		ExpenseUpdateCommand command =
 				new ExpenseUpdateCommand(
@@ -348,6 +352,7 @@ class ExpenseCommandServiceTest {
 		ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
 		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
 		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
+		when(expenseEntity.getUpdatedAt()).thenReturn(LocalDateTime.now());
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.getExchangeRate(any(), any(), any())).thenReturn(BigDecimal.ONE);
 
@@ -394,6 +399,7 @@ class ExpenseCommandServiceTest {
 		ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
 		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
 		when(expenseEntity.getOccurredAt()).thenReturn(OffsetDateTime.now());
+		when(expenseEntity.getUpdatedAt()).thenReturn(LocalDateTime.now());
 		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
 		when(exchangeRateService.getExchangeRate(any(), any(), any()))
 				.thenReturn(new BigDecimal("1.1000"));
@@ -498,5 +504,10 @@ class ExpenseCommandServiceTest {
 						eq(BigDecimal.valueOf(0.0008)),
 						eq(day2.atStartOfDay().atOffset(java.time.ZoneOffset.UTC)),
 						eq(day2.plusDays(1).atStartOfDay().atOffset(java.time.ZoneOffset.UTC)));
+	}
+
+	private ExpenseEntity withAuditFields(ExpenseEntity entity) {
+		ReflectionTestUtils.setField(entity, "updatedAt", LocalDateTime.now());
+		return entity;
 	}
 }

@@ -28,7 +28,7 @@ export const PERIOD_OPTIONS: PeriodOption[] = PERIOD_TYPES.map((type) => ({
 }));
 
 export const getPeriodOptionById = (id: number): PeriodOption => {
-  return PERIOD_OPTIONS.find((opt) => opt.id === id) ?? PERIOD_OPTIONS[0];
+  return PERIOD_OPTIONS[id] ?? PERIOD_OPTIONS[0];
 };
 
 export const getPeriodTypeById = (id: number): PeriodType => {

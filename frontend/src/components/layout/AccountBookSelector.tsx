@@ -5,7 +5,7 @@ import {
   useGetAccountBooksQuery,
 } from '@/api/account-books/query';
 import { queryClient } from '@/main';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookStore } from '@/stores/accountBookStore';
 
 const AccountBookSelector = () => {
   const { accountBook, setAccountBook } = useAccountBookStore();
@@ -21,14 +21,13 @@ const AccountBookSelector = () => {
   }));
 
   const handleOnSelect = async (selectedId: number) => {
-    const selectedAccountBook = data.find((book) => book.id === selectedId);
-    if (!accountBook) {
-      const accountBookDetail = await queryClient.ensureQueryData(
-        accountBookDetailQueryOptions(selectedAccountBook!.id),
-      );
+    if (!selectedId) return;
 
-      setAccountBook(accountBookDetail);
-    }
+    const accountBookDetail = await queryClient.ensureQueryData(
+      accountBookDetailQueryOptions(selectedId),
+    );
+
+    setAccountBook(accountBookDetail);
   };
 
   return (
@@ -36,6 +35,7 @@ const AccountBookSelector = () => {
       options={accountBookOptions}
       selectedId={accountBook.id}
       onSelect={handleOnSelect}
+      itemWidth="w-fit"
     />
   );
 };

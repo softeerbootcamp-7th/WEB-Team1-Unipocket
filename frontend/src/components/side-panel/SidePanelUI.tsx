@@ -74,17 +74,16 @@ const SidePanelUI = ({
   };
 
   const handleSubmit = () => {
-    if (!onSubmit) return;
-    if (!selectedDateTime) return;
+    if (!onSubmit || !selectedDateTime || !currencyValues || !title) return;
 
     onSubmit({
       merchantName: title,
       category: initialData?.category ?? 1, // @TODO: 실제 선택 상태로 교체
       userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태로 교체
       occurredAt: selectedDateTime,
-      localCurrencyAmount: currencyValues?.localAmount ?? 0,
-      localCurrencyCode: currencyValues?.localCurrencyCode ?? 'USD',
-      baseCurrencyAmount: currencyValues?.baseAmount ?? 0,
+      localCurrencyAmount: currencyValues.localAmount,
+      localCurrencyCode: currencyValues.localCurrencyCode,
+      baseCurrencyAmount: currencyValues.baseAmount,
       memo,
       travelId: initialData?.travel?.id ?? undefined, // @TODO: 실제 선택 상태로 교체
     });

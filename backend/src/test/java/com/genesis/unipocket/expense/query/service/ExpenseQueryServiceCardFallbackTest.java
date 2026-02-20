@@ -68,11 +68,13 @@ class ExpenseQueryServiceCardFallbackTest {
 						null,
 						null);
 
-		when(expenseQueryRepository.findExpense(accountBookId, expenseId)).thenReturn(Optional.of(row));
+		when(expenseQueryRepository.findExpense(accountBookId, expenseId))
+				.thenReturn(Optional.of(row));
 		when(userCardReadService.readUserCard(deletedUserCardId))
 				.thenThrow(new BusinessException(ErrorCode.CARD_NOT_FOUND));
 
-		ExpenseQueryResult result = expenseQueryService.getExpense(expenseId, accountBookId, userId);
+		ExpenseQueryResult result =
+				expenseQueryService.getExpense(expenseId, accountBookId, userId);
 
 		assertThat(result.userCardId()).isNull();
 		assertThat(result.cardCompany()).isNull();

@@ -21,18 +21,23 @@ public class ExpenseQueryRepository {
 	@PersistenceContext private EntityManager em;
 
 	public Optional<ExpenseQueryRow> findExpense(Long accountBookId, Long expenseId) {
-		return em.createQuery(
-						"SELECT new com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow("
-								+ "e.expenseId, e.accountBookId, e.travelId, e.category, "
-								+ "CASE WHEN e.exchangeInfo.baseCurrencyAmount IS NOT NULL "
-								+ "THEN e.exchangeInfo.baseCurrencyCode "
-								+ "ELSE e.exchangeInfo.calculatedBaseCurrencyCode END, "
-								+ "COALESCE(e.exchangeInfo.baseCurrencyAmount, e.exchangeInfo.calculatedBaseCurrencyAmount), "
-								+ "e.exchangeInfo.exchangeRate, e.exchangeInfo.localCurrencyCode, e.exchangeInfo.localCurrencyAmount, "
-								+ "e.occurredAt, e.updatedAt, e.merchant.displayMerchantName, e.approvalNumber, e.userCardId, "
-								+ "e.expenseSourceInfo.expenseSource, e.expenseSourceInfo.fileLink, e.memo, e.cardNumber) "
-								+ "FROM ExpenseEntity e "
-								+ "WHERE e.accountBookId = :accountBookId AND e.expenseId = :expenseId",
+		return em
+				.createQuery(
+						"SELECT new"
+							+ " com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow(e.expenseId,"
+							+ " e.accountBookId, e.travelId, e.category, CASE WHEN"
+							+ " e.exchangeInfo.baseCurrencyAmount IS NOT NULL THEN"
+							+ " e.exchangeInfo.baseCurrencyCode ELSE"
+							+ " e.exchangeInfo.calculatedBaseCurrencyCode END,"
+							+ " CASE WHEN e.exchangeInfo.baseCurrencyAmount IS NOT NULL THEN"
+							+ " e.exchangeInfo.baseCurrencyAmount ELSE"
+							+ " e.exchangeInfo.calculatedBaseCurrencyAmount END,"
+							+ " e.exchangeInfo.exchangeRate, e.exchangeInfo.localCurrencyCode,"
+							+ " e.exchangeInfo.localCurrencyAmount, e.occurredAt, e.updatedAt,"
+							+ " e.merchant.displayMerchantName, e.approvalNumber, e.userCardId,"
+							+ " e.expenseSourceInfo.expenseSource, e.expenseSourceInfo.fileLink,"
+							+ " e.memo, e.cardNumber) FROM ExpenseEntity e WHERE e.accountBookId ="
+							+ " :accountBookId AND e.expenseId = :expenseId",
 						ExpenseQueryRow.class)
 				.setParameter("accountBookId", accountBookId)
 				.setParameter("expenseId", expenseId)
@@ -42,8 +47,10 @@ public class ExpenseQueryRepository {
 	}
 
 	public Optional<Long> findAccountBookIdByExpenseId(Long expenseId) {
-		return em.createQuery(
-						"SELECT e.accountBookId FROM ExpenseEntity e WHERE e.expenseId = :expenseId",
+		return em
+				.createQuery(
+						"SELECT e.accountBookId FROM ExpenseEntity e WHERE e.expenseId ="
+								+ " :expenseId",
 						Long.class)
 				.setParameter("expenseId", expenseId)
 				.getResultList()
@@ -52,19 +59,26 @@ public class ExpenseQueryRepository {
 	}
 
 	public Page<ExpenseQueryRow> findExpenses(
-			Long accountBookId, ExpenseSearchFilter filter, Pageable pageable, String orderByClause) {
+			Long accountBookId,
+			ExpenseSearchFilter filter,
+			Pageable pageable,
+			String orderByClause) {
 		String whereClause = buildWhereClause(filter);
 		String selectJpql =
-				"SELECT new com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow("
-						+ "e.expenseId, e.accountBookId, e.travelId, e.category, "
-						+ "CASE WHEN e.exchangeInfo.baseCurrencyAmount IS NOT NULL "
-						+ "THEN e.exchangeInfo.baseCurrencyCode "
-						+ "ELSE e.exchangeInfo.calculatedBaseCurrencyCode END, "
-						+ "COALESCE(e.exchangeInfo.baseCurrencyAmount, e.exchangeInfo.calculatedBaseCurrencyAmount), "
-						+ "e.exchangeInfo.exchangeRate, e.exchangeInfo.localCurrencyCode, e.exchangeInfo.localCurrencyAmount, "
-						+ "e.occurredAt, e.updatedAt, e.merchant.displayMerchantName, e.approvalNumber, e.userCardId, "
-						+ "e.expenseSourceInfo.expenseSource, e.expenseSourceInfo.fileLink, e.memo, e.cardNumber) "
-						+ "FROM ExpenseEntity e "
+				"SELECT new"
+					+ " com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow(e.expenseId,"
+					+ " e.accountBookId, e.travelId, e.category, CASE WHEN"
+					+ " e.exchangeInfo.baseCurrencyAmount IS NOT NULL THEN"
+					+ " e.exchangeInfo.baseCurrencyCode ELSE"
+					+ " e.exchangeInfo.calculatedBaseCurrencyCode END,"
+					+ " CASE WHEN e.exchangeInfo.baseCurrencyAmount IS NOT NULL THEN"
+					+ " e.exchangeInfo.baseCurrencyAmount ELSE"
+					+ " e.exchangeInfo.calculatedBaseCurrencyAmount END,"
+					+ " e.exchangeInfo.exchangeRate,"
+					+ " e.exchangeInfo.localCurrencyCode, e.exchangeInfo.localCurrencyAmount,"
+					+ " e.occurredAt, e.updatedAt, e.merchant.displayMerchantName,"
+					+ " e.approvalNumber, e.userCardId, e.expenseSourceInfo.expenseSource,"
+					+ " e.expenseSourceInfo.fileLink, e.memo, e.cardNumber) FROM ExpenseEntity e "
 						+ whereClause
 						+ " "
 						+ orderByClause;
@@ -114,14 +128,17 @@ public class ExpenseQueryRepository {
 		}
 		if (filter.minAmount() != null) {
 			where.append(
-					"AND COALESCE(e.exchangeInfo.baseCurrencyAmount, e.exchangeInfo.calculatedBaseCurrencyAmount) >= :minAmount ");
+					"AND COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+							+ " e.exchangeInfo.calculatedBaseCurrencyAmount) >= :minAmount ");
 		}
 		if (filter.maxAmount() != null) {
 			where.append(
-					"AND COALESCE(e.exchangeInfo.baseCurrencyAmount, e.exchangeInfo.calculatedBaseCurrencyAmount) <= :maxAmount ");
+					"AND COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+							+ " e.exchangeInfo.calculatedBaseCurrencyAmount) <= :maxAmount ");
 		}
 		if (filter.merchantName() != null) {
-			where.append("AND e.merchant.displayMerchantName LIKE CONCAT('%', :merchantName, '%') ");
+			where.append(
+					"AND e.merchant.displayMerchantName LIKE CONCAT('%', :merchantName, '%') ");
 		}
 		if (filter.travelId() != null) {
 			where.append("AND e.travelId = :travelId ");
@@ -129,14 +146,12 @@ public class ExpenseQueryRepository {
 		return where.toString();
 	}
 
-	private void bindFilter(
-			TypedQuery<?> query, Long accountBookId, ExpenseSearchFilter filter) {
+	private void bindFilter(TypedQuery<?> query, Long accountBookId, ExpenseSearchFilter filter) {
 		query.setParameter("accountBookId", accountBookId);
 		if (filter == null) {
 			return;
 		}
-		OffsetDateTime startDate =
-				filter.startDate() != null ? filter.startDate() : null;
+		OffsetDateTime startDate = filter.startDate() != null ? filter.startDate() : null;
 		OffsetDateTime endDate = filter.endDate() != null ? filter.endDate() : null;
 		Category category = filter.category();
 		BigDecimal minAmount = filter.minAmount();

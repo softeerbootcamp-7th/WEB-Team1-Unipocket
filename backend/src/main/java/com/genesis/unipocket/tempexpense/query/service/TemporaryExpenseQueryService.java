@@ -6,10 +6,10 @@ import com.genesis.unipocket.tempexpense.query.persistence.repository.TemporaryE
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow;
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaRow;
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaSummaryRow;
-import com.genesis.unipocket.tempexpense.query.service.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
+import com.genesis.unipocket.tempexpense.query.service.port.TempExpenseMediaAccessService;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +38,7 @@ public class TemporaryExpenseQueryService {
 		}
 
 		List<TemporaryExpenseMetaListResponse.MetaSummary> summaries =
-				metas.stream()
-						.map(this::toMetaSummary)
-						.toList();
+				metas.stream().map(this::toMetaSummary).toList();
 
 		return new TemporaryExpenseMetaListResponse(summaries);
 	}
@@ -58,7 +56,8 @@ public class TemporaryExpenseQueryService {
 
 		Map<Long, List<TemporaryExpenseResponse>> expensesByFileId =
 				temporaryExpenseQueryRepository
-						.findExpensesByFileIds(files.stream().map(TemporaryExpenseFileRow::fileId).toList())
+						.findExpensesByFileIds(
+								files.stream().map(TemporaryExpenseFileRow::fileId).toList())
 						.stream()
 						.map(TemporaryExpenseResponse::from)
 						.collect(Collectors.groupingBy(TemporaryExpenseResponse::fileId));
@@ -70,8 +69,11 @@ public class TemporaryExpenseQueryService {
 										new TemporaryExpenseMetaFilesResponse.FileExpenses(
 												file.fileId(),
 												file.s3Key(),
-												file.fileType() != null ? String.valueOf(file.fileType()) : null,
-												expensesByFileId.getOrDefault(file.fileId(), List.of())))
+												file.fileType() != null
+														? String.valueOf(file.fileType())
+														: null,
+												expensesByFileId.getOrDefault(
+														file.fileId(), List.of())))
 						.toList();
 
 		return new TemporaryExpenseMetaFilesResponse(
@@ -127,7 +129,9 @@ public class TemporaryExpenseQueryService {
 				.orElseThrow(
 						() -> {
 							boolean exists =
-									temporaryExpenseQueryRepository.findMetaById(tempExpenseMetaId).isPresent();
+									temporaryExpenseQueryRepository
+											.findMetaById(tempExpenseMetaId)
+											.isPresent();
 							return new BusinessException(
 									exists
 											? ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH

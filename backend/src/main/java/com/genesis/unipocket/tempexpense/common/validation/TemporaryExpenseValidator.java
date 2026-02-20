@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TemporaryExpenseValidator {
 
-		public boolean hasRequiredFieldsForNormal(
+	public boolean hasRequiredFieldsForNormal(
 			String merchantName,
 			Category category,
 			CurrencyCode localCountryCode,
@@ -31,7 +31,7 @@ public class TemporaryExpenseValidator {
 				&& occurredAt != null;
 	}
 
-		public TemporaryExpenseStatus resolveStatus(
+	public TemporaryExpenseStatus resolveStatus(
 			TemporaryExpenseStatus originalStatus,
 			String merchantName,
 			Category category,
@@ -53,7 +53,7 @@ public class TemporaryExpenseValidator {
 				: TemporaryExpenseStatus.INCOMPLETE;
 	}
 
-		public void validateConvertible(TemporaryExpense temp, CurrencyCode resolvedBaseCurrencyCode) {
+	public void validateConvertible(TemporaryExpense temp, CurrencyCode resolvedBaseCurrencyCode) {
 		List<String> missingOrInvalidFields =
 				findMissingOrInvalidFields(temp, resolvedBaseCurrencyCode);
 		if (!missingOrInvalidFields.isEmpty()) {

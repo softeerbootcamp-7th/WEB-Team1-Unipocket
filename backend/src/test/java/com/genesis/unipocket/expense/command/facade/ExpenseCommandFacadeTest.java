@@ -7,11 +7,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandContextService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
@@ -235,9 +235,11 @@ class ExpenseCommandFacadeTest {
 				.thenReturn(
 						new AccountBookInfo(
 								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
-		when(expenseCommandContextService.resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD))
+		when(expenseCommandContextService.resolveLocalCurrencyCode(
+						CurrencyCode.JPY, CurrencyCode.USD))
 				.thenReturn(CurrencyCode.JPY);
-		when(expenseCommandContextService.resolveLocalCurrencyCode(CurrencyCode.USD, CurrencyCode.USD))
+		when(expenseCommandContextService.resolveLocalCurrencyCode(
+						CurrencyCode.USD, CurrencyCode.USD))
 				.thenReturn(CurrencyCode.USD);
 		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
 				.thenReturn(

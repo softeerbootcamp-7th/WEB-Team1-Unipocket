@@ -73,7 +73,9 @@ public class TemporaryExpenseCommandController {
 
 		BatchConvertStartResponse response =
 				new BatchConvertStartResponse(
-						result.taskId(), result.totalExpenses(), buildParseStatusUrl(accountBookId, result.taskId()));
+						result.taskId(),
+						result.totalExpenses(),
+						buildParseStatusUrl(accountBookId, result.taskId()));
 		return ResponseEntity.accepted().body(response);
 	}
 
@@ -93,7 +95,9 @@ public class TemporaryExpenseCommandController {
 
 		BatchParseResponse response =
 				new BatchParseResponse(
-						result.taskId(), result.totalFiles(), buildParseStatusUrl(accountBookId, result.taskId()));
+						result.taskId(),
+						result.totalFiles(),
+						buildParseStatusUrl(accountBookId, result.taskId()));
 
 		return ResponseEntity.accepted().body(response);
 	}

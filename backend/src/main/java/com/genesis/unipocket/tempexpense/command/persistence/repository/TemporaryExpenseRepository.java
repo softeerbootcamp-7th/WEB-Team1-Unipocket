@@ -37,14 +37,12 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 			@Param("fileId") Long fileId);
 
 	@Query(
-			"SELECT new com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseConversionContextRow("
-					+ "tm.accountBookId, f.fileType, f.s3Key) "
-					+ "FROM TemporaryExpense te "
-					+ "JOIN TempExpenseMeta tm ON tm.tempExpenseMetaId = te.tempExpenseMetaId "
-					+ "JOIN File f ON f.fileId = te.fileId "
-					+ "WHERE te.tempExpenseId = :tempExpenseId "
-					+ "AND tm.accountBookId = :accountBookId "
-					+ "AND f.tempExpenseMetaId = te.tempExpenseMetaId")
+			"SELECT new"
+				+ " com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseConversionContextRow(tm.accountBookId,"
+				+ " f.fileType, f.s3Key) FROM TemporaryExpense te JOIN TempExpenseMeta tm ON"
+				+ " tm.tempExpenseMetaId = te.tempExpenseMetaId JOIN File f ON f.fileId = te.fileId"
+				+ " WHERE te.tempExpenseId = :tempExpenseId AND tm.accountBookId = :accountBookId"
+				+ " AND f.tempExpenseMetaId = te.tempExpenseMetaId")
 	Optional<TempExpenseConversionContextRow> findConversionContext(
 			@Param("accountBookId") Long accountBookId, @Param("tempExpenseId") Long tempExpenseId);
 }

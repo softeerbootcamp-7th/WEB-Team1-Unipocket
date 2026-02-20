@@ -17,7 +17,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class TempExpenseMediaProvider
-		implements com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService,
+		implements com.genesis.unipocket.tempexpense.command.facade.port
+						.TempExpenseMediaAccessService,
 				TempExpenseMediaAccessService {
 
 	private final MediaObjectStorage mediaObjectStorage;

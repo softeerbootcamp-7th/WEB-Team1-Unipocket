@@ -94,7 +94,10 @@ public class ParsingProgressPublisher {
 
 		SseEmitter emitter = emitters.get(taskId);
 		if (emitter != null) {
-			flushTerminalEvent(taskId, emitter, new ParsingTaskState(state.accountBookId(), 100, TaskStatus.COMPLETE, null));
+			flushTerminalEvent(
+					taskId,
+					emitter,
+					new ParsingTaskState(state.accountBookId(), 100, TaskStatus.COMPLETE, null));
 		}
 	}
 
@@ -112,7 +115,14 @@ public class ParsingProgressPublisher {
 
 		SseEmitter emitter = emitters.get(taskId);
 		if (emitter != null) {
-			flushTerminalEvent(taskId, emitter, new ParsingTaskState(state.accountBookId(), state.progress(), TaskStatus.ERROR, errorMessage));
+			flushTerminalEvent(
+					taskId,
+					emitter,
+					new ParsingTaskState(
+							state.accountBookId(),
+							state.progress(),
+							TaskStatus.ERROR,
+							errorMessage));
 		}
 	}
 
@@ -142,15 +152,13 @@ public class ParsingProgressPublisher {
 	}
 
 	private void sendProgress(String taskId, SseEmitter emitter, int progress) {
-		boolean sent =
-				sendEvent(emitter, taskId, "progress", new ParsingProgressEvent(progress));
+		boolean sent = sendEvent(emitter, taskId, "progress", new ParsingProgressEvent(progress));
 		if (!sent) {
 			emitters.remove(taskId);
 		}
 	}
 
-	private void flushTerminalEvent(
-			String taskId, SseEmitter emitter, ParsingTaskState state) {
+	private void flushTerminalEvent(String taskId, SseEmitter emitter, ParsingTaskState state) {
 		boolean sent =
 				state.status() == TaskStatus.ERROR
 						? sendEvent(

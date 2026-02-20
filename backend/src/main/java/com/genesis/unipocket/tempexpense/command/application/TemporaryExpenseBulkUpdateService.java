@@ -59,8 +59,7 @@ public class TemporaryExpenseBulkUpdateService {
 						.stream()
 						.collect(
 								Collectors.toMap(
-										TemporaryExpense::getTempExpenseId,
-										Function.identity()));
+										TemporaryExpense::getTempExpenseId, Function.identity()));
 		CurrencyCode defaultBaseCurrencyCode =
 				accountBookRateInfoProvider.getRateInfo(accountBookId).baseCurrencyCode();
 
@@ -100,10 +99,7 @@ public class TemporaryExpenseBulkUpdateService {
 
 		int totalRequested = request.items().size();
 		return new TemporaryExpenseMetaBulkUpdateResult(
-				totalRequested,
-				successCount,
-				totalRequested - successCount,
-				results);
+				totalRequested, successCount, totalRequested - successCount, results);
 	}
 
 	@Transactional

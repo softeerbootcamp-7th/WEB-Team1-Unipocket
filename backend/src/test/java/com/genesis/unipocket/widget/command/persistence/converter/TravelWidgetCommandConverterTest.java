@@ -3,10 +3,10 @@ package com.genesis.unipocket.widget.command.persistence.converter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.genesis.unipocket.global.common.enums.WidgetType;
-import com.genesis.unipocket.widget.common.persistence.entity.TravelWidgetEntity;
 import com.genesis.unipocket.widget.common.WidgetItem;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import com.genesis.unipocket.widget.common.enums.Period;
+import com.genesis.unipocket.widget.common.persistence.entity.TravelWidgetEntity;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

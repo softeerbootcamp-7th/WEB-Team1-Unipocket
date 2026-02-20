@@ -52,7 +52,9 @@ class ExchangeRateCommandServiceImplTest {
 						.build();
 		when(exchangeRateRepository
 						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
+								eq(CurrencyCode.KRW),
+								any(LocalDateTime.class),
+								any(LocalDateTime.class)))
 				.thenAnswer(
 						invocation -> {
 							LocalDateTime start = invocation.getArgument(1);
@@ -89,7 +91,9 @@ class ExchangeRateCommandServiceImplTest {
 						.build();
 		when(exchangeRateRepository
 						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
+								eq(CurrencyCode.KRW),
+								any(LocalDateTime.class),
+								any(LocalDateTime.class)))
 				.thenReturn(Optional.of(targetRate));
 
 		BigDecimal rate =
@@ -108,7 +112,9 @@ class ExchangeRateCommandServiceImplTest {
 
 		when(exchangeRateRepository
 						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-								eq(CurrencyCode.GBP), any(LocalDateTime.class), any(LocalDateTime.class)))
+								eq(CurrencyCode.GBP),
+								any(LocalDateTime.class),
+								any(LocalDateTime.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooSingleDayResponse(LocalDate.of(2026, 2, 11), "0.79"));
@@ -135,7 +141,9 @@ class ExchangeRateCommandServiceImplTest {
 
 		when(exchangeRateRepository
 						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
+								eq(CurrencyCode.KRW),
+								any(LocalDateTime.class),
+								any(LocalDateTime.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooUnsupportedSymbolResponse());
@@ -155,7 +163,9 @@ class ExchangeRateCommandServiceImplTest {
 
 		when(exchangeRateRepository
 						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
+								eq(CurrencyCode.KRW),
+								any(LocalDateTime.class),
+								any(LocalDateTime.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenThrow(new RuntimeException("timeout"));
@@ -175,7 +185,9 @@ class ExchangeRateCommandServiceImplTest {
 
 		when(exchangeRateRepository
 						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
-								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
+								eq(CurrencyCode.KRW),
+								any(LocalDateTime.class),
+								any(LocalDateTime.class)))
 				.thenAnswer(
 						invocation -> {
 							LocalDateTime start = invocation.getArgument(1);

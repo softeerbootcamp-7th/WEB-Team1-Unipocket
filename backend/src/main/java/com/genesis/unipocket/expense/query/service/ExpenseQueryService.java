@@ -1,12 +1,12 @@
 package com.genesis.unipocket.expense.query.service;
 
-import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
 import com.genesis.unipocket.expense.query.persistence.repository.ExpenseQueryRepository;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow;
 import com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.expense.query.port.ExpenseMediaAccessService;
 import com.genesis.unipocket.expense.query.port.TravelInfoReader;
 import com.genesis.unipocket.expense.query.port.UserCardReadService;
+import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
 import com.genesis.unipocket.expense.query.port.dto.UserCardQueryInfo;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
@@ -140,7 +140,9 @@ public class ExpenseQueryService {
 				.orElseThrow(
 						() -> {
 							Long ownerAccountBookId =
-									expenseQueryRepository.findAccountBookIdByExpenseId(expenseId).orElse(null);
+									expenseQueryRepository
+											.findAccountBookIdByExpenseId(expenseId)
+											.orElse(null);
 							if (ownerAccountBookId == null) {
 								return new BusinessException(ErrorCode.EXPENSE_NOT_FOUND);
 							}

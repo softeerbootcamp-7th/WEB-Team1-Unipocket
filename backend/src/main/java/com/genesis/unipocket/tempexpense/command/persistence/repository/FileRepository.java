@@ -13,29 +13,28 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FileRepository extends JpaRepository<File, Long> {
 
-		boolean existsByS3Key(String s3Key);
+	boolean existsByS3Key(String s3Key);
 
 	Optional<File> findByS3Key(String s3Key);
 
 	@Query("SELECT f.s3Key FROM File f WHERE f.s3Key IS NOT NULL")
 	List<String> findAllS3Keys();
 
-		List<File> findByTempExpenseMetaId(Long tempExpenseMetaId);
+	List<File> findByTempExpenseMetaId(Long tempExpenseMetaId);
 
 	boolean existsByTempExpenseMetaId(Long tempExpenseMetaId);
 
 	void deleteByTempExpenseMetaId(Long tempExpenseMetaId);
 
 	@Query(
-			"SELECT new com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseMetaFileCountRow("
-					+ "f.tempExpenseMetaId, COUNT(f.fileId)) "
-					+ "FROM File f "
-					+ "WHERE f.tempExpenseMetaId IN :metaIds "
-					+ "GROUP BY f.tempExpenseMetaId")
+			"SELECT new"
+				+ " com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseMetaFileCountRow(f.tempExpenseMetaId,"
+				+ " COUNT(f.fileId)) FROM File f WHERE f.tempExpenseMetaId IN :metaIds GROUP BY"
+				+ " f.tempExpenseMetaId")
 	List<TempExpenseMetaFileCountRow> countFilesByTempExpenseMetaIdIn(
 			@Param("metaIds") List<Long> metaIds);
 
-		@Query(
+	@Query(
 			"SELECT f FROM File f "
 					+ "JOIN TempExpenseMeta tm ON f.tempExpenseMetaId = tm.tempExpenseMetaId "
 					+ "LEFT JOIN TemporaryExpense te ON te.fileId = f.fileId "

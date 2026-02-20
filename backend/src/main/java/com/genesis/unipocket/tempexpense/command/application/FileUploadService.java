@@ -6,10 +6,10 @@ import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
-import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
@@ -36,7 +36,7 @@ public class FileUploadService {
 	@Value("${app.media.presigned-put-expiration-seconds:300}")
 	private int presignedPutExpirationSeconds;
 
-		@Transactional
+	@Transactional
 	public FileUploadResult createPresignedUrl(
 			Long accountBookId,
 			String fileName,

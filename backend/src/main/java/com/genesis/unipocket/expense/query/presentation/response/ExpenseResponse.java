@@ -1,7 +1,7 @@
 package com.genesis.unipocket.expense.query.presentation.response;
 
-import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
 import com.genesis.unipocket.expense.common.util.AmountFormatters;
+import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
 import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -27,8 +27,8 @@ public record ExpenseResponse(
 		String memo,
 		ExpenseSource source,
 		String approvalNumber,
-	String cardNumber,
-	String fileLink) {
+		String cardNumber,
+		String fileLink) {
 
 	public static ExpenseResponse from(ExpenseQueryResult dto) {
 		return from(dto, null);

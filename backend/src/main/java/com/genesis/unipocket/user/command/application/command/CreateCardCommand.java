@@ -1,7 +1,7 @@
 package com.genesis.unipocket.user.command.application.command;
 
-import com.genesis.unipocket.user.common.enums.CardCompany;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.util.UUID;
 
 public record CreateCardCommand(

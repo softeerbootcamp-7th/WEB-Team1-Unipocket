@@ -102,7 +102,8 @@ public class GeminiService {
 
 		} catch (HttpStatusCodeException e) {
 			log.error("Gemini API returned non-2xx status: {}", e.getStatusCode(), e);
-			return new GeminiParseResponse(false, List.of(), e.getMessage(), e.getStatusCode().value());
+			return new GeminiParseResponse(
+					false, List.of(), e.getMessage(), e.getStatusCode().value());
 		} catch (RestClientException e) {
 			log.error("Failed to call Gemini API", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
@@ -152,7 +153,8 @@ public class GeminiService {
 
 		} catch (HttpStatusCodeException e) {
 			log.error("Gemini API returned non-2xx status: {}", e.getStatusCode(), e);
-			return new GeminiParseResponse(false, List.of(), e.getMessage(), e.getStatusCode().value());
+			return new GeminiParseResponse(
+					false, List.of(), e.getMessage(), e.getStatusCode().value());
 		} catch (RestClientException e) {
 			log.error("Failed to call Gemini API", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
@@ -362,8 +364,12 @@ public class GeminiService {
 	 * Gemini API 파싱 응답 (영수증)
 	 */
 	public record GeminiParseResponse(
-			boolean success, List<ParsedExpenseItem> items, String errorMessage, Integer statusCode) {
-		public GeminiParseResponse(boolean success, List<ParsedExpenseItem> items, String errorMessage) {
+			boolean success,
+			List<ParsedExpenseItem> items,
+			String errorMessage,
+			Integer statusCode) {
+		public GeminiParseResponse(
+				boolean success, List<ParsedExpenseItem> items, String errorMessage) {
 			this(success, items, errorMessage, null);
 		}
 

@@ -66,7 +66,8 @@ public class TemporaryExpenseConversionService {
 				tempExpenseIds,
 				progressPublisher,
 				ErrorCode.TEMP_EXPENSE_PARSE_FAILED,
-				tempExpenseId -> singleConversionTxService.convertToExpense(accountBookId, tempExpenseId),
+				tempExpenseId ->
+						singleConversionTxService.convertToExpense(accountBookId, tempExpenseId),
 				(tempExpenseId, e) -> {
 					log.error("Failed to convert temporary expense: {}", tempExpenseId, e);
 					return false;

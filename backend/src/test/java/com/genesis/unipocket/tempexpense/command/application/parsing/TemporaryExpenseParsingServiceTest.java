@@ -19,9 +19,9 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
-import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
@@ -452,7 +452,9 @@ class TemporaryExpenseParsingServiceTest {
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
 		when(temporaryExpenseParseClient.parse(first))
-				.thenReturn(new GeminiService.GeminiParseResponse(false, List.of(), "too many requests", 429));
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								false, List.of(), "too many requests", 429));
 
 		assertThatThrownBy(() -> service.parseBatchFiles(meta, List.of(first, second), "task-429"))
 				.isInstanceOf(RuntimeException.class);

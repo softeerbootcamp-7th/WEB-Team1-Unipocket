@@ -222,8 +222,8 @@ class ExpenseControllerIntegrationTest {
 								.with(jwtTestHelper.withJwtAuth(userId))
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(updateBody))
-					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.displayMerchantName").value("스타벅스 수정"));
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.displayMerchantName").value("스타벅스 수정"));
 	}
 
 	@Test

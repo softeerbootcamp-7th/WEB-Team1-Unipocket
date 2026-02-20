@@ -1,10 +1,10 @@
 package com.genesis.unipocket.expense.command.facade;
 
-import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandContextService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
@@ -102,7 +102,8 @@ public class ExpenseCommandFacade {
 
 		AccountBookInfo accountBookInfo =
 				accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString());
-		CurrencyCode accountBookLocalCurrencyCode = accountBookInfo.localCountryCode().getCurrencyCode();
+		CurrencyCode accountBookLocalCurrencyCode =
+				accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 
 		return request.items().stream()

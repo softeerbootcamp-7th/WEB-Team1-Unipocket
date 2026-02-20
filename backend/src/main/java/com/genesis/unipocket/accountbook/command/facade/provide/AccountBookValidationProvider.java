@@ -21,7 +21,7 @@ public class AccountBookValidationProvider
 				com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator,
 				com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator,
 				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
-		com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator,
+				com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator,
 				AccountBookInfoFetchService,
 				AccountBookRateInfoProvider,
 				UserAccountBookValidator,

@@ -8,10 +8,10 @@ import com.genesis.unipocket.tempexpense.command.application.parsing.command.Exc
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
-import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
@@ -169,7 +169,8 @@ public class TemporaryExpenseParsingService {
 												&& item.occurredAt() != null
 												&& !(item.baseAmount() != null
 														&& item.baseCurrencyCode() != null
-														&& item.baseCurrencyCode() == baseCurrencyCode))
+														&& item.baseCurrencyCode()
+																== baseCurrencyCode))
 						.map(
 								item ->
 										new ExchangeRateLookupCommand(
@@ -216,7 +217,8 @@ public class TemporaryExpenseParsingService {
 				file -> {
 					if (!Objects.equals(file.getTempExpenseMetaId(), meta.getTempExpenseMetaId())) {
 						log.warn(
-								"Skipping out-of-meta file. fileId={}, expectedMetaId={}, actualMetaId={}",
+								"Skipping out-of-meta file. fileId={}, expectedMetaId={},"
+										+ " actualMetaId={}",
 								file.getFileId(),
 								meta.getTempExpenseMetaId(),
 								file.getTempExpenseMetaId());

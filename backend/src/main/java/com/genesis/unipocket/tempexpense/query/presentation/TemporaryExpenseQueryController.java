@@ -25,7 +25,7 @@ public class TemporaryExpenseQueryController {
 
 	private final TemporaryExpenseQueryFacade temporaryExpenseQueryFacade;
 
-		@Operation(summary = "임시지출 메타 목록 조회", description = "가계부에 속한 임시지출 메타 목록을 조회합니다.")
+	@Operation(summary = "임시지출 메타 목록 조회", description = "가계부에 속한 임시지출 메타 목록을 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas")
 	public ResponseEntity<TemporaryExpenseMetaListResponse> getTemporaryExpenseMetas(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
@@ -34,7 +34,7 @@ public class TemporaryExpenseQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-		@Operation(summary = "메타 내부 파일별 임시지출 조회", description = "메타 1건에 속한 파일별 임시지출 목록을 조회합니다.")
+	@Operation(summary = "메타 내부 파일별 임시지출 조회", description = "메타 1건에 속한 파일별 임시지출 목록을 조회합니다.")
 	@GetMapping("/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files")
 	public ResponseEntity<TemporaryExpenseMetaFilesResponse> getTemporaryExpenseMetaFiles(
 			@PathVariable Long accountBookId,
@@ -46,7 +46,7 @@ public class TemporaryExpenseQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-		@Operation(summary = "메타 내부 파일 단건 임시지출 조회", description = "메타 1건에 속한 파일 1건의 임시지출 목록을 조회합니다.")
+	@Operation(summary = "메타 내부 파일 단건 임시지출 조회", description = "메타 1건에 속한 파일 1건의 임시지출 목록을 조회합니다.")
 	@GetMapping(
 			"/account-books/{accountBookId}/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}")
 	public ResponseEntity<TemporaryExpenseMetaFilesResponse.FileExpenses>
@@ -80,7 +80,7 @@ public class TemporaryExpenseQueryController {
 				new TemporaryExpenseFileUrlResponse(presignedUrl, expiresInSeconds));
 	}
 
-		@Operation(summary = "파싱 진행 상황 스트림", description = "비동기 파싱 작업의 진행/완료 이벤트를 SSE로 구독합니다.")
+	@Operation(summary = "파싱 진행 상황 스트림", description = "비동기 파싱 작업의 진행/완료 이벤트를 SSE로 구독합니다.")
 	@GetMapping(
 			value = "/account-books/{accountBookId}/temporary-expenses/parse-status/{taskId}",
 			produces = MediaType.TEXT_EVENT_STREAM_VALUE)

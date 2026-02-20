@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { ENDPOINTS } from '@/api/config/endpoint';
-
-import type { ParseStatusResponse } from './type';
+import type { GetParseStatusResponse } from '@/api/temporary-expenses/type';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
 
@@ -17,13 +16,13 @@ export const useParseStatusSSE = ({
   taskId,
   enabled = true,
 }: UseParseStatusSSEProps) => {
-  const [data, setData] = useState<ParseStatusResponse | null>(null);
+  const [data, setData] = useState<GetParseStatusResponse | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  // taskId 변경 시 상태 초기화 (derived state during render)
+  // taskId 변경 시 상태 초기화
   const [prevTaskId, setPrevTaskId] = useState(taskId);
   if (taskId !== prevTaskId) {
     setPrevTaskId(taskId);
@@ -62,7 +61,7 @@ export const useParseStatusSSE = ({
 
     eventSource.onmessage = (event) => {
       try {
-        const parsed: ParseStatusResponse = JSON.parse(event.data);
+        const parsed: GetParseStatusResponse = JSON.parse(event.data);
         setData(parsed);
 
         if (parsed.status === 'SUCCESS' || parsed.status === 'FAIL') {

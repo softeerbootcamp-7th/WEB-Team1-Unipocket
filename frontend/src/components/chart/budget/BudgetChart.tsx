@@ -15,7 +15,12 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
   const { data, isLoading } = useWidgetQuery('BUDGET');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const showSkeleton = isPreview || isLoading || !data;
+  const budgetAmount = Number(data?.budget) || 0;
+  const usedAmount = Number(data?.baseSpentAmount) || 0;
+  const localUsedAmount = Number(data?.localSpentAmount) || 0;
+
+  const showSkeleton =
+    isPreview || isLoading || !data || budgetAmount === 0 || usedAmount === 0;
 
   return (
     <ChartContainer isPreview={isPreview}>
@@ -31,9 +36,9 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
       >
         {data && (
           <BudgetChartView
-            totalBudget={Number(data.budget)}
-            usedBudget={Number(data.baseSpentAmount)}
-            localUsedBudget={Number(data.localSpentAmount)}
+            totalBudget={budgetAmount}
+            usedBudget={usedAmount}
+            localUsedBudget={localUsedAmount}
             baseCode={data.baseCountryCode}
             localCode={data.localCountryCode}
           />

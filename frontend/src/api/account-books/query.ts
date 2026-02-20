@@ -15,6 +15,7 @@ import {
   getAccountBooks,
   getAnalysis,
   updateAccountBook,
+  updateAccountBookBudget,
 } from '@/api/account-books/api';
 import type {
   CreateAccountBookRequest,
@@ -22,6 +23,7 @@ import type {
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
 import { queryClient } from '@/main';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const accountBooksQueryOptions = queryOptions({
   queryKey: ['accountBooks', 'list'],
@@ -114,4 +116,28 @@ export {
   useDeleteAccountBookMutation,
   useGetAccountBooksQuery,
   useUpdateAccountBookMutation,
+};
+
+export const useUpdateAccountBookBudgetMutation = () => {
+  const accountBookId = useAccountBookStore((state) => state.accountBook?.id);
+
+  return useMutation({
+    // mutationFn은 budget 값 하나만 인자로 받습니다.
+    mutationFn: (budget: number) => {
+      // id가 없는 방어 코드 추가 (옵셔널 체이닝 및 타입 단언(!)의 불안정성 해소)
+      if (!accountBookId) throw new Error('Account Book ID is missing');
+      return updateAccountBookBudget(accountBookId, budget);
+    },
+    onSuccess: () => {
+      // widgetType이 'BUDGET'인 모든 쿼리를 무효화
+      // 배열의 앞에서부터 매칭되므로 하위 옵션(currencyType 등)과 무관하게 모두 무효화됨
+      queryClient.invalidateQueries({
+        queryKey: ['widget', accountBookId, 'BUDGET'],
+      });
+      toast.success('예산이 저장되었어요.');
+    },
+    onError: () => {
+      toast.error('예산 저장에 실패했어요.');
+    },
+  });
 };

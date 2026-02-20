@@ -79,7 +79,7 @@ class AccountBookCommandControllerTest {
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").value(accountBookId));
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId));
 	}
 
 	@Test
@@ -118,7 +118,7 @@ class AccountBookCommandControllerTest {
 								.content(objectMapper.writeValueAsString(request))
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId));
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId));
 	}
 
 	@Test

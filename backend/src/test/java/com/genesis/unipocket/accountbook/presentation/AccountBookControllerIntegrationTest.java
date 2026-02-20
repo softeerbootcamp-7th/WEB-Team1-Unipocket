@@ -100,7 +100,7 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNumber())
+				.andExpect(jsonPath("$.accountBookId").isNumber())
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.baseCurrencyCode").value("KR"));
 
@@ -229,7 +229,7 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("수정된 가계부"));
 
 		AccountBookEntity updated = accountBookRepository.findById(accountBookId).orElseThrow();
@@ -268,7 +268,7 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(secondId));
+				.andExpect(jsonPath("$.accountBookId").value(secondId));
 
 		assertThat(userRepository.findById(userId).orElseThrow().getMainBucketId())
 				.isEqualTo(secondId);
@@ -466,9 +466,9 @@ class AccountBookControllerIntegrationTest {
 		mockMvc.perform(get("/account-books").with(jwtTestHelper.withJwtAuth(userId)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(2))
-				.andExpect(jsonPath("$[0].id").value(firstId))
+				.andExpect(jsonPath("$[0].accountBookId").value(firstId))
 				.andExpect(jsonPath("$[0].isMain").value(true))
-				.andExpect(jsonPath("$[1].id").value(secondId))
+				.andExpect(jsonPath("$[1].accountBookId").value(secondId))
 				.andExpect(jsonPath("$[1].isMain").value(false));
 	}
 
@@ -483,7 +483,7 @@ class AccountBookControllerIntegrationTest {
 						get("/account-books/{id}", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("test-user의 가계부1"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))

@@ -2,7 +2,7 @@ import type { CategoryId } from '@/types/category';
 
 import type { CurrencyCode } from '@/data/country/currencyCode';
 
-export interface SidePanelFormValues {
+export type SidePanelFormValues = {
   merchantName: string;
   category: CategoryId;
   userCardId?: number;
@@ -12,4 +12,4 @@ export interface SidePanelFormValues {
   baseCurrencyAmount: number;
   memo?: string;
   travelId?: number;
-}
+};

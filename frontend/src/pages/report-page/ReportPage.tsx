@@ -18,7 +18,7 @@ import { type CurrencyType } from '@/types/currency';
 
 import { useAnalysisQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
-import { useRequiredAccountBook } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBook';
 
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');

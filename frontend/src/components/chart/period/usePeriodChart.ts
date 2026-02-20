@@ -15,7 +15,7 @@ import type { CurrencyType } from '@/types/currency';
 import { getPeriodTypeById } from '@/types/period';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import { useAccountBookCountryCode } from '@/stores/useAccountBookStore';
+import { useAccountBookCountryCode } from '@/stores/accountBook';
 
 export const usePeriodChart = (isPreview: boolean) => {
   const [selectedCurrency, setSelectedCurrency] = useState(

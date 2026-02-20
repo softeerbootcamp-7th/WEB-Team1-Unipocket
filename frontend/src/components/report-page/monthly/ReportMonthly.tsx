@@ -4,7 +4,7 @@ import ReportContent from '@/components/report-page/layout/ReportContent';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
-import { useRequiredAccountBook } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBook';
 
 const barWidth = {
   large: 'w-46',

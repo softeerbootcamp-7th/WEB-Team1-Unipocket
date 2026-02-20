@@ -11,7 +11,7 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 import type { CurrencyType } from '@/types/currency';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import { useRequiredAccountBook } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBook';
 
 const ComparisonChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState<number>(

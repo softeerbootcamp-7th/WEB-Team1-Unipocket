@@ -5,7 +5,7 @@ import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { type AnalysisChartItem } from '@/api/account-books/type';
 import { getCountryInfo } from '@/lib/country';
-import { useAccountBookCountryCode } from '@/stores/useAccountBookStore';
+import { useAccountBookCountryCode } from '@/stores/accountBook';
 
 interface ReportMyselfProps {
   data: {

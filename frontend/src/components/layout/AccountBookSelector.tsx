@@ -5,7 +5,7 @@ import {
   useGetAccountBooksQuery,
 } from '@/api/account-books/query';
 import { queryClient } from '@/main';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookStore } from '@/stores/accountBook';
 
 const AccountBookSelector = () => {
   const { accountBook, setAccountBook } = useAccountBookStore();

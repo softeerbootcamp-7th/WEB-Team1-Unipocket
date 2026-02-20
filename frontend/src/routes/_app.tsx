@@ -8,7 +8,7 @@ import {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
 } from '@/api/account-books/query';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookStore } from '@/stores/accountBook';
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {

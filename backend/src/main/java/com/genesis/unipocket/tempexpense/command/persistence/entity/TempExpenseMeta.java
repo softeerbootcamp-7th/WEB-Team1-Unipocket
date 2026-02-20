@@ -6,15 +6,6 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-/**
- * <b>임시지출내역 메타데이터 엔티티</b>
- * <p>
- * 파일 업로드 및 파싱 결과에 대한 메타정보를 저장합니다.
- * </p>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Entity
 @Getter
 @Builder

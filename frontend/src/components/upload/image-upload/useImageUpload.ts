@@ -160,7 +160,7 @@ export const useImageUpload = (accountBookId: number) => {
         if (parsed.status === 'SUCCESS') {
           setItems((prev) =>
             prev.map((item) =>
-              item.status === UPLOAD_STATUS.PARSING
+              item.status === UPLOAD_STATUS.PARSING && item.taskId === taskId
                 ? { ...item, status: UPLOAD_STATUS.PARSED }
                 : item,
             ),

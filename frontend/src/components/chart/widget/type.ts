@@ -1,5 +1,3 @@
-import type { PeriodType } from '@/types/period';
-
 export const WIDGET_TYPES = [
   'BUDGET',
   'CATEGORY',

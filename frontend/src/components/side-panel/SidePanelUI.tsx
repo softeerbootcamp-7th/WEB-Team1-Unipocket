@@ -12,6 +12,7 @@ import TextInput from '@/components/common/TextInput';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
+import type { SidePanelFormValues } from '@/components/side-panel/type';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
 import ValueContainer, {
   type ValueItemProps,
@@ -33,6 +34,7 @@ interface SidePanelUIProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Partial<Expense>;
+  onSubmit?: (values: SidePanelFormValues) => void;
 }
 
 const SidePanelUI = ({
@@ -40,6 +42,7 @@ const SidePanelUI = ({
   isOpen,
   onClose,
   initialData,
+  onSubmit,
 }: SidePanelUIProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
@@ -83,6 +86,24 @@ const SidePanelUI = ({
     { label: '여행', value: initialData?.travel?.name ?? '-' },
   ] as const satisfies ValueItemProps[];
 
+  const handleSubmit = () => {
+    if (!onSubmit) return;
+    if (!selectedDateTime) return;
+
+    onSubmit({
+      merchantName: title,
+      category: initialData?.category ?? 1, // @TODO: 실제 선택 상태로 교체
+      //userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태
+      userCardId: undefined,
+      occurredAt: selectedDateTime,
+      localCurrencyAmount: 12, // @TODO: MoneyContainer에서 가져오기
+      localCurrencyCode: 'USD', // @TODO: 여행 기반 코드
+      baseCurrencyAmount: 17568, // @TODO
+      memo,
+      travelId: initialData?.travel?.id ?? undefined,
+    });
+  };
+
   useLayoutEffect(() => {
     if (!titleRef.current) return;
     titleRef.current.style.height = '0px';
@@ -124,22 +145,9 @@ const SidePanelUI = ({
           onClick={onClose}
         />
         <div className="flex items-center gap-2">
-          {/* <div className="flex items-center gap-1">
-            {isEditing ? (
-              <>
-                <p className="label2-medium text-label-alternative">
-                  저장 중...
-                </p>
-                <Icons.Loading className="text-label-assistive h-3 w-3 animate-spin" />
-              </>
-            ) : (
-              <>
-                <p className="label2-medium text-label-alternative">저장됨</p>
-                <Icons.CheckmarkCircle className="h-3 w-3" />
-              </>
-            )}
-          </div> */}
-          <Button variant="solid">저장</Button>
+          <Button variant="solid" onClick={handleSubmit}>
+            저장
+          </Button>
           <Button>삭제</Button>
         </div>
       </div>

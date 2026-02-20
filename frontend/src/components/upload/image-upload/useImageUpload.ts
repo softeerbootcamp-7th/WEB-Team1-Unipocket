@@ -197,10 +197,15 @@ export const useImageUpload = (accountBookId: number) => {
       const itemToRemove = prev.find((item) => item.id === id);
 
       if (itemToRemove?.taskId) {
-        const eventSource = eventSourcesRef.current[itemToRemove.taskId];
-        if (eventSource) {
-          eventSource.close();
-          delete eventSourcesRef.current[itemToRemove.taskId];
+        const isLastItemForTask = !prev.some(
+          (item) => item.id !== id && item.taskId === itemToRemove.taskId,
+        );
+        if (isLastItemForTask) {
+          const eventSource = eventSourcesRef.current[itemToRemove.taskId];
+          if (eventSource) {
+            eventSource.close();
+            delete eventSourcesRef.current[itemToRemove.taskId];
+          }
         }
       }
 

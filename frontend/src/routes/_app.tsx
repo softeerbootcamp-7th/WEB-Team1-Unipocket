@@ -12,7 +12,7 @@ import { requireAuth } from '@/api/auth/api';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     // 1. 로그인 여부 및 정지 계정 검사 (통과 못하면 '/'로 리다이렉트됨)
     const user = await requireAuth();
 

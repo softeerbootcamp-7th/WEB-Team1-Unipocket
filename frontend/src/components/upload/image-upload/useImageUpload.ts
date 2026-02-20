@@ -68,6 +68,12 @@ export const useImageUpload = (accountBookId: number) => {
         // 메타 ID 재사용 (1:N 업로드)
         metaIdRef.current = presigned.tempExpenseMetaId;
 
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, s3Key: presigned.s3Key } : item,
+          ),
+        );
+
         // 2️. S3 업로드
         await fetch(presigned.presignedUrl, {
           method: 'PUT',
@@ -77,21 +83,11 @@ export const useImageUpload = (accountBookId: number) => {
           },
         });
 
-        // 3️. parse 시작
-        const parse = await startParse(accountBookId, {
-          tempExpenseMetaId: presigned.tempExpenseMetaId,
-          s3Keys: [presigned.s3Key],
-        });
-
-        // 4️. taskId 저장
         setItems((prev) =>
           prev.map((item) =>
-            item.id === id ? { ...item, taskId: parse.taskId } : item,
+            item.id === id ? { ...item, status: UPLOAD_STATUS.UPLOADED } : item,
           ),
         );
-
-        // 5️. SSE 연결
-        connectSSE(id, parse.taskId);
       } catch {
         setItems((prev) =>
           prev.map((item) =>
@@ -103,7 +99,40 @@ export const useImageUpload = (accountBookId: number) => {
     }
   };
 
-  const connectSSE = (itemId: string, taskId: string) => {
+  const startParsing = async () => {
+    const uploadedItems = itemsRef.current.filter(
+      (item) => item.status === UPLOAD_STATUS.UPLOADED,
+    );
+
+    if (uploadedItems.length === 0) return;
+
+    try {
+      const s3Keys = uploadedItems.map((item) => {
+        return item.s3Key!;
+      });
+
+      const parse = await startParse(accountBookId, {
+        tempExpenseMetaId: metaIdRef.current!,
+        s3Keys,
+      });
+
+      // 3. 파싱 시작과 동시에 상태 변경 (SSE로 성공/실패 업데이트 예정)
+      setItems((prev) =>
+        prev.map((item) =>
+          item.status === UPLOAD_STATUS.UPLOADED
+            ? { ...item, status: UPLOAD_STATUS.PARSING, taskId: parse.taskId }
+            : item,
+        ),
+      );
+
+      // 4. SSE 연결
+      connectSSE(parse.taskId);
+    } catch {
+      toast.error('파싱 시작에 실패했어요.');
+    }
+  };
+
+  const connectSSE = (taskId: string) => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
     if (!baseUrl) return;
 
@@ -118,7 +147,7 @@ export const useImageUpload = (accountBookId: number) => {
       withCredentials: true,
     });
 
-    eventSourcesRef.current[itemId] = eventSource;
+    eventSourcesRef.current[taskId] = eventSource;
 
     eventSource.onmessage = (event) => {
       try {
@@ -127,60 +156,65 @@ export const useImageUpload = (accountBookId: number) => {
         if (parsed.status === 'SUCCESS') {
           setItems((prev) =>
             prev.map((item) =>
-              item.id === itemId
-                ? { ...item, status: UPLOAD_STATUS.DONE }
+              item.status === UPLOAD_STATUS.PARSING
+                ? { ...item, status: UPLOAD_STATUS.PARSED }
                 : item,
             ),
           );
           eventSource.close();
-          delete eventSourcesRef.current[itemId];
+          delete eventSourcesRef.current[taskId];
         }
 
         if (parsed.status === 'FAIL') {
           setItems((prev) =>
             prev.map((item) =>
-              item.id === itemId
+              item.taskId === taskId
                 ? { ...item, status: UPLOAD_STATUS.ERROR }
                 : item,
             ),
           );
           eventSource.close();
-          delete eventSourcesRef.current[itemId];
+          delete eventSourcesRef.current[taskId];
         }
       } catch {
         eventSource.close();
-        delete eventSourcesRef.current[itemId];
+        delete eventSourcesRef.current[taskId];
       }
     };
 
     eventSource.onerror = () => {
       eventSource.close();
-      delete eventSourcesRef.current[itemId];
+      delete eventSourcesRef.current[taskId];
     };
   };
 
   const removeItem = (id: string) => {
-    const eventSource = eventSourcesRef.current[id];
-    if (eventSource) {
-      eventSource.close();
-      delete eventSourcesRef.current[id];
-    }
-
     setItems((prev) => {
       const itemToRemove = prev.find((item) => item.id === id);
+
+      if (itemToRemove?.taskId) {
+        const eventSource = eventSourcesRef.current[itemToRemove.taskId];
+        if (eventSource) {
+          eventSource.close();
+          delete eventSourcesRef.current[itemToRemove.taskId];
+        }
+      }
+
       if (itemToRemove?.url) {
         URL.revokeObjectURL(itemToRemove.url);
       }
+
       return prev.filter((item) => item.id !== id);
     });
   };
 
   const isAllUploaded =
     items.length > 0 &&
-    items.every((item) => item.status === UPLOAD_STATUS.DONE);
+    items.every((item) => item.status === UPLOAD_STATUS.UPLOADED);
 
   return {
     items,
+    startParsing,
     handleFilesSelected,
     removeItem,
     isAllUploaded,

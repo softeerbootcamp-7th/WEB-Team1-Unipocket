@@ -160,7 +160,12 @@ const SidePanelUI = ({
           )}
           value={title}
           onChange={(e) => {
-            setTitle(e.target.value);
+            setTitle(e.target.value.trimStart());
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
           }}
           placeholder="거래처를 입력해 주세요."
         />

@@ -11,7 +11,8 @@ import java.time.OffsetDateTime;
  * @author bluefishez
  * @since 2026-02-07
  */
-public interface ExchangeRateService {
+public interface ExchangeRateService
+		extends com.genesis.unipocket.exchange.common.service.ExchangeRateService {
 
 	/**
 	 * 두 통화 간 환율 조회

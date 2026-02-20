@@ -1,18 +1,20 @@
 package com.genesis.unipocket.expense.query.service;
 
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
-import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
-import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
-import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.query.persistence.repository.ExpenseQueryRepository;
+import com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow;
+import com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.query.port.ExpenseMediaAccessService;
+import com.genesis.unipocket.expense.query.port.TravelInfoReader;
+import com.genesis.unipocket.expense.query.port.UserCardReadService;
+import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
+import com.genesis.unipocket.expense.query.port.dto.UserCardQueryInfo;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
+import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.media.command.application.MediaObjectStorage;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -21,19 +23,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * <b>지출내역 조회 서비스</b>
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -50,103 +44,115 @@ public class ExpenseQueryService {
 	private static final Set<String> ALLOWED_SORT_PROPERTIES =
 			Set.of("occurredAt", "baseCurrencyAmount");
 
-	private final ExpenseRepository expenseRepository;
+	private final ExpenseQueryRepository expenseQueryRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
-	private final UserCardFetchService userCardFetchService;
-	private final ExpenseMerchantSearchRateLimitService expenseMerchantSearchRateLimitService;
-	private final MediaObjectStorage mediaObjectStorage;
+	private final UserCardReadService userCardReadService;
+	private final ExpenseMediaAccessService expenseMediaAccessService;
 	private final TravelInfoReader travelInfoReader;
 
 	@Value("${app.media.presigned-get-expiration-seconds:600}")
 	private int presignedGetExpirationSeconds;
 
-	public ExpenseResult getExpense(Long expenseId, Long accountBookId, UUID userId) {
+	public ExpenseQueryResult getExpense(Long expenseId, Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
-		return enrichWithCardInfo(entity);
+		return enrichWithCardInfo(findAndValidateScope(expenseId, accountBookId));
 	}
 
-	public Page<ExpenseResult> getExpenses(
+	public Page<ExpenseQueryResult> getExpenses(
 			Long accountBookId, UUID userId, ExpenseSearchFilter filter, Pageable pageable) {
-
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		String orderByClause = buildOrderByClause(pageable.getSort());
+		return expenseQueryRepository
+				.findExpenses(accountBookId, filter, pageable, orderByClause)
+				.map(this::enrichWithCardInfo);
+	}
 
-		Sort refinedSort = null;
-		for (Sort.Order order : pageable.getSort()) {
+	private String buildOrderByClause(Sort sort) {
+		if (sort == null || sort.isUnsorted()) {
+			return "ORDER BY e.occurredAt DESC";
+		}
+		List<String> clauses = new ArrayList<>();
+		for (Sort.Order order : sort) {
 			if (!ALLOWED_SORT_PROPERTIES.contains(order.getProperty())) {
 				throw new BusinessException(ErrorCode.EXPENSE_INVALID_SORT);
 			}
-
-			Sort mappedSort =
-					"baseCurrencyAmount".equals(order.getProperty())
-							? JpaSort.unsafe(
-									order.getDirection(),
-									SIGNED_DISPLAY_BASE_AMOUNT_SORT_EXPRESSION)
-							: Sort.by(new Sort.Order(order.getDirection(), order.getProperty()));
-
-			refinedSort = refinedSort == null ? mappedSort : refinedSort.and(mappedSort);
+			String direction = order.getDirection().isAscending() ? "ASC" : "DESC";
+			if ("baseCurrencyAmount".equals(order.getProperty())) {
+				clauses.add(SIGNED_DISPLAY_BASE_AMOUNT_SORT_EXPRESSION + " " + direction);
+				continue;
+			}
+			clauses.add("e.occurredAt " + direction);
 		}
-		if (refinedSort == null) {
-			refinedSort = Sort.by(Sort.Order.desc("occurredAt"));
+		if (clauses.isEmpty()) {
+			return "ORDER BY e.occurredAt DESC";
 		}
-
-		Pageable refinedPageable =
-				PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), refinedSort);
-
-		var startDate =
-				filter != null && filter.startDate() != null
-						? filter.startDate().withOffsetSameInstant(ZoneOffset.UTC)
-						: null;
-		var endDate =
-				filter != null && filter.endDate() != null
-						? filter.endDate().withOffsetSameInstant(ZoneOffset.UTC)
-						: null;
-		var category = filter != null ? filter.category() : null;
-		var minAmount = filter != null ? filter.minAmount() : null;
-		var maxAmount = filter != null ? filter.maxAmount() : null;
-		var merchantName = filter != null ? filter.merchantName() : null;
-		var travelId = filter != null ? filter.travelId() : null;
-
-		Page<ExpenseEntity> entities =
-				expenseRepository.findByFilters(
-						accountBookId,
-						startDate,
-						endDate,
-						category,
-						minAmount,
-						maxAmount,
-						merchantName,
-						travelId,
-						refinedPageable);
-
-		return entities.map(this::enrichWithCardInfo);
+		return "ORDER BY " + String.join(", ", clauses);
 	}
 
-	private ExpenseResult enrichWithCardInfo(ExpenseEntity entity) {
-		if (entity.getUserCardId() == null) {
-			return ExpenseResult.from(entity);
+	private ExpenseQueryResult enrichWithCardInfo(ExpenseQueryRow row) {
+		if (row.userCardId() == null) {
+			return toResult(row, null);
 		}
-		UserCardInfo cardInfo = userCardFetchService.getUserCard(entity.getUserCardId());
-		return ExpenseResult.from(entity, cardInfo);
+		UserCardQueryInfo cardInfo = readUserCardOrNull(row.userCardId());
+		return toResult(row, cardInfo);
 	}
 
-	private ExpenseEntity findAndVerifyOwnership(Long expenseId, Long accountBookId) {
-		ExpenseEntity entity =
-				expenseRepository
-						.findById(expenseId)
-						.orElseThrow(() -> new BusinessException(ErrorCode.EXPENSE_NOT_FOUND));
+	private ExpenseQueryResult toResult(ExpenseQueryRow row, UserCardQueryInfo cardInfo) {
+		Long resolvedUserCardId = cardInfo != null ? row.userCardId() : null;
+		return new ExpenseQueryResult(
+				row.expenseId(),
+				row.accountBookId(),
+				row.travelId(),
+				row.category(),
+				row.baseCurrencyCode(),
+				row.baseCurrencyAmount(),
+				row.exchangeRate(),
+				row.localCurrencyCode(),
+				row.localCurrencyAmount(),
+				row.occurredAt(),
+				row.updatedAt() != null ? row.updatedAt().atOffset(ZoneOffset.UTC) : null,
+				row.merchantName(),
+				row.approvalNumber(),
+				resolvedUserCardId,
+				cardInfo != null ? cardInfo.cardCompany() : null,
+				cardInfo != null ? cardInfo.nickName() : null,
+				cardInfo != null ? cardInfo.cardNumber() : null,
+				row.expenseSource(),
+				row.fileLink(),
+				row.memo(),
+				row.cardNumber());
+	}
 
-		if (!entity.getAccountBookId().equals(accountBookId)) {
-			throw new BusinessException(ErrorCode.EXPENSE_UNAUTHORIZED_ACCESS);
+	private UserCardQueryInfo readUserCardOrNull(Long userCardId) {
+		try {
+			return userCardReadService.readUserCard(userCardId);
+		} catch (BusinessException e) {
+			if (e.getCode() == ErrorCode.CARD_NOT_FOUND) {
+				return null;
+			}
+			throw e;
 		}
+	}
 
-		return entity;
+	private ExpenseQueryRow findAndValidateScope(Long expenseId, Long accountBookId) {
+		return expenseQueryRepository
+				.findExpense(accountBookId, expenseId)
+				.orElseThrow(
+						() -> {
+							Long ownerAccountBookId =
+									expenseQueryRepository
+											.findAccountBookIdByExpenseId(expenseId)
+											.orElse(null);
+							if (ownerAccountBookId == null) {
+								return new BusinessException(ErrorCode.EXPENSE_NOT_FOUND);
+							}
+							return new BusinessException(ErrorCode.EXPENSE_UNAUTHORIZED_ACCESS);
+						});
 	}
 
 	public List<String> searchMerchantNames(
 			Long accountBookId, UUID userId, String query, Integer limit) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-		expenseMerchantSearchRateLimitService.validate(userId);
 
 		if (query == null || query.isBlank()) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
@@ -158,23 +164,18 @@ public class ExpenseQueryService {
 		}
 
 		String normalizedQuery = query.trim();
-		return expenseRepository.findMerchantNameSuggestions(
-				accountBookId, normalizedQuery, PageRequest.of(0, pageSize));
+		return expenseQueryRepository.findMerchantNameSuggestions(
+				accountBookId, normalizedQuery, pageSize);
 	}
 
 	public String issueExpenseFileUrl(Long expenseId, Long accountBookId, UUID userId) {
 		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
-		ExpenseEntity entity = findAndVerifyOwnership(expenseId, accountBookId);
-
-		String fileLink =
-				entity.getExpenseSourceInfo() != null
-						? entity.getExpenseSourceInfo().getFileLink()
-						: null;
+		String fileLink = findAndValidateScope(expenseId, accountBookId).fileLink();
 		if (fileLink == null || fileLink.isBlank()) {
 			throw new BusinessException(ErrorCode.EXPENSE_FILE_LINK_NOT_FOUND);
 		}
 
-		return mediaObjectStorage.getPresignedGetUrl(
+		return expenseMediaAccessService.issueGetPath(
 				fileLink, Duration.ofSeconds(presignedGetExpirationSeconds));
 	}
 

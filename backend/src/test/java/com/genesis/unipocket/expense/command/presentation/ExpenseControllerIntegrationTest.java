@@ -227,6 +227,56 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 일괄 수정 - 성공")
+	void 지출내역_일괄수정_성공() throws Exception {
+		Long expenseId1 = createTestExpense();
+		Long expenseId2 = createTestExpense();
+
+		String updateBody =
+				"""
+			{
+			"items": [
+				{
+				"expenseId": %d,
+				"merchantName": "일괄수정-1",
+				"category": 2,
+				"userCardId": null,
+				"occurredAt": "2026-02-04T12:30:00Z",
+				"localCurrencyAmount": 11111.0,
+				"localCurrencyCode": "KRW",
+				"memo": "bulk-1",
+				"travelId": null
+				},
+				{
+				"expenseId": %d,
+				"merchantName": "일괄수정-2",
+				"category": 3,
+				"userCardId": null,
+				"occurredAt": "2026-02-05T12:30:00Z",
+				"localCurrencyAmount": 22222.0,
+				"localCurrencyCode": "KRW",
+				"memo": "bulk-2",
+				"travelId": null
+				}
+			]
+			}
+			"""
+						.formatted(expenseId1, expenseId2);
+
+		mockMvc.perform(
+						put("/account-books/{accountBookId}/expenses/bulk", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(updateBody))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalUpdated").value(2))
+				.andExpect(jsonPath("$.items").isArray())
+				.andExpect(jsonPath("$.items.length()").value(2))
+				.andExpect(jsonPath("$.items[0].displayMerchantName").value("일괄수정-1"))
+				.andExpect(jsonPath("$.items[1].displayMerchantName").value("일괄수정-2"));
+	}
+
+	@Test
 	@DisplayName("지출내역 삭제 - 성공")
 	void 지출내역_삭제_성공() throws Exception {
 		// given

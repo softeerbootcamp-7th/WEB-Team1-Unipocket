@@ -1,6 +1,6 @@
 package com.genesis.unipocket.widget.command.persistence.repository;
 
-import com.genesis.unipocket.widget.command.persistence.entity.AccountBookWidgetEntity;
+import com.genesis.unipocket.widget.common.persistence.entity.AccountBookWidgetEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

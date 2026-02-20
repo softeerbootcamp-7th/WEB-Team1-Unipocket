@@ -2,6 +2,8 @@ package com.genesis.unipocket.user.command.facade.provide;
 
 import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
+import com.genesis.unipocket.expense.query.port.UserCardReadService;
+import com.genesis.unipocket.expense.query.port.dto.UserCardQueryInfo;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
@@ -17,21 +19,35 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class UserCardInfoProvider implements UserCardFetchService {
+public class UserCardInfoProvider implements UserCardFetchService, UserCardReadService {
 
 	private final UserCardCommandRepository userCardCommandRepository;
 
 	@Override
 	public UserCardInfo getUserCard(Long userCardId) {
-		UserCardEntity card =
-				userCardCommandRepository
-						.findById(userCardId)
-						.orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
-
+		UserCardEntity card = findCard(userCardId);
 		return new UserCardInfo(
 				card.getUserCardId(),
 				card.getCardCompany(),
 				card.getNickName(),
 				card.getCardNumber());
+	}
+
+	@Override
+	public UserCardQueryInfo readUserCard(Long userCardId) {
+		UserCardEntity card = findCard(userCardId);
+		return new UserCardQueryInfo(
+				card.getUserCardId(),
+				card.getCardCompany() != null ? card.getCardCompany().ordinal() : null,
+				card.getNickName(),
+				card.getCardNumber());
+	}
+
+	private UserCardEntity findCard(Long userCardId) {
+		UserCardEntity card =
+				userCardCommandRepository
+						.findById(userCardId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
+		return card;
 	}
 }

@@ -46,17 +46,6 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * 요청 제한 초과 예외 처리 (429 + Retry-After)
-	 */
-	@ExceptionHandler(RateLimitExceededException.class)
-	public ResponseEntity<CustomErrorResponse> handleRateLimitExceededException(
-			RateLimitExceededException e) {
-		return ResponseEntity.status(e.getCode().getStatus())
-				.header("Retry-After", String.valueOf(e.getRetryAfterSeconds()))
-				.body(CustomErrorResponse.of(e.getCode()));
-	}
-
-	/**
 	 * &#064;Valid 검증 실패 시 발생 (400)
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)

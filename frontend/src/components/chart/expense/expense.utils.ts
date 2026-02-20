@@ -4,13 +4,13 @@ import {
 } from '@/components/chart/chartType';
 
 import type {
-  CurrencyWidgetResponse,
-  PaymentWidgetResponse,
+  GetCurrencyWidgetResponse,
+  GetPaymentWidgetResponse,
 } from '@/api/widget/type';
 import { getCountryInfo } from '@/lib/country';
 
 export function transformPaymentChartData(
-  paymentData?: PaymentWidgetResponse,
+  paymentData?: GetPaymentWidgetResponse,
 ): ExpenseChartUiItem[] {
   if (!paymentData) return [];
 
@@ -25,7 +25,7 @@ export function transformPaymentChartData(
 }
 
 export function transformCurrencyChartData(
-  currencyData?: CurrencyWidgetResponse,
+  currencyData?: GetCurrencyWidgetResponse,
 ): ExpenseChartUiItem[] {
   if (!currencyData) return [];
 

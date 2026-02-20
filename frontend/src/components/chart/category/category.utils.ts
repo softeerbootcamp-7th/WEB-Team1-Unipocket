@@ -3,7 +3,7 @@ import { CATEGORY_CHART_COLORS } from '@/components/chart/chartType';
 import { CATEGORIES, type CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
-import type { CategoryWidgetResponse } from '@/api/widget/type';
+import type { GetCategoryWidgetResponse } from '@/api/widget/type';
 import type { CountryCode } from '@/data/country/countryCode';
 
 interface CategoryChartItem {
@@ -21,7 +21,7 @@ export interface CategoryChartViewProps {
 }
 
 export function transformCategoryChartData(
-  data?: CategoryWidgetResponse,
+  data?: GetCategoryWidgetResponse,
 ): CategoryChartItem[] {
   if (!data) return [];
 

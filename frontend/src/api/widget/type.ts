@@ -13,7 +13,7 @@ export interface GetWidgetRequest {
   period?: PeriodType;
 }
 
-export interface BudgetWidgetResponse {
+export interface GetBudgetWidgetResponse {
   budget: string;
   baseCountryCode: CountryCode;
   localCountryCode: CountryCode;
@@ -26,7 +26,7 @@ export interface PeriodWidgetItem {
   amount: string;
 }
 
-export interface PeriodWidgetResponse {
+export interface GetPeriodWidgetResponse {
   countryCode: CountryCode;
   itemCount: number;
   items: PeriodWidgetItem[];
@@ -38,13 +38,13 @@ export interface CategoryWidgetItem {
   percent: number;
 }
 
-export interface CategoryWidgetResponse {
+export interface GetCategoryWidgetResponse {
   totalAmount: string;
   countryCode: CountryCode;
   items: CategoryWidgetItem[];
 }
 
-export interface ComparisonWidgetResponse {
+export interface GetComparisonWidgetResponse {
   countryCode: CountryCode;
   month: number;
   mySpentAmount: string;
@@ -57,7 +57,7 @@ export interface PaymentWidgetItem {
   percent: number;
 }
 
-export interface PaymentWidgetResponse {
+export interface GetPaymentWidgetResponse {
   paymentMethodCount: number;
   items: PaymentWidgetItem[];
 }
@@ -67,16 +67,16 @@ export interface CurrencyWidgetItem {
   percent: number;
 }
 
-export interface CurrencyWidgetResponse {
+export interface GetCurrencyWidgetResponse {
   currencyCount: number;
   items: CurrencyWidgetItem[];
 }
 
 export interface WidgetResponseMap {
-  BUDGET: BudgetWidgetResponse;
-  PERIOD: PeriodWidgetResponse;
-  CATEGORY: CategoryWidgetResponse;
-  COMPARISON: ComparisonWidgetResponse;
-  PAYMENT: PaymentWidgetResponse;
-  CURRENCY: CurrencyWidgetResponse;
+  BUDGET: GetBudgetWidgetResponse;
+  PERIOD: GetPeriodWidgetResponse;
+  CATEGORY: GetCategoryWidgetResponse;
+  COMPARISON: GetComparisonWidgetResponse;
+  PAYMENT: GetPaymentWidgetResponse;
+  CURRENCY: GetCurrencyWidgetResponse;
 }

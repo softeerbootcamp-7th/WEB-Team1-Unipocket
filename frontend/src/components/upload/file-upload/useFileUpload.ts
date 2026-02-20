@@ -20,7 +20,7 @@ export const useFileUpload = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length !== 1) return;
-    
+
     const file = files[0];
     const newItem: UploadItem = {
       id: crypto.randomUUID(),
@@ -34,7 +34,7 @@ export const useFileUpload = () => {
     // 테스트용: 2초 뒤 done 처리
     setTimeout(() => {
       setItem((prev) =>
-        prev?.id === newItem.id ? { ...prev, status: 'done' } : prev,
+        prev?.id === newItem.id ? { ...prev, status: 'uploaded' } : prev,
       );
     }, 2000);
   };
@@ -46,7 +46,7 @@ export const useFileUpload = () => {
     setItem(null);
   };
 
-  const isReady = item !== null && item.status === 'done';
+  const isReady = item !== null && item.status === 'uploaded';
 
   return {
     item,

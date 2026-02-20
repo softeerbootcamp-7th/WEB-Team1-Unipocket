@@ -25,7 +25,7 @@ const UploadFile = ({ item, onRemove }: UploadFileProps) => {
           </div>
         )}
 
-        {status === UPLOAD_STATUS.DONE && (
+        {status === UPLOAD_STATUS.UPLOADED && (
           <div className="flex items-center gap-1">
             <Icons.Checkmark className="size-4" />
             <span className="label2-medium text-status-positive">

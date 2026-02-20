@@ -59,13 +59,15 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
         skeleton={<CategoryChartSkeleton />}
         className="px-8 py-4"
       >
-        <CategoryChartView
-          key={`${currencyType}-${periodType}`}
-          data={visibleStats}
-          totalAmount={Number(data!.totalAmount)}
-          currencyType={currencyType}
-          countryCode={data!.countryCode}
-        />
+        {data && visibleStats.length > 0 && (
+          <CategoryChartView
+            key={`${currencyType}-${periodType}`}
+            data={visibleStats}
+            totalAmount={Number(data.totalAmount)}
+            currencyType={currencyType}
+            countryCode={data.countryCode}
+          />
+        )}
       </ChartContent>
     </ChartContainer>
   );

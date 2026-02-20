@@ -2,23 +2,21 @@ import ReportBarGraph from '@/components/report-page/category/ReportBarGraph';
 import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 
-import { type CategoryId, getCategoryName } from '@/types/category';
+import { CATEGORIES, type CategoryId } from '@/types/category';
+
+import { type AnalysisCategoryItem } from '@/api/account-books/type';
 
 interface ReportCategoryProps {
   data: {
     maxDiffCategoryIndex: CategoryId;
     isOverSpent: boolean;
     maxLabel: string;
-    items: {
-      categoryIndex: CategoryId;
-      mySpentAmount: string;
-      averageSpentAmount: string;
-    }[];
+    items: AnalysisCategoryItem[];
   };
 }
 
 const ReportCategory = ({ data }: ReportCategoryProps) => {
-  const category = getCategoryName(data.maxDiffCategoryIndex);
+  const category = CATEGORIES[data.maxDiffCategoryIndex].name;
   const maxLabelValue = Number(data.maxLabel);
 
   return (

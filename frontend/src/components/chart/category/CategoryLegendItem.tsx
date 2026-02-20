@@ -3,10 +3,10 @@ import { clsx } from 'clsx';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 
-import type { CategoryType } from '@/types/category';
+import { type CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 interface CategoryLegendItemProps {
   currencyType: CurrencyType;

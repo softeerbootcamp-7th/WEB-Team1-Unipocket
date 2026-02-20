@@ -1,4 +1,4 @@
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 import { cn } from '@/lib/utils';
 

@@ -7,7 +7,7 @@ import useCurrencyConverter from '@/components/currency/useCurrencyConverter';
 import { ModalContext } from '@/components/modal/useModalContext';
 
 import { Icons } from '@/assets';
-import countryData from '@/data/countryData.json';
+import countryData from '@/data/country/countryData.json';
 
 interface CurrencyOption {
   id: number;
@@ -67,7 +67,7 @@ const CurrencyConverter = ({
         {showCurrencyDropdown && (
           <div className="flex w-25 pt-7">
             <DropDown
-              selected={localCurrencyType}
+              selectedId={localCurrencyType}
               onSelect={setLocalCurrencyType}
               options={currencyOptions}
               size="lg"

@@ -7,7 +7,8 @@ type ExpenseSourceType =
   | 'MANUAL'
   | 'IMAGE_RECEIPT'
   | 'IMAGE_APP_CAPTURE'
-  | 'CSV';
+  | 'CSV'
+  | 'EXCEL';
 
 interface Travel {
   id: number;

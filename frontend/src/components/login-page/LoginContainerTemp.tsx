@@ -26,7 +26,7 @@ const LoginContainerTemp = () => {
       onClick={handleOnClick}
       className="bg-background-normal flex cursor-pointer items-center justify-center gap-3.5 rounded-lg py-[11.5px] transition-opacity hover:opacity-80"
     >
-      <AuthLogos.Mingyu className="h-4.5 w-4.5" />
+      <AuthLogos.Guest className="text-primary-heavy size-4.5" />
       <span className="text-primary-heavy text-[15px] font-semibold">
         게스트로 로그인
       </span>

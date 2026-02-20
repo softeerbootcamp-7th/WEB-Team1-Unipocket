@@ -275,6 +275,38 @@ class AccountBookControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("가계부 수정 - 부분 필드(title)만 PATCH 가능")
+	void 가계부_수정_부분필드_title만_PATCH() throws Exception {
+		Long accountBookId = createAccountBook();
+
+		String body = """
+			{
+				"title": "부분수정 제목"
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.title").value("부분수정 제목"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.baseCurrencyCode").value("KR"))
+				.andExpect(jsonPath("$.startDate").value("2026-03-01"))
+				.andExpect(jsonPath("$.endDate").value("2026-03-31"));
+
+		AccountBookEntity updated = accountBookRepository.findById(accountBookId).orElseThrow();
+		assertThat(updated.getTitle()).isEqualTo("부분수정 제목");
+		assertThat(updated.getLocalCountryCode()).isEqualTo(CountryCode.JP);
+		assertThat(updated.getBaseCountryCode()).isEqualTo(CountryCode.KR);
+		assertThat(updated.getStartDate()).isEqualTo(LocalDate.of(2026, 3, 1));
+		assertThat(updated.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 31));
+	}
+
+	@Test
 	@DisplayName("존재하지 않는 가계부 수정 - 404")
 	void 존재하지않는_가계부_수정_404() throws Exception {
 		String body =
@@ -376,6 +408,22 @@ class AccountBookControllerIntegrationTest {
 								.content(body))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("400_ACCOUNT_BOOK_INVALID_COUNTRY_CODE"));
+	}
+
+	@Test
+	@DisplayName("수정 시 빈 JSON - 400")
+	void 수정시_빈_JSON_400() throws Exception {
+		Long accountBookId = createAccountBook();
+
+		mockMvc.perform(
+						patch("/account-books/{id}", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content("{}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
+				.andExpect(
+						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
 	}
 
 	// ========== PATCH /account-books/{id}/budget (예산 수정) ==========

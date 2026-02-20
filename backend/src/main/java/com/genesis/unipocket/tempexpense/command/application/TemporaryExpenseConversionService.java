@@ -107,8 +107,8 @@ public class TemporaryExpenseConversionService {
 					successCount++;
 				} catch (Exception e) {
 					log.error("Failed to convert temporary expense: {}", tempExpenseId, e);
-					results.add(
-							new ConversionResult(tempExpenseId, null, "FAILED", e.getMessage()));
+					String errorMessage = resolveClientErrorMessage(e);
+					results.add(new ConversionResult(tempExpenseId, null, "FAILED", errorMessage));
 					failedCount++;
 					progressPublisher.publishFileError(
 							taskId,
@@ -117,7 +117,7 @@ public class TemporaryExpenseConversionService {
 									totalExpenses,
 									"tempExpenseId=" + tempExpenseId,
 									((completed + 1) * 100) / totalExpenses,
-									e.getMessage()));
+									errorMessage));
 				}
 				completed++;
 			}
@@ -129,13 +129,17 @@ public class TemporaryExpenseConversionService {
 			return CompletableFuture.completedFuture(finalResult);
 		} catch (Exception e) {
 			log.error("Batch conversion failed before completion. taskId={}", taskId, e);
-			String errorMessage =
-					(e instanceof BusinessException businessException)
-							? businessException.getMessage()
-							: ErrorCode.TEMP_EXPENSE_PARSE_FAILED.getMessage();
+			String errorMessage = resolveClientErrorMessage(e);
 			progressPublisher.publishError(taskId, errorMessage);
 			return CompletableFuture.failedFuture(e);
 		}
+	}
+
+	private String resolveClientErrorMessage(Exception e) {
+		if (e instanceof BusinessException businessException) {
+			return businessException.getCode().getMessage();
+		}
+		return ErrorCode.TEMP_EXPENSE_PARSE_FAILED.getMessage();
 	}
 
 	private void validateRequiredFieldsForBatch(Long accountBookId, List<Long> tempExpenseIds) {

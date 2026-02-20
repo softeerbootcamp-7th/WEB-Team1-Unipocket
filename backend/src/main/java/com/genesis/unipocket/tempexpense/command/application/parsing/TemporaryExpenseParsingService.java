@@ -323,18 +323,49 @@ public class TemporaryExpenseParsingService {
 					completedFiles++;
 					fileResults.add(
 							new FileParsingOutcome(file.getFileId(), s3Key, "SUCCESS", null));
+					progressPublisher.publishFileResult(
+							taskId,
+							new ParsingProgressPublisher.FileResultEvent(
+									completedFiles,
+									totalFiles,
+									file.getFileId(),
+									s3Key,
+									"SUCCESS",
+									result.totalCount(),
+									result.normalCount(),
+									result.incompleteCount(),
+									null));
+					progressPublisher.publishProgress(
+							taskId,
+							new ParsingProgressPublisher.ParsingProgressEvent(
+									completedFiles,
+									totalFiles,
+									file.getS3Key(),
+									(completedFiles * 100) / totalFiles));
 
 				} catch (Exception e) {
 					log.error("Failed to parse file: {}", s3Key, e);
 					completedFiles++;
 					failedFiles++;
-					String errorMessage = e.getMessage();
+					String errorMessage = resolveClientErrorMessage(e);
 					File failedFile = filesByS3Key.get(s3Key);
 					fileResults.add(
 							new FileParsingOutcome(
 									failedFile != null ? failedFile.getFileId() : null,
 									s3Key,
 									"FAILED",
+									errorMessage));
+					progressPublisher.publishFileResult(
+							taskId,
+							new ParsingProgressPublisher.FileResultEvent(
+									completedFiles,
+									totalFiles,
+									failedFile != null ? failedFile.getFileId() : null,
+									s3Key,
+									"FAILED",
+									0,
+									0,
+									0,
 									errorMessage));
 					progressPublisher.publishFileError(
 							taskId,
@@ -344,6 +375,13 @@ public class TemporaryExpenseParsingService {
 									s3Key,
 									(completedFiles * 100) / totalFiles,
 									errorMessage));
+					progressPublisher.publishProgress(
+							taskId,
+							new ParsingProgressPublisher.ParsingProgressEvent(
+									completedFiles,
+									totalFiles,
+									s3Key,
+									(completedFiles * 100) / totalFiles));
 				}
 			}
 
@@ -362,12 +400,16 @@ public class TemporaryExpenseParsingService {
 
 		} catch (Exception e) {
 			log.error("Batch parsing failed before completion. taskId={}", taskId, e);
-			String errorMessage =
-					(e instanceof BusinessException businessException)
-							? businessException.getMessage()
-							: ErrorCode.TEMP_EXPENSE_PARSE_FAILED.getMessage();
+			String errorMessage = resolveClientErrorMessage(e);
 			progressPublisher.publishError(taskId, errorMessage);
 			return CompletableFuture.failedFuture(e);
 		}
+	}
+
+	private String resolveClientErrorMessage(Exception e) {
+		if (e instanceof BusinessException businessException) {
+			return businessException.getCode().getMessage();
+		}
+		return ErrorCode.TEMP_EXPENSE_PARSE_FAILED.getMessage();
 	}
 }

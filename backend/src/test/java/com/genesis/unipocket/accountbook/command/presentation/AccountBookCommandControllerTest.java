@@ -88,15 +88,18 @@ class AccountBookCommandControllerTest {
 		UUID userId = UUID.randomUUID();
 		String accessToken = "valid_token";
 		Long accountBookId = 3L;
-		AccountBookUpdateRequest request =
-				new AccountBookUpdateRequest(
-						"제목 수정",
-						CountryCode.JP,
-						CountryCode.KR,
-						BigDecimal.valueOf(300000),
-						LocalDate.of(2026, 2, 1),
-						LocalDate.of(2026, 2, 28),
-						false);
+		String requestBody =
+				"""
+				{
+					"title": "제목 수정",
+					"localCountryCode": "JP",
+					"baseCountryCode": "KR",
+					"budget": 300000,
+					"startDate": "2026-02-01",
+					"endDate": "2026-02-28",
+					"isMain": false
+				}
+				""";
 
 		mockAuthentication(accessToken, userId);
 		AccountBookResponse response =
@@ -109,13 +112,13 @@ class AccountBookCommandControllerTest {
 						LocalDate.of(2026, 2, 28));
 		given(
 						accountBookCommandFacade.updateAccountBook(
-								eq(userId), eq(accountBookId), eq(request)))
+								eq(userId), eq(accountBookId), any(AccountBookUpdateRequest.class)))
 				.willReturn(response);
 
 		mockMvc.perform(
 						patch("/account-books/{accountBookId}", accountBookId)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
+								.content(requestBody)
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.accountBookId").value(accountBookId));
@@ -135,6 +138,38 @@ class AccountBookCommandControllerTest {
 						delete("/account-books/{accountBookId}", accountBookId)
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isNoContent());
+	}
+
+	@Test
+	@DisplayName("가계부 부분 수정 성공 - title만 변경")
+	void updateAccountBook_PartialSuccess() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 3L;
+		String requestBody = "{\"title\":\"제목만 수정\"}";
+
+		mockAuthentication(accessToken, userId);
+		AccountBookResponse response =
+				new AccountBookResponse(
+						accountBookId,
+						"제목만 수정",
+						CountryCode.JP,
+						CountryCode.KR,
+						LocalDate.of(2026, 2, 1),
+						LocalDate.of(2026, 2, 28));
+		given(
+						accountBookCommandFacade.updateAccountBook(
+								eq(userId), eq(accountBookId), any(AccountBookUpdateRequest.class)))
+				.willReturn(response);
+
+		mockMvc.perform(
+						patch("/account-books/{accountBookId}", accountBookId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(requestBody)
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.title").value("제목만 수정"));
 	}
 
 	@Test
@@ -165,22 +200,47 @@ class AccountBookCommandControllerTest {
 		UUID userId = UUID.randomUUID();
 		String accessToken = "valid_token";
 		Long accountBookId = 3L;
-		AccountBookUpdateRequest request =
-				new AccountBookUpdateRequest(
-						" ",
-						CountryCode.JP,
-						CountryCode.KR,
-						BigDecimal.valueOf(300000),
-						LocalDate.of(2026, 2, 1),
-						LocalDate.of(2026, 2, 28),
-						false);
+		String requestBody =
+				"""
+				{
+					"title": " ",
+					"localCountryCode": "JP",
+					"baseCountryCode": "KR",
+					"budget": 300000,
+					"startDate": "2026-02-01",
+					"endDate": "2026-02-28",
+					"isMain": false
+				}
+				""";
 
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
 						patch("/account-books/{accountBookId}", accountBookId)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(objectMapper.writeValueAsString(request))
+								.content(requestBody)
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
+				.andExpect(
+						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
+
+		verify(accountBookCommandFacade, never()).updateAccountBook(any(), any(), any());
+	}
+
+	@Test
+	@DisplayName("가계부 수정 실패 - 빈 JSON")
+	void updateAccountBook_Fail_WhenEmptyJson() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 3L;
+
+		mockAuthentication(accessToken, userId);
+
+		mockMvc.perform(
+						patch("/account-books/{accountBookId}", accountBookId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content("{}")
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))

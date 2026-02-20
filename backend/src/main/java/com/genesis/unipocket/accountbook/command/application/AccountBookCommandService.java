@@ -83,10 +83,29 @@ public class AccountBookCommandService {
 		CountryCode previousLocalCountryCode = entity.getLocalCountryCode();
 		CountryCode previousBaseCountryCode = entity.getBaseCountryCode();
 
-		entity.updateBudget(command.budget());
-		entity.updateTitle(command.title());
-		entity.changeAccountBookPeriod(command.startDate(), command.endDate());
-		entity.updateCountryCodes(command.localCountryCode(), command.baseCountryCode());
+		if (command.budgetPresent()) {
+			entity.updateBudget(command.budget());
+		}
+
+		if (command.titlePresent()) {
+			entity.updateTitle(command.title());
+		}
+
+		if (command.startDatePresent() || command.endDatePresent()) {
+			entity.changeAccountBookPeriod(
+					command.startDatePresent() ? command.startDate() : entity.getStartDate(),
+					command.endDatePresent() ? command.endDate() : entity.getEndDate());
+		}
+
+		if (command.localCountryCodePresent() || command.baseCountryCodePresent()) {
+			entity.updateCountryCodes(
+					command.localCountryCodePresent()
+							? command.localCountryCode()
+							: entity.getLocalCountryCode(),
+					command.baseCountryCodePresent()
+							? command.baseCountryCode()
+							: entity.getBaseCountryCode());
+		}
 
 		validator.validate(entity);
 		boolean countryChanged =

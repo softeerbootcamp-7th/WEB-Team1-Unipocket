@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.genesis.unipocket.accountbook.command.application.command.CreateAccountBookCommand;
@@ -156,17 +157,7 @@ public class AccountBookCommandServiceTest {
 						LocalDate.of(2023, 11, 30),
 						false);
 
-		UpdateAccountBookCommand command =
-				new UpdateAccountBookCommand(
-						accountBookId,
-						userId,
-						req.title(),
-						req.localCountryCode(),
-						req.baseCountryCode(),
-						req.budget(),
-						req.startDate(),
-						req.endDate(),
-						req.isMain());
+		UpdateAccountBookCommand command = toUpdateAccountBookCommand(accountBookId, userId, req);
 
 		AccountBookEntity entity =
 				AccountBookEntity.create(
@@ -211,17 +202,7 @@ public class AccountBookCommandServiceTest {
 						LocalDate.now(),
 						LocalDate.now(),
 						false);
-		UpdateAccountBookCommand command =
-				new UpdateAccountBookCommand(
-						accountBookId,
-						userId,
-						req.title(),
-						req.localCountryCode(),
-						req.baseCountryCode(),
-						req.budget(),
-						req.startDate(),
-						req.endDate(),
-						req.isMain());
+		UpdateAccountBookCommand command = toUpdateAccountBookCommand(accountBookId, userId, req);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.empty());
 
@@ -243,17 +224,7 @@ public class AccountBookCommandServiceTest {
 						LocalDate.now(),
 						LocalDate.now(),
 						false);
-		UpdateAccountBookCommand command =
-				new UpdateAccountBookCommand(
-						accountBookId,
-						userId,
-						req.title(),
-						req.localCountryCode(),
-						req.baseCountryCode(),
-						req.budget(),
-						req.startDate(),
-						req.endDate(),
-						req.isMain());
+		UpdateAccountBookCommand command = toUpdateAccountBookCommand(accountBookId, userId, req);
 
 		AccountBookEntity entity =
 				AccountBookEntity.create(
@@ -313,17 +284,7 @@ public class AccountBookCommandServiceTest {
 						LocalDate.of(2023, 2, 1),
 						LocalDate.of(2023, 11, 30),
 						false);
-		UpdateAccountBookCommand command =
-				new UpdateAccountBookCommand(
-						accountBookId,
-						userId,
-						req.title(),
-						req.localCountryCode(),
-						req.baseCountryCode(),
-						req.budget(),
-						req.startDate(),
-						req.endDate(),
-						req.isMain());
+		UpdateAccountBookCommand command = toUpdateAccountBookCommand(accountBookId, userId, req);
 
 		AccountBookEntity entity =
 				AccountBookEntity.create(
@@ -350,6 +311,43 @@ public class AccountBookCommandServiceTest {
 		// then
 		assertThat(entity.getBudget()).isNull();
 		verify(validator).validate(entity);
+	}
+
+	@Test
+	@DisplayName("가계부 수정 - 부분 필드(title)만 업데이트")
+	void update_PartialTitleOnly_Success() throws Exception {
+		Long accountBookId = 1L;
+		AccountBookUpdateRequest req = new AccountBookUpdateRequest();
+		req.setTitle("부분 수정 제목");
+		UpdateAccountBookCommand command = toUpdateAccountBookCommand(accountBookId, userId, req);
+
+		AccountBookEntity entity =
+				AccountBookEntity.create(
+						new AccountBookCreateArgs(
+								createUser(userId, 1L),
+								"Old Title",
+								CountryCode.US,
+								CountryCode.KR,
+								1,
+								BigDecimal.valueOf(1000.00),
+								LocalDate.of(2023, 1, 1),
+								LocalDate.of(2023, 12, 31)));
+
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity, accountBookId);
+
+		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
+
+		accountBookCommandService.update(command);
+
+		assertThat(entity.getTitle()).isEqualTo("부분 수정 제목");
+		assertThat(entity.getLocalCountryCode()).isEqualTo(CountryCode.US);
+		assertThat(entity.getBaseCountryCode()).isEqualTo(CountryCode.KR);
+		assertThat(entity.getStartDate()).isEqualTo(LocalDate.of(2023, 1, 1));
+		assertThat(entity.getEndDate()).isEqualTo(LocalDate.of(2023, 12, 31));
+		assertThat(entity.getBudget()).isEqualByComparingTo("1000.00");
+		verify(analysisMonthlyDirtyMarkerService, never()).markDirtyAllMonths(accountBookId);
 	}
 
 	@Test
@@ -399,5 +397,26 @@ public class AccountBookCommandServiceTest {
 			throw new RuntimeException(e);
 		}
 		return user;
+	}
+
+	private UpdateAccountBookCommand toUpdateAccountBookCommand(
+			Long accountBookId, UUID userId, AccountBookUpdateRequest req) {
+		return new UpdateAccountBookCommand(
+				accountBookId,
+				userId,
+				req.title(),
+				req.titlePresent(),
+				req.localCountryCode(),
+				req.localCountryCodePresent(),
+				req.baseCountryCode(),
+				req.baseCountryCodePresent(),
+				req.budget(),
+				req.budgetPresent(),
+				req.startDate(),
+				req.startDatePresent(),
+				req.endDate(),
+				req.endDatePresent(),
+				req.isMain(),
+				req.isMainPresent());
 	}
 }

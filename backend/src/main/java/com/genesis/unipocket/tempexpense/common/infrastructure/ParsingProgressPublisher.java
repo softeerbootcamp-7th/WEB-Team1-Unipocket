@@ -23,6 +23,9 @@ public class ParsingProgressPublisher {
 	/** 구독 전 파일 에러 버퍼 최대 개수 */
 	private static final int MAX_BUFFERED_FILE_ERRORS_PER_TASK = 30;
 
+	/** 구독 전 파일 결과 버퍼 최대 개수 */
+	private static final int MAX_BUFFERED_FILE_RESULTS_PER_TASK = 100;
+
 	/** 구독 없이 종료된 task 종료 이벤트 보관 시간 */
 	private static final Duration TERMINAL_EVENT_RETENTION = Duration.ofMinutes(30);
 
@@ -119,6 +122,25 @@ public class ParsingProgressPublisher {
 				event.message());
 	}
 
+	/** 파일 처리 결과 전송(success/failed), emitter가 없으면 버퍼링 */
+	public void publishFileResult(String taskId, FileResultEvent event) {
+		TaskContext taskContext = tasks.get(taskId);
+		if (taskContext == null) {
+			log.warn("Task not found while publishing file-result. taskId={}", taskId);
+			return;
+		}
+
+		SseEmitter emitter = taskContext.currentEmitter();
+		if (emitter != null) {
+			if (!sendEvent(emitter, taskId, "file-result", event)) {
+				taskContext.detachEmitter();
+				taskContext.bufferFileResult(event);
+			}
+		} else {
+			taskContext.bufferFileResult(event);
+		}
+	}
+
 	/** complete 전송, 구독 전 종료면 terminal로 저장 */
 	public void complete(String taskId, Object result) {
 		TaskContext taskContext = tasks.get(taskId);
@@ -172,6 +194,14 @@ public class ParsingProgressPublisher {
 		if (latestProgress != null && !sendEvent(emitter, taskId, "progress", latestProgress)) {
 			taskContext.detachEmitter();
 			return;
+		}
+
+		for (FileResultEvent fileResult : taskContext.drainBufferedFileResults()) {
+			if (!sendEvent(emitter, taskId, "file-result", fileResult)) {
+				taskContext.detachEmitter();
+				taskContext.bufferFileResult(fileResult);
+				return;
+			}
 		}
 
 		for (FileErrorEvent fileError : taskContext.drainBufferedFileErrors()) {
@@ -247,11 +277,24 @@ public class ParsingProgressPublisher {
 	public record FileErrorEvent(
 			int completedFiles, int totalFiles, String fileKey, int progress, String message) {}
 
+	/** 파일 단위 처리 결과 이벤트 */
+	public record FileResultEvent(
+			int completedFiles,
+			int totalFiles,
+			Long fileId,
+			String fileKey,
+			String status,
+			int parsedCount,
+			int normalCount,
+			int incompleteCount,
+			String message) {}
+
 	private record TerminalSsePayload(String name, Object data, String errorMessage) {}
 
 	private static final class TaskContext {
 		private final Long accountBookId;
 		private final Queue<FileErrorEvent> bufferedFileErrors = new ArrayDeque<>();
+		private final Queue<FileResultEvent> bufferedFileResults = new ArrayDeque<>();
 		private SseEmitter emitter;
 		private ParsingProgressEvent latestProgress;
 		private TerminalSsePayload terminalEvent;
@@ -307,6 +350,23 @@ public class ParsingProgressPublisher {
 		private synchronized List<FileErrorEvent> drainBufferedFileErrors() {
 			List<FileErrorEvent> drained = new ArrayList<>(bufferedFileErrors);
 			bufferedFileErrors.clear();
+			touch();
+			return drained;
+		}
+
+		/** file-result 버퍼링 (최대 개수 유지) */
+		private synchronized void bufferFileResult(FileResultEvent event) {
+			bufferedFileResults.offer(event);
+			while (bufferedFileResults.size() > MAX_BUFFERED_FILE_RESULTS_PER_TASK) {
+				bufferedFileResults.poll();
+			}
+			touch();
+		}
+
+		/** 버퍼된 file-result 일괄 반환 */
+		private synchronized List<FileResultEvent> drainBufferedFileResults() {
+			List<FileResultEvent> drained = new ArrayList<>(bufferedFileResults);
+			bufferedFileResults.clear();
 			touch();
 			return drained;
 		}

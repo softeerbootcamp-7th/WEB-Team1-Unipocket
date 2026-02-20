@@ -5,7 +5,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 
 import { formatDateTime } from '@/components/calendar/date.utils';
 import Button from '@/components/common/Button';
-import Chip from '@/components/common/Chip';
+import { CategoryChip } from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
@@ -56,7 +56,7 @@ const SidePanelUI = ({
   } = useSidePanelForm(initialData);
 
   const categoryValue = initialData?.category ? (
-    <Chip id={initialData.category} />
+    <CategoryChip categoryId={initialData.category} />
   ) : (
     '-'
   );

@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 
-import { type CategoryId, getCategoryName } from '@/types/category';
+import { CATEGORIES, type CategoryId } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 
 import type { CountryCode } from '@/data/country/countryCode';
@@ -30,7 +30,7 @@ const CategoryLegendItem = ({
       <div className="h-3.5 w-3.5" style={{ backgroundColor: color }} />
       <div className="flex items-center gap-2.5">
         <span className="label1-normal-medium text-label-normal min-w-9">
-          {getCategoryName(categoryId)}
+          {CATEGORIES[categoryId].name}
         </span>
         <span className="figure-body2-14-semibold text-label-alternative min-w-7.5 text-end">
           {percentage}%

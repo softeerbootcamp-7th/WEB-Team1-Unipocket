@@ -8,7 +8,7 @@ import type { CategoryId } from '@/types/category';
 interface ReportBarGraphProps {
   maxLabel: number;
   items: {
-    categoryIndex: CategoryId;
+    categoryId: CategoryId;
     mySpentAmount: string;
     averageSpentAmount: string;
   }[];
@@ -16,7 +16,7 @@ interface ReportBarGraphProps {
 
 const transformCategoryData = (items: ReportBarGraphProps['items']) => {
   return items.map((item) => ({
-    categoryIndex: item.categoryIndex,
+    categoryId: item.categoryId,
     me: Number(item.mySpentAmount),
     other: Number(item.averageSpentAmount),
   }));

@@ -1,7 +1,7 @@
 import { type ComponentPropsWithoutRef, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
-import Chip from '@/components/common/Chip';
+import Chip, { CategoryChip } from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-import { type CategoryId, getCategoryName } from '@/types/category';
+import { CATEGORIES, type CategoryId } from '@/types/category';
 
 const DataTableFilterProvider = ({
   children,
@@ -161,7 +161,7 @@ const DataTableSearchFilter = <T,>({
     if (!isActive) return title;
     const firstOption = selectedOptions[0];
     const firstLabel = isCategory
-      ? getCategoryName(firstOption as unknown as CategoryId)
+      ? CATEGORIES[firstOption as unknown as CategoryId].name
       : String(firstOption);
 
     if (selectedOptions.length === 1) {
@@ -201,8 +201,8 @@ const DataTableSearchFilter = <T,>({
           {selectedOptions.map((option) => (
             <div key={String(option)} className="shrink-0">
               {isCategory ? (
-                <Chip
-                  id={option as unknown as CategoryId}
+                <CategoryChip
+                  categoryId={option as unknown as CategoryId}
                   onRemove={() => toggleOption(option)}
                 />
               ) : (

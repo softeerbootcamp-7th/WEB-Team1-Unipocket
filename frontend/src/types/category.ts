@@ -12,6 +12,7 @@ export const CATEGORIES = {
 } as const;
 
 export type CategoryId = keyof typeof CATEGORIES;
+export type CategoryType = (typeof CATEGORIES)[CategoryId]['name'];
 
 export interface CategoryStyle {
   bg: string;
@@ -29,12 +30,4 @@ export const CATEGORY_STYLES: Record<CategoryId, CategoryStyle> = {
   7: { bg: 'bg-blue-grey-50/10', text: 'text-blue-grey-50' },
   8: { bg: 'bg-steel-blue-50/10', text: 'text-steel-blue-50' },
   9: { bg: 'bg-periwinkle-blue-50/10', text: 'text-periwinkle-blue-50' },
-};
-
-export const getCategoryName = (id: CategoryId): string => {
-  return CATEGORIES[id].name;
-};
-
-export const getCategoryStyle = (id: CategoryId): CategoryStyle => {
-  return CATEGORY_STYLES[id];
 };

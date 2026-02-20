@@ -1,45 +1,61 @@
 import clsx from 'clsx';
 
-import {
-  CATEGORY_STYLES,
-  type CategoryId,
-  getCategoryName,
-} from '@/types/category';
+import { CATEGORIES, CATEGORY_STYLES, type CategoryId } from '@/types/category';
 
 import { Icons } from '@/assets';
 
-interface ChipProps {
-  id?: CategoryId;
-  label?: string;
+interface CategoryChipProps {
+  categoryId: CategoryId;
   onRemove?: () => void;
 }
 
-const Chip = ({ id, label, onRemove }: ChipProps) => {
-  const targetId = id ?? 0;
-
-  // ID가 있으면 카테고리 이름, 없으면 전달받은 label, 둘 다 없으면 '미분류'
-  const displayLabel =
-    id !== undefined ? getCategoryName(id) : (label ?? getCategoryName(0));
-
-  const { bg, text } = CATEGORY_STYLES[targetId];
+export const CategoryChip = ({ categoryId, onRemove }: CategoryChipProps) => {
+  const { name } = CATEGORIES[categoryId];
+  const { bg, text } = CATEGORY_STYLES[categoryId];
 
   return (
+    <Chip
+      label={name}
+      bgClassName={bg}
+      textClassName={text}
+      onRemove={onRemove}
+    />
+  );
+};
+
+interface ChipProps {
+  label: string;
+  bgClassName?: string;
+  textClassName?: string;
+  onRemove?: () => void;
+  className?: string;
+}
+
+const Chip = ({
+  label,
+  bgClassName = 'bg-label-alternative/10',
+  textClassName = 'text-label-alternative',
+  onRemove,
+  className,
+}: ChipProps) => {
+  return (
     <div
-      className={clsx('inline-flex items-center rounded-md px-1.5 py-0.75', bg)}
+      className={clsx(
+        'inline-flex items-center rounded-md px-1.5 py-0.75',
+        bgClassName,
+        className,
+      )}
     >
-      <span className={clsx('caption2-bold', text)}>{displayLabel}</span>
+      <span className={clsx('caption2-bold', textClassName)}>{label}</span>
+
       {onRemove && (
         <button
-          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
           onMouseDown={(e) => e.preventDefault()}
-          className={clsx(
-            'cursor-pointer rounded-full p-0.5 transition-opacity hover:opacity-70',
-            text,
-          )}
+          className={clsx('cursor-pointer rounded-full p-0.5', textClassName)}
         >
           <Icons.Close className="size-3.5" />
         </button>

@@ -22,9 +22,9 @@ import CardNicknameModal from '@/components/setting-page/modal/CardNicknameModal
 
 import {
   useAccountBookDetailQuery,
-  useAccountBooksQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
+  useGetAccountBooksQuery,
   useUpdateAccountBookMutation,
 } from '@/api/account-books/query';
 import type {
@@ -48,7 +48,7 @@ const SettingPage = () => {
     data: accountBooks,
     isLoading: isAccountBooksLoading,
     isError: isAccountBooksError,
-  } = useAccountBooksQuery();
+  } = useGetAccountBooksQuery();
   const {
     data: cards,
     isLoading: isCardsLoading,

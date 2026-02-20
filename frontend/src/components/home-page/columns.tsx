@@ -1,6 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
-import Chip from '@/components/common/Chip';
+import { CategoryChip } from '@/components/common/Chip';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,7 +46,7 @@ export const columns: ColumnDef<Expense>[] = [
     header: () => <>카테고리</>,
     cell: ({ row }) => {
       const categoryId = row.getValue('category') as CategoryId;
-      return <Chip id={categoryId} />;
+      return <CategoryChip categoryId={categoryId} />;
     },
   },
   {

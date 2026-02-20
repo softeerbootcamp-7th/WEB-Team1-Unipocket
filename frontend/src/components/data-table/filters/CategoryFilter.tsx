@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import Chip from '@/components/common/Chip';
+import { CategoryChip } from '@/components/common/Chip';
 import { DataTableSearchFilter } from '@/components/data-table/DataTableFilter';
 
 import { CATEGORIES, type CategoryId } from '@/types/category';
@@ -19,7 +19,7 @@ const CategoryFilter = () => {
       selectedOptions={selectedCategories}
       setSelectedOptions={setSelectedCategories}
       isCategory
-      renderOption={(categoryId) => <Chip id={categoryId} />}
+      renderOption={(categoryId) => <CategoryChip categoryId={categoryId} />}
       onInputChange={() => {
         // 타이핑 할 때마다
         // api 호출 작업 예정

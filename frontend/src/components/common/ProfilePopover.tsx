@@ -4,7 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@radix-ui/react-popover';
-import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
+import { Link, useMatchRoute } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 
 import Divider from '@/components/common/Divider';
@@ -13,13 +13,12 @@ import { useLogoutMutation } from '@/api/auth/query';
 import { useGetUserQuery } from '@/api/users/query';
 import ProfileImage from '@/assets/images/profile.png';
 import { AUTH_PROVIDERS } from '@/constants/authProviders';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ProfilePopover = () => {
   const { data } = useGetUserQuery();
-  const { clearAccountBook } = useAccountBookStore.getState();
+
   const logoutMutation = useLogoutMutation();
-  const navigator = useNavigate();
+
   const matchRoute = useMatchRoute();
   const isInitPath = !!matchRoute({ to: '/init' });
 
@@ -31,12 +30,7 @@ const ProfilePopover = () => {
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        clearAccountBook();
-        navigator({ to: '/' });
-      },
-    });
+    logoutMutation.mutate();
     return;
   };
 

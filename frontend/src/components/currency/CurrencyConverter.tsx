@@ -12,17 +12,17 @@ import type { CurrencyCode } from '@/data/country/currencyCode';
 import { getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
-export interface CurrencyValues {
+export type CurrencyValues = {
   localAmount: number;
   localCurrencyCode: CurrencyCode;
   baseAmount: number;
-}
+};
 
-interface CurrencyOption {
+type CurrencyOption = {
   id: number;
   name: string;
   sign: string;
-}
+};
 
 const currencyOptions: CurrencyOption[] = Object.values(countryData).map(
   (country, index) => ({
@@ -87,11 +87,11 @@ const CurrencyConverter = ({
 
   useEffect(() => {
     if (!onValuesChange || !isValid || !localCurrencyName) return;
-    const parse = (s: string) => parseFloat(s.replace(/,/g, ''));
+    const toNumber = (s: string) => parseFloat(s.replace(/,/g, ''));
     onValuesChange({
-      localAmount: parse(localCurrency),
+      localAmount: toNumber(localCurrency),
       localCurrencyCode: localCurrencyName as CurrencyCode,
-      baseAmount: parse(baseCurrency),
+      baseAmount: toNumber(baseCurrency),
     });
   }, [localCurrency, baseCurrency, localCurrencyName, isValid, onValuesChange]);
 
@@ -121,7 +121,6 @@ const CurrencyConverter = ({
         )}
       </div>
 
-      {/* TODO: API 연동 시 해당 수정 필요 */}
       <div className="flex flex-col">
         <div className="px-5">
           <Divider style="vertical" className="h-3" />

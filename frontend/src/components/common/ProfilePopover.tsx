@@ -4,7 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@radix-ui/react-popover';
-import { Link, useMatches, useNavigate } from '@tanstack/react-router';
+import { Link, useMatchRoute, useNavigate } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 
 import Divider from '@/components/common/Divider';
@@ -18,8 +18,8 @@ const ProfilePopover = () => {
   const { data } = useGetUserQuery();
   const logoutMutation = useLogoutMutation();
   const navigator = useNavigate();
-  const matches = useMatches();
-  const isInitPath = matches.some((match) => match.routeId === '/_app/init');
+  const matchRoute = useMatchRoute();
+  const isInitPath = !!matchRoute({ to: '/init' });
 
   const isGoogleUser = data.profileImgUrl?.includes('googleusercontent');
   const authProvider = AUTH_PROVIDERS.find(
@@ -31,6 +31,7 @@ const ProfilePopover = () => {
     e.preventDefault();
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
+        sessionStorage.clear();
         navigator({ to: '/' });
       },
     });
@@ -66,7 +67,7 @@ const ProfilePopover = () => {
               <span className="body2-normal-bold">{data.name}</span>
             </div>
             {data.email && (
-              <div className="flex gap-2.5">
+              <div className="flex items-center gap-2.5">
                 <AuthIcon
                   className={clsx(
                     'flex size-4 items-center justify-center rounded p-0.75',

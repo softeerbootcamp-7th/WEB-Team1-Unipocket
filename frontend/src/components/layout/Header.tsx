@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react';
-import { useMatches } from '@tanstack/react-router';
+import { useMatchRoute } from '@tanstack/react-router';
 
 import ProfilePopover from '@/components/common/ProfilePopover';
 import AccountBookSelector from '@/components/layout/AccountBookSelector';
@@ -8,8 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getLocalTime } from '@/lib/utils';
 
 const Header = () => {
-  const matches = useMatches();
-  const isInitPath = matches.some((match) => match.routeId === '/_app/init');
+  const matchRoute = useMatchRoute();
+  const isInitPath = !!matchRoute({ to: '/init' });
 
   const [time, setTime] = useState(getLocalTime('KR'));
 

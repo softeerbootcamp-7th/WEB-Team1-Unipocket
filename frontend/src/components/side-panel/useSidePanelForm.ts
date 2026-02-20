@@ -35,6 +35,7 @@ function useSidePanelForm(initialData?: Partial<Expense>) {
       setTitle('');
       setMemo('');
       setSelectedDateTime(null);
+      setIsDateTimePickerOpen(false);
     },
   };
 }

@@ -98,6 +98,12 @@ const SidePanelUI = ({
     { label: '여행', value: initialData?.travel?.name ?? <EmptyValue /> },
   ] as const satisfies ValueItemProps[];
 
+  const handleReset = () => {
+    resetForm();
+    setCurrencyValues(null);
+    setResetKey((k) => k + 1);
+  };
+
   const handleSubmit = () => {
     if (!onSubmit) return;
     if (!selectedDateTime) return;
@@ -114,9 +120,7 @@ const SidePanelUI = ({
       travelId: initialData?.travel?.id ?? undefined, // @TODO: 실제 선택 상태로 교체
     });
 
-    resetForm();
-    setCurrencyValues(null);
-    setResetKey((k) => k + 1);
+    handleReset();
   };
 
   useLayoutEffect(() => {
@@ -163,15 +167,7 @@ const SidePanelUI = ({
           <Button variant="solid" onClick={handleSubmit}>
             저장
           </Button>
-          <Button
-            onClick={() => {
-              resetForm();
-              setCurrencyValues(null);
-              setResetKey((k) => k + 1);
-            }}
-          >
-            삭제
-          </Button>
+          <Button onClick={handleReset}>삭제</Button>
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">

@@ -223,11 +223,16 @@ export const useWidgetManager = () => {
           ...(period && { period }),
         }));
 
-      saveLayout(payload);
+      const isChanged =
+        JSON.stringify(layoutData ?? []) !== JSON.stringify(payload);
+
+      if (isChanged) {
+        saveLayout(payload);
+      }
     }
 
     setIsWidgetEditMode((prev) => !prev);
-  }, [isWidgetEditMode, addedWidgets, saveLayout]);
+  }, [isWidgetEditMode, addedWidgets, saveLayout, layoutData]);
 
   // list 영역 전체 드롭존 (gap에 안 떨어졌을 때 fallback → 맨 뒤에 추가)
   const listDropZone = useDropZone({

@@ -75,13 +75,17 @@ export const useImageUpload = (accountBookId: number) => {
         );
 
         // 2️. S3 업로드
-        await fetch(presigned.presignedUrl, {
+        const response = await fetch(presigned.presignedUrl, {
           method: 'PUT',
           body: file,
           headers: {
             'Content-Type': file.type,
           },
         });
+
+        if (!response.ok) {
+          throw new Error(`S3 upload failed: ${response.status}`);
+        }
 
         setItems((prev) =>
           prev.map((item) =>

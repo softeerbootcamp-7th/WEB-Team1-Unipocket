@@ -80,7 +80,7 @@ const CurrencyConverter = ({
   }, [isValid, modalContext]);
 
   useEffect(() => {
-    if (!onValuesChange || !isValid) return;
+    if (!onValuesChange || !isValid || !localCurrencyName) return;
     const parse = (s: string) => parseFloat(s.replace(/,/g, ''));
     onValuesChange({
       localAmount: parse(localCurrency),

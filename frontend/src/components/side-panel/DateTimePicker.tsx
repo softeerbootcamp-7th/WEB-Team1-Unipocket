@@ -196,7 +196,7 @@ const DateTimePicker = ({
       <div className="flex items-center justify-center gap-3">
         <div className="w-16">
           <DropDown
-            selected={hour}
+            selectedId={hour}
             onSelect={handleHourSelect}
             options={hourOptions}
             size="md"
@@ -205,7 +205,7 @@ const DateTimePicker = ({
         <span className="text-gray-400">:</span>
         <div className="w-16">
           <DropDown
-            selected={minute}
+            selectedId={minute}
             onSelect={handleMinuteSelect}
             options={minuteOptions}
             size="md"

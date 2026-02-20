@@ -7,7 +7,7 @@ import LocaleConfirmModal from '@/components/modal/LocaleConfirmModal';
 
 import type { CurrencyType } from '@/types/currency';
 
-import { COUNTRY_CODE, type CountryCode } from '@/data/countryCode';
+import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
 interface CountryItemProps {

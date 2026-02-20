@@ -23,7 +23,12 @@ interface ReportMonthlyProps {
 const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   const { currencyType } = useReportContext();
   const accountBook = useAccountBookStore((state) => state.accountBook);
-  if (!accountBook) return null;
+  if (
+    !accountBook ||
+    !accountBook.localCountryCode ||
+    !accountBook.baseCountryCode
+  )
+    return null;
 
   const { localCountryCode, baseCountryCode } = accountBook;
   const countryCode =

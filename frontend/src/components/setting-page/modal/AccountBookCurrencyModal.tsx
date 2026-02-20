@@ -4,7 +4,7 @@ import Dropdown from '@/components/common/dropdown/Dropdown';
 import Modal from '@/components/modal/Modal';
 import ModalFormContent from '@/components/setting-page/modal/ModalFormContent';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 const AccountBookCurrencyModal = ({
   countryOptions,
@@ -19,8 +19,8 @@ const AccountBookCurrencyModal = ({
   onClose: () => void;
   onSubmit: (baseCountryCode: CountryCode) => void;
 }) => {
-  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
-    countryOptions.find((o) => o.code === currentBaseCountryCode)?.id ?? null,
+  const [selectedCountryId, setSelectedCountryId] = useState(
+    countryOptions.find((o) => o.code === currentBaseCountryCode)?.id ?? 0,
   );
 
   const isValid = selectedCountryId !== null;
@@ -43,7 +43,7 @@ const AccountBookCurrencyModal = ({
               기준 국가 선택
             </p>
             <Dropdown
-              selected={selectedCountryId}
+              selectedId={selectedCountryId}
               onSelect={setSelectedCountryId}
               options={countryOptions}
             />

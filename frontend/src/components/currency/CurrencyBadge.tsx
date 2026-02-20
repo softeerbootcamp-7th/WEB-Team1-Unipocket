@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 import { getCountryInfo } from '@/lib/country';
 import { cn } from '@/lib/utils';
 

@@ -1,6 +1,6 @@
-import type { CountryCode } from '@/data/countryCode';
-import countryData from '@/data/countryData.json';
-import { COUNTRY_LOCALE_MAP } from '@/data/countryLocale';
+import type { CountryCode } from '@/data/country/countryCode';
+import countryData from '@/data/country/countryData.json';
+import { COUNTRY_LOCALE_MAP } from '@/data/country/countryLocale';
 
 export interface CountryInfo {
   code: CountryCode;

@@ -1,7 +1,7 @@
 import { formatDateTime } from '@/components/calendar/date.utils';
 import { CategoryChip } from '@/components/common/Chip';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
-import { EmptyValue } from '@/components/side-panel/EmptyValue';
+import EmptyValue from '@/components/side-panel/EmptyValue';
 import type { ValueItemProps } from '@/components/side-panel/ValueContainer';
 
 import type { Expense } from '@/api/expenses/type';
@@ -12,11 +12,11 @@ interface UseSidePanelValuesParams {
   onDateTimeClick: () => void;
 }
 
-export function useSidePanelValues({
+export const useSidePanelValues = ({
   initialData,
   selectedDateTime,
   onDateTimeClick,
-}: UseSidePanelValuesParams): ValueItemProps[] {
+}: UseSidePanelValuesParams): ValueItemProps[] => {
   const categoryValue = initialData?.category ? (
     <CategoryChip categoryId={initialData.category} />
   ) : (
@@ -47,4 +47,4 @@ export function useSidePanelValues({
     { label: '결제 수단', value: paymentValue },
     { label: '여행', value: initialData?.travel?.name ?? <EmptyValue /> },
   ];
-}
+};

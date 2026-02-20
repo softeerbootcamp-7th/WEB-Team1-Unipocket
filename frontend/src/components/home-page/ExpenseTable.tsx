@@ -1,9 +1,7 @@
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableFilterProvider } from '@/components/data-table/DataTableFilter';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
-import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
-import PaymentCellEditor from '@/components/data-table/editors/PaymentCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import CategoryFilter from '@/components/data-table/filters/CategoryFilter';
 import DateFilter from '@/components/data-table/filters/DateFilter';
@@ -50,9 +48,9 @@ const ExpenseTable = () => {
         />
         <SelectionActionBar />
         <TextCellEditor />
-        <AmountCellEditor />
+        {/* <AmountCellEditor /> */}
         <CategoryCellEditor />
-        <PaymentCellEditor />
+        {/* <PaymentCellEditor /> */}
         <TableSidePanel />
       </DataTableProvider>
     </div>

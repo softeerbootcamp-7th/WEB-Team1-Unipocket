@@ -13,9 +13,11 @@ import { useLogoutMutation } from '@/api/auth/query';
 import { useGetUserQuery } from '@/api/users/query';
 import ProfileImage from '@/assets/images/profile.png';
 import { AUTH_PROVIDERS } from '@/constants/authProviders';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 const ProfilePopover = () => {
   const { data } = useGetUserQuery();
+  const { clearAccountBook } = useAccountBookStore.getState();
   const logoutMutation = useLogoutMutation();
   const navigator = useNavigate();
   const matchRoute = useMatchRoute();
@@ -31,7 +33,7 @@ const ProfilePopover = () => {
     e.preventDefault();
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        sessionStorage.clear();
+        clearAccountBook();
         navigator({ to: '/' });
       },
     });

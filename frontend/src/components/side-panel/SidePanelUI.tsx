@@ -182,7 +182,7 @@ const SidePanelUI = ({
           )}
         </div>
         <Divider style="thin" />
-        <MoneyContainer />
+        <MoneyContainer rateUpdatedAt={selectedDateTime ?? undefined} />
         <Divider style="thin" />
         <TextInput
           value={memo}

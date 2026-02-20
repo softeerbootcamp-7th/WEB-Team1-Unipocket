@@ -1,6 +1,10 @@
 import CurrencyConverter from '@/components/currency/CurrencyConverter';
 
-const MoneyContainer = () => {
+interface MoneyContainerProps {
+  rateUpdatedAt?: Date;
+}
+
+const MoneyContainer = ({ rateUpdatedAt }: MoneyContainerProps) => {
   return (
     <div className="flex w-90 flex-col gap-6">
       <div className="flex flex-col gap-1.5">
@@ -10,7 +14,7 @@ const MoneyContainer = () => {
         </p>
       </div>
 
-      <CurrencyConverter showCurrencyDropdown />
+      <CurrencyConverter showCurrencyDropdown rateUpdatedAt={rateUpdatedAt} />
     </div>
   );
 };

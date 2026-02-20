@@ -8,6 +8,8 @@ import { ModalContext } from '@/components/modal/useModalContext';
 
 import { Icons } from '@/assets';
 import countryData from '@/data/country/countryData.json';
+import { getCountryInfo } from '@/lib/country';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 interface CurrencyOption {
   id: number;
@@ -28,11 +30,19 @@ const RATE = 1464; // USD -> KRW
 
 interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
+  rateUpdatedAt?: Date;
 }
+
+const formatRateDate = (date: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}. ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 const CurrencyConverter = ({
   showCurrencyDropdown = false,
+  rateUpdatedAt,
 }: CurrencyConverterProps) => {
+  const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
   const {
     localCurrency,
@@ -44,6 +54,16 @@ const CurrencyConverter = ({
   const [localCurrencyType, setLocalCurrencyType] = useState(
     DEFAULT_LOCAL_CURRENCY_TYPE,
   );
+
+  const localCurrencyName =
+    currencyOptions.find((o) => o.id === localCurrencyType)?.name ?? '';
+
+  const baseCountryCode = useAccountBookStore(
+    (state) => state.accountBook?.baseCountryCode,
+  );
+  const baseCurrencyName = baseCountryCode
+    ? (getCountryInfo(baseCountryCode)?.currencyName ?? 'KRW')
+    : 'KRW';
 
   useEffect(() => {
     if (modalContext) {
@@ -86,10 +106,10 @@ const CurrencyConverter = ({
           <Icons.Swap className="text-label-neutral h-4 w-4" />
           <div className="flex flex-col gap-1">
             <p className="label1-normal-medium text-label-normal">
-              USD 1 = KRW 1,464
+              {localCurrencyName} 1 = {baseCurrencyName} 1,464
             </p>
             <p className="label1-normal-medium text-label-alternative">
-              자동 환율 적용 중 (2025.12.02. 13:26 기준)
+              자동 환율 적용 중 ({rateDate} 기준)
             </p>
           </div>
         </div>
@@ -111,7 +131,7 @@ const CurrencyConverter = ({
         />
         {showCurrencyDropdown && (
           <p className="body2-normal-medium text-label-assistive ml-2.75 w-20 items-center pt-10.5">
-            KRW
+            {baseCurrencyName}
           </p>
         )}
       </div>

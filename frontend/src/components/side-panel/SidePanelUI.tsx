@@ -163,7 +163,15 @@ const SidePanelUI = ({
           <Button variant="solid" onClick={handleSubmit}>
             저장
           </Button>
-          <Button>삭제</Button>
+          <Button
+            onClick={() => {
+              resetForm();
+              setCurrencyValues(null);
+              setResetKey((k) => k + 1);
+            }}
+          >
+            삭제
+          </Button>
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">

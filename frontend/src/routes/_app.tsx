@@ -9,7 +9,7 @@ import {
   accountBooksQueryOptions,
 } from '@/api/account-books/query';
 import { requireAuth } from '@/api/auth/api';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookStore } from '@/stores/accountBookStore';
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
@@ -30,7 +30,8 @@ export const Route = createFileRoute('/_app')({
     }
 
     const { queryClient } = context;
-    const { accountBook, setAccountBook } = useAccountBookStore.getState();
+    const { accountBook, setAccountBook, clearAccountBook } =
+      useAccountBookStore.getState();
 
     // 4. 가계부 목록 조회
     const accountBooks = await queryClient.ensureQueryData(
@@ -39,17 +40,23 @@ export const Route = createFileRoute('/_app')({
 
     // (안전장치) needsOnboarding이 false여도 가계부가 실제 0개라면 /init으로
     if (!accountBooks || accountBooks.length === 0) {
+      clearAccountBook();
       throw redirect({ to: '/init' });
     }
 
-    // 5. 선택된 가계부가 스토어에 없다면 초기화
-    if (!accountBook) {
+    let targetId = accountBook?.id;
+    if (!targetId || !accountBooks.some((ab) => ab.id === targetId)) {
+      targetId = accountBooks[0].id;
+    }
+
+    try {
       const accountBookDetail = await queryClient.ensureQueryData(
-        accountBookDetailQueryOptions(
-          accountBooks.find((book) => book.isMain)?.id ?? accountBooks[0].id,
-        ),
+        accountBookDetailQueryOptions(targetId),
       );
       setAccountBook(accountBookDetail);
+    } catch (error) {
+      clearAccountBook();
+      throw error;
     }
   },
   pendingComponent: () => <Skeleton className="h-64" />,

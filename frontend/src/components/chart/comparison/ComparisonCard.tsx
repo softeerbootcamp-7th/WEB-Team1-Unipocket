@@ -5,7 +5,7 @@ import { TOTAL_ANIMATION_DURATION } from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 interface ComparisonCardProps {
   variant: 'me' | 'average';

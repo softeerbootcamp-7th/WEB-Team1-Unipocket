@@ -1,4 +1,4 @@
-import { COUNTRY_CODE, type CountryCode } from '@/data/countryCode';
+import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 
 type ComparisonData = {
   countryCode: CountryCode;

@@ -128,7 +128,7 @@ const SidePanelUI = ({
       ref={panelRef}
       className={clsx(
         'z-sidebar fixed top-0 right-0',
-        'flex flex-col gap-8 pb-50',
+        'flex flex-col gap-8 pb-20',
         'scrollbar h-dvh w-100 overflow-auto',
         'border-line-normal-normal bg-background-normal border-l',
         'transform transition-transform duration-300 ease-out',

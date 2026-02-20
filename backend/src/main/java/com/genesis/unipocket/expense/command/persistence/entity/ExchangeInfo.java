@@ -8,14 +8,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * <b>지출의 환율/통화 스냅샷</b>
- * <p>
- * 기준화폐 변경 시점 정책에 따라 base/calculated 필드가 함께 재계산될 수 있다.
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

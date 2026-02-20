@@ -1,8 +1,8 @@
 package com.genesis.unipocket.expense.command.application;
 
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
@@ -23,12 +23,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionOperations;
 
-/**
- * <b>지출내역 엔티티 관련 서비스 클래스</b>
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)

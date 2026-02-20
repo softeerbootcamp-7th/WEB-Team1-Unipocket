@@ -1,18 +1,12 @@
 package com.genesis.unipocket.expense.command.presentation.response;
 
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.presentation.support.AmountFormatters;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.common.util.AmountFormatters;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import java.time.Instant;
 
-/**
- * <b>지출내역 수정 응답 DTO</b>
- *
- * @author bluefishez
- * @since 2026-02-10
- */
 public record ExpenseUpdateResponse(
 		Long expenseId,
 		Long accountBookId,

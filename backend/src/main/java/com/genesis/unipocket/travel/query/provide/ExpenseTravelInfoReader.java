@@ -1,7 +1,7 @@
 package com.genesis.unipocket.travel.query.provide;
 
-import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
-import com.genesis.unipocket.expense.query.service.TravelInfoReader;
+import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
+import com.genesis.unipocket.expense.query.port.TravelInfoReader;
 import com.genesis.unipocket.travel.query.persistence.repository.TravelQueryRepository;
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
 import java.util.Collection;

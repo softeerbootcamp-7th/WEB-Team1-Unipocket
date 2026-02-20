@@ -1,9 +1,8 @@
 package com.genesis.unipocket.expense.query.presentation.response;
 
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
-import com.genesis.unipocket.expense.command.presentation.response.PaymentMethodResponse;
-import com.genesis.unipocket.expense.presentation.support.AmountFormatters;
+import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
+import com.genesis.unipocket.expense.common.util.AmountFormatters;
+import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
@@ -11,12 +10,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
-/**
- * <b>지출내역 상세 조회 응답 DTO</b>
- *
- * @author bluefishez
- * @since 2026-02-07
- */
 public record ExpenseResponse(
 		Long expenseId,
 		Long accountBookId,
@@ -34,14 +27,14 @@ public record ExpenseResponse(
 		String memo,
 		ExpenseSource source,
 		String approvalNumber,
-		String cardNumber,
-		String fileLink) {
+	String cardNumber,
+	String fileLink) {
 
-	public static ExpenseResponse from(ExpenseResult dto) {
+	public static ExpenseResponse from(ExpenseQueryResult dto) {
 		return from(dto, null);
 	}
 
-	public static ExpenseResponse from(ExpenseResult dto, ExpenseTravelResult travel) {
+	public static ExpenseResponse from(ExpenseQueryResult dto, ExpenseTravelResult travel) {
 		return new ExpenseResponse(
 				dto.expenseId(),
 				dto.accountBookId(),

@@ -5,14 +5,12 @@ import static org.mockito.Mockito.*;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.query.persistence.repository.TemporaryExpenseQueryRepository;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaRow;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaSummaryRow;
+import com.genesis.unipocket.tempexpense.query.service.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
@@ -35,9 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TemporaryExpenseQueryServiceTest {
 
-	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
-	@Mock private FileRepository fileRepository;
-	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
+	@Mock private TemporaryExpenseQueryRepository temporaryExpenseQueryRepository;
 	@Mock private TempExpenseMediaAccessService tempExpenseMediaAccessService;
 
 	private TemporaryExpenseQueryService service;
@@ -48,63 +44,19 @@ class TemporaryExpenseQueryServiceTest {
 	void setUp() {
 		service =
 				new TemporaryExpenseQueryService(
-						temporaryExpenseRepository,
-						fileRepository,
-						tempExpenseMetaRepository,
-						tempExpenseMediaAccessService);
+						temporaryExpenseQueryRepository, tempExpenseMediaAccessService);
 	}
 
 	@Test
-	@DisplayName("메타 목록 조회 - 파일 수/상태 집계가 정상 동작한다")
+	@DisplayName("메타 목록 조회 - 집계 결과가 정상 동작한다")
 	void getTemporaryExpenseMetas_success() {
-		TempExpenseMeta meta1 =
-				TempExpenseMeta.builder()
-						.tempExpenseMetaId(10L)
-						.accountBookId(ACCOUNT_BOOK_ID)
-						.createdAt(LocalDateTime.now().minusDays(1))
-						.build();
-		TempExpenseMeta meta2 =
-				TempExpenseMeta.builder()
-						.tempExpenseMetaId(11L)
-						.accountBookId(ACCOUNT_BOOK_ID)
-						.createdAt(LocalDateTime.now())
-						.build();
-
-		File file1 =
-				File.builder().fileId(100L).tempExpenseMetaId(10L).fileType(FileType.IMAGE).build();
-		File file2 =
-				File.builder().fileId(101L).tempExpenseMetaId(10L).fileType(FileType.IMAGE).build();
-		File file3 =
-				File.builder().fileId(102L).tempExpenseMetaId(11L).fileType(FileType.IMAGE).build();
-
-		TemporaryExpense normal =
-				TemporaryExpense.builder()
-						.tempExpenseId(1L)
-						.tempExpenseMetaId(10L)
-						.fileId(100L)
-						.status(TemporaryExpenseStatus.NORMAL)
-						.build();
-		TemporaryExpense incomplete =
-				TemporaryExpense.builder()
-						.tempExpenseId(2L)
-						.tempExpenseMetaId(10L)
-						.fileId(101L)
-						.status(TemporaryExpenseStatus.INCOMPLETE)
-						.build();
-		TemporaryExpense abnormal =
-				TemporaryExpense.builder()
-						.tempExpenseId(3L)
-						.tempExpenseMetaId(11L)
-						.fileId(102L)
-						.status(TemporaryExpenseStatus.ABNORMAL)
-						.build();
-
-		when(tempExpenseMetaRepository.findByAccountBookId(ACCOUNT_BOOK_ID))
-				.thenReturn(List.of(meta1, meta2));
-		when(fileRepository.countFilesByTempExpenseMetaIdIn(List.of(10L, 11L)))
-				.thenReturn(List.of(new Object[] {10L, 2L}, new Object[] {11L, 1L}));
-		when(temporaryExpenseRepository.findByTempExpenseMetaIdIn(List.of(10L, 11L)))
-				.thenReturn(List.of(normal, incomplete, abnormal));
+		when(temporaryExpenseQueryRepository.findMetaSummariesByAccountBookId(ACCOUNT_BOOK_ID))
+				.thenReturn(
+						List.of(
+								new TemporaryExpenseMetaSummaryRow(
+										10L, LocalDateTime.now().minusDays(1), 2L, 1L, 1L, 0L),
+								new TemporaryExpenseMetaSummaryRow(
+										11L, LocalDateTime.now(), 1L, 0L, 0L, 1L)));
 
 		TemporaryExpenseMetaListResponse result = service.getTemporaryExpenseMetas(ACCOUNT_BOOK_ID);
 
@@ -120,49 +72,47 @@ class TemporaryExpenseQueryServiceTest {
 	@Test
 	@DisplayName("메타 파일 상세 조회 - fileId 기준으로 임시지출이 묶여 반환된다")
 	void getTemporaryExpenseMetaFiles_success() {
-		TempExpenseMeta meta =
-				TempExpenseMeta.builder()
-						.tempExpenseMetaId(10L)
-						.accountBookId(ACCOUNT_BOOK_ID)
-						.createdAt(LocalDateTime.now())
-						.build();
-
-		File file1 =
-				File.builder()
-						.fileId(100L)
-						.tempExpenseMetaId(10L)
-						.fileType(FileType.IMAGE)
-						.s3Key("a.png")
-						.build();
-		File file2 =
-				File.builder()
-						.fileId(101L)
-						.tempExpenseMetaId(10L)
-						.fileType(FileType.IMAGE)
-						.s3Key("b.png")
-						.build();
-
-		TemporaryExpense e1 =
-				TemporaryExpense.builder()
-						.tempExpenseId(1L)
-						.tempExpenseMetaId(10L)
-						.fileId(100L)
-						.merchantName("A")
-						.status(TemporaryExpenseStatus.NORMAL)
-						.build();
-		TemporaryExpense e2 =
-				TemporaryExpense.builder()
-						.tempExpenseId(2L)
-						.tempExpenseMetaId(10L)
-						.fileId(101L)
-						.merchantName("B")
-						.status(TemporaryExpenseStatus.INCOMPLETE)
-						.build();
-
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.of(meta));
-		when(fileRepository.findByTempExpenseMetaId(10L)).thenReturn(List.of(file1, file2));
-		when(temporaryExpenseRepository.findByFileIdIn(List.of(100L, 101L)))
-				.thenReturn(List.of(e1, e2));
+		LocalDateTime createdAt = LocalDateTime.now();
+		when(temporaryExpenseQueryRepository.findMetaInAccountBook(ACCOUNT_BOOK_ID, 10L))
+				.thenReturn(Optional.of(new TemporaryExpenseMetaRow(10L, createdAt)));
+		when(temporaryExpenseQueryRepository.findFilesByMetaId(10L))
+				.thenReturn(
+						List.of(
+								new TemporaryExpenseFileRow(100L, 10L, "a.png", "IMAGE"),
+								new TemporaryExpenseFileRow(101L, 10L, "b.png", "IMAGE")));
+		when(temporaryExpenseQueryRepository.findExpensesByFileIds(List.of(100L, 101L)))
+				.thenReturn(
+						List.of(
+								new TemporaryExpenseItemRow(
+										1L,
+										10L,
+										100L,
+										"A",
+										null,
+										null,
+										null,
+										null,
+										null,
+										null,
+										null,
+										null,
+										TemporaryExpenseStatus.NORMAL,
+										null),
+								new TemporaryExpenseItemRow(
+										2L,
+										10L,
+										101L,
+										"B",
+										null,
+										null,
+										null,
+										null,
+										null,
+										null,
+										null,
+										null,
+										TemporaryExpenseStatus.INCOMPLETE,
+										null)));
 
 		TemporaryExpenseMetaFilesResponse result =
 				service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L);
@@ -178,9 +128,10 @@ class TemporaryExpenseQueryServiceTest {
 	@Test
 	@DisplayName("메타 파일 상세 조회 - 다른 가계부 메타면 scope mismatch")
 	void getTemporaryExpenseMetaFiles_scopeMismatch() {
-		TempExpenseMeta meta =
-				TempExpenseMeta.builder().tempExpenseMetaId(10L).accountBookId(999L).build();
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.of(meta));
+		when(temporaryExpenseQueryRepository.findMetaInAccountBook(ACCOUNT_BOOK_ID, 10L))
+				.thenReturn(Optional.empty());
+		when(temporaryExpenseQueryRepository.findMetaById(10L))
+				.thenReturn(Optional.of(new TemporaryExpenseMetaRow(10L, LocalDateTime.now())));
 
 		assertThatThrownBy(() -> service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L))
 				.isInstanceOf(BusinessException.class)
@@ -193,7 +144,9 @@ class TemporaryExpenseQueryServiceTest {
 	@Test
 	@DisplayName("메타 파일 상세 조회 - 메타가 없으면 not found")
 	void getTemporaryExpenseMetaFiles_metaNotFound() {
-		when(tempExpenseMetaRepository.findById(10L)).thenReturn(Optional.empty());
+		when(temporaryExpenseQueryRepository.findMetaInAccountBook(ACCOUNT_BOOK_ID, 10L))
+				.thenReturn(Optional.empty());
+		when(temporaryExpenseQueryRepository.findMetaById(10L)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getTemporaryExpenseMetaFiles(ACCOUNT_BOOK_ID, 10L))
 				.isInstanceOf(BusinessException.class)

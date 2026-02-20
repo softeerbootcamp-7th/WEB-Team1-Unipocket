@@ -27,12 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * <b>임시지출내역 컨트롤러</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Tag(name = "임시지출내역 기능")
 @RestController
 @RequiredArgsConstructor
@@ -79,12 +73,7 @@ public class TemporaryExpenseCommandController {
 
 		BatchConvertStartResponse response =
 				new BatchConvertStartResponse(
-						result.taskId(),
-						result.totalExpenses(),
-						"/account-books/"
-								+ accountBookId
-								+ "/temporary-expenses/parse-status/"
-								+ result.taskId());
+						result.taskId(), result.totalExpenses(), buildParseStatusUrl(accountBookId, result.taskId()));
 		return ResponseEntity.accepted().body(response);
 	}
 
@@ -104,12 +93,7 @@ public class TemporaryExpenseCommandController {
 
 		BatchParseResponse response =
 				new BatchParseResponse(
-						result.taskId(),
-						result.totalFiles(),
-						"/account-books/"
-								+ accountBookId
-								+ "/temporary-expenses/parse-status/"
-								+ result.taskId());
+						result.taskId(), result.totalFiles(), buildParseStatusUrl(accountBookId, result.taskId()));
 
 		return ResponseEntity.accepted().body(response);
 	}
@@ -150,5 +134,9 @@ public class TemporaryExpenseCommandController {
 		temporaryExpenseCommandFacade.deleteTemporaryExpenseByFile(
 				accountBookId, tempExpenseMetaId, fileId, tempExpenseId, userId);
 		return ResponseEntity.noContent().build();
+	}
+
+	private String buildParseStatusUrl(Long accountBookId, String taskId) {
+		return "/account-books/" + accountBookId + "/temporary-expenses/parse-status/" + taskId;
 	}
 }

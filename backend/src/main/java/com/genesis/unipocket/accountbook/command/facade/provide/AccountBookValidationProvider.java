@@ -4,10 +4,10 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookE
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
-import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
 import java.util.UUID;
@@ -18,7 +18,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AccountBookValidationProvider
 		implements AccountBookOwnershipValidator,
+				com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator,
+				com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator,
 				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
+		com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator,
 				AccountBookInfoFetchService,
 				AccountBookRateInfoProvider,
 				UserAccountBookValidator,

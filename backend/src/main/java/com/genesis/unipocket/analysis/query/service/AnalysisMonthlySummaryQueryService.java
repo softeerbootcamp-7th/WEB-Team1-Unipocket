@@ -12,9 +12,9 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
+import com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
 import com.genesis.unipocket.analysis.query.persistence.response.AnalysisOverviewRes;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.BusinessException;

@@ -1,6 +1,6 @@
 package com.genesis.unipocket.expense.command.application;
 
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;

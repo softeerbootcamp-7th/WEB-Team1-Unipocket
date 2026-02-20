@@ -2,8 +2,8 @@ package com.genesis.unipocket.tempexpense.query.facade;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
+import com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
@@ -63,11 +63,15 @@ public class TemporaryExpenseQueryFacade {
 		SseEmitter emitter = new SseEmitter(PARSING_SSE_TIMEOUT_MS);
 
 		progressPublisher.addEmitter(taskId, emitter);
+		bindEmitterLifecycle(taskId, emitter);
+
+		return emitter;
+	}
+
+	private void bindEmitterLifecycle(String taskId, SseEmitter emitter) {
 		emitter.onCompletion(() -> progressPublisher.removeEmitter(taskId));
 		emitter.onTimeout(() -> progressPublisher.removeEmitter(taskId));
 		emitter.onError((e) -> progressPublisher.removeEmitter(taskId));
-
-		return emitter;
 	}
 
 	private void validateOwnership(Long accountBookId, UUID userId) {

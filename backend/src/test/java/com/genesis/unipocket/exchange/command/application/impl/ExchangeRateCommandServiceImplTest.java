@@ -10,9 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.genesis.unipocket.exchange.command.persistence.entity.ExchangeRate;
-import com.genesis.unipocket.exchange.command.persistence.repository.ExchangeRateRepository;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
+import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -35,7 +34,6 @@ import org.springframework.web.client.RestTemplate;
 class ExchangeRateCommandServiceImplTest {
 
 	@Mock private ExchangeRateRepository exchangeRateRepository;
-	@Mock private ExchangeRateQueryService exchangeRateQueryService;
 	@Mock private RestTemplate restTemplate;
 	@Spy private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,18 +44,25 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_usesBacktrackedDbRate() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
-				.thenReturn(
-						Optional.of(
-								ExchangeRate.builder()
-										.currencyCode(CurrencyCode.KRW)
-										.recordedAt(LocalDateTime.of(2026, 2, 10, 0, 0))
-										.rate(new BigDecimal("1300.00"))
-										.build()));
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.KRW), eq(targetDate), eq(targetDate)))
-				.thenReturn(Optional.empty());
+		ExchangeRate backtrackedRate =
+				ExchangeRate.builder()
+						.currencyCode(CurrencyCode.KRW)
+						.recordedAt(LocalDateTime.of(2026, 2, 10, 0, 0))
+						.rate(new BigDecimal("1300.00"))
+						.build();
+		when(exchangeRateRepository
+						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
+				.thenAnswer(
+						invocation -> {
+							LocalDateTime start = invocation.getArgument(1);
+							LocalDateTime end = invocation.getArgument(2);
+							boolean isSingleDayLookup = start.plusDays(1).equals(end);
+							if (isSingleDayLookup && start.toLocalDate().equals(targetDate)) {
+								return Optional.empty();
+							}
+							return Optional.of(backtrackedRate);
+						});
 		when(exchangeRateRepository.save(any(ExchangeRate.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -82,8 +87,9 @@ class ExchangeRateCommandServiceImplTest {
 						.recordedAt(targetDate.atStartOfDay())
 						.rate(new BigDecimal("1310.00"))
 						.build();
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+		when(exchangeRateRepository
+						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.thenReturn(Optional.of(targetRate));
 
 		BigDecimal rate =
@@ -100,8 +106,9 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_fetchesYahooByRangeAndStoresBothDates() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.GBP), any(LocalDate.class), any(LocalDate.class)))
+		when(exchangeRateRepository
+						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+								eq(CurrencyCode.GBP), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooSingleDayResponse(LocalDate.of(2026, 2, 11), "0.79"));
@@ -126,8 +133,9 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_unsupportedSymbol_throwsNotFound() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+		when(exchangeRateRepository
+						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenReturn(yahooUnsupportedSymbolResponse());
@@ -145,8 +153,9 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_yahooFailure_throwsApiError() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+		when(exchangeRateRepository
+						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.thenReturn(Optional.empty());
 		when(restTemplate.getForObject(any(String.class), eq(String.class)))
 				.thenThrow(new RuntimeException("timeout"));
@@ -164,13 +173,14 @@ class ExchangeRateCommandServiceImplTest {
 	void resolveAndStoreUsdRelativeRate_invalidDbRate_fallsBackToYahoo() {
 		LocalDate targetDate = LocalDate.of(2026, 2, 12);
 
-		when(exchangeRateQueryService.findLatestRateInRange(
-						eq(CurrencyCode.KRW), any(LocalDate.class), any(LocalDate.class)))
+		when(exchangeRateRepository
+						.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+								eq(CurrencyCode.KRW), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.thenAnswer(
 						invocation -> {
-							LocalDate start = invocation.getArgument(1);
-							LocalDate end = invocation.getArgument(2);
-							if (start.equals(end)) {
+							LocalDateTime start = invocation.getArgument(1);
+							LocalDateTime end = invocation.getArgument(2);
+							if (start.plusDays(1).equals(end)) {
 								return Optional.empty();
 							}
 							return Optional.of(

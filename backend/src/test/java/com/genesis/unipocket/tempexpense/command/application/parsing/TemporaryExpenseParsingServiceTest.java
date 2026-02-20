@@ -1,6 +1,7 @@
 package com.genesis.unipocket.tempexpense.command.application.parsing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -16,26 +17,23 @@ import static org.mockito.Mockito.when;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.tempexpense.command.application.result.BatchParsingResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,13 +46,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TemporaryExpenseParsingServiceTest {
 
 	@Mock private FileRepository fileRepository;
-	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
 	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 	@Mock private ExchangeRateProvider exchangeRateProvider;
 	@Mock private TemporaryExpenseParseClient temporaryExpenseParseClient;
 	@Mock private TemporaryExpenseFieldParser fieldParser;
 	@Mock private ParsingProgressPublisher progressPublisher;
+	@Mock private TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 
 	private TemporaryExpenseParsingService service;
 
@@ -66,13 +64,13 @@ class TemporaryExpenseParsingServiceTest {
 		service =
 				new TemporaryExpenseParsingService(
 						fileRepository,
-						tempExpenseMetaRepository,
 						accountBookRateInfoProvider,
 						exchangeRateProvider,
 						fieldParser,
 						temporaryExpenseParseClient,
 						temporaryExpensePersistenceService,
 						progressPublisher,
+						temporaryExpenseScopeValidator,
 						Runnable::run);
 	}
 
@@ -94,8 +92,6 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
-		when(tempExpenseMetaRepository.findAllById(List.of(10L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -138,11 +134,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		BatchParsingResult result =
-				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-1").join();
-
-		assertThat(result.totalParsed()).isEqualTo(2);
-		assertThat(result.normalCount()).isEqualTo(2);
+		service.parseBatchFiles(meta, List.of(file), "task-single-1");
 		verify(exchangeRateProvider, times(1))
 				.getExchangeRate(
 						CurrencyCode.JPY,
@@ -155,6 +147,8 @@ class TemporaryExpenseParsingServiceTest {
 		List<TemporaryExpense> saved = captor.getValue();
 
 		assertThat(saved).hasSize(2);
+		assertThat(saved.get(0).getStatus()).isEqualTo(TemporaryExpenseStatus.NORMAL);
+		assertThat(saved.get(1).getStatus()).isEqualTo(TemporaryExpenseStatus.NORMAL);
 		assertThat(saved.get(0).getCategory()).isEqualTo(Category.FOOD);
 		assertThat(saved.get(1).getCategory()).isEqualTo(Category.TRANSPORT);
 		assertThat(saved.get(1).getLocalCountryCode()).isEqualTo(CurrencyCode.JPY);
@@ -181,8 +175,6 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
-		when(tempExpenseMetaRepository.findAllById(List.of(11L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -209,10 +201,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		BatchParsingResult result =
-				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-2").join();
-
-		assertThat(result.incompleteCount()).isEqualTo(1);
+		service.parseBatchFiles(meta, List.of(file), "task-single-2");
 		verifyNoInteractions(exchangeRateProvider);
 
 		@SuppressWarnings("unchecked")
@@ -241,8 +230,6 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
-		when(tempExpenseMetaRepository.findAllById(List.of(12L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -270,10 +257,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		BatchParsingResult result =
-				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-3").join();
-
-		assertThat(result.normalCount()).isEqualTo(1);
+		service.parseBatchFiles(meta, List.of(file), "task-single-3");
 
 		// Verify NO interaction with ExchangeRateProvider
 		verifyNoInteractions(exchangeRateProvider);
@@ -283,6 +267,7 @@ class TemporaryExpenseParsingServiceTest {
 		verify(temporaryExpenseRepository).saveAll(captor.capture());
 		TemporaryExpense saved = captor.getValue().get(0);
 
+		assertThat(saved.getStatus()).isEqualTo(TemporaryExpenseStatus.NORMAL);
 		assertThat(saved.getLocalCurrencyAmount()).isEqualByComparingTo("100.00");
 		assertThat(saved.getLocalCountryCode()).isEqualTo(CurrencyCode.USD);
 		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
@@ -291,10 +276,9 @@ class TemporaryExpenseParsingServiceTest {
 	}
 
 	@Test
-	@DisplayName("배치 파싱은 s3Key 단건 조회 대신 일괄 조회를 사용")
-	void parseBatchFilesAsync_usesBulkLookups() {
+	@DisplayName("배치 파싱은 전달된 파일 목록을 순회해 처리한다")
+	void parseBatchFiles_iteratesOverGivenFiles() {
 		Long accountBookId = 1L;
-		List<String> s3Keys = List.of("docs/a.csv", "docs/b.csv");
 		File fileA =
 				File.builder()
 						.fileId(1L)
@@ -305,39 +289,28 @@ class TemporaryExpenseParsingServiceTest {
 		File fileB =
 				File.builder()
 						.fileId(2L)
-						.tempExpenseMetaId(101L)
+						.tempExpenseMetaId(100L)
 						.fileType(File.FileType.CSV)
 						.s3Key("docs/b.csv")
 						.build();
-		TempExpenseMeta metaA =
+		TempExpenseMeta meta =
 				TempExpenseMeta.builder()
 						.tempExpenseMetaId(100L)
-						.accountBookId(accountBookId)
-						.build();
-		TempExpenseMeta metaB =
-				TempExpenseMeta.builder()
-						.tempExpenseMetaId(101L)
 						.accountBookId(accountBookId)
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
-		when(fileRepository.findByS3KeyIn(s3Keys)).thenReturn(List.of(fileA, fileB));
-		when(tempExpenseMetaRepository.findAllById(any())).thenReturn(List.of(metaA, metaB));
 		when(temporaryExpenseParseClient.parse(any(File.class)))
 				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
-		CompletableFuture<BatchParsingResult> future =
-				service.parseBatchFilesAsync(accountBookId, s3Keys, "task-1");
-		BatchParsingResult result = future.join();
+		service.parseBatchFiles(meta, List.of(fileA, fileB), "task-1");
 
-		assertThat(result.totalParsed()).isEqualTo(0);
-		verify(fileRepository).findByS3KeyIn(s3Keys);
-		verify(fileRepository, never()).findByS3Key(anyString());
-		verify(tempExpenseMetaRepository, times(1)).findAllById(any());
-		verify(progressPublisher, times(1)).complete(eq("task-1"), any(BatchParsingResult.class));
+		verify(temporaryExpenseRepository, atLeastOnce()).saveAll(anyList());
+		verify(temporaryExpenseParseClient, times(2)).parse(any(File.class));
+		verify(progressPublisher, times(1)).complete(eq("task-1"));
 	}
 
 	@Test
@@ -346,7 +319,6 @@ class TemporaryExpenseParsingServiceTest {
 		TemporaryExpenseParsingService asyncStartOnlyService =
 				new TemporaryExpenseParsingService(
 						fileRepository,
-						tempExpenseMetaRepository,
 						accountBookRateInfoProvider,
 						exchangeRateProvider,
 						fieldParser,
@@ -354,6 +326,7 @@ class TemporaryExpenseParsingServiceTest {
 						new TemporaryExpensePersistenceService(
 								temporaryExpenseRepository, new TemporaryExpenseValidator()),
 						progressPublisher,
+						temporaryExpenseScopeValidator,
 						runnable -> {});
 
 		Long accountBookId = 1L;
@@ -378,7 +351,8 @@ class TemporaryExpenseParsingServiceTest {
 						.s3Key("temp/b.png")
 						.build();
 
-		when(tempExpenseMetaRepository.findById(metaId)).thenReturn(Optional.of(meta));
+		when(temporaryExpenseScopeValidator.validateMetaScope(accountBookId, metaId))
+				.thenReturn(meta);
 		when(fileRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(file1, file2));
 
 		ParseStartResult result =
@@ -406,8 +380,6 @@ class TemporaryExpenseParsingServiceTest {
 						.accountBookId(accountBookId)
 						.build();
 
-		when(fileRepository.findByS3KeyIn(List.of(s3Key))).thenReturn(List.of(file));
-		when(tempExpenseMetaRepository.findAllById(List.of(13L))).thenReturn(List.of(meta));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
@@ -439,10 +411,7 @@ class TemporaryExpenseParsingServiceTest {
 												null)),
 								null));
 
-		BatchParsingResult result =
-				service.parseBatchFilesAsync(accountBookId, List.of(s3Key), "task-single-4").join();
-
-		assertThat(result.normalCount()).isEqualTo(1);
+		service.parseBatchFiles(meta, List.of(file), "task-single-4");
 		verify(exchangeRateProvider, atLeastOnce())
 				.getExchangeRate(eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any());
 
@@ -451,7 +420,46 @@ class TemporaryExpenseParsingServiceTest {
 		verify(temporaryExpenseRepository).saveAll(captor.capture());
 		TemporaryExpense saved = captor.getValue().get(0);
 
+		assertThat(saved.getStatus()).isEqualTo(TemporaryExpenseStatus.NORMAL);
 		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
 		assertThat(saved.getBaseCurrencyAmount()).isEqualByComparingTo("130000.00");
+	}
+
+	@Test
+	@DisplayName("Gemini 429 응답이면 배치 파싱을 즉시 실패 처리한다")
+	void parseBatchFiles_failsFastOnGeminiRateLimit() {
+		Long accountBookId = 1L;
+		File first =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(200L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/first.jpg")
+						.build();
+		File second =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(200L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/second.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(200L)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+		when(temporaryExpenseParseClient.parse(first))
+				.thenReturn(new GeminiService.GeminiParseResponse(false, List.of(), "too many requests", 429));
+
+		assertThatThrownBy(() -> service.parseBatchFiles(meta, List.of(first, second), "task-429"))
+				.isInstanceOf(RuntimeException.class);
+
+		verify(temporaryExpenseParseClient, times(1)).parse(first);
+		verify(temporaryExpenseParseClient, never()).parse(second);
+		verify(progressPublisher).publishError(eq("task-429"), anyString());
+		verify(progressPublisher, never()).complete(eq("task-429"));
 	}
 }

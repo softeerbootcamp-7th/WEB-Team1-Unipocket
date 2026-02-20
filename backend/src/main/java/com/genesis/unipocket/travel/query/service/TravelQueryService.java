@@ -2,9 +2,8 @@ package com.genesis.unipocket.travel.query.service;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.media.command.application.MediaObjectStorage;
-import com.genesis.unipocket.media.command.application.MediaPathPrefixManager;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
+import com.genesis.unipocket.travel.query.port.TravelImageAccessService;
 import com.genesis.unipocket.travel.query.persistence.repository.TravelQueryRepository;
 import com.genesis.unipocket.travel.query.persistence.response.TravelDetailQueryResponse;
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
@@ -24,8 +23,7 @@ public class TravelQueryService {
 
 	private final TravelQueryRepository travelQueryRepository;
 	private final UserAccountBookValidator userAccountBookValidator;
-	private final MediaObjectStorage mediaObjectStorage;
-	private final MediaPathPrefixManager mediaPathPrefixManager;
+	private final TravelImageAccessService travelImageAccessService;
 
 	@Value("${app.media.presigned-get-expiration-seconds:600}")
 	private int presignedGetExpirationSeconds;
@@ -58,7 +56,7 @@ public class TravelQueryService {
 			throw new BusinessException(ErrorCode.TRAVEL_INVALID_IMAGE_KEY);
 		}
 
-		if (!mediaPathPrefixManager.isTravelImageKey(imageKey)) {
+		if (!travelImageAccessService.isTravelImageKey(imageKey)) {
 			throw new BusinessException(ErrorCode.TRAVEL_INVALID_IMAGE_KEY);
 		}
 
@@ -67,11 +65,11 @@ public class TravelQueryService {
 		if (!existsInAccountBook) {
 			throw new BusinessException(ErrorCode.TRAVEL_IMAGE_NOT_FOUND);
 		}
-		if (!mediaObjectStorage.exists(imageKey)) {
+		if (!travelImageAccessService.exists(imageKey)) {
 			throw new BusinessException(ErrorCode.TRAVEL_IMAGE_NOT_FOUND);
 		}
 
-		return mediaObjectStorage.getPresignedGetUrl(
+		return travelImageAccessService.issueGetPath(
 				imageKey, Duration.ofSeconds(presignedGetExpirationSeconds));
 	}
 

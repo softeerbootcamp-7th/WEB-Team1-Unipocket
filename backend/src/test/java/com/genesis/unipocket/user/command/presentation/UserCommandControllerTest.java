@@ -13,7 +13,7 @@ import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
 import jakarta.servlet.http.Cookie;
 import java.util.UUID;

@@ -11,7 +11,7 @@
  * import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
  * import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
  * import
- * com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+ * com.genesis.unipocket.user.common.enums.CardCompany;
  * import
  * com.genesis.unipocket.user.command.persistence.repository.UserCardRepository;
  * import

@@ -6,8 +6,8 @@ import com.genesis.unipocket.widget.command.application.result.UpdateAccountBook
 import com.genesis.unipocket.widget.command.application.result.UpdateTravelWidgetsResult;
 import com.genesis.unipocket.widget.command.persistence.converter.AccountBookWidgetCommandConverter;
 import com.genesis.unipocket.widget.command.persistence.converter.TravelWidgetCommandConverter;
-import com.genesis.unipocket.widget.command.persistence.entity.AccountBookWidgetEntity;
-import com.genesis.unipocket.widget.command.persistence.entity.TravelWidgetEntity;
+import com.genesis.unipocket.widget.common.persistence.entity.AccountBookWidgetEntity;
+import com.genesis.unipocket.widget.common.persistence.entity.TravelWidgetEntity;
 import com.genesis.unipocket.widget.command.persistence.repository.AccountBookWidgetJpaRepository;
 import com.genesis.unipocket.widget.command.persistence.repository.TravelWidgetJpaRepository;
 import com.genesis.unipocket.widget.common.WidgetItem;

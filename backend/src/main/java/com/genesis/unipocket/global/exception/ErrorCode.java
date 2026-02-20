@@ -130,10 +130,6 @@ public enum ErrorCode {
 			HttpStatus.BAD_REQUEST,
 			"400_EXPENSE_INVALID_SORT",
 			"유효하지 않은 정렬 기준입니다. ( occurredAt,desc(asc) baseCurrencyAmount,desc(asc) )"),
-	EXPENSE_MERCHANT_SEARCH_RATE_LIMIT_EXCEEDED(
-			HttpStatus.TOO_MANY_REQUESTS,
-			"429_EXPENSE_MERCHANT_SEARCH_RATE_LIMIT_EXCEEDED",
-			"요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 	EXPENSE_FILE_LINK_NOT_FOUND(
 			HttpStatus.NOT_FOUND, "404_EXPENSE_FILE_LINK_NOT_FOUND", "해당 지출에 연결된 파일 링크가 없습니다."),
 
@@ -174,10 +170,6 @@ public enum ErrorCode {
 			HttpStatus.INTERNAL_SERVER_ERROR,
 			"500_TEMP_EXPENSE_PARSE_FAILED",
 			"임시 지출 파싱 처리 중 오류가 발생했습니다."),
-	TEMP_EXPENSE_RATE_LIMIT_EXCEEDED(
-			HttpStatus.TOO_MANY_REQUESTS,
-			"429_TEMP_EXPENSE_RATE_LIMIT_EXCEEDED",
-			"요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
 
 	// ========== Widget Errors ==========
 	WIDGET_ORDER_DUPLICATED(

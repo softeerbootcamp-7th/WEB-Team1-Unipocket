@@ -2,14 +2,11 @@ package com.genesis.unipocket.tempexpense.query.service;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
-import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.query.persistence.repository.TemporaryExpenseQueryRepository;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaRow;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaSummaryRow;
+import com.genesis.unipocket.tempexpense.query.service.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
@@ -22,172 +19,127 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * <b>임시지출내역 조회 서비스</b>
- *
- * @author 김동균
- * @since 2026-02-10
- */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TemporaryExpenseQueryService {
 
-	private final TemporaryExpenseRepository temporaryExpenseRepository;
-	private final FileRepository fileRepository;
-	private final TempExpenseMetaRepository tempExpenseMetaRepository;
+	private final TemporaryExpenseQueryRepository temporaryExpenseQueryRepository;
 	private final TempExpenseMediaAccessService tempExpenseMediaAccessService;
 
 	@Value("${app.media.presigned-get-expiration-seconds:600}")
 	private int presignedGetExpirationSeconds;
 
-	/**
-	 * 가계부에 속한 메타 목록 조회
-	 */
 	public TemporaryExpenseMetaListResponse getTemporaryExpenseMetas(Long accountBookId) {
-		List<TempExpenseMeta> metas = tempExpenseMetaRepository.findByAccountBookId(accountBookId);
+		List<TemporaryExpenseMetaSummaryRow> metas =
+				temporaryExpenseQueryRepository.findMetaSummariesByAccountBookId(accountBookId);
 		if (metas.isEmpty()) {
 			return new TemporaryExpenseMetaListResponse(List.of());
 		}
 
-		List<Long> metaIds = metas.stream().map(TempExpenseMeta::getTempExpenseMetaId).toList();
-		Map<Long, Integer> fileCountByMetaId =
-				fileRepository.countFilesByTempExpenseMetaIdIn(metaIds).stream()
-						.collect(
-								Collectors.toMap(
-										row -> (Long) row[0], row -> ((Long) row[1]).intValue()));
-
-		Map<Long, List<TemporaryExpense>> expensesByMetaId =
-				temporaryExpenseRepository.findByTempExpenseMetaIdIn(metaIds).stream()
-						.collect(Collectors.groupingBy(TemporaryExpense::getTempExpenseMetaId));
-
 		List<TemporaryExpenseMetaListResponse.MetaSummary> summaries =
 				metas.stream()
-						.map(
-								meta -> {
-									List<TemporaryExpense> expenses =
-											expensesByMetaId.getOrDefault(
-													meta.getTempExpenseMetaId(), List.of());
-									Map<TemporaryExpenseStatus, Long> counts =
-											expenses.stream()
-													.collect(
-															Collectors.groupingBy(
-																	TemporaryExpense::getStatus,
-																	Collectors.counting()));
-									return new TemporaryExpenseMetaListResponse.MetaSummary(
-											meta.getTempExpenseMetaId(),
-											meta.getCreatedAt(),
-											fileCountByMetaId.getOrDefault(
-													meta.getTempExpenseMetaId(), 0),
-											expenses.size(),
-											counts.getOrDefault(TemporaryExpenseStatus.NORMAL, 0L)
-													.intValue(),
-											counts.getOrDefault(
-															TemporaryExpenseStatus.INCOMPLETE, 0L)
-													.intValue(),
-											counts.getOrDefault(TemporaryExpenseStatus.ABNORMAL, 0L)
-													.intValue());
-								})
+						.map(this::toMetaSummary)
 						.toList();
 
 		return new TemporaryExpenseMetaListResponse(summaries);
 	}
 
-	/**
-	 * 메타 내부 파일별 임시지출 상세 조회
-	 */
 	public TemporaryExpenseMetaFilesResponse getTemporaryExpenseMetaFiles(
 			Long accountBookId, Long tempExpenseMetaId) {
-		TempExpenseMeta meta =
-				tempExpenseMetaRepository
-						.findById(tempExpenseMetaId)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		if (!accountBookId.equals(meta.getAccountBookId())) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
+		TemporaryExpenseMetaRow meta = resolveScopedMeta(accountBookId, tempExpenseMetaId);
 
-		List<File> files = fileRepository.findByTempExpenseMetaId(tempExpenseMetaId);
+		List<TemporaryExpenseFileRow> files =
+				temporaryExpenseQueryRepository.findFilesByMetaId(tempExpenseMetaId);
 		if (files.isEmpty()) {
 			return new TemporaryExpenseMetaFilesResponse(
-					tempExpenseMetaId, meta.getCreatedAt(), List.of());
+					tempExpenseMetaId, meta.createdAt(), List.of());
 		}
 
-		Map<Long, List<TemporaryExpense>> expensesByFileId =
-				temporaryExpenseRepository
-						.findByFileIdIn(files.stream().map(File::getFileId).toList())
+		Map<Long, List<TemporaryExpenseResponse>> expensesByFileId =
+				temporaryExpenseQueryRepository
+						.findExpensesByFileIds(files.stream().map(TemporaryExpenseFileRow::fileId).toList())
 						.stream()
-						.collect(Collectors.groupingBy(TemporaryExpense::getFileId));
+						.map(TemporaryExpenseResponse::from)
+						.collect(Collectors.groupingBy(TemporaryExpenseResponse::fileId));
 
 		List<TemporaryExpenseMetaFilesResponse.FileExpenses> fileExpenses =
 				files.stream()
 						.map(
 								file ->
 										new TemporaryExpenseMetaFilesResponse.FileExpenses(
-												file.getFileId(),
-												file.getS3Key(),
-												file.getFileType() != null
-														? file.getFileType().name()
-														: null,
-												expensesByFileId
-														.getOrDefault(file.getFileId(), List.of())
-														.stream()
-														.map(TemporaryExpenseResponse::from)
-														.toList()))
+												file.fileId(),
+												file.s3Key(),
+												file.fileType() != null ? String.valueOf(file.fileType()) : null,
+												expensesByFileId.getOrDefault(file.fileId(), List.of())))
 						.toList();
 
 		return new TemporaryExpenseMetaFilesResponse(
-				tempExpenseMetaId, meta.getCreatedAt(), fileExpenses);
+				tempExpenseMetaId, meta.createdAt(), fileExpenses);
 	}
 
-	/**
-	 * 메타 내부 파일 단건 임시지출 상세 조회
-	 */
 	public TemporaryExpenseMetaFilesResponse.FileExpenses getTemporaryExpenseMetaFile(
 			Long accountBookId, Long tempExpenseMetaId, Long fileId) {
-		File file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
+		TemporaryExpenseFileRow file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
 
 		List<TemporaryExpenseResponse> expenses =
-				temporaryExpenseRepository.findByFileIdIn(List.of(fileId)).stream()
+				temporaryExpenseQueryRepository.findExpensesByFileId(fileId).stream()
 						.map(TemporaryExpenseResponse::from)
 						.toList();
 
 		return new TemporaryExpenseMetaFilesResponse.FileExpenses(
-				file.getFileId(),
-				file.getS3Key(),
-				file.getFileType() != null ? file.getFileType().name() : null,
+				file.fileId(),
+				file.s3Key(),
+				file.fileType() != null ? String.valueOf(file.fileType()) : null,
 				expenses);
 	}
 
 	public String issueTemporaryExpenseFileUrl(
 			Long accountBookId, Long tempExpenseMetaId, Long fileId) {
-		File file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
+		TemporaryExpenseFileRow file = getValidatedFile(accountBookId, tempExpenseMetaId, fileId);
 		return tempExpenseMediaAccessService.issueGetPath(
-				file.getS3Key(), Duration.ofSeconds(presignedGetExpirationSeconds));
+				file.s3Key(), Duration.ofSeconds(presignedGetExpirationSeconds));
 	}
 
 	public int getTemporaryExpenseFileUrlExpirationSeconds() {
 		return presignedGetExpirationSeconds;
 	}
 
-	private File getValidatedFile(Long accountBookId, Long tempExpenseMetaId, Long fileId) {
-		TempExpenseMeta meta =
-				tempExpenseMetaRepository
-						.findById(tempExpenseMetaId)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		if (!accountBookId.equals(meta.getAccountBookId())) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
+	private TemporaryExpenseMetaListResponse.MetaSummary toMetaSummary(
+			TemporaryExpenseMetaSummaryRow meta) {
+		int normalCount = (int) meta.normalCount();
+		int incompleteCount = (int) meta.incompleteCount();
+		int abnormalCount = (int) meta.abnormalCount();
+		int totalExpenseCount = normalCount + incompleteCount + abnormalCount;
+		return new TemporaryExpenseMetaListResponse.MetaSummary(
+				meta.tempExpenseMetaId(),
+				meta.createdAt(),
+				(int) meta.fileCount(),
+				totalExpenseCount,
+				normalCount,
+				incompleteCount,
+				abnormalCount);
+	}
 
-		File file =
-				fileRepository
-						.findById(fileId)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND));
-		if (!tempExpenseMetaId.equals(file.getTempExpenseMetaId())) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
-		return file;
+	private TemporaryExpenseMetaRow resolveScopedMeta(Long accountBookId, Long tempExpenseMetaId) {
+		return temporaryExpenseQueryRepository
+				.findMetaInAccountBook(accountBookId, tempExpenseMetaId)
+				.orElseThrow(
+						() -> {
+							boolean exists =
+									temporaryExpenseQueryRepository.findMetaById(tempExpenseMetaId).isPresent();
+							return new BusinessException(
+									exists
+											? ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH
+											: ErrorCode.TEMP_EXPENSE_META_NOT_FOUND);
+						});
+	}
+
+	private TemporaryExpenseFileRow getValidatedFile(
+			Long accountBookId, Long tempExpenseMetaId, Long fileId) {
+		resolveScopedMeta(accountBookId, tempExpenseMetaId);
+		return temporaryExpenseQueryRepository
+				.findScopedFile(accountBookId, tempExpenseMetaId, fileId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH));
 	}
 }

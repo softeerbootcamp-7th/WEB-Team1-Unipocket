@@ -1,12 +1,13 @@
 package com.genesis.unipocket.tempexpense.command.presentation.response;
 
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseMetaBulkUpdateResult;
-import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
+import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * <b>메타 단위 임시지출 일괄 수정 응답</b>
- */
 public record TemporaryExpenseMetaBulkUpdateResponse(
 		int totalRequested, int successCount, int failedCount, List<ItemResult> results) {
 
@@ -21,14 +22,49 @@ public record TemporaryExpenseMetaBulkUpdateResponse(
 	}
 
 	public record ItemResult(
-			Long tempExpenseId, String status, String reason, TemporaryExpenseResponse updated) {
+			Long tempExpenseId, String status, String reason, UpdatedExpense updated) {
 
 		public static ItemResult from(TemporaryExpenseMetaBulkUpdateResult.ItemResult item) {
 			return new ItemResult(
 					item.tempExpenseId(),
 					item.status(),
 					item.reason(),
-					item.updated() != null ? TemporaryExpenseResponse.from(item.updated()) : null);
+					item.updated() != null ? UpdatedExpense.from(item.updated()) : null);
+		}
+	}
+
+	public record UpdatedExpense(
+			Long tempExpenseId,
+			Long tempExpenseMetaId,
+			Long fileId,
+			String merchantName,
+			Category category,
+			CurrencyCode localCountryCode,
+			BigDecimal localCurrencyAmount,
+			CurrencyCode baseCountryCode,
+			BigDecimal baseCurrencyAmount,
+			String paymentsMethod,
+			String memo,
+			LocalDateTime occurredAt,
+			String status,
+			String cardLastFourDigits) {
+
+		public static UpdatedExpense from(TemporaryExpenseResult result) {
+			return new UpdatedExpense(
+					result.tempExpenseId(),
+					result.tempExpenseMetaId(),
+					result.fileId(),
+					result.merchantName(),
+					result.category(),
+					result.localCountryCode(),
+					result.localCurrencyAmount(),
+					result.baseCountryCode(),
+					result.baseCurrencyAmount(),
+					result.paymentsMethod(),
+					result.memo(),
+					result.occurredAt(),
+					result.status(),
+					result.cardLastFourDigits());
 		}
 	}
 }

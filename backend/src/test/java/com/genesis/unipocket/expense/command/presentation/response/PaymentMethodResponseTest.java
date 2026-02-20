@@ -3,7 +3,7 @@ package com.genesis.unipocket.expense.command.presentation.response;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import org.junit.jupiter.api.Test;
 
 class PaymentMethodResponseTest {

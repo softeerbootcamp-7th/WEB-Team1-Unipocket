@@ -1,6 +1,6 @@
 package com.genesis.unipocket.widget.command.persistence.converter;
 
-import com.genesis.unipocket.widget.command.persistence.entity.AccountBookWidgetEntity;
+import com.genesis.unipocket.widget.common.persistence.entity.AccountBookWidgetEntity;
 import com.genesis.unipocket.widget.common.WidgetItem;
 import com.genesis.unipocket.widget.common.enums.WidgetSizePolicy;
 import java.util.List;

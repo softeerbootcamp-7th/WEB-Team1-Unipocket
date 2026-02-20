@@ -3,7 +3,7 @@ package com.genesis.unipocket.widget.command.persistence.converter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.genesis.unipocket.global.common.enums.WidgetType;
-import com.genesis.unipocket.widget.command.persistence.entity.AccountBookWidgetEntity;
+import com.genesis.unipocket.widget.common.persistence.entity.AccountBookWidgetEntity;
 import com.genesis.unipocket.widget.common.WidgetItem;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import com.genesis.unipocket.widget.common.enums.Period;

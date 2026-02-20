@@ -1,35 +1,41 @@
 import { useMemo, useState } from 'react';
 
+import { transformCategoryChartData } from '@/components/chart/category/category.utils';
 import CategoryChartSkeleton from '@/components/chart/category/CategoryChartSkeleton';
 import CategoryChartView from '@/components/chart/category/CategoryChartView';
-import { mockData } from '@/components/chart/category/mock';
 import { type ChartMode, CURRENCY_OPTIONS } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
+import { CATEGORY_PERIOD_OPTIONS } from '@/components/chart/widgetPeriod';
 import DropDown from '@/components/common/dropdown/Dropdown';
 
-const PERIOD_OPTIONS = [
-  { id: 1, name: '전체' },
-  { id: 2, name: '월별' },
-];
+import type { CurrencyType } from '@/types/currency';
+import { getPeriodTypeById, type PeriodType } from '@/types/period';
+
+import { useWidgetQuery } from '@/api/widget/query';
 
 const CategoryChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState(
     CURRENCY_OPTIONS[0].id,
   );
-  const [selectedPeriod, setSelectedPeriod] = useState(PERIOD_OPTIONS[0].id);
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    CATEGORY_PERIOD_OPTIONS[0].id,
+  );
 
-  // 렌더링용 데이터. API 연동 시 변경 필요
-  const visibleStats = useMemo(() => {
-    return mockData.items
-      .map((item) => ({
-        percentage: item.percent,
-        categoryId: item.categoryId,
-        amount: item.amount,
-      }))
-      .filter((item) => item.percentage > 0);
-  }, []);
+  const currencyType: CurrencyType =
+    CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type || 'BASE';
+  const periodType: PeriodType = getPeriodTypeById(selectedPeriod);
+
+  const { data, isLoading } = useWidgetQuery('CATEGORY', {
+    currencyType,
+    period: periodType,
+  });
+
+  const visibleStats = useMemo(() => transformCategoryChartData(data), [data]);
+
+  const showSkeleton =
+    isPreview || isLoading || !data || visibleStats.length === 0;
 
   return (
     <ChartContainer className="w-139" isPreview={isPreview}>
@@ -43,26 +49,26 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
         <DropDown
           selectedId={selectedPeriod}
           onSelect={setSelectedPeriod}
-          options={PERIOD_OPTIONS}
+          options={CATEGORY_PERIOD_OPTIONS}
           size="xs"
         />
       </ChartHeader>
 
       {/* stat section */}
       <ChartContent
-        isPreview={isPreview || visibleStats.length === 0}
+        isPreview={showSkeleton}
         skeleton={<CategoryChartSkeleton />}
         className="px-8 py-4"
       >
-        <CategoryChartView
-          data={visibleStats}
-          totalAmount={mockData.totalAmount}
-          currencyType={
-            CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type ||
-            'BASE'
-          }
-          countryCode={mockData.countryCode}
-        />
+        {data && visibleStats.length > 0 && (
+          <CategoryChartView
+            key={`${currencyType}-${periodType}`}
+            data={visibleStats}
+            totalAmount={Number(data.totalAmount)}
+            currencyType={currencyType}
+            countryCode={data.countryCode}
+          />
+        )}
       </ChartContent>
     </ChartContainer>
   );

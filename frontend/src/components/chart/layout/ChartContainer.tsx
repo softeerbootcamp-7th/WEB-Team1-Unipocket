@@ -40,7 +40,7 @@ const ChartContainer = ({
     >
       {!isPreview && isWidgetEditMode && !isDragging && (
         <Icons.CloseButton
-          className="absolute -top-1.5 -left-2.5 z-60 size-7 cursor-pointer"
+          className="z-priority absolute -top-1.5 -left-2.5 size-7 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onRemove?.();

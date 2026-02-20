@@ -8,10 +8,25 @@ import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
 import DropDown from '@/components/common/dropdown/Dropdown';
 
+import type { CurrencyType } from '@/types/currency';
+
+import { useWidgetQuery } from '@/api/widget/query';
+import { useAccountBookStore } from '@/stores/useAccountBookStore';
+
 const ComparisonChart = ({ isPreview = false }: ChartMode) => {
   const [selectedCurrency, setSelectedCurrency] = useState<number>(
     CURRENCY_OPTIONS[0].id,
   );
+
+  const currencyType: CurrencyType =
+    CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type ?? 'BASE';
+  const { data, isLoading } = useWidgetQuery('COMPARISON', { currencyType });
+
+  const localCountryCode = useAccountBookStore(
+    (state) => state.accountBook!.localCountryCode,
+  );
+
+  const showSkeleton = isPreview || isLoading || !data;
 
   return (
     <ChartContainer className="w-67" isPreview={isPreview}>
@@ -28,9 +43,18 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
       <ChartContent
         className="h-56.5 flex-col px-4 py-5"
         skeleton={<ComparisonChartSkeleton />}
-        isPreview={isPreview}
+        isPreview={showSkeleton}
       >
-        <ComparisonChartView selectedId={selectedCurrency} />
+        {data && (
+          <ComparisonChartView
+            month={data.month}
+            countryCode={data.countryCode}
+            average={Number(data.averageSpentAmount)}
+            me={Number(data.mySpentAmount)}
+            isLocal={currencyType === 'LOCAL'}
+            localCountryCode={localCountryCode}
+          />
+        )}
       </ChartContent>
     </ChartContainer>
   );

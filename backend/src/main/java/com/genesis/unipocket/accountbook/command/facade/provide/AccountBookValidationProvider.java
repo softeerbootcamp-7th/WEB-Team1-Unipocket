@@ -14,12 +14,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * <b>가계부 검증/조회 Provider</b>
- *
- * @author bluefishez
- * @since 2026-02-10
- */
 @Component
 @RequiredArgsConstructor
 public class AccountBookValidationProvider

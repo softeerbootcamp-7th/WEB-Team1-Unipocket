@@ -118,37 +118,6 @@ public class AnalysisBatchAggregationRepository {
 		return count != null && count.longValue() > 0L;
 	}
 
-	public AmountCount aggregateAccountMonthlyFromMonthly(
-			Long accountBookId,
-			LocalDate monthStart,
-			AnalysisMetricType metricType,
-			AnalysisQualityType qualityType) {
-		Object[] row =
-				(Object[])
-						em.createNativeQuery(
-										"""
-								SELECT COALESCE(SUM(r.metric_value), 0), COUNT(*)
-								FROM account_monthly_aggregate r
-								WHERE r.account_book_id = :accountBookId
-									AND r.target_year_month = :monthStart
-									AND r.metric_type = :metricType
-									AND r.quality_type = :qualityType
-								""")
-								.setParameter("accountBookId", accountBookId)
-								.setParameter("monthStart", monthStart)
-								.setParameter("metricType", metricType.name())
-								.setParameter("qualityType", qualityType.name())
-								.getSingleResult();
-		return toAmountCount(row);
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<CategoryAmountCount> aggregateAccountMonthlyCategoryFromMonthly(
-			Long accountBookId, LocalDate monthStart, AnalysisQualityType qualityType) {
-		return aggregateAccountMonthlyCategoryFromMonthly(
-				accountBookId, monthStart, qualityType, CurrencyType.LOCAL);
-	}
-
 	@SuppressWarnings("unchecked")
 	public List<CategoryAmountCount> aggregateAccountMonthlyCategoryFromMonthly(
 			Long accountBookId,
@@ -232,12 +201,6 @@ public class AnalysisBatchAggregationRepository {
 		return rows.stream().map(this::toAccountCategoryAmountCount).toList();
 	}
 
-	private AmountCount toAmountCount(Object[] row) {
-		BigDecimal amount = row[0] == null ? BigDecimal.ZERO : new BigDecimal(row[0].toString());
-		long count = row[1] == null ? 0L : ((Number) row[1]).longValue();
-		return new AmountCount(amount, count);
-	}
-
 	private AccountAmountCount toAccountAmountCount(Object[] row) {
 		Long accountBookId = ((Number) row[0]).longValue();
 		BigDecimal amount = row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
@@ -313,8 +276,6 @@ public class AnalysisBatchAggregationRepository {
 		}
 		return LocalDateTime.parse(value.toString().replace(' ', 'T'));
 	}
-
-	public record AmountCount(BigDecimal totalAmount, long expenseCount) {}
 
 	public record AmountPairCount(
 			BigDecimal totalLocalAmount, BigDecimal totalBaseAmount, long expenseCount) {}

@@ -8,17 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
-/**
- * <b>가계부 도메인 규칙 검증 컴포넌트</b>
- * <p>
- * 가계부의 비즈니스 규칙 검증을 담당합니다.
- * 유저 입력 검증은 DTO 레벨(@Valid)에서 처리되므로,
- * 여기서는 도메인 규칙만 검증합니다.
- * </p>
- *
- * @author bluefishez
- * @since 2026-02-02
- */
 @Component
 public class AccountBookValidator {
 

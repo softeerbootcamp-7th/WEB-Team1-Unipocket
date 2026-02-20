@@ -81,6 +81,21 @@ public class AccountBookEntity extends BaseEntity {
 				.build();
 	}
 
+	public static AccountBookEntity create(AccountBookCreateByUserIdArgs args) {
+
+		return AccountBookEntity.builder()
+				.user(UserEntity.reference(args.userId()))
+				.localCountryCode(args.localCountryCode())
+				.baseCountryCode(args.baseCountryCode())
+				.title(args.title())
+				.bucketOrder(args.bucketOrder())
+				.budget(args.budget())
+				.budgetCreatedAt(args.budget() == null ? null : LocalDateTime.now())
+				.startDate(args.startDate())
+				.endDate(args.endDate())
+				.build();
+	}
+
 	public void updateTitle(String title) {
 		this.title = title;
 	}

@@ -7,7 +7,7 @@ import LocaleSelectModal from '@/components/modal/LocaleSelectModal';
 import { SelectDateContent } from '@/components/modal/SelectDateModal';
 
 import { createAccountBook } from '@/api/account-books/api';
-import { type CountryCode } from '@/data/countryCode';
+import { type CountryCode } from '@/data/country/countryCode';
 import { formatDateToString } from '@/lib/utils';
 
 type Step = 'select-country' | 'select-date';

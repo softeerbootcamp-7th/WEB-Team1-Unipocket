@@ -84,6 +84,22 @@ class AnalysisMonthlySummaryQueryServiceTest {
 	}
 
 	@Test
+	void getAnalysisOverview_baseCurrencyAndMissingBaseCountry_throwsInvalidInputValue() {
+		UUID userId = UUID.randomUUID();
+		Long accountBookId = 88L;
+
+		when(analysisQueryRepository.getAccountBookCountryCodes(accountBookId))
+				.thenReturn(new Object[] {CountryCode.US, null});
+
+		assertThatThrownBy(
+						() ->
+								service.getAnalysisOverview(
+										userId, accountBookId, "2025", "12", CurrencyType.BASE))
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.INVALID_INPUT_VALUE);
+	}
+
+	@Test
 	void getAnalysisOverview_success_returnsCombinedData() {
 		UUID userId = UUID.randomUUID();
 		Long accountBookId = 12L;
@@ -213,7 +229,7 @@ class AnalysisMonthlySummaryQueryServiceTest {
 		// Assert
 
 		// a. Basic Info
-		assertThat(res.countryCode()).isEqualTo("US");
+		assertThat(res.countryCode()).isEqualTo("KR");
 
 		// b. CompareWithAverage
 		// My Total: 500 (from snapshot)

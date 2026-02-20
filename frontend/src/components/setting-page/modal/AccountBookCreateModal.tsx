@@ -4,8 +4,8 @@ import Dropdown from '@/components/common/dropdown/Dropdown';
 import Modal from '@/components/modal/Modal';
 import ModalFormContent from '@/components/setting-page/modal/ModalFormContent';
 
-import type { CountryCode } from '@/data/countryCode';
-import countryData from '@/data/countryData.json';
+import type { CountryCode } from '@/data/country/countryCode';
+import countryData from '@/data/country/countryData.json';
 
 const AccountBookCreateModal = ({
   isSubmitting,
@@ -30,8 +30,8 @@ const AccountBookCreateModal = ({
     [],
   );
 
-  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(
-    countryOptions[0]?.id ?? null,
+  const [selectedCountryId, setSelectedCountryId] = useState<number>(
+    countryOptions[0]?.id ?? 0,
   );
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -65,7 +65,7 @@ const AccountBookCreateModal = ({
           <div className="flex flex-col gap-2">
             <p className="label1-normal-bold text-label-neutral">국가 선택</p>
             <Dropdown
-              selected={selectedCountryId}
+              selectedId={selectedCountryId}
               onSelect={setSelectedCountryId}
               options={countryOptions}
             />

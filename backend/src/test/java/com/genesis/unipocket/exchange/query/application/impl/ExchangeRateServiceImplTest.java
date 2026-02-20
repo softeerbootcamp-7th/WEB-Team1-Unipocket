@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -51,10 +52,13 @@ class ExchangeRateServiceImplTest {
 	@DisplayName("조회 데이터가 있으면 query만 사용")
 	void getExchangeRate_usesQueryWhenExists() {
 		OffsetDateTime dateTime = OffsetDateTime.of(2026, 2, 12, 10, 0, 0, 0, ZoneOffset.UTC);
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), any(LocalDate.class)))
+		LocalDate targetDate = dateTime.toLocalDate().minusDays(1);
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), eq(targetDate), eq(targetDate)))
 				.thenReturn(
 						Optional.of(rate(CurrencyCode.KRW, dateTime.toLocalDateTime(), "1300.00")));
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.GBP), any(LocalDate.class)))
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.GBP), eq(targetDate), eq(targetDate)))
 				.thenReturn(
 						Optional.of(rate(CurrencyCode.GBP, dateTime.toLocalDateTime(), "0.79")));
 
@@ -70,21 +74,28 @@ class ExchangeRateServiceImplTest {
 										java.math.RoundingMode.HALF_UP));
 		verify(exchangeRateCommandService, never())
 				.resolveAndStoreUsdRelativeRate(any(CurrencyCode.class), any(LocalDate.class));
+		verify(exchangeRateQueryService, times(1))
+				.findLatestRateInRange(CurrencyCode.KRW, targetDate, targetDate);
+		verify(exchangeRateQueryService, times(1))
+				.findLatestRateInRange(CurrencyCode.GBP, targetDate, targetDate);
 	}
 
 	@Test
 	@DisplayName("조회 데이터가 없으면 command로 보정 후 계산")
 	void getExchangeRate_usesCommandWhenMissing() {
 		OffsetDateTime dateTime = OffsetDateTime.of(2026, 2, 12, 10, 0, 0, 0, ZoneOffset.UTC);
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.KRW), any(LocalDate.class)))
+		LocalDate targetDate = dateTime.toLocalDate().minusDays(1);
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.KRW), eq(targetDate), eq(targetDate)))
 				.thenReturn(Optional.empty());
-		when(exchangeRateQueryService.findRateOnDate(eq(CurrencyCode.GBP), any(LocalDate.class)))
+		when(exchangeRateQueryService.findLatestRateInRange(
+						eq(CurrencyCode.GBP), eq(targetDate), eq(targetDate)))
 				.thenReturn(Optional.empty());
 		when(exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
-						eq(CurrencyCode.KRW), eq(dateTime.toLocalDate())))
+						eq(CurrencyCode.KRW), eq(targetDate)))
 				.thenReturn(new BigDecimal("1300.00"));
 		when(exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
-						eq(CurrencyCode.GBP), eq(dateTime.toLocalDate())))
+						eq(CurrencyCode.GBP), eq(targetDate)))
 				.thenReturn(new BigDecimal("0.79"));
 
 		BigDecimal result =
@@ -98,9 +109,9 @@ class ExchangeRateServiceImplTest {
 										10,
 										java.math.RoundingMode.HALF_UP));
 		verify(exchangeRateCommandService)
-				.resolveAndStoreUsdRelativeRate(CurrencyCode.KRW, dateTime.toLocalDate());
+				.resolveAndStoreUsdRelativeRate(CurrencyCode.KRW, targetDate);
 		verify(exchangeRateCommandService)
-				.resolveAndStoreUsdRelativeRate(CurrencyCode.GBP, dateTime.toLocalDate());
+				.resolveAndStoreUsdRelativeRate(CurrencyCode.GBP, targetDate);
 	}
 
 	@Test

@@ -1,5 +1,8 @@
 package com.genesis.unipocket.global.controller;
 
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +36,19 @@ class LocalImageTestController {
 			return ResponseEntity.badRequest()
 					.body(new LocalPresignedIssueResponse(null, null, "fileName is required"));
 		}
+		if (!fileName.contains(".")) {
+			return ResponseEntity.badRequest()
+					.body(
+							new LocalPresignedIssueResponse(
+									null, null, "fileName extension is required"));
+		}
 
-		PresignedUrlResult response = s3Service.getPresignedUrl(prefix, fileName);
+		String extension = fileName.substring(fileName.lastIndexOf("."));
+		MediaContentType mediaContentType =
+				MediaContentType.fromExtension(extension)
+						.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
+
+		PresignedUrlResult response = s3Service.getPresignedUrl(prefix, mediaContentType);
 		return ResponseEntity.ok(
 				new LocalPresignedIssueResponse(
 						response.presignedUrl(), response.imageKey(), null));

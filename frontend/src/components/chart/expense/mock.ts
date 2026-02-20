@@ -1,5 +1,5 @@
-import type { CountryCode } from '@/data/countryCode';
-import { COUNTRY_CODE } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
+import { COUNTRY_CODE } from '@/data/country/countryCode';
 
 export const mockDataForMethod: {
   label: string;

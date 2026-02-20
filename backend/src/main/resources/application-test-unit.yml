@@ -53,6 +53,9 @@ app:
   media:
     presigned-get-expiration-seconds: 100
     presigned-put-expiration-seconds: 100
+    global-prefix: backend
+    temp-expense-prefix: temp-expenses
+    travel-image-prefix: travels
   frontend:
     url: http://localhost:5173
     allowed-origins: http://localhost:5173
@@ -62,6 +65,10 @@ app:
 
 analysis:
   batch:
+    enabled: false
+
+exchange:
+  scheduler:
     enabled: false
 
 # Swagger / OpenAPI

@@ -22,15 +22,14 @@ import CardNicknameModal from '@/components/setting-page/modal/CardNicknameModal
 
 import {
   useAccountBookDetailQuery,
-  useAccountBooksQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
-  useSetMainAccountBookMutation,
+  useGetAccountBooksQuery,
   useUpdateAccountBookMutation,
 } from '@/api/account-books/query';
 import type {
-  AccountBookDetail,
-  AccountBookSummary,
+  GetAccountBookDetailResponse,
+  GetAccountBooksResponse,
 } from '@/api/account-books/type';
 import {
   useCardsQuery,
@@ -40,8 +39,8 @@ import {
 } from '@/api/cards/query';
 import type { Card } from '@/api/cards/type';
 import { Cards, Icons } from '@/assets';
-import type { CountryCode } from '@/data/countryCode';
-import countryData from '@/data/countryData.json';
+import type { CountryCode } from '@/data/country/countryCode';
+import countryData from '@/data/country/countryData.json';
 import { getCountryInfo } from '@/lib/country';
 
 const SettingPage = () => {
@@ -49,7 +48,7 @@ const SettingPage = () => {
     data: accountBooks,
     isLoading: isAccountBooksLoading,
     isError: isAccountBooksError,
-  } = useAccountBooksQuery();
+  } = useGetAccountBooksQuery();
   const {
     data: cards,
     isLoading: isCardsLoading,
@@ -98,21 +97,21 @@ const MainAccountBookSelection = ({
   accountBooks,
   isLoading,
 }: {
-  accountBooks: AccountBookSummary[];
+  accountBooks: GetAccountBooksResponse;
   isLoading: boolean;
 }) => {
-  const setMainMutation = useSetMainAccountBookMutation();
+  // const setMainMutation = useSetMainAccountBookMutation();
 
   const options = accountBooks.map((book) => ({
     id: book.id,
     name: book.title,
   }));
 
-  const selectedId = accountBooks.find((book) => book.isMain)?.id ?? null;
+  const selectedId = accountBooks.find((book) => book.isMain)?.id ?? 0;
 
   const handleSelect = (id: number) => {
     if (id === selectedId) return;
-    setMainMutation.mutate(id);
+    // setMainMutation.mutate(id);
   };
 
   return (
@@ -129,7 +128,7 @@ const MainAccountBookSelection = ({
           </p>
         ) : (
           <Dropdown
-            selected={selectedId}
+            selectedId={selectedId}
             onSelect={handleSelect}
             options={options}
           />
@@ -285,7 +284,7 @@ const AccountBookConfigurator = ({
   accountBooks,
   isLoading,
 }: {
-  accountBooks: AccountBookSummary[];
+  accountBooks: GetAccountBooksResponse;
   isLoading: boolean;
 }) => {
   const createAccountBookMutation = useCreateAccountBookMutation();
@@ -548,7 +547,7 @@ const AccountBookSettingsForm = ({
   onOpenCountryModal,
   onOpenPeriodModal,
 }: {
-  detail: AccountBookDetail;
+  detail: GetAccountBookDetailResponse;
   onOpenNameModal: () => void;
   onOpenDeleteModal: () => void;
   onOpenCurrencyModal: () => void;

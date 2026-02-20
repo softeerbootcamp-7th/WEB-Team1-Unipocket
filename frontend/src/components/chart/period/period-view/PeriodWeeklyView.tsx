@@ -5,7 +5,7 @@ import {
 } from '@/components/chart/chartType';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 interface PeriodWeeklyViewProps {
   data: PeriodData[];

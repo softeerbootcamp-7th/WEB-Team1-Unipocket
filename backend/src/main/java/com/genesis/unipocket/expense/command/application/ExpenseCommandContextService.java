@@ -37,6 +37,7 @@ public class ExpenseCommandContextService {
 				result.localCurrencyCode(),
 				result.localCurrencyAmount(),
 				result.occurredAt(),
+				result.updatedAt(),
 				result.displayMerchantName(),
 				result.approvalNumber(),
 				result.userCardId(),

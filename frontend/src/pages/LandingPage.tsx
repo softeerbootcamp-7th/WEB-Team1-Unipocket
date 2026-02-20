@@ -10,11 +10,12 @@ import {
 import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
 import { columns } from '@/components/landing-page/columns';
-import { type Expense, getData } from '@/components/landing-page/dummy';
+import { getData } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
 import LandingUploadBox from '@/components/upload/upload-box/LandingUploadBox';
 
+import type { Expense } from '@/api/expenses/type';
 import { LandingImages } from '@/assets';
 
 const LandingPage = () => {
@@ -188,7 +189,7 @@ const DemoSection = () => {
                     <DataTable
                       enableGroupSelection={false}
                       groupBy={(row: Expense) =>
-                        new Date(row.date).toLocaleDateString('ko-KR', {
+                        new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                           year: 'numeric',
                           month: '2-digit',
                           day: '2-digit',
@@ -212,7 +213,7 @@ const DemoSection = () => {
                     <DataTable
                       enableGroupSelection={false}
                       groupBy={(row: Expense) =>
-                        new Date(row.date).toLocaleDateString('ko-KR', {
+                        new Date(row.occurredAt).toLocaleDateString('ko-KR', {
                           year: 'numeric',
                           month: '2-digit',
                           day: '2-digit',

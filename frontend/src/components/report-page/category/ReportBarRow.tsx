@@ -1,16 +1,16 @@
 import ReportBar from '@/components/report-page/category/ReportBar';
 
-import { type CategoryId, getCategoryName } from '@/types/category';
+import { CATEGORIES, type CategoryId } from '@/types/category';
 
 interface ReportBarRowProps {
-  categoryIndex: CategoryId;
+  categoryId: CategoryId;
   me: number;
   other: number;
   maxLabel: number;
 }
 
 const ReportBarRow = ({
-  categoryIndex,
+  categoryId,
   me,
   other,
   maxLabel,
@@ -18,7 +18,7 @@ const ReportBarRow = ({
   return (
     <div className="flex h-10 items-center gap-4">
       <span className="label1-normal-medium text-label-neutral flex w-12 justify-end">
-        {getCategoryName(categoryIndex)}
+        {CATEGORIES[categoryId].name}
       </span>
 
       <div className="flex w-full flex-col justify-between">

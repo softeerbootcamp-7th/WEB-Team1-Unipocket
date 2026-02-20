@@ -3,20 +3,20 @@ package com.genesis.unipocket.accountbook.command.application;
 import com.genesis.unipocket.accountbook.command.application.command.CreateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.DeleteAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
+import com.genesis.unipocket.accountbook.command.application.port.AccountBookExchangeRateReader;
+import com.genesis.unipocket.accountbook.command.application.port.AccountBookUserReader;
+import com.genesis.unipocket.accountbook.command.application.port.dto.AccountBookUserInfo;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateByUserIdArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -37,17 +37,14 @@ public class AccountBookCommandService {
 	private static final CountryCode DEFAULT_BASE_COUNTRY_CODE = CountryCode.KR;
 
 	private final AccountBookCommandRepository repository;
-	private final UserCommandRepository userRepository;
+	private final AccountBookUserReader accountBookUserReader;
 	private final AccountBookValidator validator;
-	private final ExchangeRateService exchangeRateService;
+	private final AccountBookExchangeRateReader accountBookExchangeRateReader;
 	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 
 	@Transactional
 	public AccountBookResult create(CreateAccountBookCommand command) {
-		UserEntity user =
-				userRepository
-						.findById(command.userId())
-						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		AccountBookUserInfo userInfo = accountBookUserReader.getUser(command.userId());
 
 		String uniqueTitle =
 				getUniqueTitle(command.userId(), command.userName() + DEFAULT_NAME_SUFFIX);
@@ -57,9 +54,9 @@ public class AccountBookCommandService {
 						? 0
 						: repository.findMaxBucketOrderByUserId(command.userId()) + 1;
 
-		AccountBookCreateArgs args =
-				new AccountBookCreateArgs(
-						user,
+		AccountBookCreateByUserIdArgs args =
+				new AccountBookCreateByUserIdArgs(
+						userInfo.userId(),
 						uniqueTitle,
 						command.localCountryCode(),
 						DEFAULT_BASE_COUNTRY_CODE,
@@ -71,8 +68,8 @@ public class AccountBookCommandService {
 		AccountBookEntity newEntity = AccountBookEntity.create(args);
 		validator.validate(newEntity);
 		AccountBookEntity savedEntity = repository.save(newEntity);
-		if (!user.hasMainBucket()) {
-			user.updateMainBucketId(savedEntity.getId());
+		if (!userInfo.hasMainBucket()) {
+			accountBookUserReader.updateMainAccountBook(command.userId(), savedEntity.getId());
 		}
 
 		return AccountBookResult.of(savedEntity);
@@ -99,7 +96,7 @@ public class AccountBookCommandService {
 			analysisMonthlyDirtyMarkerService.markDirtyAllMonths(entity.getId());
 		}
 
-		return AccountBookResult.of(entity);
+		return AccountBookResult.of(entity, countryChanged);
 	}
 
 	@Transactional
@@ -113,7 +110,7 @@ public class AccountBookCommandService {
 		CurrencyCode localCurrencyCode = entity.getLocalCountryCode().getCurrencyCode();
 		LocalDateTime budgetCreatedAt = entity.getBudgetCreatedAt();
 		BigDecimal exchangeRate =
-				exchangeRateService.getExchangeRate(
+				accountBookExchangeRateReader.getExchangeRate(
 						baseCurrencyCode,
 						localCurrencyCode,
 						budgetCreatedAt.atOffset(ZoneOffset.UTC));

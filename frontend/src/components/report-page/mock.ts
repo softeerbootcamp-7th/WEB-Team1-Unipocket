@@ -1,7 +1,7 @@
 import { type CategoryId } from '@/types/category';
 
 interface CategoryItem {
-  categoryIndex: CategoryId;
+  categoryId: CategoryId;
   mySpentAmount: string;
   averageSpentAmount: string;
 }
@@ -89,26 +89,26 @@ const mockData = {
     },
   },
   compareByCategory: {
-    maxDiffCategoryIndex: 4,
+    maxDiffCategoryId: 4,
     isOverSpent: true,
     maxLabel: '840',
     items: [
       {
-        categoryIndex: 1,
+        categoryId: 1,
         mySpentAmount: '302',
         averageSpentAmount: '379',
       },
       {
-        categoryIndex: 3,
+        categoryId: 3,
         mySpentAmount: '210',
         averageSpentAmount: '180',
       },
-      { categoryIndex: 4, mySpentAmount: '480', averageSpentAmount: '300' },
-      { categoryIndex: 6, mySpentAmount: '150', averageSpentAmount: '220' },
-      { categoryIndex: 2, mySpentAmount: '600', averageSpentAmount: '650' },
-      { categoryIndex: 5, mySpentAmount: '280', averageSpentAmount: '240' },
-      { categoryIndex: 7, mySpentAmount: '60', averageSpentAmount: '55' },
-      { categoryIndex: 8, mySpentAmount: '120', averageSpentAmount: '130' },
+      { categoryId: 4, mySpentAmount: '480', averageSpentAmount: '300' },
+      { categoryId: 6, mySpentAmount: '150', averageSpentAmount: '220' },
+      { categoryId: 2, mySpentAmount: '600', averageSpentAmount: '650' },
+      { categoryId: 5, mySpentAmount: '280', averageSpentAmount: '240' },
+      { categoryId: 7, mySpentAmount: '60', averageSpentAmount: '55' },
+      { categoryId: 8, mySpentAmount: '120', averageSpentAmount: '130' },
     ] as CategoryItem[],
   },
 } as const;

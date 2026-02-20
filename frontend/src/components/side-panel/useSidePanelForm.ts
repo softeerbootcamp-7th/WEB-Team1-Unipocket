@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { Expense } from '@/components/landing-page/dummy';
+import type { Expense } from '@/api/expenses/type';
 
 function useSidePanelForm(initialData?: Partial<Expense>) {
   const [prevId, setPrevId] = useState<number | null>(null);
@@ -16,7 +16,9 @@ function useSidePanelForm(initialData?: Partial<Expense>) {
     setPrevId(currentExpenseId);
     setTitle(initialData?.merchantName || '');
     setMemo(initialData?.memo || '');
-    setSelectedDateTime(initialData?.date ? new Date(initialData.date) : null);
+    setSelectedDateTime(
+      initialData?.occurredAt ? new Date(initialData.occurredAt) : null,
+    );
     setIsDateTimePickerOpen(false);
   }
 

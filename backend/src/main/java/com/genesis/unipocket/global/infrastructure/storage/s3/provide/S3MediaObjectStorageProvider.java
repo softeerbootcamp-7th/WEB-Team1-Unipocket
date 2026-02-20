@@ -1,5 +1,6 @@
 package com.genesis.unipocket.global.infrastructure.storage.s3.provide;
 
+import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.global.infrastructure.storage.s3.S3Service;
 import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
@@ -25,8 +26,13 @@ public class S3MediaObjectStorageProvider implements MediaObjectStorage {
 	}
 
 	@Override
-	public PresignedUrlResult getPresignedUrl(String prefix, String originalFileName) {
-		return s3Service.getPresignedUrl(prefix, originalFileName);
+	public boolean exists(String mediaKey) {
+		return s3Service.validateExists(mediaKey);
+	}
+
+	@Override
+	public PresignedUrlResult getPresignedUrl(String prefix, MediaContentType mediaContentType) {
+		return s3Service.getPresignedUrl(prefix, mediaContentType);
 	}
 
 	@Override

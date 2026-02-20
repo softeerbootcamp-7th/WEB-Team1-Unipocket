@@ -1,69 +1,57 @@
-import HanaBank from '/public/assets/cards/HANA.svg';
-import HyundaiCard from '/public/assets/cards/HYUNDAI.svg';
-import IBKBank from '/public/assets/cards/IBK.svg';
-import KakaoBank from '/public/assets/cards/KAKAO.svg';
-import KBBank from '/public/assets/cards/KB.svg';
-import LotteCard from '/public/assets/cards/LOTTE.svg';
-import NHBank from '/public/assets/cards/NK.svg';
-import SamsungCard from '/public/assets/cards/SAMSUNG.svg';
-import ShinhanBank from '/public/assets/cards/SHINHAN.svg';
-import TravelWallet from '/public/assets/cards/TAVEL_WALLET.svg';
-import TossBank from '/public/assets/cards/TOSS.svg';
-import WooriBank from '/public/assets/cards/WORRI.svg';
-import BCCard from '/public/assets/flags/KR.svg';
+const CDN_URL = import.meta.env.VITE_CDN_URL;
 
 export const CARDS = {
   0: {
     code: '신한',
-    logo: ShinhanBank,
+    logo: `${CDN_URL}/assets/cards/SHINHAN.svg`,
   },
   1: {
     code: '삼성',
-    logo: SamsungCard,
+    logo: `${CDN_URL}/assets/cards/SAMSUNG.svg`,
   },
   2: {
     code: 'KB국민',
-    logo: KBBank,
+    logo: `${CDN_URL}/assets/cards/KB.svg`,
   },
   3: {
     code: '현대',
-    logo: HyundaiCard,
+    logo: `${CDN_URL}/assets/cards/HYUNDAI.svg`,
   },
   4: {
     code: '롯데',
-    logo: LotteCard,
+    logo: `${CDN_URL}/assets/cards/LOTTE.svg`,
   },
   5: {
     code: '우리',
-    logo: WooriBank,
+    logo: `${CDN_URL}/assets/cards/WORRI.svg`,
   },
   6: {
     code: '하나',
-    logo: HanaBank,
+    logo: `${CDN_URL}/assets/cards/HANA.svg`,
   },
   7: {
     code: 'NH농협',
-    logo: NHBank,
+    logo: `${CDN_URL}/assets/cards/NK.svg`,
   },
   8: {
     code: 'BC',
-    logo: BCCard,
+    logo: `${CDN_URL}/assets/cards/BC.svg`,
   },
   9: {
     code: 'IBK',
-    logo: IBKBank,
+    logo: `${CDN_URL}/assets/cards/IBK.svg`,
   },
   10: {
     code: '카카오',
-    logo: KakaoBank,
+    logo: `${CDN_URL}/assets/cards/KAKAO.svg`,
   },
   11: {
     code: '토스',
-    logo: TossBank,
+    logo: `${CDN_URL}/assets/cards/TOSS.svg`,
   },
   12: {
     code: '트래블월렛',
-    logo: TravelWallet,
+    logo: `${CDN_URL}/assets/cards/TAVEL_WALLET.svg`,
   },
 } as const;
 

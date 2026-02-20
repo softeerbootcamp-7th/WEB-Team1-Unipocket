@@ -21,14 +21,13 @@ const AccountBookSelector = () => {
   }));
 
   const handleOnSelect = async (selectedId: number) => {
-    const selectedAccountBook = data.find((book) => book.id === selectedId);
-    if (!accountBook) {
-      const accountBookDetail = await queryClient.ensureQueryData(
-        accountBookDetailQueryOptions(selectedAccountBook!.id),
-      );
+    if (!selectedId) return;
 
-      setAccountBook(accountBookDetail);
-    }
+    const accountBookDetail = await queryClient.ensureQueryData(
+      accountBookDetailQueryOptions(selectedId),
+    );
+
+    setAccountBook(accountBookDetail);
   };
 
   return (

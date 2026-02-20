@@ -1,4 +1,5 @@
 import { type CategoryId } from '@/types/category';
+
 import { type CountryCode } from '@/data/country/countryCode';
 
 interface AccountBook {

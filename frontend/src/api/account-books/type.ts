@@ -9,6 +9,7 @@ interface AccountBook {
   endDate: string;
   budget: number | null;
   budgetCreatedAt: string;
+  exchangeRate: number;
   tempExpenseBatchIds: string[];
   isMain: boolean;
 }
@@ -50,15 +51,19 @@ type UpdateAccountBookResponse = Required<AccountBookResponseBase>;
 type UpdateAccountBookBudgetResponse = Required<
   Pick<
     AccountBook,
-    'baseCountryCode' | 'localCountryCode' | 'budget' | 'budgetCreatedAt'
-  > & { accountBookId: number; exchangeRate: number }
+    | 'baseCountryCode'
+    | 'localCountryCode'
+    | 'budget'
+    | 'budgetCreatedAt'
+    | 'exchangeRate'
+  > & { accountBookId: number }
 >;
 
 type UpdateAccountBookExchangeRateResponse = Required<
-  Pick<AccountBook, 'baseCountryCode' | 'localCountryCode'> & {
-    budgetCreatedAt: string;
-    exchangeRate: number;
-  }
+  Pick<
+    AccountBook,
+    'baseCountryCode' | 'localCountryCode' | 'exchangeRate' | 'budgetCreatedAt'
+  >
 >;
 
 export type {

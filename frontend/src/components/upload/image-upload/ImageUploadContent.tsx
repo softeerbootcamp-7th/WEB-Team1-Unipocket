@@ -4,33 +4,39 @@ import { clsx } from 'clsx';
 import Divider from '@/components/common/Divider';
 import { useModalContext } from '@/components/modal/useModalContext';
 import UploadGallery from '@/components/upload/image-upload/UploadGallery';
-import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
+import type { UploadItem } from '@/components/upload/type';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
-import { useRequiredAccountBook } from '@/stores/accountBookStore';
+interface ImageUploadContentProps {
+  items: UploadItem[];
+  onFilesSelected: (files: File[]) => void;
+  onRemove: (id: string) => void;
+  isAllUploaded: boolean;
+}
 
-const ImageUploadContent = () => {
+const ImageUploadContent = ({
+  items,
+  onFilesSelected,
+  onRemove,
+  isAllUploaded,
+}: ImageUploadContentProps) => {
   const { setActionReady } = useModalContext();
-  const accountBookId = useRequiredAccountBook().id;
-  const { items, handleFilesSelected, removeItem, isAllUploaded } =
-    useImageUpload(accountBookId!);
-  const hasItems = items.length > 0;
 
   useEffect(() => {
     setActionReady(isAllUploaded);
   }, [isAllUploaded, setActionReady]);
 
+  const hasItems = items.length > 0;
+
   return (
     <div className="flex w-242 flex-col gap-6">
-      <div className="flex flex-col">
-        <div className="flex flex-col gap-3">
-          <h2 className="headline1-bold text-label-normal">
-            영수증 / 은행 앱 사진 업로드
-          </h2>
-          <span className="body1-normal-medium text-label-alternative">
-            종이 영수증이나 모바일 결제 화면 캡처본을 업로드해 주세요.
-          </span>
-        </div>
+      <div className="flex flex-col gap-3">
+        <h2 className="headline1-bold text-label-normal">
+          영수증 / 은행 앱 사진 업로드
+        </h2>
+        <span className="body1-normal-medium text-label-alternative">
+          종이 영수증이나 모바일 결제 화면 캡처본을 업로드해 주세요.
+        </span>
       </div>
       <div
         className={clsx(
@@ -44,14 +50,13 @@ const ImageUploadContent = () => {
             hasItems ? 'w-md' : 'w-full',
           )}
         >
-          <UploadBox type="image" onFilesSelected={handleFilesSelected} />
+          <UploadBox type="image" onFilesSelected={onFilesSelected} />
         </div>
-
         {hasItems && (
           <>
             <Divider style="vertical" />
             <div className="w-md">
-              <UploadGallery items={items} onRemove={removeItem} />
+              <UploadGallery items={items} onRemove={onRemove} />
             </div>
           </>
         )}

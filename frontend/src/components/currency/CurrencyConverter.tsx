@@ -21,12 +21,14 @@ export interface CurrencyValues {
 interface CurrencyOption {
   id: number;
   name: string;
+  sign: string;
 }
 
 const currencyOptions: CurrencyOption[] = Object.values(countryData).map(
   (country, index) => ({
     id: index + 1,
     name: country.currencyName,
+    sign: country.currencySign,
   }),
 );
 
@@ -64,14 +66,18 @@ const CurrencyConverter = ({
     DEFAULT_LOCAL_CURRENCY_TYPE,
   );
 
-  const localCurrencyName =
-    currencyOptions.find((o) => o.id === localCurrencyType)?.name ?? '';
+  const localCurrencyName = currencyOptions.find(
+    (o) => o.id === localCurrencyType,
+  )?.name;
+  const localCurrencySign = currencyOptions.find(
+    (o) => o.id === localCurrencyType,
+  )?.sign;
 
-  const baseCountryCode = useRequiredAccountBook().baseCountryCode;
-
-  const baseCurrencyName = baseCountryCode
-    ? (getCountryInfo(baseCountryCode)?.currencyName ?? 'KRW')
-    : 'KRW';
+  const baseCountryInfo = getCountryInfo(
+    useRequiredAccountBook().baseCountryCode,
+  );
+  const baseCurrencyName = baseCountryInfo?.currencyName;
+  const baseCurrencySign = baseCountryInfo?.currencySign;
 
   useEffect(() => {
     if (modalContext) {
@@ -98,7 +104,7 @@ const CurrencyConverter = ({
           placeholder="0"
           onChange={(value) => handleCurrencyChange(value, 'toBase')}
           className="flex-1"
-          prefix="$"
+          prefix={localCurrencySign}
           isError={!!amountError}
           errorMessage={amountError ?? undefined}
         />
@@ -124,7 +130,7 @@ const CurrencyConverter = ({
           <Icons.Swap className="text-label-neutral h-4 w-4" />
           <div className="flex flex-col gap-1">
             <p className="label1-normal-medium text-label-normal">
-              {localCurrencyName} 1 = {baseCurrencyName} 1,464
+              {localCurrencyName} 1 = {baseCurrencyName} {RATE.toLocaleString()}
             </p>
             <p className="label1-normal-medium text-label-alternative">
               자동 환율 적용 중 ({rateDate} 기준)
@@ -143,7 +149,7 @@ const CurrencyConverter = ({
           placeholder="0"
           onChange={(value) => handleCurrencyChange(value, 'toLocal')}
           className="flex-1"
-          prefix="₩"
+          prefix={baseCurrencySign}
           isError={!!amountError}
           errorMessage={amountError ?? undefined}
         />

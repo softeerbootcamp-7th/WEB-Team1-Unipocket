@@ -15,7 +15,7 @@ import type { CurrencyType } from '@/types/currency';
 import { getPeriodTypeById } from '@/types/period';
 
 import { useWidgetQuery } from '@/api/widget/query';
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 export const usePeriodChart = (isPreview: boolean) => {

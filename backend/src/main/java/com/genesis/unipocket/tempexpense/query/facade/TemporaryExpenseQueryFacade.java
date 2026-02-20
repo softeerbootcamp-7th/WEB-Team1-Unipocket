@@ -56,14 +56,18 @@ public class TemporaryExpenseQueryFacade {
 	public SseEmitter streamParsingProgress(Long accountBookId, String taskId, UUID userId) {
 		validateOwnership(accountBookId, userId);
 
-		if (!progressPublisher.isTaskOwnedBy(taskId, accountBookId)) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_TASK_NOT_FOUND);
+		SseEmitter emitter = new SseEmitter(PARSING_SSE_TIMEOUT_MS);
+		bindEmitterLifecycle(taskId, emitter);
+		boolean activeSubscribed = progressPublisher.addEmitter(taskId, accountBookId, emitter);
+		if (activeSubscribed) {
+			return emitter;
 		}
 
-		SseEmitter emitter = new SseEmitter(PARSING_SSE_TIMEOUT_MS);
-
-		progressPublisher.addEmitter(taskId, emitter);
-		bindEmitterLifecycle(taskId, emitter);
+		boolean terminalReplayed =
+				progressPublisher.replayTerminalIfPresent(taskId, accountBookId, emitter);
+		if (!terminalReplayed) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_TASK_NOT_FOUND);
+		}
 
 		return emitter;
 	}

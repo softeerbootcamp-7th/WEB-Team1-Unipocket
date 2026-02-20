@@ -191,5 +191,20 @@ class TemporaryExpenseSseIntegrationTest {
 				.hasSize(1);
 	}
 
+	@Test
+	@DisplayName("SSE 스트림은 진행/완료 상태가 없으면 404를 반환한다")
+	void parseStatusStream_returnsNotFoundWhenTaskMissing() throws Exception {
+		MvcResult result =
+				mockMvc.perform(
+								get(
+												"/account-books/{accountBookId}/temporary-expenses/parse-status/{taskId}",
+												accountBookId,
+												UUID.randomUUID())
+										.with(jwtTestHelper.withJwtAuth(userId)))
+						.andReturn();
+
+		assertThat(result.getResponse().getStatus()).isEqualTo(404);
+	}
+
 	private record ParseRequest(Long tempExpenseMetaId, List<String> s3Keys) {}
 }

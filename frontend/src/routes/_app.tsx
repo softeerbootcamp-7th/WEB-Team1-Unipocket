@@ -8,27 +8,44 @@ import {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
 } from '@/api/account-books/query';
+import { requireAuth } from '@/api/auth/api';
 import { useAccountBookStore } from '@/stores/useAccountBookStore';
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context }) => {
+    // 1. 로그인 여부 및 정지 계정 검사 (통과 못하면 '/'로 리다이렉트됨)
+    const user = await requireAuth();
+
+    // 2. '/init' 페이지에 있다면 이후 가계부 조회 로직을 스킵
+    if (location.pathname === '/init') {
+      return;
+    }
+
+    // 3. 유저 정보의 needsOnboarding을 최우선으로 체크하여 불필요한 API 호출 방지
+    if (user?.needsOnboarding) {
+      throw redirect({ to: '/init' });
+    }
+
     const { queryClient } = context;
+    const { accountBook, setAccountBook } = useAccountBookStore.getState();
+
+    // 4. 가계부 목록 조회
     const accountBooks = await queryClient.ensureQueryData(
       accountBooksQueryOptions,
     );
-    const { accountBook, setAccountBook } = useAccountBookStore.getState();
 
+    // (안전장치) needsOnboarding이 false여도 가계부가 실제 0개라면 /init으로
     if (!accountBooks || accountBooks.length === 0) {
-      throw redirect({
-        to: '/init',
-      });
+      throw redirect({ to: '/init' });
     }
 
+    // 5. 선택된 가계부가 스토어에 없다면 초기화
     if (!accountBook) {
       const accountBookDetail = await queryClient.ensureQueryData(
-        accountBookDetailQueryOptions(accountBooks[0].id),
+        accountBookDetailQueryOptions(
+          accountBooks.find((book) => book.isMain)?.id ?? accountBooks[0].id,
+        ),
       );
-
       setAccountBook(accountBookDetail);
     }
   },

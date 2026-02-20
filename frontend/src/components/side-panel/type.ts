@@ -1,6 +1,5 @@
 import type { CategoryId } from '@/types/category';
 
-import type { Expense } from '@/api/expenses/type';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 
 export type SidePanelFormValues = {
@@ -13,10 +12,4 @@ export type SidePanelFormValues = {
   baseCurrencyAmount: number;
   memo?: string;
   travelId?: number;
-};
-
-export type UseSidePanelValuesParams = {
-  initialData?: Partial<Expense>;
-  selectedDateTime: Date | null;
-  onDateTimeClick: () => void;
 };

@@ -8,7 +8,7 @@ import { type AnalysisCategoryItem } from '@/api/account-books/type';
 
 interface ReportCategoryProps {
   data: {
-    maxDiffCategoryId: CategoryId;
+    maxDiffCategoryIndex: CategoryId;
     isOverSpent: boolean;
     maxLabel: string;
     items: AnalysisCategoryItem[];
@@ -16,7 +16,7 @@ interface ReportCategoryProps {
 }
 
 const ReportCategory = ({ data }: ReportCategoryProps) => {
-  const category = CATEGORIES[data.maxDiffCategoryId].name;
+  const category = CATEGORIES[data.maxDiffCategoryIndex].name;
   const maxLabelValue = Number(data.maxLabel);
 
   return (

@@ -6,7 +6,7 @@ import type { CurrencyType } from '@/types/currency';
 import type { PeriodType } from '@/types/period';
 
 import { getWidget } from '@/api/widget/api';
-import { useRequiredAccountBook } from '@/stores/accountBook';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 import type { WidgetResponseMap } from './type';
 

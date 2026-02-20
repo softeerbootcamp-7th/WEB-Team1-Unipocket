@@ -6,7 +6,7 @@ import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
-import { useAccountBookCountryCode } from '@/stores/accountBook';
+import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 interface ReportBarProps {
   value: number;

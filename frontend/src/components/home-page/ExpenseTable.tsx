@@ -13,7 +13,7 @@ import UploadMenu from '@/components/upload/UploadMenu';
 
 import { useGetExpensesQuery } from '@/api/expenses/query';
 import type { Expense } from '@/api/expenses/type';
-import { useRequiredAccountBook } from '@/stores/accountBook';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ExpenseTable = () => {
   const accountBookId = useRequiredAccountBook().id;

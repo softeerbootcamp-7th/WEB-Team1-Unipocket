@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { clsx } from 'clsx'; // clsx 추가 필요
+import { clsx } from 'clsx';
 
 import { useSearchNavigation } from '@/hooks/useSearchNavigation';
 

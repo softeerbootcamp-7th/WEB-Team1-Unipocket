@@ -1,12 +1,15 @@
 import type { CardId } from '@/data/card/cardCode';
 
+export type UserRole = 'ROLE_USER' | 'ROLE_ADMIN';
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED' | 'BANNED';
+
 export interface User {
   userId: string;
   email: string;
   name: string;
   profileImgUrl: string;
-  role: 'ROLE_USER' | 'ROLE_ADMIN';
-  status: 'ACTIVE' | 'INACTIVE' | 'DELETED' | 'BANNED';
+  role: UserRole;
+  status: UserStatus;
   needsOnboarding: boolean;
 }
 

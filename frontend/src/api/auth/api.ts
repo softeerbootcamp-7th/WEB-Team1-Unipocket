@@ -4,6 +4,9 @@ import type { LoginResponse } from '@/api/auth/type';
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
 import { getUser } from '@/api/users/api';
+import type { UserStatus } from '@/api/users/type';
+
+const INACTIVE_USER_STATUSES: UserStatus[] = ['BANNED', 'DELETED', 'INACTIVE'];
 
 export const logout = () => {
   return customFetch({
@@ -29,11 +32,7 @@ export const requireGuest = async () => {
     const user = await getUser().catch(() => null); // 에러 발생 시 비회원으로 간주
 
     if (user) {
-      if (
-        user.status === 'BANNED' ||
-        user.status === 'DELETED' ||
-        user.status === 'INACTIVE'
-      ) {
+      if (!user || INACTIVE_USER_STATUSES.includes(user.status)) {
         return; // 정지/탈퇴 유저는 _auth(랜딩)에 머물게 둠
       }
 
@@ -47,24 +46,16 @@ export const requireGuest = async () => {
   }
 };
 
-/**
- * [_app 전용] 로그인되지 않은 유저나 정지된 유저의 접근을 막습니다.
- */
 export const requireAuth = async () => {
   try {
     const user = await getUser().catch(() => null);
 
     // 1. 비회원이거나 정지된 계정은 랜딩('/')으로 쫓아냄
-    if (
-      !user ||
-      user.status === 'BANNED' ||
-      user.status === 'DELETED' ||
-      user.status === 'INACTIVE'
-    ) {
+    if (!user || INACTIVE_USER_STATUSES.includes(user.status)) {
       throw redirect({ to: '/' });
     }
 
-    return user; // 통과한 유저 정보를 반환하여 _app에서 활용할 수 있게 함
+    return user;
   } catch (error) {
     if (isRedirect(error)) throw error;
   }

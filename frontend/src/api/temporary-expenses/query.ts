@@ -2,10 +2,10 @@ import { useMutation } from '@tanstack/react-query';
 
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 import type {
-  ParseRequest,
-  ParseResponse,
-  PresignedUrlRequest,
-  PresignedUrlResponse,
+  GetPresignedUrlRequest,
+  GetPresignedUrlResponse,
+  StartParseRequest,
+  StartParseResponse,
 } from '@/api/temporary-expenses/type';
 
 export const temporaryExpenseKeys = {
@@ -13,11 +13,11 @@ export const temporaryExpenseKeys = {
 };
 
 export const usePresignedUrlMutation = (accountBookId: number) =>
-  useMutation<PresignedUrlResponse, Error, PresignedUrlRequest>({
+  useMutation<GetPresignedUrlResponse, Error, GetPresignedUrlRequest>({
     mutationFn: (data) => getPresignedUrl(accountBookId, data),
   });
 
 export const useStartParseMutation = (accountBookId: number) =>
-  useMutation<ParseResponse, Error, ParseRequest>({
+  useMutation<StartParseResponse, Error, StartParseRequest>({
     mutationFn: (data) => startParse(accountBookId, data),
   });

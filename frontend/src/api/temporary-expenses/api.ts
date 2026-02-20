@@ -1,16 +1,16 @@
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
 import type {
-  ParseRequest,
-  ParseResponse,
-  PresignedUrlRequest,
-  PresignedUrlResponse,
+  GetPresignedUrlRequest,
+  GetPresignedUrlResponse,
+  StartParseRequest,
+  StartParseResponse,
 } from '@/api/temporary-expenses/type';
 
 export const getPresignedUrl = (
   accountBookId: number,
-  data: PresignedUrlRequest,
-): Promise<PresignedUrlResponse> => {
+  data: GetPresignedUrlRequest,
+): Promise<GetPresignedUrlResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.TEMPORARY_EXPENSES.PRESIGNED_URL(accountBookId),
     options: {
@@ -22,8 +22,8 @@ export const getPresignedUrl = (
 
 export const startParse = (
   accountBookId: number,
-  data: ParseRequest,
-): Promise<ParseResponse> => {
+  data: StartParseRequest,
+): Promise<StartParseResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.TEMPORARY_EXPENSES.PARSE(accountBookId),
     options: {

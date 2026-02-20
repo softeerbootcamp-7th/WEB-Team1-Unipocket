@@ -1,31 +1,31 @@
 export type UploadType = 'IMAGE' | 'FILE';
 
-export interface PresignedUrlRequest {
+export interface GetPresignedUrlRequest {
   fileName: string;
   mimeType: string;
   uploadType: UploadType;
   tempExpenseMetaId?: number;
 }
 
-export interface PresignedUrlResponse {
+export interface GetPresignedUrlResponse {
   presignedUrl: string;
   s3Key: string;
   tempExpenseMetaId: number;
   expiresIn: number;
 }
 
-export interface ParseRequest {
+export interface StartParseRequest {
   tempExpenseMetaId: number;
   s3Keys: string[];
 }
 
-export interface ParseResponse {
+export interface StartParseResponse {
   taskId: string;
 }
 
 export type ParseStatus = 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAIL';
 
-export interface ParseStatusResponse {
+export interface GetParseStatusResponse {
   status: ParseStatus;
   progress?: number;
   metaId?: number;

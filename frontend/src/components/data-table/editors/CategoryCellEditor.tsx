@@ -1,8 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
+import { clsx } from 'clsx'; // clsx 추가 필요
 
+import { useSearchNavigation } from '@/hooks/useSearchNavigation';
+
+import { CategoryChip } from '@/components/common/Chip';
 import { useDataTable } from '@/components/data-table/context';
 import type { ActiveCellState } from '@/components/data-table/type';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+
+import { CATEGORIES, type CategoryId } from '@/types/category';
 
 const CategoryCellEditor = () => {
   const { tableState } = useDataTable();
@@ -24,8 +35,14 @@ const CategoryCellEditorContent = ({
   categoryCell: ActiveCellState;
 }) => {
   const { dispatch } = useDataTable();
-  const [value, setValue] = useState(String(categoryCell.value));
+  // 단일 선택이므로 null 허용
+  const [categoryId, setCategoryId] = useState<CategoryId | null>(
+    categoryCell.value as CategoryId | null,
+  );
+
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(
@@ -46,15 +63,32 @@ const CategoryCellEditorContent = ({
   }, []);
 
   const handleSave = () => {
+    // TODO: 선택된 categoryId를 서버나 전역 상태에 저장하는 로직 필요
     dispatch({ type: 'SET_CATEGORY_CELL', payload: null });
   };
 
+  const {
+    searchTerm,
+    handleSearchChange,
+    activeIndex,
+    setActiveIndex,
+    filteredOptions,
+    handleKeyDown,
+  } = useSearchNavigation<CategoryId>({
+    options: Object.keys(CATEGORIES) as unknown as CategoryId[],
+    filterFn: (id, term) =>
+      CATEGORIES[id].name.toLowerCase().includes(term.toLowerCase()),
+    onSelect: (selectedId) => {
+      setCategoryId(selectedId);
+      // 필요 시 여기서 handleSave() 호출
+    },
+    onBackspace: () => {
+      if (categoryId) setCategoryId(null);
+    },
+  });
+
   return (
-    <Popover open={true} onOpenChange={(open) => !open && handleClose()}>
-      {/* 💡 PopoverTrigger를 셀 위치에 고정
-        - triggerRef를 통해 자동으로 클릭되게 하여 팝업을 엽니다.
-        - 실제 UI는 보이지 않게 투명하게 처리합니다.
-      */}
+    <Popover open={true} onOpenChange={(open) => !open && handleSave()}>
       <PopoverTrigger asChild>
         <div
           ref={triggerRef}
@@ -64,64 +98,86 @@ const CategoryCellEditorContent = ({
             left: categoryCell.rect.left,
             width: categoryCell.rect.width,
             height: categoryCell.rect.height,
-            pointerEvents: 'none', // 클릭 통과
-            opacity: 0, // 숨김
+            opacity: 0,
           }}
         />
       </PopoverTrigger>
 
-      {/* 💡 PopoverContent 내부에 DataTableSearchFilter UI를 재구성
-        - DataTableSearchFilter 컴포넌트 자체를 사용하기보다, 그 내부 구조를 활용하여
-          스크린샷처럼 커스터마이징하는 것이 더 유연할 수 있습니다.
-        - 아래는 스크린샷과 최대한 비슷하게 구조를 잡은 예시입니다.
-      */}
       <PopoverContent
         align="start"
-        sideOffset={0} // 셀 바로 아래 붙기
+        sideOffset={0}
         className="rounded-modal-8 border-line-solid-normal shadow-semantic-subtle bg-background-normal flex w-75 flex-col p-0"
-        onInteractOutside={(e) => {
-          // 팝업 외부 클릭 시 닫기 (저장)
-          handleClose();
-        }}
+        onInteractOutside={() => handleSave()}
         onKeyDown={(e) => {
-          if (e.key === 'Escape') handleClose();
+          if (e.key === 'Escape') handleSave();
+        }}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          inputRef.current?.focus();
         }}
       >
-        {/* 1. 상단 인풋 영역 (카테고리 입력하세요...) */}
-        <div className="border-line-solid-normal border-b px-3 py-2">
-          {/* 💡 실제 인풋 로직은 DataTableSearchFilter의 로직을 참고하여 구현 필요 */}
+        {/* --- 1. 상단 인풋 영역 (Chip 표시 및 검색) --- */}
+        <div
+          className="bg-fill-normal border-line-solid-normal relative flex cursor-text flex-wrap items-center gap-2.5 border-b px-3 py-2"
+          onClick={() => inputRef.current?.focus()}
+        >
+          {/* 선택된 카테고리가 있으면 칩(태그)으로 렌더링 */}
+          {categoryId && (
+            <div className="shrink-0">
+              <CategoryChip
+                categoryId={categoryId}
+                onRemove={() => setCategoryId(null)}
+              />
+            </div>
+          )}
+
+          {/* 실제 검색 인풋 */}
           <input
+            ref={inputRef}
             type="text"
-            placeholder="카테고리를 입력하세요..."
-            className="placeholder:text-label-assistive caption1-medium w-full outline-none"
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={categoryId ? '' : '카테고리를 입력하세요...'}
+            className="placeholder:text-label-assistive caption1-medium min-w-0 flex-1 bg-transparent pt-1 outline-none"
+            autoComplete="off"
           />
         </div>
 
-        {/* 2. 안내 문구 및 리스트 영역 */}
-        <div className="flex max-h-85 min-h-42 flex-col p-3">
-          <div className="text-label-assistive mb-2 text-xs">
-            카테고리를 선택하거나 새로 생성하세요.
-          </div>
-          <div className="scrollbar flex flex-col gap-1 overflow-y-auto">
-            {CATEGORY_OPTIONS.map((option) => {
-              const isSelected = selectedOptions.includes(option);
-              return (
-                <label
-                  key={option}
-                  className="group rounded-modal-6 hover:bg-background-alternative flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors"
-                  onClick={() => {
-                    // 단일 선택 로직 (필요에 따라 다중 선택으로 변경)
-                    setSelectedOptions([option]);
-                    // 선택 후 바로 닫고 싶으면 handleClose() 호출
-                    // handleClose();
-                  }}
-                >
-                  <Checkbox checked={isSelected} />
-                  {/* 💡 Tag 컴포넌트 활용 */}
-                  <Tag type={option as any} />
-                </label>
-              );
-            })}
+        {/* --- 2. 리스트 영역 (필터링 및 Hover 지원) --- */}
+        <div
+          ref={listRef}
+          className="flex max-h-85 min-h-42 flex-col justify-between p-3"
+        >
+          <div className="scrollbar overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((currentCatId, index) => {
+                const isSelected = categoryId === currentCatId;
+
+                return (
+                  <label
+                    key={currentCatId}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    className={clsx(
+                      'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',
+                      activeIndex === index && 'bg-background-alternative',
+                    )}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCategoryId(currentCatId);
+                      handleSearchChange(''); // 선택 후 검색어 지우기
+                    }}
+                  >
+                    <Checkbox checked={isSelected} />
+                    <CategoryChip categoryId={currentCatId} />
+                  </label>
+                );
+              })
+            ) : (
+              <div className="text-label-assistive p-4 text-center text-sm">
+                검색 결과가 없습니다.
+              </div>
+            )}
           </div>
         </div>
       </PopoverContent>

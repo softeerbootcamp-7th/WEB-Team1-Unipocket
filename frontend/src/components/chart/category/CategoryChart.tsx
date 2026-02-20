@@ -40,13 +40,13 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
     <ChartContainer className="w-139" isPreview={isPreview}>
       <ChartHeader title="카테고리별 지출">
         <DropDown
-          selected={selectedCurrency}
+          selectedId={selectedCurrency}
           onSelect={setSelectedCurrency}
           options={CURRENCY_OPTIONS}
           size="xs"
         />
         <DropDown
-          selected={selectedPeriod}
+          selectedId={selectedPeriod}
           onSelect={setSelectedPeriod}
           options={CATEGORY_PERIOD_OPTIONS}
           size="xs"

@@ -4,7 +4,7 @@ import type { CategoryId } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
 import type { PeriodType } from '@/types/period';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 export interface GetWidgetRequest {
   accountBookId: number | string;

@@ -1,4 +1,4 @@
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 export const COUNTRY_LOCALE_MAP: Record<CountryCode, string> = {
   KR: 'ko-KR',

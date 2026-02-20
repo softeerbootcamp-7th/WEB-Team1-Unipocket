@@ -2,7 +2,7 @@ import BudgetAmountSummary from '@/components/chart/budget/BudgetAmountSummary';
 import SemiCircleChart from '@/components/chart/charts/SemiCircleChart';
 import { BUDGET_USAGE_RANGES } from '@/components/chart/chartType';
 
-import type { CountryCode } from '@/data/countryCode';
+import type { CountryCode } from '@/data/country/countryCode';
 
 interface BudgetChartViewProps {
   totalBudget: number;

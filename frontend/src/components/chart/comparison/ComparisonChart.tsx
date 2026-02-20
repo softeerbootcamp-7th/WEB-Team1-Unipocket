@@ -32,7 +32,7 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
     <ChartContainer className="w-67" isPreview={isPreview}>
       <ChartHeader title="내 월간 소비 비교">
         <DropDown
-          selected={selectedCurrency}
+          selectedId={selectedCurrency}
           options={CURRENCY_OPTIONS}
           size="xs"
           align="center"

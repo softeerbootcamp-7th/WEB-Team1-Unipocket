@@ -6,7 +6,7 @@ import type { CategoryId } from '@/types/category';
 interface ReportBarListProps {
   maxLabel: number;
   items: {
-    categoryIndex: CategoryId;
+    categoryId: CategoryId;
     me: number;
     other: number;
   }[];
@@ -23,11 +23,7 @@ const ReportBarList = ({ items, maxLabel }: ReportBarListProps) => {
       <VerticalGrid steps={steps} labels={labels} className="left-15" />
       <div className="relative z-10 flex flex-col gap-4.5">
         {items.map((item) => (
-          <ReportBarRow
-            key={item.categoryIndex}
-            {...item}
-            maxLabel={maxLabel}
-          />
+          <ReportBarRow key={item.categoryId} {...item} maxLabel={maxLabel} />
         ))}
       </div>
     </div>

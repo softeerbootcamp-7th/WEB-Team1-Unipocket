@@ -43,14 +43,14 @@ const PeriodChart = ({ isPreview = false }: ChartMode) => {
       <ChartHeader title="기간별 지출">
         {periodType === 'WEEKLY' && (
           <DropDown
-            selected={selectedCurrency}
+            selectedId={selectedCurrency}
             onSelect={setSelectedCurrency}
             options={CURRENCY_OPTIONS}
             size="xs"
           />
         )}
         <DropDown
-          selected={selectedPeriod}
+          selectedId={selectedPeriod}
           onSelect={setSelectedPeriod}
           options={PERIOD_WIDGET_OPTIONS}
           size="xs"

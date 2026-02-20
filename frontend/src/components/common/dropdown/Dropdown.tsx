@@ -12,7 +12,7 @@ interface Option {
 }
 
 interface DropDownProps {
-  selected: number | null;
+  selectedId: number;
   onSelect: (id: number) => void;
   options: Option[];
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -27,7 +27,7 @@ const ALIGN_CLASS = {
 } as const;
 
 const DropDown = ({
-  selected,
+  selectedId,
   onSelect,
   options,
   size = 'sm',
@@ -41,7 +41,8 @@ const DropDown = ({
     setIsOpen(false);
   });
 
-  const selectedName = options.find((opt) => opt.id === selected)?.name;
+  const currentOption =
+    options.find((opt) => opt.id === selectedId) ?? options[0];
 
   const handleOptionClick = (id: number) => {
     onSelect(id);
@@ -56,7 +57,7 @@ const DropDown = ({
         size={size}
         className="w-full"
       >
-        {selectedName || options[0].name}
+        {currentOption.name}
       </Filter>
 
       {isOpen && (
@@ -75,7 +76,7 @@ const DropDown = ({
               key={option.id}
               id={option.id}
               label={option.name}
-              isSelected={option.id === selected}
+              isSelected={option.id === currentOption.id}
               onSelect={handleOptionClick}
             />
           ))}

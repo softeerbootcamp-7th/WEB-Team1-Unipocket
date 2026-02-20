@@ -3,7 +3,7 @@ import type { SidePanelFormValues } from '@/components/side-panel/type';
 
 import { useCreateManualExpenseMutation } from '@/api/expenses/query';
 import type { CreateManualExpenseRequest } from '@/api/expenses/type';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 interface ManualCreatePanelProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ManualCreatePanelProps {
 
 const ManualCreatePanel = ({ isOpen, onClose }: ManualCreatePanelProps) => {
   const { mutate } = useCreateManualExpenseMutation();
-  const accountBookId = useAccountBookStore((state) => state.accountBook?.id);
+  const accountBookId = useRequiredAccountBook().id;
 
   const handleSubmit = (values: SidePanelFormValues) => {
     const request: CreateManualExpenseRequest = {

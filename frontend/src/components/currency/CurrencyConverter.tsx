@@ -10,7 +10,7 @@ import { Icons } from '@/assets';
 import countryData from '@/data/country/countryData.json';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 import { getCountryInfo } from '@/lib/country';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 export interface CurrencyValues {
   localAmount: number;
@@ -67,9 +67,8 @@ const CurrencyConverter = ({
   const localCurrencyName =
     currencyOptions.find((o) => o.id === localCurrencyType)?.name ?? '';
 
-  const baseCountryCode = useAccountBookStore(
-    (state) => state.accountBook?.baseCountryCode,
-  );
+  const baseCountryCode = useRequiredAccountBook().baseCountryCode;
+
   const baseCurrencyName = baseCountryCode
     ? (getCountryInfo(baseCountryCode)?.currencyName ?? 'KRW')
     : 'KRW';

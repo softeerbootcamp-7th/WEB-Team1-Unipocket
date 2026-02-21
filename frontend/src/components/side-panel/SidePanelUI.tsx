@@ -135,7 +135,11 @@ const SidePanelUI = ({
           <Button variant="solid" onClick={handleSubmit}>
             저장
           </Button>
-          <Button onClick={handleReset}>삭제</Button>
+          {mode === 'manual' ? (
+            <Button onClick={handleReset}>초기화</Button>
+          ) : (
+            <Button>삭제</Button>
+          )}
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">

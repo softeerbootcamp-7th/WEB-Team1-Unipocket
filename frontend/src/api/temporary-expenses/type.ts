@@ -1,3 +1,8 @@
+import type { CategoryId } from '@/types/category';
+
+import type { PaymentMethod } from '@/api/expenses/type';
+import type { CurrencyCode } from '@/data/country/currencyCode';
+
 export type UploadType = 'IMAGE' | 'FILE';
 
 export interface GetPresignedUrlRequest {
@@ -19,8 +24,10 @@ export interface StartParseRequest {
   s3Keys: string[];
 }
 
-export interface StartParseResponse {
+export interface ParseTaskResponse {
   taskId: string;
+  totalFiles: number;
+  statusUrl: string;
 }
 
 export const PARSE_STATUS = {
@@ -37,4 +44,73 @@ export interface GetParseStatusResponse {
   progress?: number;
   metaId?: number;
   message?: string;
+}
+
+// 메타 목록
+export interface TempExpenseMeta {
+  tempExpenseMetaId: number;
+  createdAt: string;
+  fileCount: number;
+  totalExpenses: number;
+  normalCount: number;
+  incompleteCount: number;
+  abnormalCount: number;
+}
+
+export interface GetMetasResponse {
+  metas: TempExpenseMeta[];
+}
+
+// 파일별 임시지출
+export interface TempExpense {
+  tempExpenseId: number;
+  tempExpenseMetaId: number;
+  fileId: number;
+  merchantName: string;
+  category: CategoryId;
+  localCountryCode: CurrencyCode;
+  localCurrencyAmount: number;
+  baseCountryCode: CurrencyCode;
+  baseCurrencyAmount: number;
+  paymentsMethod: PaymentMethod;
+  memo: string;
+  occurredAt: string;
+  status: string;
+  cardLastFourDigits: string;
+}
+
+export interface TempExpenseFile {
+  fileId: number;
+  s3Key: string;
+  fileType: string;
+  expenses: TempExpense[];
+}
+
+export interface GetMetaFilesResponse {
+  tempExpenseMetaId: number;
+  createdAt: string;
+  files: TempExpenseFile[];
+}
+
+export type GetMetaFileDetailResponse = TempExpenseFile;
+
+export interface GetMetaFileUrlResponse {
+  presignedUrl: string;
+  expiresInSeconds: number;
+}
+
+export type BulkUpdateRequest = TempExpense[];
+
+export interface BulkUpdateResult {
+  tempExpenseId: number;
+  status: string;
+  reason: string;
+  updated: TempExpense;
+}
+
+export interface BulkUpdateResponse {
+  totalRequested: number;
+  successCount: number;
+  failedCount: number;
+  results: BulkUpdateResult[];
 }

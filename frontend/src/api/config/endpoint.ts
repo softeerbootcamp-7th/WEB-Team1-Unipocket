@@ -1,13 +1,13 @@
 export const ENDPOINTS = {
   AUTH: {
-    LOGOUT: 'auth/logout', // ✓
-    LOGIN_DEV: 'dev/token', // ✓
+    LOGOUT: 'auth/logout', // 로그아웃 (POST)
+    LOGIN_DEV: 'dev/token', // 개발용 로그인 (POST)
     REISSUE: 'auth/reissue', // 토큰 재발급 (POST)
     OAUTH_AUTHORIZE: (provider: string) => `auth/oauth2/authorize/${provider}`, // OAuth 인증 시작 (GET)
     OAUTH_CALLBACK: (provider: string) => `auth/oauth2/callback/${provider}`, // OAuth 콜백 (GET)
   },
   USERS: {
-    BASE: 'users/me',
+    BASE: 'users/me', // 내 정보 조회 (GET), 회원 탈퇴 (DELETE)
     CARDS: 'users/cards', // 카드 목록 조회 (GET), 카드 등록 (POST)
     CARD_DETAIL: (cardId: number | string) => `users/cards/${cardId}`, // 카드 삭제 (DELETE)
     CARD_COMPANIES: 'users/cards/companies', // 카드사 목록 조회 (GET)
@@ -31,6 +31,12 @@ export const ENDPOINTS = {
       fileId: number | string,
     ) =>
       `account-books/${accountBookId}/temporary-expense-metas/${metaId}/files/${fileId}`, // 파일 단건 조회 (GET)
+    META_FILE_URL: (
+      accountBookId: number | string,
+      metaId: number | string,
+      fileId: number | string,
+    ) =>
+      `account-books/${accountBookId}/temporary-expense-metas/${metaId}/files/${fileId}/file-url`, // 파일 열람 URL 발급 (GET)
     PARSE_STATUS: (accountBookId: number | string, taskId: string) =>
       `account-books/${accountBookId}/temporary-expenses/parse-status/${taskId}`, // SSE 진행 상황 (GET)
     PRESIGNED_URL: (accountBookId: number | string) =>
@@ -47,6 +53,13 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/temporary-expense-metas/${metaId}/files/${fileId}/temporary-expenses`, // 임시지출 일괄 수정 (PATCH)
     DELETE_META: (accountBookId: number | string, metaId: number | string) =>
       `account-books/${accountBookId}/temporary-expense-metas/${metaId}`, // 메타 삭제 (DELETE)
+    DELETE_TEMP_EXPENSE: (
+      accountBookId: number | string,
+      metaId: number | string,
+      fileId: number | string,
+      tempExpenseId: number | string,
+    ) =>
+      `account-books/${accountBookId}/temporary-expense-metas/${metaId}/files/${fileId}/temporary-expenses/${tempExpenseId}`, // 임시지출 삭제 (DELETE)
   },
   WIDGETS: {
     ACCOUNT_BOOK_DATA: (accountBookId: number | string) =>

@@ -6,9 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * <b>메타 단위 임시지출 수정 항목</b>
- */
 public record TemporaryExpenseMetaBulkUpdateItemRequest(
 		@NotNull Long tempExpenseId,
 		String merchantName,

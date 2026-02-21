@@ -25,4 +25,9 @@ public interface PairMonthlyCategoryAggregateRepository
 					LocalDate targetYearMonth,
 					AnalysisQualityType qualityType,
 					CurrencyType currencyType);
+
+	void deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+			CountryCode localCountryCode,
+			CountryCode baseCountryCode,
+			java.util.Collection<LocalDate> targetYearMonths);
 }

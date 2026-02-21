@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
-import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
-import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
+import com.genesis.unipocket.user.common.enums.CardCompany;
+import com.genesis.unipocket.user.common.enums.UserRole;
+import com.genesis.unipocket.user.common.enums.UserStatus;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
 import com.genesis.unipocket.user.query.service.UserQueryService;
@@ -94,19 +94,20 @@ class UserQueryControllerTest {
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].nickName").value("Card 1"))
-				.andExpect(jsonPath("$[0].cardCompany").value("HYUNDAI"));
+				.andExpect(jsonPath("$[0].cardCompany").value(CardCompany.HYUNDAI.ordinal()));
 	}
 
 	@Test
 	@DisplayName("카드사 목록 조회 성공")
 	void getCardCompanies_Success() throws Exception {
-		List<CardCompany> companies = Arrays.asList(CardCompany.HYUNDAI, CardCompany.SAMSUNG);
+		List<Integer> companies =
+				Arrays.asList(CardCompany.HYUNDAI.ordinal(), CardCompany.SAMSUNG.ordinal());
 
 		given(userQueryService.getCardCompanies()).willReturn(companies);
 
 		mockMvc.perform(get("/users/cards/companies"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0]").value("HYUNDAI"))
-				.andExpect(jsonPath("$[1]").value("SAMSUNG"));
+				.andExpect(jsonPath("$[0]").value(CardCompany.HYUNDAI.ordinal()))
+				.andExpect(jsonPath("$[1]").value(CardCompany.SAMSUNG.ordinal()));
 	}
 }

@@ -1,14 +1,8 @@
 package com.genesis.unipocket.expense.command.presentation.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 
-/**
- * <b>결제수단 응답 DTO</b>
- *
- * @author bluefishez
- * @since 2026-02-12
- */
 public record PaymentMethodResponse(boolean isCash, CardResponse card) {
 
 	public record CardResponse(

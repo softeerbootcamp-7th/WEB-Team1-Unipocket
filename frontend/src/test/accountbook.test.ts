@@ -38,8 +38,8 @@ describe('Account Books API', () => {
   describe('getAccountBooks', () => {
     it('가계부 목록을 정상적으로 반환한다', async () => {
       const mockData: GetAccountBooksResponse = [
-        { id: 1, title: '유럽 여행 가계부', isMain: true },
-        { id: 2, title: '일본 여행 가계부', isMain: false },
+        { accountBookId: 1, title: '유럽 여행 가계부', isMain: true },
+        { accountBookId: 2, title: '일본 여행 가계부', isMain: false },
       ];
       vi.mocked(fetch).mockResolvedValue(createMockResponse(200, mockData));
 
@@ -78,7 +78,7 @@ describe('Account Books API', () => {
     };
 
     const mockCreatedBook: CreateAccountBookResponse = {
-      id: 1,
+      accountBookId: 1,
       title: '한국 여행',
       localCountryCode: 'KR',
       baseCountryCode: 'KR',
@@ -125,14 +125,13 @@ describe('Account Books API', () => {
     const updateRequest: UpdateAccountBookRequest = {
       title: '수정된 가계부',
       localCountryCode: 'JP',
-      budget: 1_000_000,
       startDate: '2026-03-01',
       endDate: '2026-03-10',
       isMain: true,
     };
 
     const mockUpdatedBook: GetAccountBookDetailResponse = {
-      id: 1,
+      accountBookId: 1,
       title: '수정된 가계부',
       localCountryCode: 'JP',
       baseCountryCode: 'KR',
@@ -164,7 +163,7 @@ describe('Account Books API', () => {
         isMain: true,
       };
       const mockPartialUpdated: GetAccountBookDetailResponse = {
-        id: 1,
+        accountBookId: 1,
         title: '제목만 변경',
         localCountryCode: 'KR',
         baseCountryCode: 'KR',

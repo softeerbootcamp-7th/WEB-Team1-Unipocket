@@ -1,7 +1,7 @@
 package com.genesis.unipocket.exchange.query.application.impl;
 
-import com.genesis.unipocket.exchange.command.persistence.entity.ExchangeRate;
-import com.genesis.unipocket.exchange.command.persistence.repository.ExchangeRateRepository;
+import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.time.LocalDate;

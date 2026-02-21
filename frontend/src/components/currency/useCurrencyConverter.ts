@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 const ERROR_MESSAGES = {
   INVALID_NUMBER: '숫자만 입력할 수 있어요.',
   ZERO_OR_NEGATIVE: '0보다 큰 금액을 입력해주세요.',
+  MAX_LENGTH_EXCEEDED: '최대 15자리까지만 입력할 수 있어요.',
 } as const;
 
 const isValidNumberFormat = (value: string): boolean => {
@@ -48,6 +49,12 @@ const useCurrencyConverter = (rate: number) => {
     }
 
     const sanitized = sanitizeInput(value);
+    const integerPart = sanitized.split('.')[0];
+    if (integerPart.length > 15) {
+      setAmountError(ERROR_MESSAGES.MAX_LENGTH_EXCEEDED);
+      return;
+    }
+
     const num = Number(sanitized);
     const [setPrimary, setSecondary] =
       direction === 'toBase'

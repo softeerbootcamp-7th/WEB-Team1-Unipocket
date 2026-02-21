@@ -83,10 +83,10 @@ public class CountryMonthlyDirtyAggregationService {
 		TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
 		Set<PairMonthKey> affectedPairMonths = new LinkedHashSet<>();
 		for (Long dirtyId : candidateIds) {
+			LocalDateTime claimTime = LocalDateTime.now(ZoneOffset.UTC);
 			Boolean claimed =
 					txTemplate.execute(
 							status -> {
-								LocalDateTime claimTime = LocalDateTime.now(ZoneOffset.UTC);
 								int updated =
 										monthlyDirtyRepository.claimDirty(
 												dirtyId,
@@ -104,7 +104,7 @@ public class CountryMonthlyDirtyAggregationService {
 
 			try {
 				PairMonthKey affectedKey =
-						txTemplate.execute(status -> processOneDirtyRow(dirtyId));
+						txTemplate.execute(status -> processOneDirtyRow(dirtyId, claimTime));
 				if (affectedKey != null) {
 					affectedPairMonths.add(affectedKey);
 				}
@@ -119,7 +119,7 @@ public class CountryMonthlyDirtyAggregationService {
 		}
 	}
 
-	private PairMonthKey processOneDirtyRow(Long dirtyId) {
+	private PairMonthKey processOneDirtyRow(Long dirtyId, LocalDateTime claimTime) {
 		AnalysisMonthlyDirtyEntity dirty =
 				monthlyDirtyRepository
 						.findById(dirtyId)
@@ -142,7 +142,7 @@ public class CountryMonthlyDirtyAggregationService {
 														+ dirty.getAccountBookId()));
 
 		if (accountBook.getLocalCountryCode() != dirty.getCountryCode()) {
-			dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
+			finalizeDirtyRun(dirtyId, claimTime);
 			return null;
 		}
 
@@ -171,9 +171,27 @@ public class CountryMonthlyDirtyAggregationService {
 				rawCategoryRows,
 				AnalysisQualityType.CLEANED);
 
-		dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
+		finalizeDirtyRun(dirtyId, claimTime);
 		return new PairMonthKey(
 				accountBook.getLocalCountryCode(), accountBook.getBaseCountryCode(), monthStart);
+	}
+
+	private void finalizeDirtyRun(Long dirtyId, LocalDateTime claimTime) {
+		int repending =
+				monthlyDirtyRepository.markPendingIfNewEventDuringRun(
+						dirtyId,
+						AnalysisBatchJobStatus.RUNNING,
+						AnalysisBatchJobStatus.PENDING,
+						claimTime);
+		if (repending > 0) {
+			return;
+		}
+		monthlyDirtyRepository.markSuccessIfNoNewEventDuringRun(
+				dirtyId,
+				AnalysisBatchJobStatus.RUNNING,
+				AnalysisBatchJobStatus.SUCCESS,
+				claimTime,
+				LocalDateTime.now(ZoneOffset.UTC));
 	}
 
 	private void upsertMonthlyMetrics(
@@ -230,6 +248,7 @@ public class CountryMonthlyDirtyAggregationService {
 		accountMonthlyCategoryAggregateRepository
 				.deleteByAccountBookIdAndTargetYearMonthAndQualityType(
 						accountBookId, monthStart, qualityType);
+		accountMonthlyCategoryAggregateRepository.flush();
 		if (rows.isEmpty()) {
 			return;
 		}
@@ -288,6 +307,7 @@ public class CountryMonthlyDirtyAggregationService {
 						pairMonthKey.targetYearMonth(),
 						AnalysisQualityType.CLEANED,
 						currencyType);
+		pairMonthlyCategoryAggregateRepository.flush();
 
 		if (monthlyRows.isEmpty()) {
 			pairMonthlyAggregateRepository

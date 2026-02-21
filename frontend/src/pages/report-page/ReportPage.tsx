@@ -23,7 +23,7 @@ import { useRequiredAccountBook } from '@/stores/accountBookStore';
 const ReportPage = () => {
   const [currencyType, setCurrencyType] = useState<CurrencyType>('BASE');
 
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);

@@ -19,7 +19,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            'group-[.toaster]:!flex group-[.toaster]:!items-center group-[.toaster]:!gap-2 group-[.toaster]:!box-border group-[.toaster]:!w-[420px] group-[.toaster]:!px-4 group-[.toaster]:!py-[11px] group-[.toaster]:!body2-normal-bold group-[.toaster]:!text-[#EAEAEB] group-[.toaster]:!bg-[#8D8D8E] group-[.toaster]:!border-none group-[.toaster]:!rounded-[12px]',
+            'group-[.toaster]:!flex group-[.toaster]:!items-center group-[.toaster]:!gap-2 group-[.toaster]:!box-border group-[.toaster]:!w-[420px] group-[.toaster]:!px-4 group-[.toaster]:!py-[11px] group-[.toaster]:!body2-normal-bold group-[.toaster]:!text-[#EAEAEB] group-[.toaster]:!bg-[#515253] group-[.toaster]:!border-none group-[.toaster]:!rounded-[12px]',
           title: 'group-[.toaster]:!px-0.5 group-[.toaster]:!py-[5px]',
           icon: 'group-[.toast]:!shrink-0 group-[.toaster]:!w-fit group-[.toaster]:!h-fit group-[.toaster]:!m-0',
         },

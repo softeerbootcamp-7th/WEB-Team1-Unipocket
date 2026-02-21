@@ -1,6 +1,6 @@
 package com.genesis.unipocket.user.command.presentation.request;
 
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 

@@ -3,26 +3,30 @@ package com.genesis.unipocket.expense.command.facade;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandContextService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
+import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
+import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateItemRequest;
+import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookInfo;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -192,5 +196,90 @@ class ExpenseCommandFacadeTest {
 
 		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
 		verify(expenseService).deleteExpense(expenseId, accountBookId);
+	}
+
+	@Test
+	@DisplayName("일괄 수정 - 각 항목을 command로 변환해 순차 호출")
+	void updateExpensesBulk_linearFlow() {
+		Long accountBookId = 7L;
+		UUID userId = UUID.randomUUID();
+		Instant occurredAt = Instant.parse("2026-02-17T03:04:05Z");
+
+		ExpenseBulkUpdateRequest request =
+				new ExpenseBulkUpdateRequest(
+						List.of(
+								new ExpenseBulkUpdateItemRequest(
+										101L,
+										"택시",
+										Category.TRANSPORT,
+										null,
+										occurredAt,
+										new BigDecimal("1000.00"),
+										CurrencyCode.JPY,
+										null,
+										"memo-1",
+										1L),
+								new ExpenseBulkUpdateItemRequest(
+										102L,
+										"카페",
+										Category.FOOD,
+										null,
+										occurredAt.plusSeconds(60),
+										new BigDecimal("50.00"),
+										CurrencyCode.USD,
+										null,
+										"memo-2",
+										null)));
+
+		when(accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString()))
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+		when(expenseCommandContextService.resolveLocalCurrencyCode(
+						CurrencyCode.JPY, CurrencyCode.USD))
+				.thenReturn(CurrencyCode.JPY);
+		when(expenseCommandContextService.resolveLocalCurrencyCode(
+						CurrencyCode.USD, CurrencyCode.USD))
+				.thenReturn(CurrencyCode.USD);
+		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
+				.thenReturn(
+						new ExpenseResult(
+								101L,
+								accountBookId,
+								1L,
+								Category.TRANSPORT,
+								CurrencyCode.KRW,
+								new BigDecimal("10000.00"),
+								new BigDecimal("10.00"),
+								CurrencyCode.JPY,
+								new BigDecimal("1000.00"),
+								occurredAt.atOffset(ZoneOffset.UTC),
+								occurredAt.atOffset(ZoneOffset.UTC),
+								"택시",
+								null,
+								null,
+								null,
+								null,
+								null,
+								ExpenseSource.MANUAL,
+								null,
+								"memo-1",
+								null));
+		when(expenseCommandContextService.enrichWithCardInfo(any(ExpenseResult.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		expenseCommandFacade.updateExpensesBulk(accountBookId, userId, request);
+
+		ArgumentCaptor<ExpenseUpdateCommand> commandCaptor =
+				ArgumentCaptor.forClass(ExpenseUpdateCommand.class);
+		verify(expenseService, times(2)).updateExpense(commandCaptor.capture());
+		assertThat(commandCaptor.getAllValues()).hasSize(2);
+		assertThat(commandCaptor.getAllValues().get(0).expenseId()).isEqualTo(101L);
+		assertThat(commandCaptor.getAllValues().get(1).expenseId()).isEqualTo(102L);
+		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
+		verify(expenseCommandContextService)
+				.resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD);
+		verify(expenseCommandContextService)
+				.resolveLocalCurrencyCode(CurrencyCode.USD, CurrencyCode.USD);
 	}
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMatchRoute } from '@tanstack/react-router';
 import clsx from 'clsx';
+import { toast } from 'sonner';
 
 import Control from '@/components/common/Control';
 import LocaleConfirmModal from '@/components/modal/LocaleConfirmModal';
@@ -45,10 +46,14 @@ const CountryItem = ({
       />
       <div className="flex w-full justify-between">
         <div className="flex gap-4">
-          <img src={flagImg} alt={`${country} flag`} />
-          <span>{country}</span>
+          <img width={28} height={20} src={flagImg} alt={`${country} flag`} />
+          <span className="headline1-medium text-label-normal whitespace-nowrap">
+            {country}
+          </span>
         </div>
-        <span>{currency}</span>
+        <span className="body1-normal-medium text-label-normal whitespace-nowrap">
+          {currency}
+        </span>
       </div>
     </div>
   );
@@ -57,22 +62,42 @@ const CountryItem = ({
 interface LocaleSelectModalProps {
   mode: CurrencyType;
   onSelect?: (code: CountryCode) => void;
-  selectedCode: CountryCode | null;
+  baseCountryCode: CountryCode | null;
+  localCountryCode: CountryCode | null;
 }
 
+const TOAST_MESSAGE = {
+  BASE: '현지 통화와 동일한 통화로 설정할 수 없습니다.',
+  LOCAL: '기준 통화와 동일한 통화로 설정할 수 없습니다.',
+} as const;
+
+/**
+ * 기준 통화 변경 시 mode = 'BASE', 현지 통화 변경 시 mode = 'LOCAL'로 설정
+ */
 const LocaleSelectModal = ({
   mode,
   onSelect,
-  selectedCode: propSelectedCode,
+  baseCountryCode,
+  localCountryCode,
 }: LocaleSelectModalProps) => {
   const matchRoute = useMatchRoute();
   const isInitPath = !!matchRoute({ to: '/init' });
+
+  const initialSelectedCode =
+    mode === 'BASE' ? baseCountryCode : localCountryCode;
+  const oppositeCode = mode === 'BASE' ? localCountryCode : baseCountryCode;
+
   const [selectedCode, setSelectedCode] = useState<CountryCode | null>(
-    propSelectedCode,
+    initialSelectedCode,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleSelect = (code: CountryCode) => {
+    if (code === oppositeCode) {
+      toast.error(TOAST_MESSAGE[mode]);
+      return;
+    }
+
     setSelectedCode(code);
     setIsConfirmOpen(true);
   };
@@ -85,7 +110,7 @@ const LocaleSelectModal = ({
   };
 
   const handleCancel = () => {
-    setSelectedCode(propSelectedCode);
+    setSelectedCode(initialSelectedCode);
     setIsConfirmOpen(false);
   };
 

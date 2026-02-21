@@ -6,13 +6,6 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExp
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * <b>임시지출내역 결과 DTO</b>
- * <p>Application -> Facade
- *
- * @author bluefishez
- * @since 2026-02-10
- */
 public record TemporaryExpenseResult(
 		Long tempExpenseId,
 		Long tempExpenseMetaId,

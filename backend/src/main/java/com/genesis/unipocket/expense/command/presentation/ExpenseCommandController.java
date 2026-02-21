@@ -1,10 +1,12 @@
 package com.genesis.unipocket.expense.command.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.facade.ExpenseCommandFacade;
+import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
+import com.genesis.unipocket.expense.command.presentation.response.ExpenseBulkUpdateResponse;
 import com.genesis.unipocket.expense.command.presentation.response.ExpenseManualCreateResponse;
 import com.genesis.unipocket.expense.command.presentation.response.ExpenseUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,12 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * <b>지출내역 도메인 컨트롤러</b>
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Tag(name = "지출내역 기능")
 @RestController
 @AllArgsConstructor
@@ -56,6 +52,20 @@ public class ExpenseCommandController {
 		ExpenseResult result =
 				expenseFacade.updateExpense(expenseId, accountBookId, userId, request);
 		ExpenseUpdateResponse response = ExpenseUpdateResponse.from(result);
+		return ResponseEntity.ok(response);
+	}
+
+	@Operation(
+			summary = "지출내역 일괄 수정 API",
+			description = "여러 지출내역 ID를 한 번에 수정합니다. 요청된 항목은 모두 전체 데이터로 덮어씌워집니다.")
+	@PutMapping("/account-books/{accountBookId}/expenses/bulk")
+	public ResponseEntity<ExpenseBulkUpdateResponse> updateExpensesBulk(
+			@LoginUser UUID userId,
+			@PathVariable Long accountBookId,
+			@RequestBody @Valid ExpenseBulkUpdateRequest request) {
+
+		var results = expenseFacade.updateExpensesBulk(accountBookId, userId, request);
+		ExpenseBulkUpdateResponse response = ExpenseBulkUpdateResponse.from(results);
 		return ResponseEntity.ok(response);
 	}
 

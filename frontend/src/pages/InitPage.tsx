@@ -6,7 +6,7 @@ import Button from '@/components/common/Button';
 import LocaleSelectModal from '@/components/modal/LocaleSelectModal';
 import { SelectDateContent } from '@/components/modal/SelectDateModal';
 
-import { createAccountBook } from '@/api/account-books/api';
+import { useCreateAccountBookMutation } from '@/api/account-books/query';
 import { type CountryCode } from '@/data/country/countryCode';
 import { formatDateToString } from '@/lib/utils';
 
@@ -14,6 +14,7 @@ type Step = 'select-country' | 'select-date';
 
 const InitPage = () => {
   const navigate = useNavigate();
+  const { mutate: createAccountBook } = useCreateAccountBookMutation();
   const [step, setStep] = useState<Step>('select-country');
   const [selectedCountry, setSelectedCountry] = useState<CountryCode | null>(
     null,
@@ -40,24 +41,25 @@ const InitPage = () => {
     setDateRange({ startDate, endDate });
   };
 
-  const handleDateConfirm = async () => {
+  const handleDateConfirm = () => {
     if (!selectedCountry || !dateRange.startDate || !dateRange.endDate) {
       return;
     }
     const formattedStartDate = formatDateToString(dateRange.startDate);
     const formattedEndDate = formatDateToString(dateRange.endDate);
 
-    try {
-      const response = await createAccountBook({
+    createAccountBook(
+      {
         localCountryCode: selectedCountry,
         startDate: formattedStartDate,
         endDate: formattedEndDate,
-      });
-      console.log('Created:', response);
-      navigate({ to: '/home' });
-    } catch (error) {
-      console.error(error);
-    }
+      },
+      {
+        onSuccess: () => {
+          navigate({ to: '/home' });
+        },
+      },
+    );
   };
 
   const handlePrevButton = () => {
@@ -72,7 +74,8 @@ const InitPage = () => {
         <LocaleSelectModal
           mode="LOCAL"
           onSelect={handleCountrySelect}
-          selectedCode={selectedCountry}
+          baseCountryCode="KR"
+          localCountryCode={selectedCountry}
         />
       )}
 

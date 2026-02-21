@@ -1,21 +1,20 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
-import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
+import com.genesis.unipocket.expense.common.util.ExchangeAmountCalculator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseConversionContextRow;
 import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
@@ -24,7 +23,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -34,13 +32,12 @@ public class TemporaryExpenseSingleConversionTxService {
 
 	private final TemporaryExpenseRepository tempExpenseRepository;
 	private final ExpenseRepository expenseRepository;
-	private final TempExpenseMetaRepository metaRepository;
-	private final FileRepository fileRepository;
 	private final ExchangeRateService exchangeRateService;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
+	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
 
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional
 	public ExpenseEntity convertToExpense(Long accountBookId, Long tempExpenseId) {
 		log.info("Converting temporary expense to permanent: {}", tempExpenseId);
 
@@ -49,33 +46,26 @@ public class TemporaryExpenseSingleConversionTxService {
 						.findById(tempExpenseId)
 						.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
 
-		TempExpenseMeta meta =
-				metaRepository
-						.findById(temp.getTempExpenseMetaId())
+		TempExpenseConversionContextRow context =
+				tempExpenseRepository
+						.findConversionContext(accountBookId, tempExpenseId)
 						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		if (!meta.getAccountBookId().equals(accountBookId)) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
+								() ->
+										temporaryExpenseScopeValidator.resolveScopeException(
+												accountBookId,
+												temp.getTempExpenseMetaId(),
+												temp.getFileId()));
 		CurrencyCode resolvedBaseCurrencyCode =
-				resolveBaseCurrencyCode(temp, meta.getAccountBookId());
+				resolveBaseCurrencyCode(temp, context.accountBookId());
 		temporaryExpenseValidator.validateConvertible(temp, resolvedBaseCurrencyCode);
 
 		ResolvedAmount resolvedAmount = resolveBaseAmountAndRate(temp, resolvedBaseCurrencyCode);
-		File sourceFile =
-				fileRepository
-						.findById(temp.getFileId())
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND));
-		if (!temp.getTempExpenseMetaId().equals(sourceFile.getTempExpenseMetaId())) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
-		ExpenseSource source = resolveExpenseSource(sourceFile);
-		String fileLink = sourceFile.getS3Key();
+		ExpenseSource source = resolveExpenseSource(context.fileType());
+		String fileLink = context.s3Key();
 
 		ExpenseManualCreateArgs args =
 				new ExpenseManualCreateArgs(
-						meta.getAccountBookId(),
+						context.accountBookId(),
 						temp.getMerchantName(),
 						temp.getCategory(),
 						null,
@@ -84,7 +74,7 @@ public class TemporaryExpenseSingleConversionTxService {
 						temp.getLocalCountryCode() != null
 								? temp.getLocalCountryCode()
 								: accountBookRateInfoProvider
-										.getRateInfo(accountBookId)
+										.getRateInfo(context.accountBookId())
 										.localCurrencyCode(),
 						resolvedAmount.baseCurrencyAmount(),
 						resolvedBaseCurrencyCode,
@@ -127,8 +117,6 @@ public class TemporaryExpenseSingleConversionTxService {
 		if (localCurrencyCode == resolvedBaseCurrencyCode) {
 			resolvedRate = BigDecimal.ONE;
 		} else {
-			// 변환 시점에는 임시 데이터에 저장된 과거 환율을 재사용하지 않고,
-			// 반드시 occurredAt 기준 환율을 다시 조회해 manual 생성 경로와 정합성을 맞춘다.
 			resolvedRate =
 					exchangeRateService.getExchangeRate(
 							localCurrencyCode,
@@ -150,12 +138,11 @@ public class TemporaryExpenseSingleConversionTxService {
 		return accountBookRateInfoProvider.getRateInfo(accountBookId).baseCurrencyCode();
 	}
 
-	private ExpenseSource resolveExpenseSource(File sourceFile) {
-		if (sourceFile == null || sourceFile.getFileType() == null) {
+	private ExpenseSource resolveExpenseSource(FileType fileType) {
+		if (fileType == null) {
 			return ExpenseSource.MANUAL;
 		}
 
-		File.FileType fileType = sourceFile.getFileType();
 		return switch (fileType) {
 			case IMAGE -> ExpenseSource.IMAGE_RECEIPT;
 			case CSV -> ExpenseSource.CSV;

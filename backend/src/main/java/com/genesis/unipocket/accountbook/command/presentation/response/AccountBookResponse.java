@@ -5,7 +5,7 @@ import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 
 public record AccountBookResponse(
-		Long id,
+		Long accountBookId,
 		String title,
 		CountryCode localCountryCode,
 		CountryCode baseCurrencyCode,

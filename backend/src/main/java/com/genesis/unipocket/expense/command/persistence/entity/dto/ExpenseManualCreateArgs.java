@@ -6,14 +6,6 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-/**
- * <b>지출내역 생성 - 수기 DTO</b>
- * <p>
- * Application -> Persistence
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 public record ExpenseManualCreateArgs(
 		Long accountBookId,
 		String merchantName,

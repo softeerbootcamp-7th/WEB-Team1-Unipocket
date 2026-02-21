@@ -79,8 +79,21 @@ const useCurrencyConverter = (rate: number) => {
     }
 
     setError(null);
-    clearError(null);
-    setSecondary(sanitized === '' ? '' : convertCurrency(num, direction, rate));
+
+    if (sanitized === '') {
+      clearError(null);
+      setSecondary('');
+      return;
+    }
+
+    const converted = convertCurrency(num, direction, rate);
+    const convertedIntegerPart = sanitizeInput(converted).split('.')[0];
+    if (convertedIntegerPart.length > 15) {
+      clearError(ERROR_MESSAGES.MAX_LENGTH_EXCEEDED);
+    } else {
+      clearError(null);
+    }
+    setSecondary(converted);
   };
 
   return {

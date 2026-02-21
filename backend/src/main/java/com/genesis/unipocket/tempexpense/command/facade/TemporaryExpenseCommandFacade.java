@@ -1,16 +1,20 @@
 package com.genesis.unipocket.tempexpense.command.facade;
 
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.application.FileUploadService;
-import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseBulkUpdateService;
+import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseCommandService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseConversionService;
+import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryExpenseParsingService;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
-import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
-import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseMetaBulkUpdateResponse;
+import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpensePatchRequest;
+import com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -23,8 +27,9 @@ public class TemporaryExpenseCommandFacade {
 	private final FileUploadService fileUploadService;
 	private final TemporaryExpenseParsingService temporaryExpenseParsingService;
 	private final TemporaryExpenseConversionService temporaryExpenseConversionService;
-	private final TemporaryExpenseBulkUpdateService temporaryExpenseBulkUpdateService;
+	private final TemporaryExpenseCommandService temporaryExpenseCommandService;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidationProvider;
 
 	public FileUploadResult createPresignedUrl(
 			Long accountBookId,
@@ -34,42 +39,53 @@ public class TemporaryExpenseCommandFacade {
 			Long tempExpenseMetaId,
 			UUID userId) {
 		validateOwnership(accountBookId, userId);
+		if (tempExpenseMetaId != null) {
+			temporaryExpenseScopeValidationProvider.validateMetaScope(
+					accountBookId, tempExpenseMetaId);
+		}
 		return fileUploadService.createPresignedUrl(
 				accountBookId, fileName, mimeType, uploadType, tempExpenseMetaId);
 	}
 
-	public ParseStartResult startParseAsync(
+	public ParseStartResult startParseTask(
 			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys, UUID userId) {
 		validateOwnership(accountBookId, userId);
-		return temporaryExpenseParsingService.startParseAsync(
-				accountBookId, tempExpenseMetaId, s3Keys);
+		if (tempExpenseMetaId == null) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND);
+		}
+		temporaryExpenseScopeValidationProvider.validateMetaScope(accountBookId, tempExpenseMetaId);
+		return temporaryExpenseParsingService.startParseTask(tempExpenseMetaId, s3Keys);
 	}
 
-	public ConfirmStartResult confirm(Long accountBookId, Long tempExpenseMetaId, UUID userId) {
-
+	public ConfirmStartResult convertMetaToExpenses(
+			Long accountBookId, Long tempExpenseMetaId, UUID userId) {
 		validateOwnership(accountBookId, userId);
-
-		return temporaryExpenseConversionService.startConfirmAsync(
+		temporaryExpenseScopeValidationProvider.validateMetaScope(accountBookId, tempExpenseMetaId);
+		return temporaryExpenseConversionService.convertMetaToExpenses(
 				accountBookId, tempExpenseMetaId);
 	}
 
 	public void deleteMeta(Long accountBookId, Long tempExpenseMetaId, UUID userId) {
 		validateOwnership(accountBookId, userId);
-		fileUploadService.deleteMeta(accountBookId, tempExpenseMetaId);
+		temporaryExpenseScopeValidationProvider.validateMetaScope(accountBookId, tempExpenseMetaId);
+		fileUploadService.deleteMeta(tempExpenseMetaId);
 	}
 
-	public TemporaryExpenseMetaBulkUpdateResponse updateTemporaryExpensesByFile(
+	public TemporaryExpenseResult updateTemporaryExpense(
 			Long accountBookId,
 			Long tempExpenseMetaId,
 			Long fileId,
-			TemporaryExpenseMetaBulkUpdateRequest request,
+			Long tempExpenseId,
+			TemporaryExpensePatchRequest request,
 			UUID userId) {
-
 		validateOwnership(accountBookId, userId);
-
-		return TemporaryExpenseMetaBulkUpdateResponse.from(
-				temporaryExpenseBulkUpdateService.updateByFile(
-						accountBookId, tempExpenseMetaId, fileId, request));
+		temporaryExpenseScopeValidationProvider.validateFileScope(
+				accountBookId, tempExpenseMetaId, fileId);
+		var target =
+				temporaryExpenseScopeValidationProvider.validateTempExpenseScope(
+						tempExpenseMetaId, fileId, tempExpenseId);
+		return temporaryExpenseCommandService.updateTemporaryExpense(
+				accountBookId, target, TemporaryExpenseUpdateCommand.from(request));
 	}
 
 	public void deleteTemporaryExpenseByFile(
@@ -79,8 +95,12 @@ public class TemporaryExpenseCommandFacade {
 			Long tempExpenseId,
 			UUID userId) {
 		validateOwnership(accountBookId, userId);
-		temporaryExpenseBulkUpdateService.deleteByFile(
-				accountBookId, tempExpenseMetaId, fileId, tempExpenseId);
+		temporaryExpenseScopeValidationProvider.validateFileScope(
+				accountBookId, tempExpenseMetaId, fileId);
+		var target =
+				temporaryExpenseScopeValidationProvider.validateTempExpenseScope(
+						tempExpenseMetaId, fileId, tempExpenseId);
+		temporaryExpenseCommandService.deleteTemporaryExpense(target);
 	}
 
 	private void validateOwnership(Long accountBookId, UUID userId) {

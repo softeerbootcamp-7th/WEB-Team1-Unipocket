@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.command.persistence.repository;
 
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseConversionContextRow;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseMetaStatusCountRow;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -45,4 +46,12 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 				+ " AND f.tempExpenseMetaId = te.tempExpenseMetaId")
 	Optional<TempExpenseConversionContextRow> findConversionContext(
 			@Param("accountBookId") Long accountBookId, @Param("tempExpenseId") Long tempExpenseId);
+
+	@Query(
+			"SELECT new"
+				+ " com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseMetaStatusCountRow(te.tempExpenseMetaId,"
+				+ " te.status, COUNT(te.tempExpenseId)) FROM TemporaryExpense te WHERE"
+				+ " te.tempExpenseMetaId IN :metaIds GROUP BY te.tempExpenseMetaId, te.status")
+	List<TempExpenseMetaStatusCountRow> countByTempExpenseMetaIdInGroupByStatus(
+			@Param("metaIds") List<Long> metaIds);
 }

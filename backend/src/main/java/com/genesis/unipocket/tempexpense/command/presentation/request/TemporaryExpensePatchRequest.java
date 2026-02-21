@@ -2,12 +2,10 @@ package com.genesis.unipocket.tempexpense.command.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record TemporaryExpenseMetaBulkUpdateItemRequest(
-		@NotNull Long tempExpenseId,
+public record TemporaryExpensePatchRequest(
 		String merchantName,
 		Category category,
 		CurrencyCode localCountryCode,

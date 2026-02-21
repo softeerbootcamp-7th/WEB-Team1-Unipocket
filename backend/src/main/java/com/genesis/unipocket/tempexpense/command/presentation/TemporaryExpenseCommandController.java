@@ -7,11 +7,11 @@ import com.genesis.unipocket.tempexpense.command.application.result.ParseStartRe
 import com.genesis.unipocket.tempexpense.command.facade.TemporaryExpenseCommandFacade;
 import com.genesis.unipocket.tempexpense.command.presentation.request.BatchParseRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest;
-import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
+import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpensePatchRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.response.BatchConvertStartResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.BatchParseResponse;
 import com.genesis.unipocket.tempexpense.command.presentation.response.PresignedUrlResponse;
-import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseMetaBulkUpdateResponse;
+import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -59,24 +59,20 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.ok(PresignedUrlResponse.from(result));
 	}
 
-	@Operation(
-			summary = "임시지출 확정",
-			description = "메타 단위로 임시지출 전체를 비동기로 확정 변환하고 진행 조회용 taskId를 반환합니다.")
+	@Operation(summary = "임시지출 확정", description = "메타 단위로 임시지출 전체를 동기 변환합니다.")
 	@PostMapping("/temporary-expense-metas/{tempExpenseMetaId}/confirm")
-	public ResponseEntity<BatchConvertStartResponse> confirm(
+	public ResponseEntity<BatchConvertStartResponse> convertMetaToExpenses(
 			@PathVariable Long accountBookId,
 			@PathVariable Long tempExpenseMetaId,
 			@LoginUser UUID userId) {
 
 		ConfirmStartResult result =
-				temporaryExpenseCommandFacade.confirm(accountBookId, tempExpenseMetaId, userId);
+				temporaryExpenseCommandFacade.convertMetaToExpenses(
+						accountBookId, tempExpenseMetaId, userId);
 
 		BatchConvertStartResponse response =
-				new BatchConvertStartResponse(
-						result.taskId(),
-						result.totalExpenses(),
-						buildParseStatusUrl(accountBookId, result.taskId()));
-		return ResponseEntity.accepted().body(response);
+				new BatchConvertStartResponse(result.convertedExpenses());
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(
@@ -85,12 +81,12 @@ public class TemporaryExpenseCommandController {
 					"메타 단위로 파싱 작업을 비동기로 시작하고 진행 조회용 taskId를 반환합니다. 요청에 s3Keys가 없으면 메타의 전체 파일을"
 							+ " 파싱합니다.")
 	@PostMapping("/temporary-expenses/parse")
-	public ResponseEntity<BatchParseResponse> parse(
+	public ResponseEntity<BatchParseResponse> startParseTask(
 			@PathVariable Long accountBookId,
 			@RequestBody @Valid BatchParseRequest request,
 			@LoginUser UUID userId) {
 		ParseStartResult result =
-				temporaryExpenseCommandFacade.startParseAsync(
+				temporaryExpenseCommandFacade.startParseTask(
 						accountBookId, request.tempExpenseMetaId(), request.s3Keys(), userId);
 
 		BatchParseResponse response =
@@ -102,17 +98,25 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.accepted().body(response);
 	}
 
-	@Operation(summary = "임시지출 일괄 수정", description = "메타(파일) 단위로 여러 임시지출을 한 번에 수정합니다.")
-	@PatchMapping("/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}/temporary-expenses")
-	public ResponseEntity<TemporaryExpenseMetaBulkUpdateResponse> updateTemporaryExpensesByFile(
+	@Operation(summary = "임시지출 단건 수정", description = "메타/파일 범위에 속한 임시지출 1건을 단순 병합 수정합니다.")
+	@PatchMapping(
+			"/temporary-expense-metas/{tempExpenseMetaId}/files/{fileId}/temporary-expenses/{tempExpenseId}")
+	public ResponseEntity<TemporaryExpenseUpdateResponse> updateTemporaryExpense(
 			@PathVariable Long accountBookId,
 			@PathVariable Long tempExpenseMetaId,
 			@PathVariable Long fileId,
-			@RequestBody @Valid TemporaryExpenseMetaBulkUpdateRequest request,
+			@PathVariable Long tempExpenseId,
+			@RequestBody @Valid TemporaryExpensePatchRequest request,
 			@LoginUser UUID userId) {
-		TemporaryExpenseMetaBulkUpdateResponse response =
-				temporaryExpenseCommandFacade.updateTemporaryExpensesByFile(
-						accountBookId, tempExpenseMetaId, fileId, request, userId);
+		TemporaryExpenseUpdateResponse response =
+				TemporaryExpenseUpdateResponse.from(
+						temporaryExpenseCommandFacade.updateTemporaryExpense(
+								accountBookId,
+								tempExpenseMetaId,
+								fileId,
+								tempExpenseId,
+								request,
+								userId));
 		return ResponseEntity.ok(response);
 	}
 

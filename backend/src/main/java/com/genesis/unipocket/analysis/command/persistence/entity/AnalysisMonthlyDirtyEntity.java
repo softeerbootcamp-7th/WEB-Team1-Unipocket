@@ -92,11 +92,13 @@ public class AnalysisMonthlyDirtyEntity extends BaseEntity {
 	}
 
 	public void markPendingFromEvent(LocalDateTime nowUtc) {
-		this.status = AnalysisBatchJobStatus.PENDING;
-		this.nextRetryAtUtc = null;
-		this.leaseUntilUtc = null;
-		this.errorCode = null;
-		this.errorMessage = null;
+		if (this.status != AnalysisBatchJobStatus.RUNNING) {
+			this.status = AnalysisBatchJobStatus.PENDING;
+			this.nextRetryAtUtc = null;
+			this.leaseUntilUtc = null;
+			this.errorCode = null;
+			this.errorMessage = null;
+		}
 		this.lastEventAtUtc = nowUtc;
 	}
 

@@ -1,21 +1,16 @@
 package com.genesis.unipocket.expense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
-import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
+import com.genesis.unipocket.expense.query.facade.ExpenseQueryFacade;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseFileUrlResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
-import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
-import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -32,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class ExpenseQueryController {
 
-	private final ExpenseQueryService expenseQueryService;
+	private final ExpenseQueryFacade expenseQueryFacade;
 
 	@Operation(summary = "지출내역 상세 조회 API", description = "하나의 지출내역에 대한 조회를 합니다.")
 	@GetMapping("/account-books/{accountBookId}/expenses/{expenseId}")
@@ -41,9 +36,7 @@ public class ExpenseQueryController {
 			@PathVariable Long accountBookId,
 			@PathVariable Long expenseId) {
 
-		ExpenseQueryResult dto = expenseQueryService.getExpense(expenseId, accountBookId, userId);
-		var travel = expenseQueryService.getTravelInfo(accountBookId, dto.travelId());
-		ExpenseResponse response = ExpenseResponse.from(dto, travel);
+		ExpenseResponse response = expenseQueryFacade.getExpense(expenseId, accountBookId, userId);
 		return ResponseEntity.ok(response);
 	}
 
@@ -56,26 +49,8 @@ public class ExpenseQueryController {
 			@PageableDefault(sort = "occurredAt", direction = Sort.Direction.DESC)
 					Pageable pageable) {
 
-		Page<ExpenseQueryResult> dtoPage =
-				expenseQueryService.getExpenses(accountBookId, userId, filter, pageable);
-
-		Map<Long, ExpenseTravelResult> travelInfoMap =
-				expenseQueryService.getTravelInfoMap(
-						accountBookId,
-						dtoPage.getContent().stream().map(ExpenseQueryResult::travelId).toList());
-
-		List<ExpenseResponse> responses =
-				dtoPage.getContent().stream()
-						.map(dto -> ExpenseResponse.from(dto, travelInfoMap.get(dto.travelId())))
-						.toList();
-
 		ExpenseListResponse response =
-				ExpenseListResponse.of(
-						responses,
-						dtoPage.getTotalElements(),
-						pageable.getPageNumber(),
-						pageable.getPageSize());
-
+				expenseQueryFacade.getExpenses(accountBookId, userId, filter, pageable);
 		return ResponseEntity.ok(response);
 	}
 
@@ -87,9 +62,9 @@ public class ExpenseQueryController {
 			@RequestParam("q") String query,
 			@RequestParam(name = "limit", required = false) Integer limit) {
 
-		List<String> merchantNames =
-				expenseQueryService.searchMerchantNames(accountBookId, userId, query, limit);
-		return ResponseEntity.ok(new ExpenseMerchantSearchResponse(merchantNames));
+		ExpenseMerchantSearchResponse response =
+				expenseQueryFacade.searchMerchantNames(accountBookId, userId, query, limit);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(
@@ -100,9 +75,8 @@ public class ExpenseQueryController {
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
 			@PathVariable Long expenseId) {
-		String presignedUrl =
-				expenseQueryService.issueExpenseFileUrl(expenseId, accountBookId, userId);
-		int expiresInSeconds = expenseQueryService.getExpenseFileUrlExpirationSeconds();
-		return ResponseEntity.ok(new ExpenseFileUrlResponse(presignedUrl, expiresInSeconds));
+		ExpenseFileUrlResponse response =
+				expenseQueryFacade.getExpenseFileUrl(expenseId, accountBookId, userId);
+		return ResponseEntity.ok(response);
 	}
 }

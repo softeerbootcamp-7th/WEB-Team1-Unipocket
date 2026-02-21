@@ -19,7 +19,8 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
   const usedAmount = Number(data?.baseSpentAmount) || 0;
   const localUsedAmount = Number(data?.localSpentAmount) || 0;
 
-  const showSkeleton = isPreview || isLoading || !data || budgetAmount === 0;
+  const showSkeleton = isPreview || isLoading || !data;
+  const isEmpty = !showSkeleton && budgetAmount === 0;
 
   return (
     <ChartContainer isPreview={isPreview}>
@@ -31,6 +32,7 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
       <ChartContent
         className="w-full p-5"
         isPreview={showSkeleton}
+        isEmpty={isEmpty}
         skeleton={<BudgetChartSkeleton />}
       >
         {data && (

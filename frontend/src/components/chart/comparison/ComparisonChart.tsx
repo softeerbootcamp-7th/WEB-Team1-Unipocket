@@ -25,6 +25,10 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
   const localCountryCode = useRequiredAccountBook().localCountryCode;
 
   const showSkeleton = isPreview || isLoading || !data;
+  const isEmpty =
+    !showSkeleton &&
+    Number(data?.mySpentAmount) === 0 &&
+    Number(data?.averageSpentAmount) === 0;
 
   return (
     <ChartContainer className="w-67" isPreview={isPreview}>
@@ -42,6 +46,7 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
         className="h-56.5 flex-col px-4 py-5"
         skeleton={<ComparisonChartSkeleton />}
         isPreview={showSkeleton}
+        isEmpty={isEmpty}
       >
         {data && (
           <ComparisonChartView

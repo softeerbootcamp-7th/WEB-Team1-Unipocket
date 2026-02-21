@@ -58,18 +58,15 @@ const DataTableSearchFilter = <T,>({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // 💡 1. 토글 로직 (기존 유지, 훅에 전달하기 위함)
   const toggleOption = (option: T) => {
     if (selectedOptions.includes(option)) {
       setSelectedOptions(selectedOptions.filter((item) => item !== option));
     } else {
       setSelectedOptions([...selectedOptions, option]);
     }
-    // setSearchTerm('')은 훅의 onSelect에서 처리되므로 여기서는 제거해도 됨
     onSelect?.(option);
   };
 
-  // 💡 2. useSearchNavigation 훅 적용!
   const {
     searchTerm,
     handleSearchChange,
@@ -80,7 +77,6 @@ const DataTableSearchFilter = <T,>({
     handleKeyDown,
   } = useSearchNavigation<T>({
     options,
-    // DataTableSearchFilter의 기본 필터 로직 적용
     filterFn:
       filterFn ||
       ((option, term) =>

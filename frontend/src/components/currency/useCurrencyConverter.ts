@@ -6,11 +6,6 @@ const ERROR_MESSAGES = {
   MAX_LENGTH_EXCEEDED: '최대 15자리까지만 입력할 수 있어요.',
 } as const;
 
-const isValidNumberFormat = (value: string): boolean => {
-  const sanitized = value.replace(/[^0-9.]/g, '');
-  return value === sanitized && (sanitized.match(/\./g)?.length ?? 0) <= 1;
-};
-
 const sanitizeInput = (value: string): string => value.replace(/[^0-9.]/g, '');
 
 const formatBaseCurrency = (amount: number): string =>
@@ -43,12 +38,17 @@ const useCurrencyConverter = (rate: number) => {
   }, [localCurrency, baseCurrency, amountError]);
 
   const handleCurrencyChange = (value: string, direction: Direction) => {
-    if (!isValidNumberFormat(value)) {
+    if (value.replace(/[0-9.,]/g, '') !== '') {
       setAmountError(ERROR_MESSAGES.INVALID_NUMBER);
       return;
     }
 
     const sanitized = sanitizeInput(value);
+
+    if ((sanitized.match(/\./g)?.length ?? 0) > 1) {
+      setAmountError(ERROR_MESSAGES.INVALID_NUMBER);
+      return;
+    }
     const integerPart = sanitized.split('.')[0];
     if (integerPart.length > 15) {
       setAmountError(ERROR_MESSAGES.MAX_LENGTH_EXCEEDED);

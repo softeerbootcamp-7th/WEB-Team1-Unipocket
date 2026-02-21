@@ -1,5 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 
+import { useAutoFitScale } from '@/hooks/useAutoFitScale';
+
 import Divider from '@/components/common/Divider';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import TextInput from '@/components/common/TextInput';
@@ -47,6 +49,27 @@ interface CurrencyConverterProps {
 const formatRateDate = (date: Date): string => {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}. ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const SIGN_MAX_WIDTH = 20;
+
+const ScaledSign = ({ sign }: { sign?: string }) => {
+  const { ref, scale } = useAutoFitScale<HTMLSpanElement>(SIGN_MAX_WIDTH, [
+    sign,
+  ]);
+  if (!sign) return null;
+  return (
+    <span
+      ref={ref}
+      style={{
+        display: 'inline-block',
+        transformOrigin: 'left center',
+        transform: `scale(${scale})`,
+      }}
+    >
+      {sign}
+    </span>
+  );
 };
 
 const CurrencyConverter = ({
@@ -113,7 +136,7 @@ const CurrencyConverter = ({
           placeholder="0"
           onChange={(value) => handleCurrencyChange(value, 'toBase')}
           className="flex-1"
-          prefix={localCurrencySign}
+          prefix={<ScaledSign sign={localCurrencySign} />}
           isError={!!amountError}
           errorMessage={amountError ?? undefined}
         />
@@ -157,7 +180,7 @@ const CurrencyConverter = ({
           placeholder="0"
           onChange={(value) => handleCurrencyChange(value, 'toLocal')}
           className="flex-1"
-          prefix={baseCurrencySign}
+          prefix={<ScaledSign sign={baseCurrencySign} />}
           isError={!!amountError}
           errorMessage={amountError ?? undefined}
         />

@@ -1,31 +1,34 @@
-package com.genesis.unipocket.expense.query.service.dto;
+package com.genesis.unipocket.expense.query.persistence.response;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
-public record ExpenseQueryResult(
+public record ExpenseOneShotRow(
 		Long expenseId,
 		Long accountBookId,
 		Long travelId,
-		Category category,
-		CurrencyCode baseCurrencyCode,
-		BigDecimal baseCurrencyAmount,
+		String travelName,
+		String travelImageKey,
+		String merchantName,
 		BigDecimal exchangeRate,
-		CurrencyCode localCurrencyCode,
-		BigDecimal localCurrencyAmount,
+		Category category,
 		OffsetDateTime occurredAt,
-		OffsetDateTime updatedAt,
-		String displayMerchantName,
+		LocalDateTime updatedAt,
+		BigDecimal localCurrencyAmount,
+		CurrencyCode localCurrencyCode,
+		BigDecimal baseCurrencyAmount,
+		CurrencyCode baseCurrencyCode,
+		String memo,
+		ExpenseSource source,
 		String approvalNumber,
+		String expenseCardNumber,
+		String fileLink,
 		Long userCardId,
 		CardCompany cardCompany,
 		String cardLabel,
-		String cardLastDigits,
-		ExpenseSource expenseSource,
-		String fileLink,
-		String memo,
-		String cardNumber) {}
+		String cardLastDigits) {}

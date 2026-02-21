@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
+import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
 import type { ActiveCellState } from '@/components/data-table/type';
 
 const TextCellEditor = () => {
@@ -17,28 +18,15 @@ const TextCellEditor = () => {
   );
 };
 
-// 내부용 컴포넌트
 const TextCellEditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   const { dispatch } = useDataTable();
   const [value, setValue] = useState(String(textCell.value));
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // 자동 포커스 처리만 남깁니다.
   useEffect(() => {
-    const scrollContainer = document.querySelector(
-      '[data-slot="table-container"]',
-    );
-
-    if (scrollContainer instanceof HTMLElement) {
-      const originalStyle = scrollContainer.style.overflow;
-      scrollContainer.style.overflow = 'hidden';
-
-      inputRef.current?.focus();
-      inputRef.current?.select();
-
-      return () => {
-        scrollContainer.style.overflow = originalStyle;
-      };
-    }
+    inputRef.current?.focus();
+    inputRef.current?.select();
   }, []);
 
   const handleSave = () => {
@@ -46,14 +34,8 @@ const TextCellEditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: textCell.rect.top,
-        left: textCell.rect.left,
-        width: textCell.rect.width,
-        height: textCell.rect.height,
-      }}
+    <CellEditorAnchor
+      rect={textCell.rect}
       className="rounded-modal-12 shadow-semantic-emphasize z-priority inline-flex bg-white px-2.5 py-3.5"
     >
       <input
@@ -64,7 +46,7 @@ const TextCellEditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
         onBlur={handleSave}
         onKeyDown={(e) => e.key === 'Enter' && handleSave()}
       />
-    </div>
+    </CellEditorAnchor>
   );
 };
 

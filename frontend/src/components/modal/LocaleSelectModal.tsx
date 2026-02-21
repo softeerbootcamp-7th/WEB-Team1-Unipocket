@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMatches } from '@tanstack/react-router';
+import { useMatchRoute } from '@tanstack/react-router';
 import clsx from 'clsx';
 
 import Control from '@/components/common/Control';
@@ -65,8 +65,8 @@ const LocaleSelectModal = ({
   onSelect,
   selectedCode: propSelectedCode,
 }: LocaleSelectModalProps) => {
-  const matches = useMatches();
-  const isInitPath = matches.some((match) => match.routeId === '/_app/init');
+  const matchRoute = useMatchRoute();
+  const isInitPath = !!matchRoute({ to: '/init' });
   const [selectedCode, setSelectedCode] = useState<CountryCode | null>(
     propSelectedCode,
   );

@@ -1,6 +1,6 @@
 package com.genesis.unipocket.exchange.query.application.impl;
 
-import com.genesis.unipocket.exchange.command.application.ExchangeRateCommandService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateResolveService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -27,7 +27,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 	private static final int RATE_SCALE = 10;
 
 	private final ExchangeRateQueryService exchangeRateQueryService;
-	private final ExchangeRateCommandService exchangeRateCommandService;
+	private final ExchangeRateResolveService exchangeRateResolveService;
 
 	@Override
 	public BigDecimal getExchangeRate(CurrencyCode from, CurrencyCode to, OffsetDateTime dateTime) {
@@ -64,7 +64,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 				.map(rate -> rate.getRate())
 				.orElseGet(
 						() ->
-								exchangeRateCommandService.resolveAndStoreUsdRelativeRate(
+								exchangeRateResolveService.resolveAndStoreUsdRelativeRate(
 										currencyCode, targetDate));
 	}
 }

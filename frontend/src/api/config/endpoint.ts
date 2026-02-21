@@ -7,8 +7,7 @@ export const ENDPOINTS = {
     OAUTH_CALLBACK: (provider: string) => `auth/oauth2/callback/${provider}`, // OAuth 콜백 (GET)
   },
   USERS: {
-    ME: 'users/me', // ✓ (GET)
-    WITHDRAW: 'users/me', // 회원 탈퇴 (DELETE)
+    BASE: 'users/me',
     CARDS: 'users/cards', // 카드 목록 조회 (GET), 카드 등록 (POST)
     CARD_DETAIL: (cardId: number | string) => `users/cards/${cardId}`, // 카드 삭제 (DELETE)
     CARD_COMPANIES: 'users/cards/companies', // 카드사 목록 조회 (GET)

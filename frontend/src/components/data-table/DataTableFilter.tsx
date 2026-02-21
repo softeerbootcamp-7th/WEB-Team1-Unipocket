@@ -1,9 +1,10 @@
 import { type ComponentPropsWithoutRef, useRef, useState } from 'react';
-import { clsx } from 'clsx';
+
+import { useSearchNavigation } from '@/hooks/useSearchNavigation';
 
 import Chip, { CategoryChip } from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
-import { Checkbox } from '@/components/ui/checkbox';
+import { DataTableOptionList } from '@/components/data-table/DataTableOptionList';
 import {
   Popover,
   PopoverContent,
@@ -27,6 +28,7 @@ interface DataTableSearchFilterProps<T> {
   onSelect?: (term: T) => void;
   onSelectMultiple?: (terms: T[]) => void;
   isCategory?: boolean;
+  filterFn?: (option: T, searchTerm: string) => boolean;
   // 렌더링 옵션
   renderOption: (option: T, searchTerm: string) => React.ReactNode;
   renderEmptyState?: () => React.ReactNode;
@@ -42,6 +44,7 @@ const DataTableSearchFilter = <T,>({
   selectedOptions,
   setSelectedOptions,
   renderOption,
+  filterFn,
   renderEmptyState,
   isCategory = false,
   renderSearchAllTrigger,
@@ -50,79 +53,50 @@ const DataTableSearchFilter = <T,>({
   onSelectMultiple,
 }: DataTableSearchFilterProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeIndex, setActiveIndex] = useState(0);
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
 
-  const filteredOptions = (() => {
-    if (!searchTerm) return options;
-    return options.filter((option) =>
-      String(option).toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  })();
-
-  // 검색어 변경
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    setActiveIndex(0);
-    // api 호출예정
-    onInputChange(value);
-  };
-
-  // 항목 선택/해제 토글
   const toggleOption = (option: T) => {
     if (selectedOptions.includes(option)) {
       setSelectedOptions(selectedOptions.filter((item) => item !== option));
     } else {
       setSelectedOptions([...selectedOptions, option]);
     }
-    setSearchTerm('');
     onSelect?.(option);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // 백스페이스로 마지막 태그 삭제
-    if (
-      e.key === 'Backspace' &&
-      searchTerm === '' &&
-      selectedOptions.length > 0
-    ) {
-      const newSelection = [...selectedOptions];
-      newSelection.pop(); // 마지막 항목 제거
-      setSelectedOptions(newSelection);
-    }
-
-    // 2. 화살표 아래 (다음 항목)
-    if (e.key === 'ArrowDown') {
-      e.preventDefault(); // 커서 이동 방지
-      setActiveIndex((prev) =>
-        prev + 1 >= filteredOptions.length ? 0 : prev + 1,
-      );
-      return;
-    }
-
-    // 3. 화살표 위 (이전 항목)
-    if (e.key === 'ArrowUp') {
-      e.preventDefault(); // 커서 이동 방지
-      setActiveIndex((prev) =>
-        prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1,
-      );
-      return;
-    }
-
-    // 4. 엔터 (현재 하이라이트된 항목 선택)
-    if (e.key === 'Enter') {
-      if (e.nativeEvent.isComposing) return;
-      e.preventDefault();
-      // 현재 하이라이트된 옵션 가져오기
-      const targetOption = filteredOptions[activeIndex];
-
-      if (targetOption) {
-        toggleOption(targetOption);
+  const {
+    searchTerm,
+    handleSearchChange,
+    setSearchTerm, // 전체 선택 후 초기화 등을 위해 가져옴
+    activeIndex,
+    setActiveIndex,
+    filteredOptions,
+    handleKeyDown,
+  } = useSearchNavigation<T>({
+    options,
+    filterFn:
+      filterFn ||
+      ((option, term) =>
+        String(option).toLowerCase().includes(term.toLowerCase())),
+    onSelect: (option) => {
+      toggleOption(option);
+    },
+    // 백스페이스 눌렀을 때 실행할 액션: 마지막 태그 지우기
+    onBackspace: () => {
+      if (selectedOptions.length > 0) {
+        const newSelection = [...selectedOptions];
+        newSelection.pop();
+        setSelectedOptions(newSelection);
       }
-    }
+    },
+  });
+
+  // 💡 3. 검색어 변경 래퍼 함수 (onInputChange prop 지원을 위해)
+  const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    handleSearchChange(value); // 훅의 상태 업데이트 (인덱스 0 초기화 포함)
+    onInputChange(value); // 외부 API 호출용 prop
   };
 
   // 컨테이너 클릭 시 인풋 포커스
@@ -145,10 +119,10 @@ const DataTableSearchFilter = <T,>({
     setSelectedOptions([...selectedOptions, ...newItemsToSelect]);
 
     if (onSelectMultiple) {
-      onSelectMultiple(newItemsToSelect); //  배열 통째로 전달
+      onSelectMultiple(newItemsToSelect);
     } else if (onSelect) {
       newItemsToSelect.forEach((item) => {
-        onSelect(item); //  fallback (덮어쓰기 위험 있음)
+        onSelect(item);
       });
     }
 
@@ -219,7 +193,7 @@ const DataTableSearchFilter = <T,>({
             ref={inputRef}
             type="text"
             value={searchTerm}
-            onChange={handleInputChange}
+            onChange={onSearchInputChange} // 💡 래퍼 함수로 변경
             onKeyDown={handleKeyDown}
             placeholder={
               selectedOptions.length > 0
@@ -232,50 +206,31 @@ const DataTableSearchFilter = <T,>({
         </div>
 
         {/* --- 리스트 && footer 영역 --- */}
-        <div
-          ref={listRef}
-          className="flex max-h-85 min-h-42 flex-col justify-between p-3"
-        >
-          <div className="scrollbar overflow-y-auto">
-            {!searchTerm && renderEmptyState ? (
-              renderEmptyState()
-            ) : (
-              <>
-                {filteredOptions.length > 0 ? (
-                  filteredOptions.map((option, index) => (
-                    <label
-                      key={String(option)}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      className={clsx(
-                        'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',
-                        activeIndex === index && 'bg-background-alternative',
-                      )}
-                    >
-                      <Checkbox
-                        checked={selectedOptions.includes(option)}
-                        onCheckedChange={() => toggleOption(option)}
-                      />
-
-                      {/* 옵션 텍스트/컴포넌트 */}
-                      <div className="text-label-neutral flex-1 truncate text-sm">
-                        {renderOption(option, searchTerm)}
-                      </div>
-                    </label>
-                  ))
-                ) : (
-                  <div className="text-label-assistive p-4 text-center text-sm">
-                    검색 결과가 없습니다.
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          {/* Search All Trigger */}
-          {searchTerm &&
-            filteredOptions.length > 0 &&
-            renderSearchAllTrigger &&
-            renderSearchAllTrigger(searchTerm, handleSelectAll)}
-        </div>
+        <DataTableOptionList
+          items={filteredOptions}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+          isSelected={(option) => selectedOptions.includes(option)}
+          onSelect={(option) => toggleOption(option)}
+          renderItem={(option) => (
+            <div className="text-label-neutral flex-1 truncate text-sm">
+              {renderOption(option, searchTerm)}
+            </div>
+          )}
+          customEmptyContent={
+            !searchTerm && renderEmptyState ? renderEmptyState() : null
+          }
+          footer={
+            searchTerm && filteredOptions.length > 0 && renderSearchAllTrigger
+              ? renderSearchAllTrigger(searchTerm, handleSelectAll)
+              : null
+          }
+        />
+        {/* Search All Trigger */}
+        {searchTerm &&
+          filteredOptions.length > 0 &&
+          renderSearchAllTrigger &&
+          renderSearchAllTrigger(searchTerm, handleSelectAll)}
       </PopoverContent>
     </Popover>
   );

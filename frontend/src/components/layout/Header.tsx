@@ -1,17 +1,15 @@
 import { Suspense, useEffect, useState } from 'react';
-import { useMatches } from '@tanstack/react-router';
+import { useMatchRoute } from '@tanstack/react-router';
 
-import Button from '@/components/common/Button';
 import ProfilePopover from '@/components/common/ProfilePopover';
 import AccountBookSelector from '@/components/layout/AccountBookSelector';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { Icons } from '@/assets';
 import { getLocalTime } from '@/lib/utils';
 
 const Header = () => {
-  const matches = useMatches();
-  const isInitPath = matches.some((match) => match.routeId === '/_app/init');
+  const matchRoute = useMatchRoute();
+  const isInitPath = !!matchRoute({ to: '/init' });
 
   const [time, setTime] = useState(getLocalTime('KR'));
 
@@ -34,12 +32,9 @@ const Header = () => {
       </div>
       <div className="flex items-center gap-5">
         {!isInitPath && (
-          <div className="flex items-center gap-2">
-            <span className="label2-medium text-label-neutral">{time}</span>
-            <Icons.Refresh className="text-label-neutral h-4 w-4 cursor-pointer" />
-          </div>
+          <span className="label2-medium text-label-neutral">{time}</span>
         )}
-        <Button onClick={() => {}}>모바일</Button>
+        {/* {!isInitPath && <Button onClick={() => {}}>모바일</Button>} */}
         <ProfilePopover />
       </div>
     </div>

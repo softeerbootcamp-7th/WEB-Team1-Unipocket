@@ -9,6 +9,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 
 import { routeTree } from '@/routeTree.gen';
 
+const TOOLTIP_DELAY_DURATION = 300;
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -33,7 +35,7 @@ declare module '@tanstack/react-router' {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider delayDuration={300}>
+      <TooltipProvider delayDuration={TOOLTIP_DELAY_DURATION}>
         <RouterProvider router={router} />
       </TooltipProvider>
     </QueryClientProvider>

@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.exchange.command.application.ExchangeRateCommandService;
-import com.genesis.unipocket.exchange.command.persistence.entity.ExchangeRate;
+import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;

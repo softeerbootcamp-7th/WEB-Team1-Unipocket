@@ -1,11 +1,10 @@
 package com.genesis.unipocket.tempexpense.command.application.parsing;
 
-import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
+import com.genesis.unipocket.expense.common.util.ExchangeAmountCalculator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
-import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
@@ -28,15 +27,13 @@ public class TemporaryExpensePersistenceService {
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
 
 	@Transactional
-	public ParsingResult persist(
+	public void persist(
 			File file,
 			TempExpenseMeta meta,
 			List<NormalizedParsedExpenseItem> normalizedItems,
 			AccountBookRateContext rateContext,
 			Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap) {
 		List<TemporaryExpense> createdExpenses = new ArrayList<>();
-		int normalCount = 0;
-		int incompleteCount = 0;
 
 		for (NormalizedParsedExpenseItem item : normalizedItems) {
 			TemporaryExpenseStatus status =
@@ -48,11 +45,6 @@ public class TemporaryExpensePersistenceService {
 							item.localAmount(),
 							rateContext.baseCurrencyCode(),
 							item.occurredAt());
-			if (status == TemporaryExpenseStatus.NORMAL) {
-				normalCount++;
-			} else if (status == TemporaryExpenseStatus.INCOMPLETE) {
-				incompleteCount++;
-			}
 
 			CalculatedAmount calculatedAmount =
 					calculateAmounts(item, rateContext.baseCurrencyCode(), exchangeRateMap);
@@ -78,14 +70,7 @@ public class TemporaryExpensePersistenceService {
 			createdExpenses.add(expense);
 		}
 
-		List<TemporaryExpense> savedExpenses = temporaryExpenseRepository.saveAll(createdExpenses);
-		return new ParsingResult(
-				meta.getTempExpenseMetaId(),
-				savedExpenses.size(),
-				normalCount,
-				incompleteCount,
-				0,
-				savedExpenses);
+		temporaryExpenseRepository.saveAll(createdExpenses);
 	}
 
 	private CalculatedAmount calculateAmounts(

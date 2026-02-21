@@ -41,6 +41,7 @@ interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
   rateUpdatedAt?: Date;
   onValuesChange?: (values: CurrencyValues) => void;
+  onBaseCurrencyChange?: (amount: number) => void;
 }
 
 const formatRateDate = (date: Date): string => {
@@ -52,6 +53,7 @@ const CurrencyConverter = ({
   showCurrencyDropdown = false,
   rateUpdatedAt,
   onValuesChange,
+  onBaseCurrencyChange,
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
@@ -94,6 +96,13 @@ const CurrencyConverter = ({
       baseAmount: toNumber(baseCurrency),
     });
   }, [localCurrency, baseCurrency, localCurrencyName, isValid, onValuesChange]);
+
+  useEffect(() => {
+    if (onBaseCurrencyChange && baseCurrency) {
+      const numericValue = Number(baseCurrency.replace(/[^0-9.]+/g, ''));
+      onBaseCurrencyChange(isNaN(numericValue) ? 0 : numericValue);
+    }
+  }, [baseCurrency, onBaseCurrencyChange]);
 
   return (
     <div className="flex h-62 flex-col gap-3">

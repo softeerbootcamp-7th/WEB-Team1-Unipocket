@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class TemporaryExpenseValidator {
 
-	/** NORMAL 판정에 필요한 필수 필드 충족 여부 */
 	public boolean hasRequiredFieldsForNormal(
 			String merchantName,
 			Category category,
@@ -32,7 +31,6 @@ public class TemporaryExpenseValidator {
 				&& occurredAt != null;
 	}
 
-	/** 상태 재평가 (ABNORMAL 고정) */
 	public TemporaryExpenseStatus resolveStatus(
 			TemporaryExpenseStatus originalStatus,
 			String merchantName,
@@ -55,7 +53,6 @@ public class TemporaryExpenseValidator {
 				: TemporaryExpenseStatus.INCOMPLETE;
 	}
 
-	/** 확정 변환 필수값 검증 */
 	public void validateConvertible(TemporaryExpense temp, CurrencyCode resolvedBaseCurrencyCode) {
 		List<String> missingOrInvalidFields =
 				findMissingOrInvalidFields(temp, resolvedBaseCurrencyCode);

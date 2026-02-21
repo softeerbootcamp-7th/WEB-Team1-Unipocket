@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -93,11 +94,16 @@ public class GeminiService {
 
 			if (!response.getStatusCode().is2xxSuccessful()) {
 				log.error("Gemini API call failed with status: {}", response.getStatusCode());
-				return new GeminiParseResponse(false, List.of(), "API call failed");
+				return new GeminiParseResponse(
+						false, List.of(), "API call failed", response.getStatusCode().value());
 			}
 
 			return parseGeminiResponse(response.getBody());
 
+		} catch (HttpStatusCodeException e) {
+			log.error("Gemini API returned non-2xx status: {}", e.getStatusCode(), e);
+			return new GeminiParseResponse(
+					false, List.of(), e.getMessage(), e.getStatusCode().value());
 		} catch (RestClientException e) {
 			log.error("Failed to call Gemini API", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
@@ -139,11 +145,16 @@ public class GeminiService {
 
 			if (!response.getStatusCode().is2xxSuccessful()) {
 				log.error("Gemini API call failed with status: {}", response.getStatusCode());
-				return new GeminiParseResponse(false, List.of(), "API call failed");
+				return new GeminiParseResponse(
+						false, List.of(), "API call failed", response.getStatusCode().value());
 			}
 
 			return parseGeminiResponse(response.getBody());
 
+		} catch (HttpStatusCodeException e) {
+			log.error("Gemini API returned non-2xx status: {}", e.getStatusCode(), e);
+			return new GeminiParseResponse(
+					false, List.of(), e.getMessage(), e.getStatusCode().value());
 		} catch (RestClientException e) {
 			log.error("Failed to call Gemini API", e);
 			return new GeminiParseResponse(false, List.of(), e.getMessage());
@@ -353,7 +364,19 @@ public class GeminiService {
 	 * Gemini API 파싱 응답 (영수증)
 	 */
 	public record GeminiParseResponse(
-			boolean success, List<ParsedExpenseItem> items, String errorMessage) {}
+			boolean success,
+			List<ParsedExpenseItem> items,
+			String errorMessage,
+			Integer statusCode) {
+		public GeminiParseResponse(
+				boolean success, List<ParsedExpenseItem> items, String errorMessage) {
+			this(success, items, errorMessage, null);
+		}
+
+		public boolean isRateLimited() {
+			return Integer.valueOf(429).equals(statusCode);
+		}
+	}
 
 	/**
 	 * 파싱된 지출 항목

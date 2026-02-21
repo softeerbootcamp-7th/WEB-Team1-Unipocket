@@ -3,7 +3,6 @@ package com.genesis.unipocket.tempexpense.command.facade;
 import com.genesis.unipocket.tempexpense.command.application.FileUploadService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseBulkUpdateService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseConversionService;
-import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseRateLimitService;
 import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryExpenseParsingService;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
@@ -17,14 +16,6 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * <b>임시지출내역 Facade 클래스</b>
- * <p>
- * 임시지출내역 도메인에 대한 요청 처리
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Service
 @AllArgsConstructor
 public class TemporaryExpenseCommandFacade {
@@ -33,7 +24,6 @@ public class TemporaryExpenseCommandFacade {
 	private final TemporaryExpenseParsingService temporaryExpenseParsingService;
 	private final TemporaryExpenseConversionService temporaryExpenseConversionService;
 	private final TemporaryExpenseBulkUpdateService temporaryExpenseBulkUpdateService;
-	private final TemporaryExpenseRateLimitService temporaryExpenseRateLimitService;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public FileUploadResult createPresignedUrl(
@@ -43,11 +33,7 @@ public class TemporaryExpenseCommandFacade {
 			UploadType uploadType,
 			Long tempExpenseMetaId,
 			UUID userId) {
-		// 가계부 소유주 검증 진행
 		validateOwnership(accountBookId, userId);
-		temporaryExpenseRateLimitService.validateUploadRequest(userId);
-
-		// presigned url 발급
 		return fileUploadService.createPresignedUrl(
 				accountBookId, fileName, mimeType, uploadType, tempExpenseMetaId);
 	}
@@ -55,9 +41,6 @@ public class TemporaryExpenseCommandFacade {
 	public ParseStartResult startParseAsync(
 			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys, UUID userId) {
 		validateOwnership(accountBookId, userId);
-		temporaryExpenseRateLimitService.validateParseRequest(userId);
-
-		// 비동기 파싱(SSE 기반 파싱) 시작
 		return temporaryExpenseParsingService.startParseAsync(
 				accountBookId, tempExpenseMetaId, s3Keys);
 	}
@@ -75,9 +58,6 @@ public class TemporaryExpenseCommandFacade {
 		fileUploadService.deleteMeta(accountBookId, tempExpenseMetaId);
 	}
 
-	/**
-	 * 임시지출내역 리스트 단위 수정 API
-	 */
 	public TemporaryExpenseMetaBulkUpdateResponse updateTemporaryExpensesByFile(
 			Long accountBookId,
 			Long tempExpenseMetaId,

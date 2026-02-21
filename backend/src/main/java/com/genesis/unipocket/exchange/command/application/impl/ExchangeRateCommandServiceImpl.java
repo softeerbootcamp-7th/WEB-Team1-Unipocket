@@ -3,15 +3,15 @@ package com.genesis.unipocket.exchange.command.application.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.exchange.command.application.ExchangeRateCommandService;
 import com.genesis.unipocket.exchange.command.application.impl.dto.YahooChartResponse;
-import com.genesis.unipocket.exchange.command.persistence.entity.ExchangeRate;
-import com.genesis.unipocket.exchange.command.persistence.repository.ExchangeRateRepository;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
+import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +38,6 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 	private String yahooChartUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}";
 
 	private final ExchangeRateRepository exchangeRateRepository;
-	private final ExchangeRateQueryService exchangeRateQueryService;
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 
@@ -113,7 +112,7 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 					rate);
 			return;
 		}
-		if (exchangeRateQueryService.findLatestRateInRange(currencyCode, date, date).isPresent()) {
+		if (findLatestEntityInRange(currencyCode, date, date).isPresent()) {
 			return;
 		}
 		try {
@@ -133,12 +132,20 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 
 	private Optional<RateOnDate> findLatestDbRateInRange(
 			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
-		return exchangeRateQueryService
-				.findLatestRateInRange(currencyCode, startDate, endDate)
+		return findLatestEntityInRange(currencyCode, startDate, endDate)
 				.map(
 						dbRate ->
 								new RateOnDate(
 										dbRate.getRecordedAt().toLocalDate(), dbRate.getRate()));
+	}
+
+	private Optional<ExchangeRate> findLatestEntityInRange(
+			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
+		LocalDateTime startOfRange = startDate.atStartOfDay();
+		LocalDateTime endExclusive = endDate.plusDays(1).atStartOfDay();
+		return exchangeRateRepository
+				.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+						currencyCode, startOfRange, endExclusive);
 	}
 
 	private Optional<RateOnDate> findLatestRateInMap(

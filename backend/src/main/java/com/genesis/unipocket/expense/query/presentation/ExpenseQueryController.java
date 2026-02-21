@@ -1,14 +1,14 @@
 package com.genesis.unipocket.expense.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.application.result.ExpenseTravelResult;
+import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseFileUrlResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
 import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
+import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -26,12 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * <b>지출내역 조회 컨트롤러</b>
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Tag(name = "지출내역 기능")
 @RestController
 @RequestMapping
@@ -47,7 +41,7 @@ public class ExpenseQueryController {
 			@PathVariable Long accountBookId,
 			@PathVariable Long expenseId) {
 
-		ExpenseResult dto = expenseQueryService.getExpense(expenseId, accountBookId, userId);
+		ExpenseQueryResult dto = expenseQueryService.getExpense(expenseId, accountBookId, userId);
 		var travel = expenseQueryService.getTravelInfo(accountBookId, dto.travelId());
 		ExpenseResponse response = ExpenseResponse.from(dto, travel);
 		return ResponseEntity.ok(response);
@@ -62,13 +56,13 @@ public class ExpenseQueryController {
 			@PageableDefault(sort = "occurredAt", direction = Sort.Direction.DESC)
 					Pageable pageable) {
 
-		Page<ExpenseResult> dtoPage =
+		Page<ExpenseQueryResult> dtoPage =
 				expenseQueryService.getExpenses(accountBookId, userId, filter, pageable);
 
 		Map<Long, ExpenseTravelResult> travelInfoMap =
 				expenseQueryService.getTravelInfoMap(
 						accountBookId,
-						dtoPage.getContent().stream().map(ExpenseResult::travelId).toList());
+						dtoPage.getContent().stream().map(ExpenseQueryResult::travelId).toList());
 
 		List<ExpenseResponse> responses =
 				dtoPage.getContent().stream()

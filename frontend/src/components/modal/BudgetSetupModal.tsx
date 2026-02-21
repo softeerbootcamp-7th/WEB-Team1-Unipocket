@@ -1,5 +1,9 @@
+import { useState } from 'react';
+
 import CurrencyConverter from '@/components/currency/CurrencyConverter';
 import Modal from '@/components/modal/Modal';
+
+import { useUpdateAccountBookBudgetMutation } from '@/api/account-books/query';
 
 interface BudgetSetupModalProps {
   isOpen: boolean;
@@ -7,9 +11,20 @@ interface BudgetSetupModalProps {
 }
 
 const BudgetSetupModal = ({ isOpen, onClose }: BudgetSetupModalProps) => {
+  const [budgetAmount, setBudgetAmount] = useState<number>(0);
+
+  const { mutate: updateBudget } = useUpdateAccountBookBudgetMutation();
+
+  const handleAction = () => {
+    updateBudget(budgetAmount, {
+      onSuccess: () => {
+        onClose();
+      },
+    });
+  };
+
   return (
-    // TODO: API 연동 시 onAction 연동 필요
-    <Modal isOpen={isOpen} onClose={onClose} onAction={() => {}}>
+    <Modal isOpen={isOpen} onClose={onClose} onAction={handleAction}>
       <div className="flex w-86 flex-col items-center">
         {/* title section */}
         <div className="flex flex-col items-center gap-1.5">
@@ -25,7 +40,7 @@ const BudgetSetupModal = ({ isOpen, onClose }: BudgetSetupModalProps) => {
 
         {/* input section */}
         <div className="w-full py-13">
-          <CurrencyConverter />
+          <CurrencyConverter onBaseCurrencyChange={setBudgetAmount} />
         </div>
       </div>
     </Modal>

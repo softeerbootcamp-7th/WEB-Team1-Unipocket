@@ -80,3 +80,14 @@ export interface WidgetResponseMap {
   PAYMENT: GetPaymentWidgetResponse;
   CURRENCY: GetCurrencyWidgetResponse;
 }
+
+export interface WidgetLayoutItem {
+  order: number;
+  widgetType: WidgetType;
+  currencyType?: CurrencyType;
+  period?: PeriodType;
+}
+
+export type WidgetLayoutResponse = WidgetLayoutItem[];
+
+export type UpdateWidgetLayoutRequest = WidgetLayoutItem[];

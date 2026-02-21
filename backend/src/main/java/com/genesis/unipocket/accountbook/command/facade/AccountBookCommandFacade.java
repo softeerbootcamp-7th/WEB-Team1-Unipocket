@@ -50,20 +50,27 @@ public class AccountBookCommandFacade {
 						accountBookId,
 						userId,
 						req.title(),
+						req.titlePresent(),
 						req.localCountryCode(),
+						req.localCountryCodePresent(),
 						req.baseCountryCode(),
+						req.baseCountryCodePresent(),
 						req.budget(),
+						req.budgetPresent(),
 						req.startDate(),
+						req.startDatePresent(),
 						req.endDate(),
-						req.isMain());
+						req.endDatePresent(),
+						req.isMain(),
+						req.isMainPresent());
 		var result = accountBookCommandService.update(command);
-		if (Boolean.TRUE.equals(req.isMain())) {
+		if (command.isMainPresent() && Boolean.TRUE.equals(command.isMain())) {
 			userMainAccountBookService.updateMainAccountBook(userId, accountBookId);
 		}
 
 		if (result.countryChanged()) {
 			expenseCurrencySyncService.updateBaseCurrency(
-					accountBookId, req.baseCountryCode().getCurrencyCode());
+					accountBookId, result.baseCurrencyCode().getCurrencyCode());
 		}
 
 		return AccountBookResponse.of(result);

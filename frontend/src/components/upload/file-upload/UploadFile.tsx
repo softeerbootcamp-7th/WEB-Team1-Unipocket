@@ -10,6 +10,8 @@ interface UploadFileProps {
 const UploadFile = ({ item, onRemove }: UploadFileProps) => {
   const { name, status } = item;
   const isUploading = status === UPLOAD_STATUS.UPLOADING;
+  const isUploaded = status === UPLOAD_STATUS.UPLOADED;
+  const isError = status === UPLOAD_STATUS.ERROR;
 
   return (
     <div className="border-line-normal-neutral flex items-center justify-between rounded-2xl border p-4">
@@ -25,7 +27,7 @@ const UploadFile = ({ item, onRemove }: UploadFileProps) => {
           </div>
         )}
 
-        {status === UPLOAD_STATUS.DONE && (
+        {isUploaded && (
           <div className="flex items-center gap-1">
             <Icons.Checkmark className="size-4" />
             <span className="label2-medium text-status-positive">
@@ -34,7 +36,7 @@ const UploadFile = ({ item, onRemove }: UploadFileProps) => {
           </div>
         )}
 
-        {status === UPLOAD_STATUS.ERROR && (
+        {isError && (
           <div className="flex items-center gap-1">
             <Icons.Alert className="size-4" />
             <span className="label2-medium text-status-negative">

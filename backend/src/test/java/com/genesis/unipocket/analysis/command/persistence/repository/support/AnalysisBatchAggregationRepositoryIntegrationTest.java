@@ -78,6 +78,17 @@ class AnalysisBatchAggregationRepositoryIntegrationTest {
 				CurrencyCode.USD,
 				CurrencyCode.KRW,
 				"b");
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.INCOME,
+				AnalysisFixtureFactory.utcDateTime(2025, 12, 12, 10, 0),
+				new BigDecimal("300.00"),
+				new BigDecimal("210.00"),
+				null,
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"income");
 
 		AmountPairCount result =
 				repository.aggregateAccountBookMonthlyRaw(
@@ -156,6 +167,17 @@ class AnalysisBatchAggregationRepositoryIntegrationTest {
 				CurrencyCode.USD,
 				CurrencyCode.KRW,
 				"living");
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBookId,
+				Category.INCOME,
+				AnalysisFixtureFactory.utcDateTime(2025, 12, 13, 10, 0),
+				new BigDecimal("200.00"),
+				new BigDecimal("140.00"),
+				null,
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"income");
 
 		List<CategoryAmountPairCount> rows =
 				repository.aggregateAccountBookMonthlyRawByCategory(
@@ -187,5 +209,10 @@ class AnalysisBatchAggregationRepositoryIntegrationTest {
 		assertThat(living.totalLocalAmount()).isEqualByComparingTo("30.00");
 		assertThat(living.totalBaseAmount()).isEqualByComparingTo("21.00");
 		assertThat(living.expenseCount()).isEqualTo(1L);
+		assertThat(rows)
+				.noneMatch(
+						row ->
+								row.categoryOrdinal() != null
+										&& row.categoryOrdinal() == Category.INCOME.ordinal());
 	}
 }

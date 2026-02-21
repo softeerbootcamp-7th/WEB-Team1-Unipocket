@@ -15,6 +15,7 @@ import {
   getAccountBooks,
   getAnalysis,
   updateAccountBook,
+  updateAccountBookBudget,
 } from '@/api/account-books/api';
 import type {
   CreateAccountBookRequest,
@@ -22,6 +23,7 @@ import type {
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
 import { queryClient } from '@/main';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const accountBooksQueryOptions = queryOptions({
   queryKey: ['accountBooks', 'list'],
@@ -105,6 +107,25 @@ const useAnalysisQuery = (
     placeholderData: (previousData) => previousData,
   });
 
+const useUpdateAccountBookBudgetMutation = () => {
+  const accountBookId = useRequiredAccountBook().id;
+
+  return useMutation({
+    mutationFn: (budget: number) => {
+      return updateAccountBookBudget(accountBookId, budget);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['widget', accountBookId, 'BUDGET'],
+      });
+      toast.success('예산이 저장되었어요.');
+    },
+    onError: () => {
+      toast.error('예산 저장에 실패했어요.');
+    },
+  });
+};
+
 export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
@@ -113,5 +134,6 @@ export {
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
   useGetAccountBooksQuery,
+  useUpdateAccountBookBudgetMutation,
   useUpdateAccountBookMutation,
 };

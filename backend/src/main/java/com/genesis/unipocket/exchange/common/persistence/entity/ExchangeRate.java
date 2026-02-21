@@ -13,7 +13,13 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "exchange_rate")
+@Table(
+		name = "exchange_rate",
+		uniqueConstraints = {
+			@UniqueConstraint(
+					name = "uk_exchange_rate_currency_recorded_at",
+					columnNames = {"currency_code", "recorded_at"})
+		})
 public class ExchangeRate {
 
 	@Id

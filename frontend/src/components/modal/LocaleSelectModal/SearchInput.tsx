@@ -8,7 +8,7 @@ interface SearchInputProps {
 const SearchInput = ({ value, onChange }: SearchInputProps) => {
   return (
     <div className="bg-fill-normal rounded-modal-10 flex h-14.25 w-full items-center gap-[4.8px] p-[14.4px]">
-      <Icons.Search className="text-line-normal-normal size-5" />
+      <Icons.Search className="text-line-normal-normal mx-[2.4px] size-5" />
       <input
         type="text"
         value={value}

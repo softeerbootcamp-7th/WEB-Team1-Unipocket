@@ -7,6 +7,26 @@ import type {
   GetUserResponse,
 } from '@/api/users/type';
 
+// USER
+const getUser = (): Promise<GetUserResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.USERS.BASE,
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
+const deleteUser = (): Promise<void> => {
+  return customFetch({
+    endpoint: ENDPOINTS.USERS.BASE,
+    options: {
+      method: 'DELETE',
+    },
+  });
+};
+
+// CARD
 const getCards = (): Promise<GetCardsResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.USERS.CARDS,
@@ -22,24 +42,6 @@ const createCard = (data: CreateCardRequest): Promise<void> => {
     options: {
       method: 'POST',
       body: JSON.stringify(data),
-    },
-  });
-};
-
-const getUser = (): Promise<GetUserResponse> => {
-  return customFetch({
-    endpoint: ENDPOINTS.USERS.BASE,
-    options: {
-      method: 'GET',
-    },
-  });
-};
-
-const deleteUser = (): Promise<void> => {
-  return customFetch({
-    endpoint: ENDPOINTS.USERS.BASE,
-    options: {
-      method: 'DELETE',
     },
   });
 };

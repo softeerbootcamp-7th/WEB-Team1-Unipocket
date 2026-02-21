@@ -44,9 +44,12 @@ export const Route = createFileRoute('/_app')({
       throw redirect({ to: '/init' });
     }
 
-    let targetId = accountBook?.id;
-    if (!targetId || !accountBooks.some((ab) => ab.id === targetId)) {
-      targetId = accountBooks[0].id;
+    let targetId = accountBook?.accountBookId;
+    if (
+      !targetId ||
+      !accountBooks.some((ab) => ab.accountBookId === targetId)
+    ) {
+      targetId = accountBooks[0].accountBookId;
     }
 
     try {

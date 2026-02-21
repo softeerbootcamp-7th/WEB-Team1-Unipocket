@@ -104,12 +104,14 @@ public class TemporaryExpenseQueryRepository {
 		}
 		return em.createQuery(
 						"SELECT new"
-								+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow(te.tempExpenseId,"
-								+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName, te.contentInfo.category,"
-								+ " te.amountInfo.localCurrencyCode, te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
-								+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod, te.contentInfo.memo, te.contentInfo.occurredAt,"
-								+ " te.status, te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
-								+ " te.fileId IN :fileIds ORDER BY te.tempExpenseId ASC",
+							+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow(te.tempExpenseId,"
+							+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName,"
+							+ " te.contentInfo.category, te.amountInfo.localCurrencyCode,"
+							+ " te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
+							+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod,"
+							+ " te.contentInfo.memo, te.contentInfo.occurredAt, te.status,"
+							+ " te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
+							+ " te.fileId IN :fileIds ORDER BY te.tempExpenseId ASC",
 						TemporaryExpenseItemRow.class)
 				.setParameter("fileIds", fileIds)
 				.getResultList();
@@ -118,12 +120,14 @@ public class TemporaryExpenseQueryRepository {
 	public List<TemporaryExpenseItemRow> findExpensesByFileId(Long fileId) {
 		return em.createQuery(
 						"SELECT new"
-								+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow(te.tempExpenseId,"
-								+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName, te.contentInfo.category,"
-								+ " te.amountInfo.localCurrencyCode, te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
-								+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod, te.contentInfo.memo, te.contentInfo.occurredAt,"
-								+ " te.status, te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
-								+ " te.fileId = :fileId ORDER BY te.tempExpenseId ASC",
+							+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow(te.tempExpenseId,"
+							+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName,"
+							+ " te.contentInfo.category, te.amountInfo.localCurrencyCode,"
+							+ " te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
+							+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod,"
+							+ " te.contentInfo.memo, te.contentInfo.occurredAt, te.status,"
+							+ " te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
+							+ " te.fileId = :fileId ORDER BY te.tempExpenseId ASC",
 						TemporaryExpenseItemRow.class)
 				.setParameter("fileId", fileId)
 				.getResultList();

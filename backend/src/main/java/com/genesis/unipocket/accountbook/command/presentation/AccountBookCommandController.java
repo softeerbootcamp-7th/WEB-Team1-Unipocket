@@ -38,7 +38,7 @@ public class AccountBookCommandController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@Operation(summary = "가계부 수정", description = "가계부 기본 정보와 예산/통화를 수정하고 최신 가계부 정보를 반환합니다.")
+	@Operation(summary = "가계부 부분 수정", description = "요청 본문에 포함된 필드만 부분 수정하고 최신 가계부 정보를 반환합니다.")
 	@PatchMapping("/{accountBookId}")
 	public ResponseEntity<AccountBookResponse> updateAccountBook(
 			@LoginUser UUID userId,

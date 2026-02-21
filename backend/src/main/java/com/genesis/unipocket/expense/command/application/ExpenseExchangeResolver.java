@@ -1,9 +1,9 @@
 package com.genesis.unipocket.expense.command.application;
 
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
-import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
+import com.genesis.unipocket.expense.common.util.ExchangeAmountCalculator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;

@@ -1,6 +1,6 @@
 package com.genesis.unipocket.widget.query.persistence.repository;
 
-import com.genesis.unipocket.widget.command.persistence.entity.TravelWidgetEntity;
+import com.genesis.unipocket.widget.common.persistence.entity.TravelWidgetEntity;
 import com.genesis.unipocket.widget.query.persistence.response.WidgetItemQueryRes;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,12 +2,6 @@ package com.genesis.unipocket.expense.query.presentation.response;
 
 import java.util.List;
 
-/**
- * <b>지출내역 목록 조회 응답 DTO</b>
- *
- * @author bluefishez
- * @since 2026-02-07
- */
 public record ExpenseListResponse(
 		List<ExpenseResponse> expenses, long totalCount, int page, int size) {
 

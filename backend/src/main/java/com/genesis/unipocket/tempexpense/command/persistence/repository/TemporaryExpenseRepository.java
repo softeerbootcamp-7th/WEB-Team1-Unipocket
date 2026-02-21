@@ -1,19 +1,14 @@
 package com.genesis.unipocket.tempexpense.command.persistence.repository;
 
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseConversionContextRow;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/**
- * <b>임시지출내역 Repository</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Repository
 public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpense, Long> {
 
@@ -21,28 +16,33 @@ public interface TemporaryExpenseRepository extends JpaRepository<TemporaryExpen
 
 	void deleteByTempExpenseMetaId(Long tempExpenseMetaId);
 
-	/**
-	 * 가계부 ID로 임시지출내역 조회 (File, TempExpenseMeta 조인)
-	 */
 	@Query(
 			"SELECT te FROM TemporaryExpense te "
-					+ "JOIN TempExpenseMeta tm ON te.tempExpenseMetaId = tm.tempExpenseMetaId "
-					+ "WHERE tm.accountBookId = :accountBookId")
-	List<TemporaryExpense> findByAccountBookId(@Param("accountBookId") Long accountBookId);
+					+ "WHERE te.tempExpenseId IN :tempExpenseIds "
+					+ "AND te.tempExpenseMetaId = :tempExpenseMetaId "
+					+ "AND te.fileId = :fileId")
+	List<TemporaryExpense> findScopedByIds(
+			@Param("tempExpenseIds") List<Long> tempExpenseIds,
+			@Param("tempExpenseMetaId") Long tempExpenseMetaId,
+			@Param("fileId") Long fileId);
 
-	/**
-	 * 가계부 ID + 상태로 임시지출내역 조회
-	 */
 	@Query(
 			"SELECT te FROM TemporaryExpense te "
-					+ "JOIN TempExpenseMeta tm ON te.tempExpenseMetaId = tm.tempExpenseMetaId "
-					+ "WHERE tm.accountBookId = :accountBookId "
-					+ "AND te.status = :status")
-	List<TemporaryExpense> findByAccountBookIdAndStatus(
-			@Param("accountBookId") Long accountBookId,
-			@Param("status") TemporaryExpenseStatus status);
+					+ "WHERE te.tempExpenseId = :tempExpenseId "
+					+ "AND te.tempExpenseMetaId = :tempExpenseMetaId "
+					+ "AND te.fileId = :fileId")
+	Optional<TemporaryExpense> findScopedById(
+			@Param("tempExpenseId") Long tempExpenseId,
+			@Param("tempExpenseMetaId") Long tempExpenseMetaId,
+			@Param("fileId") Long fileId);
 
-	List<TemporaryExpense> findByTempExpenseMetaIdIn(List<Long> tempExpenseMetaIds);
-
-	List<TemporaryExpense> findByFileIdIn(List<Long> fileIds);
+	@Query(
+			"SELECT new"
+				+ " com.genesis.unipocket.tempexpense.command.persistence.repository.dto.TempExpenseConversionContextRow(tm.accountBookId,"
+				+ " f.fileType, f.s3Key) FROM TemporaryExpense te JOIN TempExpenseMeta tm ON"
+				+ " tm.tempExpenseMetaId = te.tempExpenseMetaId JOIN File f ON f.fileId = te.fileId"
+				+ " WHERE te.tempExpenseId = :tempExpenseId AND tm.accountBookId = :accountBookId"
+				+ " AND f.tempExpenseMetaId = te.tempExpenseMetaId")
+	Optional<TempExpenseConversionContextRow> findConversionContext(
+			@Param("accountBookId") Long accountBookId, @Param("tempExpenseId") Long tempExpenseId);
 }

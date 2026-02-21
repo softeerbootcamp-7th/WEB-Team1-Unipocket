@@ -17,20 +17,22 @@ public class TestcontainersConfiguration {
 	@Bean
 	@ServiceConnection
 	MySQLContainer<?> mysqlContainer() {
-		return new MySQLContainer<>(DockerImageName.parse("mysql:8.4.8"));
+		return new MySQLContainer<>(DockerImageName.parse("mysql:8.4.8")).withReuse(true);
 	}
 
 	@Bean
 	@ServiceConnection(name = "redis")
 	GenericContainer<?> redisContainer() {
 		return new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-				.withExposedPorts(6379);
+				.withExposedPorts(6379)
+				.withReuse(true);
 	}
 
 	@Bean
 	LocalStackContainer localStackContainer() {
 		return new LocalStackContainer(DockerImageName.parse("localstack/localstack:3.8"))
-				.withServices(LocalStackContainer.Service.S3);
+				.withServices(LocalStackContainer.Service.S3)
+				.withReuse(true);
 	}
 
 	@Bean

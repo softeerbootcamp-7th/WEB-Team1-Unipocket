@@ -58,10 +58,10 @@ class AccountBookQueryControllerTest {
 						get("/account-books")
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].id").value(1L))
+				.andExpect(jsonPath("$[0].accountBookId").value(1L))
 				.andExpect(jsonPath("$[0].title").value("메인 가계부"))
 				.andExpect(jsonPath("$[0].isMain").value(true))
-				.andExpect(jsonPath("$[1].id").value(2L));
+				.andExpect(jsonPath("$[1].accountBookId").value(2L));
 	}
 
 	@Test
@@ -86,7 +86,7 @@ class AccountBookQueryControllerTest {
 						get("/account-books/{accountBookId}", accountBookId)
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("메인 가계부"));
 	}
 

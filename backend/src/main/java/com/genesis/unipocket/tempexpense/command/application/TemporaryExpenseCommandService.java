@@ -16,12 +16,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * <b>임시지출내역 서비스 클래스</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
@@ -32,54 +26,33 @@ public class TemporaryExpenseCommandService {
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
 
-	/**
-	 * 임시지출내역 단건 조회
-	 */
 	public TemporaryExpense findById(Long tempExpenseId) {
 		return temporaryExpenseRepository
 				.findById(tempExpenseId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND));
 	}
 
-	/**
-	 * 임시지출내역 수정
-	 */
 	@Transactional
 	public TemporaryExpenseResult updateTemporaryExpense(
 			Long tempExpenseId, TemporaryExpenseUpdateCommand command) {
 		TemporaryExpense entity = findById(tempExpenseId);
 
-		// 필드 값 결정 (command가 null이 아니면 command 값, 아니면 기존 값)
-		String resolvedMerchantName =
-				command.merchantName() != null ? command.merchantName() : entity.getMerchantName();
-		var resolvedCategory =
-				command.category() != null ? command.category() : entity.getCategory();
+		String resolvedMerchantName = valueOr(command.merchantName(), entity.getMerchantName());
+		var resolvedCategory = valueOr(command.category(), entity.getCategory());
 		var resolvedLocalCountryCode =
-				command.localCountryCode() != null
-						? command.localCountryCode()
-						: entity.getLocalCountryCode();
+				valueOr(command.localCountryCode(), entity.getLocalCountryCode());
 		var resolvedLocalCurrencyAmount =
-				command.localCurrencyAmount() != null
-						? command.localCurrencyAmount()
-						: entity.getLocalCurrencyAmount();
+				valueOr(command.localCurrencyAmount(), entity.getLocalCurrencyAmount());
 		var resolvedBaseCountryCode = resolveBaseCountryCode(command, entity);
 		var resolvedBaseCurrencyAmount =
-				command.baseCurrencyAmount() != null
-						? command.baseCurrencyAmount()
-						: entity.getBaseCurrencyAmount();
+				valueOr(command.baseCurrencyAmount(), entity.getBaseCurrencyAmount());
 		String resolvedPaymentsMethod =
-				command.paymentsMethod() != null
-						? command.paymentsMethod()
-						: entity.getPaymentsMethod();
-		String resolvedMemo = command.memo() != null ? command.memo() : entity.getMemo();
-		var resolvedOccurredAt =
-				command.occurredAt() != null ? command.occurredAt() : entity.getOccurredAt();
+				valueOr(command.paymentsMethod(), entity.getPaymentsMethod());
+		String resolvedMemo = valueOr(command.memo(), entity.getMemo());
+		var resolvedOccurredAt = valueOr(command.occurredAt(), entity.getOccurredAt());
 		String resolvedCardLastFourDigits =
-				command.cardLastFourDigits() != null
-						? command.cardLastFourDigits()
-						: entity.getCardLastFourDigits();
+				valueOr(command.cardLastFourDigits(), entity.getCardLastFourDigits());
 
-		// 상태 재평가
 		TemporaryExpenseStatus resolvedStatus =
 				temporaryExpenseValidator.resolveStatus(
 						entity.getStatus(),
@@ -90,7 +63,6 @@ public class TemporaryExpenseCommandService {
 						resolvedBaseCountryCode,
 						resolvedOccurredAt);
 
-		// 새로운 엔티티 생성 (불변 객체 패턴)
 		TemporaryExpense updated =
 				TemporaryExpense.builder()
 						.tempExpenseId(entity.getTempExpenseId())
@@ -112,6 +84,10 @@ public class TemporaryExpenseCommandService {
 						.build();
 
 		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(updated));
+	}
+
+	private <T> T valueOr(T candidate, T fallback) {
+		return candidate != null ? candidate : fallback;
 	}
 
 	private CurrencyCode resolveBaseCountryCode(
@@ -137,27 +113,9 @@ public class TemporaryExpenseCommandService {
 		return null;
 	}
 
-	/**
-	 * 임시지출내역 삭제
-	 */
 	@Transactional
 	public void deleteTemporaryExpense(Long tempExpenseId) {
 		TemporaryExpense entity = findById(tempExpenseId);
 		temporaryExpenseRepository.delete(entity);
-	}
-
-	public Long findAccountBookIdByTempExpenseId(Long tempExpenseId) {
-		TemporaryExpense tempExpense = findById(tempExpenseId);
-		TempExpenseMeta meta =
-				tempExpenseMetaRepository
-						.findById(tempExpense.getTempExpenseMetaId())
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		return meta.getAccountBookId();
-	}
-
-	public Long findMetaIdByTempExpenseId(Long tempExpenseId) {
-		TemporaryExpense tempExpense = findById(tempExpenseId);
-		return tempExpense.getTempExpenseMetaId();
 	}
 }

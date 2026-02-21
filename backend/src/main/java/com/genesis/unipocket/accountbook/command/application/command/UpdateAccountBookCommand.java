@@ -9,9 +9,16 @@ public record UpdateAccountBookCommand(
 		Long accountBookId,
 		UUID userId,
 		String title,
+		boolean titlePresent,
 		CountryCode localCountryCode,
+		boolean localCountryCodePresent,
 		CountryCode baseCountryCode,
+		boolean baseCountryCodePresent,
 		BigDecimal budget,
+		boolean budgetPresent,
 		LocalDate startDate,
+		boolean startDatePresent,
 		LocalDate endDate,
-		Boolean isMain) {}
+		boolean endDatePresent,
+		Boolean isMain,
+		boolean isMainPresent) {}

@@ -10,7 +10,11 @@ import static org.mockito.Mockito.when;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
+import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
@@ -32,6 +36,13 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 
 	@Mock private AccountBookCommandRepository accountBookRepository;
 	@Mock private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
+	@Mock private AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
+
+	@Mock
+	private AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
+
+	@Mock private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	@Mock private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	@Mock private ExpenseRepository expenseRepository;
 
 	@InjectMocks private AnalysisMonthlyDirtyMarkerService service;
@@ -127,5 +138,31 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 						LocalDate.of(2026, 1, 1),
 						LocalDate.of(2026, 2, 1),
 						LocalDate.of(2026, 3, 1));
+	}
+
+	@Test
+	@DisplayName("가계부 삭제 시 월 집계/더티/페어 집계 데이터를 함께 정리한다")
+	void purgeMonthlyDataByAccountBook_deletesMonthlyAndPairData() {
+		Long accountBookId = 1L;
+		LocalDate monthA = LocalDate.of(2026, 1, 1);
+		LocalDate monthB = LocalDate.of(2026, 2, 1);
+		when(accountMonthlyAggregateRepository.findDistinctTargetYearMonthsByAccountBookId(
+						accountBookId))
+				.thenReturn(java.util.List.of(monthA));
+		when(accountMonthlyCategoryAggregateRepository.findDistinctTargetYearMonthsByAccountBookId(
+						accountBookId))
+				.thenReturn(java.util.List.of(monthB));
+
+		service.purgeMonthlyDataByAccountBook(accountBookId, CountryCode.US, CountryCode.KR);
+
+		verify(monthlyDirtyRepository).deleteByAccountBookId(accountBookId);
+		verify(accountMonthlyCategoryAggregateRepository).deleteByAccountBookId(accountBookId);
+		verify(accountMonthlyAggregateRepository).deleteByAccountBookId(accountBookId);
+		verify(pairMonthlyCategoryAggregateRepository)
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+						CountryCode.US, CountryCode.KR, java.util.Set.of(monthA, monthB));
+		verify(pairMonthlyAggregateRepository)
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+						CountryCode.US, CountryCode.KR, java.util.Set.of(monthA, monthB));
 	}
 }

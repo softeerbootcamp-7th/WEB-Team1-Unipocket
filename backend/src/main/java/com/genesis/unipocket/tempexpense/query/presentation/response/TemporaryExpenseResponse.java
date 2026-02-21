@@ -2,18 +2,10 @@ package com.genesis.unipocket.tempexpense.query.presentation.response;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-/**
- * <b>임시지출내역 응답 DTO</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 public record TemporaryExpenseResponse(
 		Long tempExpenseId,
 		Long tempExpenseMetaId,
@@ -30,49 +22,21 @@ public record TemporaryExpenseResponse(
 		String status,
 		String cardLastFourDigits) {
 
-	/**
-	 * Entity → Response DTO
-	 */
-	public static TemporaryExpenseResponse from(TemporaryExpense entity) {
+	public static TemporaryExpenseResponse from(TemporaryExpenseItemRow row) {
 		return new TemporaryExpenseResponse(
-				entity.getTempExpenseId(),
-				entity.getTempExpenseMetaId(),
-				entity.getFileId(),
-				entity.getMerchantName(),
-				entity.getCategory(),
-				entity.getLocalCountryCode(),
-				entity.getLocalCurrencyAmount(),
-				entity.getBaseCountryCode(),
-				entity.getBaseCurrencyAmount(),
-				entity.getPaymentsMethod(),
-				entity.getMemo(),
-				entity.getOccurredAt(),
-				entity.getStatus() != null ? entity.getStatus().name() : null,
-				entity.getCardLastFourDigits());
-	}
-
-	public static TemporaryExpenseResponse from(TemporaryExpenseResult result) {
-		return new TemporaryExpenseResponse(
-				result.tempExpenseId(),
-				result.tempExpenseMetaId(),
-				result.fileId(),
-				result.merchantName(),
-				result.category(),
-				result.localCountryCode(),
-				result.localCurrencyAmount(),
-				result.baseCountryCode(),
-				result.baseCurrencyAmount(),
-				result.paymentsMethod(),
-				result.memo(),
-				result.occurredAt(),
-				result.status(),
-				result.cardLastFourDigits());
-	}
-
-	/**
-	 * Entity List → Response DTO List
-	 */
-	public static List<TemporaryExpenseResponse> fromList(List<TemporaryExpense> entities) {
-		return entities.stream().map(TemporaryExpenseResponse::from).toList();
+				row.tempExpenseId(),
+				row.tempExpenseMetaId(),
+				row.fileId(),
+				row.merchantName(),
+				row.category(),
+				row.localCountryCode(),
+				row.localCurrencyAmount(),
+				row.baseCountryCode(),
+				row.baseCurrencyAmount(),
+				row.paymentsMethod(),
+				row.memo(),
+				row.occurredAt(),
+				row.status() != null ? row.status().name() : null,
+				row.cardLastFourDigits());
 	}
 }

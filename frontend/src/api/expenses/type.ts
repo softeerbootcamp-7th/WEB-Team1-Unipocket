@@ -93,9 +93,12 @@ type CreateManualExpenseRequest = Required<
     | 'localCurrencyAmount'
     | 'localCurrencyCode'
     | 'baseCurrencyAmount'
-    | 'memo'
-  > & { userCardId: number; travelId: number }
->;
+  >
+> & {
+  memo?: string;
+  userCardId?: number; // 안 보낼 경우 cash로 처리
+  travelId?: number;
+};
 
 interface GetExpensesResponse {
   expenses: Expense[];

@@ -51,11 +51,11 @@ public class UserCommandController {
 	}
 
 	@Operation(summary = "카드 닉네임 수정", description = "사용자 카드의 닉네임을 수정합니다.")
-	@PatchMapping("/cards/{userCardId}")
+	@PatchMapping("/cards/{cardId}")
 	public ResponseEntity<UserCardUpdateResponse> updateCardNickname(
 			@LoginUser UUID userId,
 			@PathVariable Long cardId,
-			@RequestBody UserCardUpdateRequest request) {
+			@RequestBody @Valid UserCardUpdateRequest request) {
 		return ResponseEntity.ok(userCommandFacade.updateCard(userId, cardId, request));
 	}
 }

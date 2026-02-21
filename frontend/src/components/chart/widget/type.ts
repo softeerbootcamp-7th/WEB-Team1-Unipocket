@@ -1,5 +1,3 @@
-import type { PeriodType } from '@/types/period';
-
 export const WIDGET_TYPES = [
   'BUDGET',
   'CATEGORY',
@@ -12,6 +10,10 @@ export const WIDGET_TYPES = [
 export type WidgetType = (typeof WIDGET_TYPES)[number];
 
 export type WidgetKind = WidgetType | 'BLANK';
+
+export const PERIOD_TYPES = ['DAILY', 'WEEKLY', 'MONTHLY', 'ALL'] as const;
+
+export type PeriodType = (typeof PERIOD_TYPES)[number];
 
 export interface WidgetItem {
   order: number;

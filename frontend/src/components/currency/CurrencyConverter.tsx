@@ -28,10 +28,12 @@ const RATE = 1464; // USD -> KRW
 
 interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
+  onBaseCurrencyChange?: (amount: number) => void;
 }
 
 const CurrencyConverter = ({
   showCurrencyDropdown = false,
+  onBaseCurrencyChange,
 }: CurrencyConverterProps) => {
   const modalContext = useContext(ModalContext);
   const {
@@ -50,6 +52,13 @@ const CurrencyConverter = ({
       modalContext.setActionReady(isValid);
     }
   }, [isValid, modalContext]);
+
+  useEffect(() => {
+    if (onBaseCurrencyChange && baseCurrency) {
+      const numericValue = Number(baseCurrency.replace(/[^0-9.]+/g, ''));
+      onBaseCurrencyChange(isNaN(numericValue) ? 0 : numericValue);
+    }
+  }, [baseCurrency, onBaseCurrencyChange]);
 
   return (
     <div className="flex h-62 flex-col gap-3">

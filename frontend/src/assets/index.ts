@@ -1,6 +1,6 @@
-import Google from '@/assets/authLogos/google.svg';
-import Guest from '@/assets/authLogos/guest.svg';
-import Kakao from '@/assets/authLogos/kakao.svg';
+import Google from '@/assets/auth-logos/google.svg';
+import Guest from '@/assets/auth-logos/guest.svg';
+import Kakao from '@/assets/auth-logos/kakao.svg';
 
 export const AuthLogos = {
   Google,

@@ -74,7 +74,8 @@ const InitPage = () => {
         <LocaleSelectModal
           mode="LOCAL"
           onSelect={handleCountrySelect}
-          selectedCode={selectedCountry}
+          baseCountryCode="KR"
+          localCountryCode={selectedCountry}
         />
       )}
 

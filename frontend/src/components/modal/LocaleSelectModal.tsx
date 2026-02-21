@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMatchRoute } from '@tanstack/react-router';
 import clsx from 'clsx';
+import { toast } from 'sonner';
 
 import Control from '@/components/common/Control';
 import LocaleConfirmModal from '@/components/modal/LocaleConfirmModal';
@@ -61,22 +62,39 @@ const CountryItem = ({
 interface LocaleSelectModalProps {
   mode: CurrencyType;
   onSelect?: (code: CountryCode) => void;
-  selectedCode: CountryCode | null;
+  baseCountryCode: CountryCode | null;
+  localCountryCode: CountryCode | null;
 }
+
+const TOAST_MESSAGE = {
+  BASE: '현지 통화와 동일한 통화로 설정할 수 없습니다.',
+  LOCAL: '기준 통화와 동일한 통화로 설정할 수 없습니다.',
+} as const;
 
 const LocaleSelectModal = ({
   mode,
   onSelect,
-  selectedCode: propSelectedCode,
+  baseCountryCode,
+  localCountryCode,
 }: LocaleSelectModalProps) => {
   const matchRoute = useMatchRoute();
   const isInitPath = !!matchRoute({ to: '/init' });
+
+  const initialSelectedCode =
+    mode === 'BASE' ? baseCountryCode : localCountryCode;
+  const oppositeCode = mode === 'BASE' ? localCountryCode : baseCountryCode;
+
   const [selectedCode, setSelectedCode] = useState<CountryCode | null>(
-    propSelectedCode,
+    initialSelectedCode,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleSelect = (code: CountryCode) => {
+    if (code === oppositeCode) {
+      toast.error(TOAST_MESSAGE[mode]);
+      return;
+    }
+
     setSelectedCode(code);
     setIsConfirmOpen(true);
   };
@@ -89,7 +107,7 @@ const LocaleSelectModal = ({
   };
 
   const handleCancel = () => {
-    setSelectedCode(propSelectedCode);
+    setSelectedCode(initialSelectedCode);
     setIsConfirmOpen(false);
   };
 

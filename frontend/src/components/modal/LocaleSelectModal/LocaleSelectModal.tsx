@@ -9,7 +9,7 @@ import SearchInput from '@/components/modal/LocaleSelectModal/SearchInput';
 import type { CurrencyType } from '@/types/currency';
 
 import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
-import { getCountryInfo } from '@/lib/country';
+import { type CountryInfo, getCountryInfo } from '@/lib/country';
 
 interface LocaleSelectModalProps {
   mode: CurrencyType;
@@ -60,25 +60,31 @@ const LocaleSelectModal = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
 
+  const allCountries = useMemo(
+    () =>
+      Object.values(COUNTRY_CODE).reduce<
+        {
+          countryCode: CountryCode;
+          data: CountryInfo;
+        }[]
+      >((acc, countryCode) => {
+        const data = getCountryInfo(countryCode);
+        if (data) acc.push({ countryCode, data });
+        return acc;
+      }, []),
+    [],
+  );
+
   const filteredCountries = useMemo(() => {
-    const trimmedKeyword = keyword.trim().toLowerCase();
-
-    return Object.values(COUNTRY_CODE)
-      .map((countryCode) => ({
-        countryCode,
-        data: getCountryInfo(countryCode),
-      }))
-      .filter((item) => {
-        if (!item.data) return false;
-        if (!trimmedKeyword) return true;
-
-        return (
-          item.data.countryName.toLowerCase().includes(trimmedKeyword) ||
-          item.data.currencyName.toLowerCase().includes(trimmedKeyword) ||
-          item.countryCode.toLowerCase().includes(trimmedKeyword)
-        );
-      });
-  }, [keyword]);
+    const trimmed = keyword.trim().toLowerCase();
+    return allCountries.filter(
+      ({ countryCode, data }) =>
+        !trimmed ||
+        data.countryName.toLowerCase().includes(trimmed) ||
+        data.currencyName.toLowerCase().includes(trimmed) ||
+        countryCode.toLowerCase().includes(trimmed),
+    );
+  }, [keyword, allCountries]);
 
   const handleSelect = (code: CountryCode) => {
     if (code === oppositeCode) {
@@ -120,7 +126,6 @@ const LocaleSelectModal = ({
         <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {filteredCountries.map((item, index, arr) => {
             const { countryCode, data } = item;
-            if (!data) return null;
 
             return (
               <CountryItem

@@ -2,12 +2,12 @@ import { useState } from 'react';
 
 import BudgetChartSkeleton from '@/components/chart/budget/BudgetChartSkeleton';
 import BudgetChartView from '@/components/chart/budget/BudgetChartView';
+import BudgetSetupModal from '@/components/chart/budget/BudgetSetupModal';
 import type { ChartMode } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
 import Button from '@/components/common/Button';
-import BudgetSetupModal from '@/components/modal/BudgetSetupModal';
 
 import { useWidgetQuery } from '@/api/widget/query';
 

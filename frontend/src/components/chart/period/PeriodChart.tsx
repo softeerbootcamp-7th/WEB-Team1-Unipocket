@@ -33,6 +33,7 @@ const PeriodChart = ({ isPreview = false }: ChartMode) => {
     periodType,
     currentCountryCode,
     showSkeleton,
+    isEmpty,
     chartData,
   } = usePeriodChart(isPreview);
 
@@ -56,12 +57,19 @@ const PeriodChart = ({ isPreview = false }: ChartMode) => {
           size="xs"
         />
       </ChartHeader>
-      <ChartContent className={PADDING_BY_PERIOD[periodType]}>
-        <PeriodView
-          data={chartData}
-          countryCode={currentCountryCode}
-          isPreview={showSkeleton}
-        />
+      <ChartContent
+        className={PADDING_BY_PERIOD[periodType]}
+        isEmpty={isEmpty}
+        isPreview={showSkeleton}
+        skeleton={
+          <PeriodView
+            data={chartData}
+            countryCode={currentCountryCode}
+            isPreview={true}
+          />
+        }
+      >
+        <PeriodView data={chartData} countryCode={currentCountryCode} />
       </ChartContent>
     </ChartContainer>
   );

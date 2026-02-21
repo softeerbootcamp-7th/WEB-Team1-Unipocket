@@ -35,10 +35,15 @@ export const usePeriodChart = (isPreview: boolean) => {
     currencyType: periodType === 'WEEKLY' ? currencyType : undefined,
   });
 
-  const showSkeleton = isPreview || isLoading || !apiData;
-  const chartData: PeriodData[] = showSkeleton
-    ? MOCK_DATA_MAP[periodType]
-    : parsePeriodItems(apiData.items, periodType);
+  const showSkeleton = isPreview || isLoading;
+  const isAllZero =
+    !apiData || apiData.items.every((item) => Number(item.amount) === 0);
+  const isEmpty = !showSkeleton && isAllZero;
+
+  const chartData: PeriodData[] =
+    showSkeleton || isEmpty
+      ? MOCK_DATA_MAP[periodType]
+      : parsePeriodItems(apiData?.items ?? [], periodType);
 
   return {
     selectedCurrency,
@@ -48,6 +53,7 @@ export const usePeriodChart = (isPreview: boolean) => {
     periodType,
     currentCountryCode,
     showSkeleton,
+    isEmpty,
     chartData,
   };
 };

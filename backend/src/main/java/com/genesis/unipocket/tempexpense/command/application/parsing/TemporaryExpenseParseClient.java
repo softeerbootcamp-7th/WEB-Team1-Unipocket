@@ -19,7 +19,7 @@ public class TemporaryExpenseParseClient {
 	private final TempExpenseMediaAccessService tempExpenseMediaAccessService;
 	private final TemporaryExpenseContentExtractor contentExtractor;
 
-	public GeminiService.GeminiParseResponse parse(File file) {
+	public GeminiService.GeminiParseResponse parseFile(File file) {
 		if (file.getFileType() == File.FileType.IMAGE) {
 			String s3Url =
 					tempExpenseMediaAccessService.issueGetPath(

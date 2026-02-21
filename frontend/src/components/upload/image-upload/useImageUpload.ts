@@ -6,6 +6,7 @@ import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
 import { ENDPOINTS } from '@/api/config/endpoint';
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
+import { PARSE_STATUS, type ParseStatus } from '@/api/temporary-expenses/type';
 
 const MAX_TOTAL = uploadPolicy.image.maxCount;
 
@@ -131,7 +132,7 @@ export const useImageUpload = (accountBookId: number) => {
       // 4. SSE 연결
       connectSSE(parse.taskId);
     } catch {
-      toast.error('파싱 시작에 실패했어요.');
+      toast.error('파일 분석 요청에 실패했어요.');
     }
   };
 
@@ -152,43 +153,55 @@ export const useImageUpload = (accountBookId: number) => {
 
     eventSourcesRef.current[taskId] = eventSource;
 
-    eventSource.onmessage = (event) => {
-      try {
-        const parsed = JSON.parse(event.data);
-
-        if (parsed.status === 'SUCCESS') {
-          setItems((prev) =>
-            prev.map((item) =>
-              item.status === UPLOAD_STATUS.PARSING && item.taskId === taskId
-                ? { ...item, status: UPLOAD_STATUS.PARSED }
-                : item,
-            ),
-          );
-          eventSource.close();
-          delete eventSourcesRef.current[taskId];
-        }
-
-        if (parsed.status === 'FAIL') {
-          setItems((prev) =>
-            prev.map((item) =>
-              item.taskId === taskId
-                ? { ...item, status: UPLOAD_STATUS.ERROR }
-                : item,
-            ),
-          );
-          eventSource.close();
-          delete eventSourcesRef.current[taskId];
-        }
-      } catch {
-        eventSource.close();
-        delete eventSourcesRef.current[taskId];
-      }
-    };
-
-    eventSource.onerror = () => {
+    const closeEventSource = () => {
       eventSource.close();
       delete eventSourcesRef.current[taskId];
     };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data) as {
+          status?: ParseStatus;
+        };
+
+        const { status } = parsed;
+
+        switch (status) {
+          case PARSE_STATUS.SUCCESS: {
+            setItems((prev) =>
+              prev.map((item) =>
+                item.taskId === taskId
+                  ? { ...item, status: UPLOAD_STATUS.PARSED }
+                  : item,
+              ),
+            );
+            toast.success('파일 분석이 완료됐어요.');
+            closeEventSource();
+            break;
+          }
+
+          case PARSE_STATUS.FAIL: {
+            setItems((prev) =>
+              prev.map((item) =>
+                item.taskId === taskId
+                  ? { ...item, status: UPLOAD_STATUS.ERROR }
+                  : item,
+              ),
+            );
+            toast.error('파일 분석에 실패했어요.');
+            closeEventSource();
+            break;
+          }
+
+          default:
+            closeEventSource();
+        }
+      } catch {
+        closeEventSource();
+      }
+    };
+
+    eventSource.onerror = closeEventSource;
   };
 
   const removeItem = (id: string) => {

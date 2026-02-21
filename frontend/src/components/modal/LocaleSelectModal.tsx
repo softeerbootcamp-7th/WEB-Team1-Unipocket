@@ -8,6 +8,7 @@ import LocaleConfirmModal from '@/components/modal/LocaleConfirmModal';
 
 import type { CurrencyType } from '@/types/currency';
 
+import { Icons } from '@/assets';
 import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
@@ -142,10 +143,14 @@ const LocaleSelectModal = ({
 
       {/* select section */}
       <div className="flex h-full flex-col gap-4.5">
-        <input
-          type="text"
-          className="bg-fill-normal rounded-modal-10 h-15 w-full"
-        />
+        <div className="bg-fill-normal rounded-modal-10 flex h-14.25 items-center gap-[4.8px] p-[14.4px]">
+          <Icons.Search className="text-line-normal-normal size-5" />
+          <input
+            type="text"
+            placeholder="검색어를 입력해주세요."
+            className="placeholder:text-label-assistive placeholder:headline1-medium w-full focus:outline-none"
+          />
+        </div>
         <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {Object.values(COUNTRY_CODE).map((countryCode, index, arr) => {
             const data = getCountryInfo(countryCode);

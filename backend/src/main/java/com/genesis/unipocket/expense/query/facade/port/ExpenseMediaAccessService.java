@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.query.port;
+package com.genesis.unipocket.expense.query.facade.port;
 
 import java.time.Duration;
 

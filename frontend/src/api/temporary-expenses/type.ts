@@ -23,7 +23,14 @@ export interface StartParseResponse {
   taskId: string;
 }
 
-export type ParseStatus = 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAIL';
+export const PARSE_STATUS = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  SUCCESS: 'SUCCESS',
+  FAIL: 'FAIL',
+} as const;
+
+export type ParseStatus = (typeof PARSE_STATUS)[keyof typeof PARSE_STATUS];
 
 export interface GetParseStatusResponse {
   status: ParseStatus;

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.expense.command.facade.port.dto;
+package com.genesis.unipocket.expense.common.facade.port.dto;
 
 import com.genesis.unipocket.user.common.enums.CardCompany;
 

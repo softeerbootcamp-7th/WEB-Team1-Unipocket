@@ -30,6 +30,19 @@ public record ExpenseResponse(
 		String cardNumber,
 		String fileLink) {
 
+	public record CardResponse(Integer company, String label, String lastDigits) {}
+
+	public record PaymentMethodResponse(boolean isCash, CardResponse card) {}
+
+	public record Travel(Long travelId, String name, String imageKey) {
+		public static Travel from(ExpenseTravelResult travel) {
+			if (travel == null) {
+				return null;
+			}
+			return new Travel(travel.travelId(), travel.name(), travel.imageKey());
+		}
+	}
+
 	public static ExpenseResponse from(ExpenseQueryResult dto) {
 		return from(dto, null);
 	}
@@ -42,8 +55,16 @@ public record ExpenseResponse(
 				dto.displayMerchantName(),
 				dto.exchangeRate(),
 				dto.category(),
-				PaymentMethodResponse.from(
-						dto.userCardId(), dto.cardCompany(), dto.cardLabel(), dto.cardLastDigits()),
+				dto.userCardId() != null
+						? new PaymentMethodResponse(
+								false,
+								new CardResponse(
+										dto.cardCompany() != null
+												? dto.cardCompany().ordinal()
+												: null,
+										dto.cardLabel(),
+										dto.cardLastDigits()))
+						: new PaymentMethodResponse(true, null),
 				dto.occurredAt().toInstant(),
 				dto.updatedAt(),
 				AmountFormatters.toAmountString(dto.localCurrencyAmount()),
@@ -55,14 +76,5 @@ public record ExpenseResponse(
 				dto.approvalNumber(),
 				dto.cardNumber(),
 				dto.fileLink());
-	}
-
-	public record Travel(Long travelId, String name, String imageKey) {
-		public static Travel from(ExpenseTravelResult travel) {
-			if (travel == null) {
-				return null;
-			}
-			return new Travel(travel.travelId(), travel.name(), travel.imageKey());
-		}
 	}
 }

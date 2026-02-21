@@ -7,11 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.expense.query.persistence.repository.ExpenseQueryRepository;
 import com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.expense.query.port.TravelInfoReader;
-import com.genesis.unipocket.expense.query.port.UserCardReadService;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -26,9 +23,6 @@ class ExpenseQueryServiceMerchantSearchTest {
 
 	@Mock private ExpenseQueryRepository expenseQueryRepository;
 	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
-	@Mock private UserCardReadService userCardReadService;
-	@Mock private MediaObjectStorage mediaObjectStorage;
-	@Mock private TravelInfoReader travelInfoReader;
 
 	@InjectMocks private ExpenseQueryService expenseQueryService;
 

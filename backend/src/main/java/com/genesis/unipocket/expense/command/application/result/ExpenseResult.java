@@ -1,7 +1,7 @@
 package com.genesis.unipocket.expense.command.application.result;
 
-import com.genesis.unipocket.expense.command.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.common.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;

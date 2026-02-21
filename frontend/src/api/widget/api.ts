@@ -12,12 +12,13 @@ export const getWidget = <T>({
   currencyType,
   period,
 }: GetWidgetRequest): Promise<T> => {
-  const params = new URLSearchParams({ widgetType });
-  if (currencyType) params.set('currencyType', currencyType);
-  if (period) params.set('period', period);
-
   return customFetch({
-    endpoint: `${ENDPOINTS.WIDGETS.ACCOUNT_BOOK_DATA(accountBookId)}?${params.toString()}`,
+    endpoint: ENDPOINTS.WIDGETS.ACCOUNT_BOOK_DATA(accountBookId),
+    params: {
+      widgetType,
+      ...(currencyType && { currencyType }),
+      ...(period && { period }),
+    },
     options: {
       method: 'GET',
     },

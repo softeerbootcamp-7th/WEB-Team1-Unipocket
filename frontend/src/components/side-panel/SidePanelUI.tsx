@@ -85,7 +85,7 @@ const SidePanelUI = ({
       localCurrencyCode: currencyValues.localCurrencyCode,
       baseCurrencyAmount: currencyValues.baseAmount,
       memo,
-      travelId: initialData?.travel?.id ?? undefined, // @TODO: 실제 선택 상태로 교체
+      travelId: initialData?.travel?.travelId ?? undefined, // @TODO: 실제 선택 상태로 교체
     });
 
     handleReset();

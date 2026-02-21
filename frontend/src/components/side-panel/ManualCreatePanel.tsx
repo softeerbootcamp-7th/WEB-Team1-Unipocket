@@ -12,7 +12,7 @@ interface ManualCreatePanelProps {
 
 const ManualCreatePanel = ({ isOpen, onClose }: ManualCreatePanelProps) => {
   const { mutate } = useCreateManualExpenseMutation();
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   const handleSubmit = (values: SidePanelFormValues) => {
     const request: CreateManualExpenseRequest = {

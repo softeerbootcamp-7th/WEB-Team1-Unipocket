@@ -3,6 +3,7 @@ package com.genesis.unipocket.expense.command.facade;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -172,8 +173,6 @@ class ExpenseCommandFacadeTest {
 								null,
 								"memo",
 								null));
-		when(userCardFetchService.getUserCard(null)).thenReturn(Optional.empty());
-
 		ExpenseResult result =
 				expenseCommandFacade.updateExpense(expenseId, accountBookId, userId, request);
 
@@ -190,7 +189,7 @@ class ExpenseCommandFacadeTest {
 
 		verify(expenseOwnershipValidator)
 				.validateOwnership(eq(accountBookId), eq(userId.toString()));
-		verify(userCardFetchService).getUserCard(null);
+		verify(userCardFetchService, never()).getUserCard(any());
 	}
 
 	@Test
@@ -267,8 +266,6 @@ class ExpenseCommandFacadeTest {
 								null,
 								"memo-1",
 								null));
-		when(userCardFetchService.getUserCard(null)).thenReturn(Optional.empty());
-
 		List<ExpenseResult> results =
 				expenseCommandFacade.updateExpensesBulk(accountBookId, userId, request);
 
@@ -283,6 +280,6 @@ class ExpenseCommandFacadeTest {
 		assertThat(results).hasSize(2);
 
 		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
-		verify(userCardFetchService, times(2)).getUserCard(null);
+		verify(userCardFetchService, never()).getUserCard(any());
 	}
 }

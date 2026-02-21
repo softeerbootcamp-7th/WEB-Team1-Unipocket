@@ -66,15 +66,7 @@ public class ExpenseCommandFacade {
 		ExpenseResult result = expenseService.createExpenseManual(command);
 
 		analysisMonthlyDirtyMarkerService.markDirty(result.accountBookId(), result.occurredAt());
-
-		if (result.userCardId() != null) {
-			UserCardInfo cardInfo =
-					userCardFetchService.getUserCard(result.userCardId()).orElse(null);
-			if (cardInfo == null) return result;
-			return result.withCardInfo(cardInfo);
-		}
-
-		return result;
+		return enrichWithCardInfoIfPresent(result);
 	}
 
 	@Transactional
@@ -162,14 +154,19 @@ public class ExpenseCommandFacade {
 
 	private ExpenseResult checkAndEnsureCard(ExpenseUpdateCommand command) {
 		ExpenseResult result = expenseService.updateExpense(command);
-		if (result.userCardId() != null) {
-			UserCardInfo cardInfo =
-					userCardFetchService.getUserCard(result.userCardId()).orElse(null);
-			if (cardInfo == null) return result;
-			return result.withCardInfo(cardInfo);
+		return enrichWithCardInfoIfPresent(result);
+	}
+
+	private ExpenseResult enrichWithCardInfoIfPresent(ExpenseResult result) {
+		if (result.userCardId() == null) {
+			return result;
 		}
 
-		return result;
+		UserCardInfo cardInfo = userCardFetchService.getUserCard(result.userCardId()).orElse(null);
+		if (cardInfo == null) {
+			return result;
+		}
+		return result.withCardInfo(cardInfo);
 	}
 
 	@Transactional

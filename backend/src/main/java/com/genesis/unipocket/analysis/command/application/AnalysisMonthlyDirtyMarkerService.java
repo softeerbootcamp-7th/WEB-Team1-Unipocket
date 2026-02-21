@@ -1,11 +1,9 @@
 package com.genesis.unipocket.analysis.command.application;
 
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.facade.port.AnalysisAccountBookReadService;
+import com.genesis.unipocket.analysis.command.facade.port.AnalysisExpenseReadService;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
-import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.time.LocalDate;
@@ -24,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AnalysisMonthlyDirtyMarkerService {
 
-	private final AccountBookCommandRepository accountBookRepository;
+	private final AnalysisAccountBookReadService analysisAccountBookReadService;
+	private final AnalysisExpenseReadService analysisExpenseReadService;
 	private final AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
-	private final ExpenseRepository expenseRepository;
 
 	@Transactional
 	public void markDirty(Long accountBookId, OffsetDateTime occurredAt) {
@@ -56,16 +54,8 @@ public class AnalysisMonthlyDirtyMarkerService {
 		if (occurredAts == null || occurredAts.isEmpty()) {
 			return;
 		}
-		AccountBookEntity accountBook =
-				accountBookRepository
-						.findById(accountBookId)
-						.orElseThrow(
-								() ->
-										new IllegalStateException(
-												"Account book not found for dirty marking: "
-														+ accountBookId));
-
-		CountryCode localCountry = accountBook.getLocalCountryCode();
+		CountryCode localCountry =
+				analysisAccountBookReadService.getRequiredCountryInfo(accountBookId).localCountryCode();
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountry);
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
 		Set<LocalDate> targetYearMonths =
@@ -78,26 +68,15 @@ public class AnalysisMonthlyDirtyMarkerService {
 
 	@Transactional
 	public void markDirtyAllMonths(Long accountBookId) {
-		AccountBookEntity accountBook =
-				accountBookRepository
-						.findById(accountBookId)
-						.orElseThrow(
-								() ->
-										new IllegalStateException(
-												"Account book not found for dirty marking: "
-														+ accountBookId));
-		Object[] occurredRange =
-				expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
-		if (occurredRange == null || occurredRange.length < 2) {
+		var occurredRange = analysisExpenseReadService.findOccurredAtRange(accountBookId);
+		if (occurredRange.isEmpty()) {
 			return;
 		}
-		OffsetDateTime minOccurredAt = OffsetDateTimeConverter.from(occurredRange[0]);
-		OffsetDateTime maxOccurredAt = OffsetDateTimeConverter.from(occurredRange[1]);
-		if (minOccurredAt == null || maxOccurredAt == null) {
-			return;
-		}
+		OffsetDateTime minOccurredAt = occurredRange.get().minOccurredAt();
+		OffsetDateTime maxOccurredAt = occurredRange.get().maxOccurredAt();
 
-		CountryCode localCountry = accountBook.getLocalCountryCode();
+		CountryCode localCountry =
+				analysisAccountBookReadService.getRequiredCountryInfo(accountBookId).localCountryCode();
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountry);
 		LocalDate startMonth =
 				minOccurredAt.atZoneSameInstant(zoneId).toLocalDate().withDayOfMonth(1);

@@ -1,7 +1,6 @@
 package com.genesis.unipocket.analysis.command.application;
 
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.facade.port.AnalysisAccountBookReadService;
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyCategoryAggregateEntity;
@@ -58,7 +57,7 @@ public class CountryMonthlyDirtyAggregationService {
 			List.of(AnalysisBatchJobStatus.PENDING, AnalysisBatchJobStatus.RETRY);
 
 	private final AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
-	private final AccountBookCommandRepository accountBookRepository;
+	private final AnalysisAccountBookReadService analysisAccountBookReadService;
 	private final AnalysisBatchAggregationRepository aggregationRepository;
 	private final AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
 	private final AccountMonthlyCategoryAggregateRepository
@@ -131,17 +130,10 @@ public class CountryMonthlyDirtyAggregationService {
 			return null;
 		}
 
-		AccountBookEntity accountBook =
-				accountBookRepository
-						.findById(dirty.getAccountBookId())
-						.orElseThrow(
-								() ->
-										new IllegalStateException(
-												"Account book not found while processing monthly"
-														+ " dirty: "
-														+ dirty.getAccountBookId()));
+		AnalysisAccountBookReadService.AccountBookCountryInfo accountBook =
+				analysisAccountBookReadService.getRequiredCountryInfo(dirty.getAccountBookId());
 
-		if (accountBook.getLocalCountryCode() != dirty.getCountryCode()) {
+		if (accountBook.localCountryCode() != dirty.getCountryCode()) {
 			dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
 			return null;
 		}
@@ -171,9 +163,9 @@ public class CountryMonthlyDirtyAggregationService {
 				rawCategoryRows,
 				AnalysisQualityType.CLEANED);
 
-		dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
-		return new PairMonthKey(
-				accountBook.getLocalCountryCode(), accountBook.getBaseCountryCode(), monthStart);
+			dirty.markSuccess(LocalDateTime.now(ZoneOffset.UTC));
+			return new PairMonthKey(
+					accountBook.localCountryCode(), accountBook.baseCountryCode(), monthStart);
 	}
 
 	private void upsertMonthlyMetrics(

@@ -7,11 +7,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
-import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.facade.port.AnalysisAccountBookReadService;
+import com.genesis.unipocket.analysis.command.facade.port.AnalysisExpenseReadService;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,9 +29,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AnalysisMonthlyDirtyMarkerServiceTest {
 
-	@Mock private AccountBookCommandRepository accountBookRepository;
+	@Mock private AnalysisAccountBookReadService analysisAccountBookReadService;
+	@Mock private AnalysisExpenseReadService analysisExpenseReadService;
 	@Mock private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
-	@Mock private ExpenseRepository expenseRepository;
 
 	@InjectMocks private AnalysisMonthlyDirtyMarkerService service;
 
@@ -40,9 +39,10 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 	@DisplayName("동일 월 이벤트가 여러 개여도 월별 dirty는 1건만 저장된다")
 	void markDirty_deduplicatesByMonth() {
 		Long accountBookId = 1L;
-		AccountBookEntity accountBook = org.mockito.Mockito.mock(AccountBookEntity.class);
-		when(accountBook.getLocalCountryCode()).thenReturn(CountryCode.KR);
-		when(accountBookRepository.findById(accountBookId)).thenReturn(Optional.of(accountBook));
+		when(analysisAccountBookReadService.getRequiredCountryInfo(accountBookId))
+				.thenReturn(
+						new AnalysisAccountBookReadService.AccountBookCountryInfo(
+								accountBookId, CountryCode.KR, CountryCode.KR));
 		when(monthlyDirtyRepository.findByCountryCodeAndAccountBookIdAndTargetYearMonth(
 						eq(CountryCode.KR), eq(accountBookId), any(LocalDate.class)))
 				.thenReturn(Optional.empty());
@@ -68,9 +68,10 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 	@DisplayName("기존 dirty row가 있으면 해당 엔티티를 갱신해서 저장한다")
 	void markDirty_updatesExistingDirty() {
 		Long accountBookId = 2L;
-		AccountBookEntity accountBook = org.mockito.Mockito.mock(AccountBookEntity.class);
-		when(accountBook.getLocalCountryCode()).thenReturn(CountryCode.KR);
-		when(accountBookRepository.findById(accountBookId)).thenReturn(Optional.of(accountBook));
+		when(analysisAccountBookReadService.getRequiredCountryInfo(accountBookId))
+				.thenReturn(
+						new AnalysisAccountBookReadService.AccountBookCountryInfo(
+								accountBookId, CountryCode.KR, CountryCode.KR));
 
 		AnalysisMonthlyDirtyEntity existing =
 				AnalysisMonthlyDirtyEntity.create(
@@ -95,7 +96,7 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 	void markDirty_emptyInput_noop() {
 		service.markDirty(1L, Set.of());
 
-		verify(accountBookRepository, never()).findById(any());
+		verify(analysisAccountBookReadService, never()).getRequiredCountryInfo(any());
 		verify(monthlyDirtyRepository, never()).save(any());
 	}
 
@@ -103,15 +104,16 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 	@DisplayName("가계부 전체 월 dirty 마킹은 최소/최대 발생월 범위를 모두 생성한다")
 	void markDirtyAllMonths_marksFullMonthRange() {
 		Long accountBookId = 3L;
-		AccountBookEntity accountBook = org.mockito.Mockito.mock(AccountBookEntity.class);
-		when(accountBook.getLocalCountryCode()).thenReturn(CountryCode.KR);
-		when(accountBookRepository.findById(accountBookId)).thenReturn(Optional.of(accountBook));
-		when(expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId))
+		when(analysisAccountBookReadService.getRequiredCountryInfo(accountBookId))
 				.thenReturn(
-						new Object[] {
-							OffsetDateTime.parse("2026-01-05T10:00:00+09:00"),
-							OffsetDateTime.parse("2026-03-17T10:00:00+09:00")
-						});
+						new AnalysisAccountBookReadService.AccountBookCountryInfo(
+								accountBookId, CountryCode.KR, CountryCode.KR));
+		when(analysisExpenseReadService.findOccurredAtRange(accountBookId))
+				.thenReturn(
+						Optional.of(
+								new AnalysisExpenseReadService.ExpenseOccurredRange(
+										OffsetDateTime.parse("2026-01-05T10:00:00+09:00"),
+										OffsetDateTime.parse("2026-03-17T10:00:00+09:00"))));
 		when(monthlyDirtyRepository.findByCountryCodeAndAccountBookIdAndTargetYearMonth(
 						eq(CountryCode.KR), eq(accountBookId), any(LocalDate.class)))
 				.thenReturn(Optional.empty());

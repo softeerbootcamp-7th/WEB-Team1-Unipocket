@@ -17,14 +17,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AccountBookValidationProvider
-		implements AccountBookOwnershipValidator,
-				com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator,
-				com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator,
-				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
-				com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator,
-				AccountBookInfoFetchService,
-				AccountBookRateInfoProvider,
-				UserAccountBookValidator,
+			implements AccountBookOwnershipValidator,
+					com.genesis.unipocket.analysis.common.validate.AccountBookOwnershipValidator,
+					com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
+					AccountBookInfoFetchService,
+					AccountBookRateInfoProvider,
+					UserAccountBookValidator,
 				com.genesis.unipocket.widget.common.validate.UserAccountBookValidator {
 
 	private final AccountBookCommandRepository accountBookRepository;

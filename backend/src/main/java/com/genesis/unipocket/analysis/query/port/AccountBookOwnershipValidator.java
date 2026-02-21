@@ -1,6 +1,4 @@
 package com.genesis.unipocket.analysis.query.port;
 
-public interface AccountBookOwnershipValidator {
-
-	void validateOwnership(Long accountBookId, String userId);
-}
+public interface AccountBookOwnershipValidator
+		extends com.genesis.unipocket.analysis.common.validate.AccountBookOwnershipValidator {}

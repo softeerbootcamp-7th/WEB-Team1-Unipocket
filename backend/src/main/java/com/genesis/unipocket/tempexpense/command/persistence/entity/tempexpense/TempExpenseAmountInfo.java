@@ -4,12 +4,11 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Embeddable
 @Getter
@@ -18,10 +17,12 @@ public class TempExpenseAmountInfo {
 
 	@Enumerated(EnumType.STRING)
 	private CurrencyCode localCurrencyCode;
+
 	private BigDecimal localCurrencyAmount;
 
 	@Enumerated(EnumType.STRING)
 	private CurrencyCode baseCurrencyCode;
+
 	private BigDecimal baseCurrencyAmount;
 
 	private BigDecimal exchangeRate;
@@ -46,7 +47,11 @@ public class TempExpenseAmountInfo {
 			BigDecimal baseCurrencyAmount,
 			BigDecimal exchangeRate) {
 		return new TempExpenseAmountInfo(
-				localCurrencyCode, localCurrencyAmount, baseCurrencyCode, baseCurrencyAmount, exchangeRate);
+				localCurrencyCode,
+				localCurrencyAmount,
+				baseCurrencyCode,
+				baseCurrencyAmount,
+				exchangeRate);
 	}
 
 	public TempExpenseAmountInfo merge(
@@ -64,11 +69,15 @@ public class TempExpenseAmountInfo {
 	}
 
 	public TempExpenseAmountInfo recalculateBaseIfPossible() {
-		if (localCurrencyAmount == null || localCurrencyAmount.signum() <= 0 || exchangeRate == null) {
+		if (localCurrencyAmount == null
+				|| localCurrencyAmount.signum() <= 0
+				|| exchangeRate == null) {
 			return this;
 		}
-		BigDecimal calculated = localCurrencyAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
-		return new TempExpenseAmountInfo(localCurrencyCode, localCurrencyAmount, baseCurrencyCode, calculated, exchangeRate);
+		BigDecimal calculated =
+				localCurrencyAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
+		return new TempExpenseAmountInfo(
+				localCurrencyCode, localCurrencyAmount, baseCurrencyCode, calculated, exchangeRate);
 	}
 
 	public boolean hasRequired() {
@@ -81,12 +90,16 @@ public class TempExpenseAmountInfo {
 	}
 
 	public boolean isAbnormal(BigDecimal thresholdRatio) {
-		if (exchangeRate == null || localCurrencyAmount == null || baseCurrencyAmount == null) return false;
-		BigDecimal calculated = localCurrencyAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
+		if (exchangeRate == null || localCurrencyAmount == null || baseCurrencyAmount == null)
+			return false;
+		BigDecimal calculated =
+				localCurrencyAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
 		if (calculated.signum() <= 0) return false;
-		BigDecimal ratio = calculated.subtract(baseCurrencyAmount).abs()
-				.divide(calculated, 4, RoundingMode.HALF_UP);
+		BigDecimal ratio =
+				calculated
+						.subtract(baseCurrencyAmount)
+						.abs()
+						.divide(calculated, 4, RoundingMode.HALF_UP);
 		return ratio.compareTo(thresholdRatio) >= 0;
 	}
 }
-

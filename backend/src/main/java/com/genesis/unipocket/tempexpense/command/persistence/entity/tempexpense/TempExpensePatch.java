@@ -17,8 +17,7 @@ public record TempExpensePatch(
 		String memo,
 		LocalDateTime occurredAt,
 		String cardLastFourDigits,
-		String approvalNumber
-) {
+		String approvalNumber) {
 	public boolean hasAnyChange() {
 		return merchantName != null
 				|| category != null
@@ -46,8 +45,7 @@ public record TempExpensePatch(
 			String memo,
 			LocalDateTime occurredAt,
 			String cardLastFourDigits,
-			String approvalNumber
-	) {
+			String approvalNumber) {
 		return new TempExpensePatch(
 				normalizeBlank(merchantName),
 				category,
@@ -69,4 +67,3 @@ public record TempExpensePatch(
 		return trimmed.isEmpty() ? null : trimmed;
 	}
 }
-

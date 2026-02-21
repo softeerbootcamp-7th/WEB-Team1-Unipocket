@@ -1,9 +1,8 @@
 package com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense;
 
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TempExpenseStatusPolicy {

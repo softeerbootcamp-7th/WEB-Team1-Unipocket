@@ -4,11 +4,10 @@ import com.genesis.unipocket.global.common.enums.Category;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Embeddable
 @Getter
@@ -55,4 +54,3 @@ public class TempExpenseContentInfo {
 		return t.isEmpty() ? null : t;
 	}
 }
-

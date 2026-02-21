@@ -19,7 +19,8 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TemporaryExpense {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "temp_expense_id")
 	private Long tempExpenseId;
 
@@ -31,28 +32,40 @@ public class TemporaryExpense {
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "merchantName", column = @Column(name = "merchant_name")),
-			@AttributeOverride(name = "category", column = @Column(name = "category")),
-			@AttributeOverride(name = "memo", column = @Column(name = "memo", columnDefinition = "TEXT")),
-			@AttributeOverride(name = "occurredAt", column = @Column(name = "occurred_at"))
+		@AttributeOverride(name = "merchantName", column = @Column(name = "merchant_name")),
+		@AttributeOverride(name = "category", column = @Column(name = "category")),
+		@AttributeOverride(
+				name = "memo",
+				column = @Column(name = "memo", columnDefinition = "TEXT")),
+		@AttributeOverride(name = "occurredAt", column = @Column(name = "occurred_at"))
 	})
 	private TempExpenseContentInfo contentInfo;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "localCurrencyCode", column = @Column(name = "local_country_code")),
-			@AttributeOverride(name = "localCurrencyAmount", column = @Column(name = "local_currency_amount", precision = 10, scale = 2)),
-			@AttributeOverride(name = "baseCurrencyCode", column = @Column(name = "base_country_code")),
-			@AttributeOverride(name = "baseCurrencyAmount", column = @Column(name = "base_currency_amount", precision = 10, scale = 2)),
-			@AttributeOverride(name = "exchangeRate", column = @Column(name = "exchange_rate", precision = 10, scale = 4))
+		@AttributeOverride(
+				name = "localCurrencyCode",
+				column = @Column(name = "local_country_code")),
+		@AttributeOverride(
+				name = "localCurrencyAmount",
+				column = @Column(name = "local_currency_amount", precision = 10, scale = 2)),
+		@AttributeOverride(name = "baseCurrencyCode", column = @Column(name = "base_country_code")),
+		@AttributeOverride(
+				name = "baseCurrencyAmount",
+				column = @Column(name = "base_currency_amount", precision = 10, scale = 2)),
+		@AttributeOverride(
+				name = "exchangeRate",
+				column = @Column(name = "exchange_rate", precision = 10, scale = 4))
 	})
 	private TempExpenseAmountInfo amountInfo;
 
 	@Embedded
 	@AttributeOverrides({
-			@AttributeOverride(name = "paymentsMethod", column = @Column(name = "payments_method")),
-			@AttributeOverride(name = "cardLastFourDigits", column = @Column(name = "card_last_four_digits", length = 4)),
-			@AttributeOverride(name = "approvalNumber", column = @Column(name = "approval_number"))
+		@AttributeOverride(name = "paymentsMethod", column = @Column(name = "payments_method")),
+		@AttributeOverride(
+				name = "cardLastFourDigits",
+				column = @Column(name = "card_last_four_digits", length = 4)),
+		@AttributeOverride(name = "approvalNumber", column = @Column(name = "approval_number"))
 	})
 	private TempExpensePaymentInfo paymentInfo;
 
@@ -74,13 +87,19 @@ public class TemporaryExpense {
 			this.paymentInfo = TempExpensePaymentInfo.of(null, null, null);
 		}
 
-		this.contentInfo = this.contentInfo.merge(
-				patch.merchantName(), patch.category(), patch.memo(), patch.occurredAt());
-		this.amountInfo = this.amountInfo.merge(
-						patch.localCurrencyCode(), patch.localCurrencyAmount(),
-						patch.baseCurrencyCode(), patch.baseCurrencyAmount(), patch.exchangeRate());
-		this.paymentInfo = this.paymentInfo.merge(
-				patch.paymentsMethod(), patch.cardLastFourDigits(), patch.approvalNumber());
+		this.contentInfo =
+				this.contentInfo.merge(
+						patch.merchantName(), patch.category(), patch.memo(), patch.occurredAt());
+		this.amountInfo =
+				this.amountInfo.merge(
+						patch.localCurrencyCode(),
+						patch.localCurrencyAmount(),
+						patch.baseCurrencyCode(),
+						patch.baseCurrencyAmount(),
+						patch.exchangeRate());
+		this.paymentInfo =
+				this.paymentInfo.merge(
+						patch.paymentsMethod(), patch.cardLastFourDigits(), patch.approvalNumber());
 		this.status = statusPolicy.resolve(this.status, this.contentInfo, this.amountInfo);
 	}
 
@@ -156,22 +175,85 @@ public class TemporaryExpense {
 		private String cardLastFourDigits;
 		private String approvalNumber;
 
-		public LegacyBuilder tempExpenseId(Long tempExpenseId) { this.tempExpenseId = tempExpenseId; return this; }
-		public LegacyBuilder tempExpenseMetaId(Long tempExpenseMetaId) { this.tempExpenseMetaId = tempExpenseMetaId; return this; }
-		public LegacyBuilder fileId(Long fileId) { this.fileId = fileId; return this; }
-		public LegacyBuilder merchantName(String merchantName) { this.merchantName = merchantName; return this; }
-		public LegacyBuilder category(Category category) { this.category = category; return this; }
-		public LegacyBuilder localCountryCode(CurrencyCode localCountryCode) { this.localCountryCode = localCountryCode; return this; }
-		public LegacyBuilder localCurrencyAmount(BigDecimal localCurrencyAmount) { this.localCurrencyAmount = localCurrencyAmount; return this; }
-		public LegacyBuilder baseCountryCode(CurrencyCode baseCountryCode) { this.baseCountryCode = baseCountryCode; return this; }
-		public LegacyBuilder baseCurrencyAmount(BigDecimal baseCurrencyAmount) { this.baseCurrencyAmount = baseCurrencyAmount; return this; }
-		public LegacyBuilder exchangeRate(BigDecimal exchangeRate) { this.exchangeRate = exchangeRate; return this; }
-		public LegacyBuilder paymentsMethod(String paymentsMethod) { this.paymentsMethod = paymentsMethod; return this; }
-		public LegacyBuilder memo(String memo) { this.memo = memo; return this; }
-		public LegacyBuilder occurredAt(LocalDateTime occurredAt) { this.occurredAt = occurredAt; return this; }
-		public LegacyBuilder status(TemporaryExpenseStatus status) { this.status = status; return this; }
-		public LegacyBuilder cardLastFourDigits(String cardLastFourDigits) { this.cardLastFourDigits = cardLastFourDigits; return this; }
-		public LegacyBuilder approvalNumber(String approvalNumber) { this.approvalNumber = approvalNumber; return this; }
+		public LegacyBuilder tempExpenseId(Long tempExpenseId) {
+			this.tempExpenseId = tempExpenseId;
+			return this;
+		}
+
+		public LegacyBuilder tempExpenseMetaId(Long tempExpenseMetaId) {
+			this.tempExpenseMetaId = tempExpenseMetaId;
+			return this;
+		}
+
+		public LegacyBuilder fileId(Long fileId) {
+			this.fileId = fileId;
+			return this;
+		}
+
+		public LegacyBuilder merchantName(String merchantName) {
+			this.merchantName = merchantName;
+			return this;
+		}
+
+		public LegacyBuilder category(Category category) {
+			this.category = category;
+			return this;
+		}
+
+		public LegacyBuilder localCountryCode(CurrencyCode localCountryCode) {
+			this.localCountryCode = localCountryCode;
+			return this;
+		}
+
+		public LegacyBuilder localCurrencyAmount(BigDecimal localCurrencyAmount) {
+			this.localCurrencyAmount = localCurrencyAmount;
+			return this;
+		}
+
+		public LegacyBuilder baseCountryCode(CurrencyCode baseCountryCode) {
+			this.baseCountryCode = baseCountryCode;
+			return this;
+		}
+
+		public LegacyBuilder baseCurrencyAmount(BigDecimal baseCurrencyAmount) {
+			this.baseCurrencyAmount = baseCurrencyAmount;
+			return this;
+		}
+
+		public LegacyBuilder exchangeRate(BigDecimal exchangeRate) {
+			this.exchangeRate = exchangeRate;
+			return this;
+		}
+
+		public LegacyBuilder paymentsMethod(String paymentsMethod) {
+			this.paymentsMethod = paymentsMethod;
+			return this;
+		}
+
+		public LegacyBuilder memo(String memo) {
+			this.memo = memo;
+			return this;
+		}
+
+		public LegacyBuilder occurredAt(LocalDateTime occurredAt) {
+			this.occurredAt = occurredAt;
+			return this;
+		}
+
+		public LegacyBuilder status(TemporaryExpenseStatus status) {
+			this.status = status;
+			return this;
+		}
+
+		public LegacyBuilder cardLastFourDigits(String cardLastFourDigits) {
+			this.cardLastFourDigits = cardLastFourDigits;
+			return this;
+		}
+
+		public LegacyBuilder approvalNumber(String approvalNumber) {
+			this.approvalNumber = approvalNumber;
+			return this;
+		}
 
 		public TemporaryExpense build() {
 			TemporaryExpense entity = new TemporaryExpense();

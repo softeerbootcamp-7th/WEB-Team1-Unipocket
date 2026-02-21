@@ -45,12 +45,12 @@ class TemporaryExpenseCommandServiceTest {
 
 	@BeforeEach
 	void setUp() {
-			service =
-					new TemporaryExpenseCommandService(
-							repository,
-							tempExpenseMetaRepository,
-							accountBookRateInfoProvider,
-							new TempExpenseStatusPolicy());
+		service =
+				new TemporaryExpenseCommandService(
+						repository,
+						tempExpenseMetaRepository,
+						accountBookRateInfoProvider,
+						new TempExpenseStatusPolicy());
 		testExpense =
 				TemporaryExpense.builder()
 						.tempExpenseId(1L)

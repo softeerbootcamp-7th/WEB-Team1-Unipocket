@@ -2,6 +2,7 @@ import { type ChartMode, CURRENCY_OPTIONS } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
+import { CHART_MESSAGES } from '@/components/chart/message';
 import PeriodDailyView from '@/components/chart/period/period-view/PeriodDailyView';
 import PeriodMonthlyView from '@/components/chart/period/period-view/PeriodMonthlyView';
 import PeriodWeeklyView from '@/components/chart/period/period-view/PeriodWeeklyView';
@@ -60,6 +61,7 @@ const PeriodChart = ({ isPreview = false }: ChartMode) => {
       <ChartContent
         className={PADDING_BY_PERIOD[periodType]}
         isEmpty={isEmpty}
+        emptyMessage={CHART_MESSAGES.PERIOD_EMPTY}
         isPreview={showSkeleton}
         skeleton={
           <PeriodView

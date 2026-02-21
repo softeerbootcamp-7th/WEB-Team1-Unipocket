@@ -1,5 +1,7 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 
+import { CHART_MESSAGES } from '@/components/chart/message';
+
 import { cn } from '@/lib/utils';
 
 interface ChartContentProps extends PropsWithChildren {
@@ -7,6 +9,7 @@ interface ChartContentProps extends PropsWithChildren {
   isPreview?: boolean;
   isEmpty?: boolean;
   skeleton?: ReactNode;
+  emptyMessage?: string;
 }
 
 const ChartContent = ({
@@ -14,6 +17,7 @@ const ChartContent = ({
   className,
   isPreview = false,
   isEmpty = false,
+  emptyMessage = CHART_MESSAGES.DEFAULT_EMPTY,
   skeleton,
 }: ChartContentProps) => {
   const showSkeleton = isPreview || isEmpty;
@@ -28,10 +32,8 @@ const ChartContent = ({
       {showSkeleton ? skeleton : children}
       {isEmpty && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="body2-normal-medium text-label-neutral text-center">
-            데이터가 부족합니다.
-            <br />
-            지출 내역을 추가해주세요.
+          <span className="body2-normal-medium text-label-alternative text-center whitespace-pre-line">
+            {emptyMessage}
           </span>
         </div>
       )}

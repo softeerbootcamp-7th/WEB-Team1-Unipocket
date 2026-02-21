@@ -6,6 +6,7 @@ import type { ChartMode } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
+import { CHART_MESSAGES } from '@/components/chart/message';
 import Button from '@/components/common/Button';
 import BudgetSetupModal from '@/components/modal/BudgetSetupModal';
 
@@ -33,6 +34,7 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
         className="w-full p-5"
         isPreview={showSkeleton}
         isEmpty={isEmpty}
+        emptyMessage={CHART_MESSAGES.BUDGET_EMPTY}
         skeleton={<BudgetChartSkeleton />}
       >
         {data && (

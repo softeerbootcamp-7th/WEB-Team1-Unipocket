@@ -7,6 +7,7 @@ import { type ChartMode, CURRENCY_OPTIONS } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
+import { CHART_MESSAGES } from '@/components/chart/message';
 import { CATEGORY_PERIOD_OPTIONS } from '@/components/chart/widgetPeriod';
 import DropDown from '@/components/common/dropdown/Dropdown';
 
@@ -58,6 +59,7 @@ const CategoryChart = ({ isPreview = false }: ChartMode) => {
       <ChartContent
         isPreview={showSkeleton}
         isEmpty={isEmpty}
+        emptyMessage={CHART_MESSAGES.PERIOD_EMPTY}
         skeleton={<CategoryChartSkeleton />}
         className="px-8 py-4"
       >

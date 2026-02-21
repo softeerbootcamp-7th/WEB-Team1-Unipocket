@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+
 interface UseSearchNavigationProps<T> {
   options: T[];
   filterFn: (option: T, searchTerm: string) => boolean;
@@ -14,61 +16,33 @@ export const useSearchNavigation = <T>({
   onBackspace,
 }: UseSearchNavigationProps<T>) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeIndex, setActiveIndex] = useState(0);
 
-  // 1. 옵션 필터링
   const filteredOptions = options.filter((option) =>
     filterFn(option, searchTerm),
   );
 
-  // 2. 검색어 변경 핸들러 (인덱스 초기화 포함)
+  const { activeIndex, setActiveIndex, handleKeyDown } = useKeyboardNavigation({
+    items: filteredOptions,
+    onSelect: (option) => {
+      onSelect(option);
+      setSearchTerm(''); // 선택 후 검색어 초기화
+    },
+    onBackspace,
+  });
+
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    setActiveIndex(0);
-  };
-
-  // 3. 키보드 네비게이션 로직
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && searchTerm === '') {
-      onBackspace?.();
-      return;
-    }
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex((prev) =>
-        prev + 1 >= filteredOptions.length ? 0 : prev + 1,
-      );
-      return;
-    }
-
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex((prev) =>
-        prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1,
-      );
-      return;
-    }
-
-    if (e.key === 'Enter') {
-      if (e.nativeEvent.isComposing) return;
-      e.preventDefault();
-
-      const targetOption = filteredOptions[activeIndex];
-      if (targetOption) {
-        onSelect(targetOption);
-        setSearchTerm(''); // 선택 후 검색어 초기화
-      }
-    }
+    setActiveIndex(0); // 검색어가 바뀌면 최상단으로 이동
   };
 
   return {
     searchTerm,
-    handleSearchChange,
     setSearchTerm,
+    handleSearchChange,
+    filteredOptions,
     activeIndex,
     setActiveIndex,
-    filteredOptions,
-    handleKeyDown,
+    handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) =>
+      handleKeyDown(e, searchTerm === ''), // 현재 검색어 상태 전달
   };
 };

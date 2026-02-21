@@ -1,0 +1,33 @@
+@startuml
+ title tempexpense.query.issue-temporary-expense-file-url
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseQueryController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseQueryFacade" as Facade
+ end box
+ box "Query Service Layer" #FFF8E1
+  participant "TemporaryExpenseQueryService" as Service
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "TemporaryExpenseQueryRepository" as QueryRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+  participant "TempExpenseMediaProvider (media)" as MediaProvider
+  participant "S3MediaObjectStorageProvider (global)" as StorageProvider
+  participant "S3Service (global)" as S3Service
+ end box
+
+ Client -> Controller : GET /account-books/{id}/temporary-expense-metas/{metaId}/files/{fileId}/file-url
+ Controller -> Facade : getTemporaryExpenseMetaFileUrl(accountBookId, metaId, fileId, userId)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> Service : issueTemporaryExpenseFileUrl(accountBookId, metaId, fileId)
+ Service -> QueryRepo : findScopedFile(accountBookId, metaId, fileId)
+ Service -> MediaProvider : issueGetPath(s3Key, expiration)
+ MediaProvider -> StorageProvider : getPresignedGetUrl(s3Key, expiration)
+ StorageProvider -> S3Service : getPresignedGetUrl(...)
+ Controller --> Client : 200 OK
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+ title tempexpense.query.stream-parse-progress
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseQueryController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseQueryFacade" as Facade
+ end box
+ box "SSE Infra Layer" #F5F5F5
+  participant "ParsingProgressPublisher" as ProgressPublisher
+  participant "RedisTemplate" as Redis
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+ end box
+
+ Client -> Controller : GET /account-books/{id}/temporary-expenses/parse-status/{taskId} (SSE)
+ Controller -> Facade : streamParsingProgress(accountBookId, taskId, userId)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> ProgressPublisher : addEmitter(taskId, accountBookId, emitter)
+ alt active task
+  ProgressPublisher --> Facade : emitter 구독 성공
+ else task 종료 상태
+  Facade -> ProgressPublisher : replayTerminalIfPresent(taskId, accountBookId, emitter)
+  ProgressPublisher -> Redis : read tempexpense:parse-task:{taskId}
+ end
+ Facade --> Controller : SseEmitter
+ Controller --> Client : text/event-stream 연결 유지
+@enduml

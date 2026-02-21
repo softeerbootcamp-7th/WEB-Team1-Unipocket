@@ -1,0 +1,29 @@
+@startuml
+ title tempexpense.query.get-temporary-expense-meta-files
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseQueryController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseQueryFacade" as Facade
+ end box
+ box "Query Service Layer" #FFF8E1
+  participant "TemporaryExpenseQueryService" as Service
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "TemporaryExpenseQueryRepository" as QueryRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+ end box
+
+ Client -> Controller : GET /account-books/{id}/temporary-expense-metas/{metaId}/files
+ Controller -> Facade : getTemporaryExpenseMetaFiles(accountBookId, metaId, userId)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> Service : getTemporaryExpenseMetaFiles(accountBookId, metaId)
+ Service -> QueryRepo : findMetaInAccountBook(accountBookId, metaId)
+ Service -> QueryRepo : findFilesByMetaId(metaId)
+ Service -> QueryRepo : findExpensesByFileIds(fileIds)
+ Controller --> Client : 200 OK
+@enduml

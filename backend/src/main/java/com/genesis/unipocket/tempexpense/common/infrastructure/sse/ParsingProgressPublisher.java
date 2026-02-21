@@ -91,7 +91,7 @@ public class ParsingProgressPublisher {
 	}
 
 	public void complete(String taskId) {
-		ParsingTaskState state = activeTasks.remove(taskId);
+		ParsingTaskState state = activeTasks.get(taskId);
 		if (state == null) {
 			return;
 		}
@@ -99,6 +99,8 @@ public class ParsingProgressPublisher {
 		saveTerminalStateToRedis(
 				taskId,
 				new ParsingTaskState(state.accountBookId(), 100, TaskStatus.COMPLETE, null));
+
+		activeTasks.remove(taskId);
 
 		SseEmitter emitter = emitters.get(taskId);
 		if (emitter != null) {
@@ -110,7 +112,7 @@ public class ParsingProgressPublisher {
 	}
 
 	public void publishError(String taskId, String errorMessage) {
-		ParsingTaskState state = activeTasks.remove(taskId);
+		ParsingTaskState state = activeTasks.get(taskId);
 		if (state == null) {
 			return;
 		}
@@ -119,6 +121,8 @@ public class ParsingProgressPublisher {
 				taskId,
 				new ParsingTaskState(
 						state.accountBookId(), state.progress(), TaskStatus.ERROR, errorMessage));
+
+		activeTasks.remove(taskId);
 
 		SseEmitter emitter = emitters.get(taskId);
 		if (emitter != null) {

@@ -2,9 +2,10 @@ package com.genesis.unipocket.accountbook.command.facade.provide;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.command.facade.port.AccountBookFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
+import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
+import com.genesis.unipocket.expense.query.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
@@ -17,12 +18,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AccountBookValidationProvider
-		implements AccountBookOwnershipValidator,
-				com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator,
+		implements ExpenseOwnershipValidator,
 				com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator,
-				com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator,
-				com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator,
-				AccountBookInfoFetchService,
+				com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator,
+				AccountBookFetchService,
 				AccountBookRateInfoProvider,
 				UserAccountBookValidator,
 				com.genesis.unipocket.widget.common.validate.UserAccountBookValidator {

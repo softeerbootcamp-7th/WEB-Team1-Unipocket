@@ -102,4 +102,29 @@ public record ExpenseResult(
 				entity.getMemo(),
 				entity.getCardNumber());
 	}
+
+	public ExpenseResult withCardInfo(UserCardInfo cardInfo) {
+		return new ExpenseResult(
+				this.expenseId(),
+				this.accountBookId(),
+				this.travelId(),
+				this.category(),
+				this.baseCurrencyCode(),
+				this.baseCurrencyAmount(),
+				this.exchangeRate(),
+				this.localCurrencyCode(),
+				this.localCurrencyAmount(),
+				this.occurredAt(),
+				this.updatedAt(),
+				this.displayMerchantName(),
+				this.approvalNumber(),
+				this.userCardId(),
+				cardInfo != null ? cardInfo.cardCompany() : null,
+				cardInfo != null ? cardInfo.nickName() : null,
+				cardInfo != null ? cardInfo.cardNumber() : null,
+				this.expenseSource(),
+				this.fileLink(),
+				this.memo(),
+				this.cardNumber());
+	}
 }

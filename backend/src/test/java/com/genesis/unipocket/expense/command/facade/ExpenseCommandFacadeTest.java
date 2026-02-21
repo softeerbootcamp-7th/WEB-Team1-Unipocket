@@ -7,26 +7,30 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.command.application.ExpenseCommandContextService;
+import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.command.facade.port.AccountBookFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateItemRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
+import com.genesis.unipocket.expense.common.facade.port.UserCardFetchService;
+import com.genesis.unipocket.expense.common.facade.port.dto.UserCardInfo;
+import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,14 +44,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ExpenseCommandFacadeTest {
 
 	@Mock private ExpenseCommandService expenseService;
-	@Mock private ExpenseCommandContextService expenseCommandContextService;
-	@Mock private AccountBookInfoFetchService accountBookInfoFetchService;
-	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
+	@Mock private UserCardFetchService userCardFetchService;
+	@Mock private AccountBookFetchService accountBookFetchService;
+	@Mock private AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
+	@Mock private ExpenseOwnershipValidator expenseOwnershipValidator;
 
 	@InjectMocks private ExpenseCommandFacade expenseCommandFacade;
 
 	@Test
-	@DisplayName("수기 생성 - 선형 위임 흐름으로 command 생성 및 service 호출")
+	@DisplayName("수기 생성 - command 생성/호출 후 카드 정보를 결합한다")
 	void createExpenseManual_linearFlow() {
 		Long accountBookId = 7L;
 		UUID userId = UUID.randomUUID();
@@ -64,12 +69,10 @@ class ExpenseCommandFacadeTest {
 						"memo",
 						55L);
 
-		when(accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString()))
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
 								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
-		when(expenseCommandContextService.resolveLocalCurrencyCode(null, CurrencyCode.USD))
-				.thenReturn(CurrencyCode.USD);
 		when(expenseService.createExpenseManual(any(ExpenseCreateCommand.class)))
 				.thenReturn(
 						new ExpenseResult(
@@ -86,7 +89,7 @@ class ExpenseCommandFacadeTest {
 								occurredAt.atOffset(ZoneOffset.UTC),
 								"스타벅스",
 								null,
-								null,
+								11L,
 								null,
 								null,
 								null,
@@ -94,10 +97,12 @@ class ExpenseCommandFacadeTest {
 								null,
 								"memo",
 								null));
-		when(expenseCommandContextService.enrichWithCardInfo(any(ExpenseResult.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+		when(userCardFetchService.getUserCard(11L))
+				.thenReturn(
+						Optional.of(new UserCardInfo(11L, CardCompany.SAMSUNG, "main", "1234")));
 
-		expenseCommandFacade.createExpenseManual(request, accountBookId, userId);
+		ExpenseResult result =
+				expenseCommandFacade.createExpenseManual(request, accountBookId, userId);
 
 		ArgumentCaptor<ExpenseCreateCommand> commandCaptor =
 				ArgumentCaptor.forClass(ExpenseCreateCommand.class);
@@ -109,13 +114,19 @@ class ExpenseCommandFacadeTest {
 		assertThat(command.userCardId()).isEqualTo(11L);
 		assertThat(command.travelId()).isEqualTo(55L);
 		assertThat(command.occurredAt()).isEqualTo(occurredAt.atOffset(ZoneOffset.UTC));
-		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
-		verify(expenseCommandContextService).resolveLocalCurrencyCode(null, CurrencyCode.USD);
-		verify(expenseCommandContextService).enrichWithCardInfo(any(ExpenseResult.class));
+
+		assertThat(result.cardCompany()).isEqualTo(CardCompany.SAMSUNG);
+		assertThat(result.cardLabel()).isEqualTo("main");
+		assertThat(result.cardLastDigits()).isEqualTo("1234");
+
+		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
+		verify(analysisMonthlyDirtyMarkerService)
+				.markDirty(accountBookId, occurredAt.atOffset(ZoneOffset.UTC));
+		verify(userCardFetchService).getUserCard(11L);
 	}
 
 	@Test
-	@DisplayName("수정 - 선형 위임 흐름으로 command 생성 및 service 호출")
+	@DisplayName("수정 - command 생성/호출 후 카드 정보를 결합한다")
 	void updateExpense_linearFlow() {
 		Long accountBookId = 7L;
 		Long expenseId = 99L;
@@ -133,13 +144,10 @@ class ExpenseCommandFacadeTest {
 						"memo",
 						77L);
 
-		when(accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString()))
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
 								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
-		when(expenseCommandContextService.resolveLocalCurrencyCode(
-						CurrencyCode.JPY, CurrencyCode.USD))
-				.thenReturn(CurrencyCode.JPY);
 		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
 				.thenReturn(
 						new ExpenseResult(
@@ -164,10 +172,10 @@ class ExpenseCommandFacadeTest {
 								null,
 								"memo",
 								null));
-		when(expenseCommandContextService.enrichWithCardInfo(any(ExpenseResult.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+		when(userCardFetchService.getUserCard(null)).thenReturn(Optional.empty());
 
-		expenseCommandFacade.updateExpense(expenseId, accountBookId, userId, request);
+		ExpenseResult result =
+				expenseCommandFacade.updateExpense(expenseId, accountBookId, userId, request);
 
 		ArgumentCaptor<ExpenseUpdateCommand> commandCaptor =
 				ArgumentCaptor.forClass(ExpenseUpdateCommand.class);
@@ -178,11 +186,11 @@ class ExpenseCommandFacadeTest {
 		assertThat(command.localCurrencyCode()).isEqualTo(CurrencyCode.JPY);
 		assertThat(command.baseCurrencyCode()).isEqualTo(CurrencyCode.KRW);
 		assertThat(command.travelId()).isEqualTo(77L);
-		verify(accountBookOwnershipValidator)
+		assertThat(result.cardCompany()).isNull();
+
+		verify(expenseOwnershipValidator)
 				.validateOwnership(eq(accountBookId), eq(userId.toString()));
-		verify(expenseCommandContextService)
-				.resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD);
-		verify(expenseCommandContextService).enrichWithCardInfo(any(ExpenseResult.class));
+		verify(userCardFetchService).getUserCard(null);
 	}
 
 	@Test
@@ -194,7 +202,7 @@ class ExpenseCommandFacadeTest {
 
 		expenseCommandFacade.deleteExpense(expenseId, accountBookId, userId);
 
-		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
+		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
 		verify(expenseService).deleteExpense(expenseId, accountBookId);
 	}
 
@@ -226,21 +234,15 @@ class ExpenseCommandFacadeTest {
 										null,
 										occurredAt.plusSeconds(60),
 										new BigDecimal("50.00"),
-										CurrencyCode.USD,
+										null,
 										null,
 										"memo-2",
 										null)));
 
-		when(accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString()))
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
 								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
-		when(expenseCommandContextService.resolveLocalCurrencyCode(
-						CurrencyCode.JPY, CurrencyCode.USD))
-				.thenReturn(CurrencyCode.JPY);
-		when(expenseCommandContextService.resolveLocalCurrencyCode(
-						CurrencyCode.USD, CurrencyCode.USD))
-				.thenReturn(CurrencyCode.USD);
 		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
 				.thenReturn(
 						new ExpenseResult(
@@ -265,10 +267,10 @@ class ExpenseCommandFacadeTest {
 								null,
 								"memo-1",
 								null));
-		when(expenseCommandContextService.enrichWithCardInfo(any(ExpenseResult.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+		when(userCardFetchService.getUserCard(null)).thenReturn(Optional.empty());
 
-		expenseCommandFacade.updateExpensesBulk(accountBookId, userId, request);
+		List<ExpenseResult> results =
+				expenseCommandFacade.updateExpensesBulk(accountBookId, userId, request);
 
 		ArgumentCaptor<ExpenseUpdateCommand> commandCaptor =
 				ArgumentCaptor.forClass(ExpenseUpdateCommand.class);
@@ -276,10 +278,11 @@ class ExpenseCommandFacadeTest {
 		assertThat(commandCaptor.getAllValues()).hasSize(2);
 		assertThat(commandCaptor.getAllValues().get(0).expenseId()).isEqualTo(101L);
 		assertThat(commandCaptor.getAllValues().get(1).expenseId()).isEqualTo(102L);
-		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
-		verify(expenseCommandContextService)
-				.resolveLocalCurrencyCode(CurrencyCode.JPY, CurrencyCode.USD);
-		verify(expenseCommandContextService)
-				.resolveLocalCurrencyCode(CurrencyCode.USD, CurrencyCode.USD);
+		assertThat(commandCaptor.getAllValues().get(1).localCurrencyCode())
+				.isEqualTo(CurrencyCode.USD);
+		assertThat(results).hasSize(2);
+
+		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
+		verify(userCardFetchService, times(2)).getUserCard(null);
 	}
 }

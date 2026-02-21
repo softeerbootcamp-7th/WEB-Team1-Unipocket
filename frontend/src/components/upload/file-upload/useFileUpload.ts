@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { UploadItem } from '@/components/upload/type';
+import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 
 export const useFileUpload = () => {
   const [item, setItem] = useState<UploadItem | null>(null);
@@ -25,7 +25,7 @@ export const useFileUpload = () => {
     const newItem: UploadItem = {
       id: crypto.randomUUID(),
       name: file.name,
-      status: 'uploading',
+      status: UPLOAD_STATUS.UPLOADING,
     };
 
     setItem(newItem);
@@ -34,7 +34,9 @@ export const useFileUpload = () => {
     // 테스트용: 2초 뒤 done 처리
     setTimeout(() => {
       setItem((prev) =>
-        prev?.id === newItem.id ? { ...prev, status: 'uploaded' } : prev,
+        prev?.id === newItem.id
+          ? { ...prev, status: UPLOAD_STATUS.UPLOADED }
+          : prev,
       );
     }, 2000);
   };
@@ -46,7 +48,7 @@ export const useFileUpload = () => {
     setItem(null);
   };
 
-  const isReady = item !== null && item.status === 'uploaded';
+  const isReady = item !== null && item.status === UPLOAD_STATUS.UPLOADED;
 
   return {
     item,

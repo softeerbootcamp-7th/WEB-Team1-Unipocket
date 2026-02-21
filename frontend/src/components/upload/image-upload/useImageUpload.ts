@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { UploadItem } from '@/components/upload/type';
-import { UPLOAD_STATUS } from '@/components/upload/type';
+import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
 import { ENDPOINTS } from '@/api/config/endpoint';

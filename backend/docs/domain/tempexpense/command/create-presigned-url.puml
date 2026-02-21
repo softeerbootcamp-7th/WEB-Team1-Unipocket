@@ -1,0 +1,38 @@
+@startuml
+ title tempexpense.command.create-presigned-url
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "FileUploadService" as UploadService
+  participant "TemporaryExpenseScopeValidationProvider" as ScopeValidator
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "TempExpenseMetaRepository" as MetaRepo
+  participant "FileRepository" as FileRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+  participant "TempExpenseMediaProvider (media)" as MediaProvider
+  participant "S3MediaObjectStorageProvider (global)" as StorageProvider
+  participant "S3Service (global)" as S3Service
+ end box
+
+ Client -> Controller : POST /account-books/{id}/temporary-expenses/uploads/presigned-url
+ Controller -> Facade : createPresignedUrl(...)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> UploadService : createPresignedUrl(accountBookId, ...)
+ UploadService -> MetaRepo : save(meta)\n[tempExpenseMetaId 미지정 시]
+ UploadService -> ScopeValidator : validateMetaScope(...)\n[tempExpenseMetaId 지정 시]
+ UploadService -> FileRepo : findByTempExpenseMetaId(metaId)\n[파일 타입/개수 정책 검증]
+ UploadService -> MediaProvider : issueUploadPath(accountBookId, mimeType)
+ MediaProvider -> StorageProvider : getPresignedUrl(prefix, mediaContentType)
+ StorageProvider -> S3Service : getPresignedUrl(...)
+ UploadService -> FileRepo : save(File)
+ Controller --> Client : 200 OK (presigned PUT URL)
+@enduml

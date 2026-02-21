@@ -1,0 +1,52 @@
+@startuml
+ title tempexpense.command.start-parse-async
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "TemporaryExpenseParsingService" as ParsingService
+  participant "TemporaryExpenseParseClient" as ParseClient
+  participant "TemporaryExpensePersistenceService" as PersistenceService
+  participant "ParsingProgressPublisher" as ProgressPublisher
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "FileRepository" as FileRepo
+  participant "TemporaryExpenseRepository" as TempExpenseRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+  participant "AccountBookRateInfoProvider (accountbook)" as RateInfoProvider
+  participant "ExchangeRateProviderImpl (exchange)" as ExchangeProvider
+  participant "TempExpenseMediaProvider (media)" as MediaProvider
+  participant "GeminiService (global)" as Gemini
+ end box
+
+ Client -> Controller : POST /account-books/{id}/temporary-expenses/parse
+ Controller -> Facade : startParseAsync(accountBookId, metaId, s3Keys, userId)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> ParsingService : startParseAsync(accountBookId, metaId, s3Keys)
+ ParsingService -> FileRepo : findByTempExpenseMetaId(metaId)
+ ParsingService -> ProgressPublisher : registerTask(taskId, accountBookId)
+ ParsingService -> ParsingService : parsingExecutor.execute(parseBatchFiles)
+ loop files
+  ParsingService -> ParseClient : parse(file)
+  alt IMAGE
+   ParseClient -> MediaProvider : issueGetPath(file.s3Key, 10m)
+   ParseClient -> Gemini : parseReceiptImage(s3Url, mimeType)
+  else CSV/EXCEL
+   ParseClient -> MediaProvider : download(file.s3Key)
+   ParseClient -> Gemini : parseDocument(content)
+  end
+  ParsingService -> ExchangeProvider : getExchangeRate(...)\n[필요한 환율 키]
+  ParsingService -> PersistenceService : persist(file, meta, parsedItems, rateMap)
+  PersistenceService -> TempExpenseRepo : saveAll(TemporaryExpense)
+  ParsingService -> ProgressPublisher : publishProgress(taskId, %)
+ end
+ ParsingService -> ProgressPublisher : complete(taskId)
+ Controller --> Client : 202 Accepted (taskId)
+@enduml

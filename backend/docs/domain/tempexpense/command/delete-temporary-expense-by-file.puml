@@ -1,0 +1,28 @@
+@startuml
+ title tempexpense.command.delete-temporary-expense-by-file
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "TemporaryExpenseBulkUpdateService" as BulkUpdateService
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "TemporaryExpenseRepository" as TempExpenseRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+ end box
+
+ Client -> Controller : DELETE /account-books/{id}/temporary-expense-metas/{metaId}/files/{fileId}/temporary-expenses/{tempExpenseId}
+ Controller -> Facade : deleteTemporaryExpenseByFile(...)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> BulkUpdateService : deleteByFile(accountBookId, metaId, fileId, tempExpenseId)
+ BulkUpdateService -> TempExpenseRepo : findScopedById(tempExpenseId, metaId, fileId)
+ BulkUpdateService -> TempExpenseRepo : delete(temporaryExpense)
+ Controller --> Client : 204 No Content
+@enduml

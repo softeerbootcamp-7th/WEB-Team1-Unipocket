@@ -1,0 +1,33 @@
+@startuml
+ title tempexpense.command.delete-meta
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "FileUploadService" as UploadService
+  participant "TemporaryExpenseScopeValidationProvider" as ScopeValidator
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "TemporaryExpenseRepository" as TempExpenseRepo
+  participant "FileRepository" as FileRepo
+  participant "TempExpenseMetaRepository" as MetaRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+ end box
+
+ Client -> Controller : DELETE /account-books/{id}/temporary-expense-metas/{metaId}
+ Controller -> Facade : deleteMeta(accountBookId, tempExpenseMetaId, userId)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> UploadService : deleteMeta(accountBookId, tempExpenseMetaId)
+ UploadService -> ScopeValidator : validateMetaScope(accountBookId, tempExpenseMetaId)
+ UploadService -> TempExpenseRepo : deleteByTempExpenseMetaId(metaId)
+ UploadService -> FileRepo : deleteByTempExpenseMetaId(metaId)
+ UploadService -> MetaRepo : delete(meta)
+ Controller --> Client : 204 No Content
+@enduml

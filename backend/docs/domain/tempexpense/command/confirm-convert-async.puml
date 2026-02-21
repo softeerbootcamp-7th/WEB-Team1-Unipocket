@@ -1,0 +1,45 @@
+@startuml
+ title tempexpense.command.confirm-convert-async
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "TemporaryExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "TemporaryExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "TemporaryExpenseConversionService" as ConversionService
+  participant "TemporaryExpenseSingleConversionTxService" as SingleTxService
+  participant "ParsingProgressPublisher" as ProgressPublisher
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "TemporaryExpenseRepository" as TempExpenseRepo
+  participant "ExpenseRepository" as ExpenseRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookValidator
+  participant "AccountBookRateInfoProvider (accountbook)" as RateInfoProvider
+  participant "ExchangeRateServiceImpl (exchange)" as ExchangeService
+ end box
+
+ Client -> Controller : POST /account-books/{id}/temporary-expense-metas/{metaId}/confirm
+ Controller -> Facade : confirm(accountBookId, tempExpenseMetaId, userId)
+ Facade -> AccountBookValidator : validateOwnership(accountBookId, userId)
+ Facade -> ConversionService : startConfirmAsync(accountBookId, metaId)
+ ConversionService -> TempExpenseRepo : findByTempExpenseMetaId(metaId)
+ ConversionService -> ConversionService : 배치 확정 가능 필드 검증
+ ConversionService -> ProgressPublisher : registerTask(taskId, accountBookId)
+ ConversionService -> ConversionService : parsingExecutor.execute(convertBatch)
+ loop tempExpenseIds
+  ConversionService -> SingleTxService : convertToExpense(accountBookId, tempExpenseId)
+  SingleTxService -> TempExpenseRepo : findConversionContext(accountBookId, tempExpenseId)
+  SingleTxService -> RateInfoProvider : getRateInfo(accountBookId)
+  SingleTxService -> ExchangeService : getExchangeRate(local, base, occurredAt)
+  SingleTxService -> ExpenseRepo : save(ExpenseEntity.convertedFromTemporary)
+  SingleTxService -> TempExpenseRepo : delete(temporaryExpense)
+  ConversionService -> ProgressPublisher : publishProgress(taskId, %)
+ end
+ ConversionService -> ProgressPublisher : complete(taskId)
+ Controller --> Client : 202 Accepted (taskId)
+@enduml

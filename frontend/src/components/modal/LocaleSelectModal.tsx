@@ -94,21 +94,24 @@ const LocaleSelectModal = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
 
-  const filteredCountryCodes = useMemo(() => {
-    if (!keyword.trim()) return Object.values(COUNTRY_CODE);
+  const filteredCountries = useMemo(() => {
+    const trimmedKeyword = keyword.trim().toLowerCase();
 
-    return Object.values(COUNTRY_CODE).filter((countryCode) => {
-      const data = getCountryInfo(countryCode);
-      if (!data) return false;
+    return Object.values(COUNTRY_CODE)
+      .map((countryCode) => ({
+        countryCode,
+        data: getCountryInfo(countryCode),
+      }))
+      .filter((item) => {
+        if (!item.data) return false;
+        if (!trimmedKeyword) return true;
 
-      const lowerKeyword = keyword.toLowerCase();
-
-      return (
-        data.countryName.toLowerCase().includes(lowerKeyword) ||
-        data.currencyName.toLowerCase().includes(lowerKeyword) ||
-        countryCode.toLowerCase().includes(lowerKeyword)
-      );
-    });
+        return (
+          item.data.countryName.toLowerCase().includes(trimmedKeyword) ||
+          item.data.currencyName.toLowerCase().includes(trimmedKeyword) ||
+          item.countryCode.toLowerCase().includes(trimmedKeyword)
+        );
+      });
   }, [keyword]);
 
   const handleSelect = (code: CountryCode) => {
@@ -172,8 +175,8 @@ const LocaleSelectModal = ({
           />
         </div>
         <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {filteredCountryCodes.map((countryCode, index, arr) => {
-            const data = getCountryInfo(countryCode);
+          {filteredCountries.map((item, index, arr) => {
+            const { countryCode, data } = item;
             if (!data) return null;
 
             return (
@@ -189,7 +192,7 @@ const LocaleSelectModal = ({
               />
             );
           })}
-          {filteredCountryCodes.length === 0 && (
+          {filteredCountries.length === 0 && (
             <div className="headline1-medium text-label-assistive w-118 px-4 py-6 text-center">
               검색 결과가 없습니다.
             </div>

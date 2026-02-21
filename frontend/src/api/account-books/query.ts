@@ -108,7 +108,7 @@ const useAnalysisQuery = (
   });
 
 const useUpdateAccountBookBudgetMutation = () => {
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   return useMutation({
     mutationFn: (budget: number) => {

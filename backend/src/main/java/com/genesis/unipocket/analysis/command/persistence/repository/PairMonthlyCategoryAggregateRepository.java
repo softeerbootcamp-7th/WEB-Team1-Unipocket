@@ -25,4 +25,7 @@ public interface PairMonthlyCategoryAggregateRepository
 					LocalDate targetYearMonth,
 					AnalysisQualityType qualityType,
 					CurrencyType currencyType);
+
+	void deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
+			CountryCode localCountryCode, CountryCode baseCountryCode, LocalDate targetYearMonth);
 }

@@ -61,4 +61,6 @@ public interface AnalysisMonthlyDirtyRepository
 			@Param("claimableStatuses") Collection<AnalysisBatchJobStatus> claimableStatuses,
 			@Param("nowUtc") LocalDateTime nowUtc,
 			@Param("leaseUntilUtc") LocalDateTime leaseUntilUtc);
+
+	void deleteByAccountBookId(Long accountBookId);
 }

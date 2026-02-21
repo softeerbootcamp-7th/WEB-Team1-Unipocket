@@ -247,7 +247,7 @@ public class AccountBookCommandServiceTest {
 
 	@Test
 	@DisplayName("가계부 삭제 - 성공")
-	void delete_Success() {
+	void delete_Success() throws Exception {
 		Long accountBookId = 1L;
 		DeleteAccountBookCommand command = DeleteAccountBookCommand.of(accountBookId, userId);
 
@@ -262,11 +262,16 @@ public class AccountBookCommandServiceTest {
 								null,
 								LocalDate.now(),
 								LocalDate.now()));
+		java.lang.reflect.Field idField = AccountBookEntity.class.getDeclaredField("id");
+		idField.setAccessible(true);
+		idField.set(entity, accountBookId);
 
 		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
 
 		accountBookCommandService.delete(command);
 
+		verify(analysisMonthlyDirtyMarkerService)
+				.purgeMonthlyDataByAccountBook(accountBookId, CountryCode.US, CountryCode.KR);
 		verify(repository).delete(entity);
 	}
 

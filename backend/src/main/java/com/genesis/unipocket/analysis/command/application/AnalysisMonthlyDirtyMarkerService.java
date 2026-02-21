@@ -2,8 +2,12 @@ package com.genesis.unipocket.analysis.command.application;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -26,6 +30,10 @@ public class AnalysisMonthlyDirtyMarkerService {
 
 	private final AccountBookCommandRepository accountBookRepository;
 	private final AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
+	private final AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
+	private final AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
+	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	private final PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	private final ExpenseRepository expenseRepository;
 
 	@Transactional
@@ -110,6 +118,35 @@ public class AnalysisMonthlyDirtyMarkerService {
 		}
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
 		upsertDirtyRows(localCountry, accountBookId, targetYearMonths, nowUtc);
+	}
+
+	@Transactional
+	public void purgeMonthlyDataByAccountBook(
+			Long accountBookId, CountryCode localCountryCode, CountryCode baseCountryCode) {
+		Set<LocalDate> affectedMonths = new LinkedHashSet<>();
+		affectedMonths.addAll(
+				accountMonthlyAggregateRepository.findDistinctTargetYearMonthsByAccountBookId(
+						accountBookId));
+		affectedMonths.addAll(
+				accountMonthlyCategoryAggregateRepository.findDistinctTargetYearMonthsByAccountBookId(
+						accountBookId));
+
+		monthlyDirtyRepository.deleteByAccountBookId(accountBookId);
+		accountMonthlyCategoryAggregateRepository.deleteByAccountBookId(accountBookId);
+		accountMonthlyAggregateRepository.deleteByAccountBookId(accountBookId);
+
+		if (localCountryCode == null || baseCountryCode == null || affectedMonths.isEmpty()) {
+			return;
+		}
+
+		for (LocalDate month : affectedMonths) {
+			pairMonthlyCategoryAggregateRepository
+					.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
+							localCountryCode, baseCountryCode, month);
+			pairMonthlyAggregateRepository
+					.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
+							localCountryCode, baseCountryCode, month);
+		}
 	}
 
 	private void upsertDirtyRows(

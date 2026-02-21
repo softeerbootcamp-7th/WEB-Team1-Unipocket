@@ -3,6 +3,7 @@ package com.genesis.unipocket.expense.query.service.dto;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
@@ -21,7 +22,7 @@ public record ExpenseQueryResult(
 		String displayMerchantName,
 		String approvalNumber,
 		Long userCardId,
-		Integer cardCompany,
+		CardCompany cardCompany,
 		String cardLabel,
 		String cardLastDigits,
 		ExpenseSource expenseSource,

@@ -1,13 +1,13 @@
 package com.genesis.unipocket.expense.query.service;
 
+import com.genesis.unipocket.expense.common.facade.port.UserCardFetchService;
+import com.genesis.unipocket.expense.common.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.query.persistence.repository.ExpenseQueryRepository;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseQueryRow;
 import com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.expense.query.port.ExpenseMediaAccessService;
 import com.genesis.unipocket.expense.query.port.TravelInfoReader;
-import com.genesis.unipocket.expense.query.port.UserCardReadService;
 import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
-import com.genesis.unipocket.expense.query.port.dto.UserCardQueryInfo;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
 import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -46,7 +46,7 @@ public class ExpenseQueryService {
 
 	private final ExpenseQueryRepository expenseQueryRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
-	private final UserCardReadService userCardReadService;
+	private final UserCardFetchService userCardReadService;
 	private final ExpenseMediaAccessService expenseMediaAccessService;
 	private final TravelInfoReader travelInfoReader;
 
@@ -93,11 +93,12 @@ public class ExpenseQueryService {
 		if (row.userCardId() == null) {
 			return toResult(row, null);
 		}
-		UserCardQueryInfo cardInfo = readUserCardOrNull(row.userCardId());
+
+		UserCardInfo cardInfo = userCardReadService.getUserCard(row.userCardId()).orElse(null);
 		return toResult(row, cardInfo);
 	}
 
-	private ExpenseQueryResult toResult(ExpenseQueryRow row, UserCardQueryInfo cardInfo) {
+	private ExpenseQueryResult toResult(ExpenseQueryRow row, UserCardInfo cardInfo) {
 		Long resolvedUserCardId = cardInfo != null ? row.userCardId() : null;
 		return new ExpenseQueryResult(
 				row.expenseId(),
@@ -121,17 +122,6 @@ public class ExpenseQueryService {
 				row.fileLink(),
 				row.memo(),
 				row.cardNumber());
-	}
-
-	private UserCardQueryInfo readUserCardOrNull(Long userCardId) {
-		try {
-			return userCardReadService.readUserCard(userCardId);
-		} catch (BusinessException e) {
-			if (e.getCode() == ErrorCode.CARD_NOT_FOUND) {
-				return null;
-			}
-			throw e;
-		}
 	}
 
 	private ExpenseQueryRow findAndValidateScope(Long expenseId, Long accountBookId) {

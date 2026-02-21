@@ -34,3 +34,18 @@ export const useAccountBookStore = create<AccountBookState>()(
     { name: 'AccountBookStore' }, // devtools name
   ),
 );
+
+export const useRequiredAccountBook = () => {
+  const accountBook = useAccountBookStore((s) => s.accountBook);
+
+  if (!accountBook) {
+    throw new Error('AccountBook is required in _app route');
+  }
+
+  return accountBook;
+};
+
+export const useAccountBookCountryCode = (currencyType: 'LOCAL' | 'BASE') => {
+  const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
+  return currencyType === 'LOCAL' ? localCountryCode : baseCountryCode;
+};

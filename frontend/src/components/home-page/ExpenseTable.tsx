@@ -15,12 +15,12 @@ import UploadMenu from '@/components/upload/UploadMenu';
 
 import { useGetExpensesQuery } from '@/api/expenses/query';
 import type { Expense } from '@/api/expenses/type';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ExpenseTable = () => {
-  const { accountBook } = useAccountBookStore();
+  const accountBookId = useRequiredAccountBook().id;
 
-  const { data } = useGetExpensesQuery(accountBook!.id, {
+  const { data } = useGetExpensesQuery(accountBookId, {
     page: 0,
     size: 50,
   });

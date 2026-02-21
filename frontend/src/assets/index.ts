@@ -1,11 +1,11 @@
 import Google from '@/assets/authLogos/google.svg';
+import Guest from '@/assets/authLogos/guest.svg';
 import Kakao from '@/assets/authLogos/kakao.svg';
-import Mingyu from '@/assets/authLogos/mingyu.svg';
 
 export const AuthLogos = {
   Google,
   Kakao,
-  Mingyu,
+  Guest,
 } as const;
 
 // 2. Cards

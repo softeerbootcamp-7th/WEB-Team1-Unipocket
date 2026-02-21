@@ -21,7 +21,7 @@ const ManualCreatePanel = ({ isOpen, onClose }: ManualCreatePanelProps) => {
     };
 
     mutate(
-      { accountBookId: accountBookId, data: request },
+      { accountBookId, data: request },
       {
         onSuccess: () => {
           onClose();

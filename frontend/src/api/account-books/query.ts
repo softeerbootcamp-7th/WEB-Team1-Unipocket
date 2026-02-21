@@ -107,18 +107,7 @@ const useAnalysisQuery = (
     placeholderData: (previousData) => previousData,
   });
 
-export {
-  accountBookDetailQueryOptions,
-  accountBooksQueryOptions,
-  useAccountBookDetailQuery,
-  useAnalysisQuery,
-  useCreateAccountBookMutation,
-  useDeleteAccountBookMutation,
-  useGetAccountBooksQuery,
-  useUpdateAccountBookMutation,
-};
-
-export const useUpdateAccountBookBudgetMutation = () => {
+const useUpdateAccountBookBudgetMutation = () => {
   const accountBookId = useRequiredAccountBook().id;
 
   return useMutation({
@@ -135,4 +124,16 @@ export const useUpdateAccountBookBudgetMutation = () => {
       toast.error('예산 저장에 실패했어요.');
     },
   });
+};
+
+export {
+  accountBookDetailQueryOptions,
+  accountBooksQueryOptions,
+  useAccountBookDetailQuery,
+  useAnalysisQuery,
+  useCreateAccountBookMutation,
+  useDeleteAccountBookMutation,
+  useGetAccountBooksQuery,
+  useUpdateAccountBookBudgetMutation,
+  useUpdateAccountBookMutation,
 };

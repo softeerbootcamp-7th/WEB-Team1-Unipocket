@@ -59,7 +59,9 @@ public record ExpenseResponse(
 						? new PaymentMethodResponse(
 								false,
 								new CardResponse(
-dto.cardCompany() != null ? dto.cardCompany().ordinal() : null,
+										dto.cardCompany() != null
+												? dto.cardCompany().ordinal()
+												: null,
 										dto.cardLabel(),
 										dto.cardLastDigits()))
 						: new PaymentMethodResponse(true, null),

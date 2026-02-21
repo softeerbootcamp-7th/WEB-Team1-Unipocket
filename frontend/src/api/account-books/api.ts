@@ -81,13 +81,15 @@ const updateAccountBookBudget = (
   });
 };
 
-const updateAccountBookExchangeRate = (
+const getAccountBookExchangeRate = (
   accountBookId: number,
+  occurredAt: string,
 ): Promise<UpdateAccountBookExchangeRateResponse> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.DETAIL(accountBookId)}/main`,
+    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.EXCHANGE_RATE(accountBookId)}`,
+    params: occurredAt ? { occurredAt } : undefined,
     options: {
-      method: 'PATCH',
+      method: 'GET',
     },
   });
 };
@@ -115,9 +117,9 @@ export {
   createAccountBook,
   deleteAccountBook,
   getAccountBookDetail,
+  getAccountBookExchangeRate,
   getAccountBooks,
   getAnalysis,
   updateAccountBook,
   updateAccountBookBudget,
-  updateAccountBookExchangeRate,
 };

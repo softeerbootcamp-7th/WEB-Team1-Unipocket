@@ -40,7 +40,7 @@ export const useWidgetQuery = <T extends keyof WidgetResponseMap>(
   widgetType: T,
   { currencyType, period, enabled = true }: UseWidgetQueryOptions = {},
 ) => {
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   return useQuery({
     queryKey: widgetKeys.detail(
@@ -61,7 +61,7 @@ export const useWidgetQuery = <T extends keyof WidgetResponseMap>(
 };
 
 export const useWidgetLayoutQuery = () => {
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   return useQuery({
     queryKey: widgetKeys.layout(accountBookId),
@@ -71,7 +71,7 @@ export const useWidgetLayoutQuery = () => {
 };
 
 export const useUpdateWidgetLayoutMutation = () => {
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   return useMutation({
     mutationFn: (data: UpdateWidgetLayoutRequest) =>

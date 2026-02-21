@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
@@ -37,7 +37,10 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 	@Mock private AccountBookCommandRepository accountBookRepository;
 	@Mock private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
 	@Mock private AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
-	@Mock private AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
+
+	@Mock
+	private AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
+
 	@Mock private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
 	@Mock private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	@Mock private ExpenseRepository expenseRepository;

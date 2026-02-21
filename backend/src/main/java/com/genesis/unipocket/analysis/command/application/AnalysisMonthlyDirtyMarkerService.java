@@ -2,9 +2,9 @@ package com.genesis.unipocket.analysis.command.application;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
@@ -31,7 +31,8 @@ public class AnalysisMonthlyDirtyMarkerService {
 	private final AccountBookCommandRepository accountBookRepository;
 	private final AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
 	private final AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
-	private final AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
+	private final AccountMonthlyCategoryAggregateRepository
+			accountMonthlyCategoryAggregateRepository;
 	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
 	private final PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	private final ExpenseRepository expenseRepository;
@@ -128,8 +129,8 @@ public class AnalysisMonthlyDirtyMarkerService {
 				accountMonthlyAggregateRepository.findDistinctTargetYearMonthsByAccountBookId(
 						accountBookId));
 		affectedMonths.addAll(
-				accountMonthlyCategoryAggregateRepository.findDistinctTargetYearMonthsByAccountBookId(
-						accountBookId));
+				accountMonthlyCategoryAggregateRepository
+						.findDistinctTargetYearMonthsByAccountBookId(accountBookId));
 
 		monthlyDirtyRepository.deleteByAccountBookId(accountBookId);
 		accountMonthlyCategoryAggregateRepository.deleteByAccountBookId(accountBookId);

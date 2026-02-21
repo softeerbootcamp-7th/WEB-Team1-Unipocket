@@ -2,7 +2,9 @@ package com.genesis.unipocket.user.command.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
-import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import com.genesis.unipocket.user.command.presentation.request.UserCardCreateRequest;
+import com.genesis.unipocket.user.command.presentation.request.UserCardUpdateRequest;
+import com.genesis.unipocket.user.command.presentation.response.UserCardUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -11,6 +13,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +38,7 @@ public class UserCommandController {
 	@Operation(summary = "카드 등록", description = "사용자 카드 정보를 등록하고 생성된 카드 리소스 위치를 반환합니다.")
 	@PostMapping("/cards")
 	public ResponseEntity<Void> createCard(
-			@LoginUser UUID userId, @RequestBody @Valid UserCardRequest request) {
+			@LoginUser UUID userId, @RequestBody @Valid UserCardCreateRequest request) {
 		Long cardId = userCommandFacade.createCard(request, userId);
 		return ResponseEntity.created(URI.create("/users/cards/" + cardId)).build();
 	}
@@ -45,5 +48,14 @@ public class UserCommandController {
 	public ResponseEntity<Void> deleteCard(@PathVariable Long cardId, @LoginUser UUID userId) {
 		userCommandFacade.deleteCard(cardId, userId);
 		return ResponseEntity.noContent().build();
+	}
+
+	@Operation(summary = "카드 닉네임 수정", description = "사용자 카드의 닉네임을 수정합니다.")
+	@PatchMapping("/cards/{userCardId}")
+	public ResponseEntity<UserCardUpdateResponse> updateCardNickname(
+			@LoginUser UUID userId,
+			@PathVariable Long cardId,
+			@RequestBody UserCardUpdateRequest request) {
+		return ResponseEntity.ok(userCommandFacade.updateCard(userId, cardId, request));
 	}
 }

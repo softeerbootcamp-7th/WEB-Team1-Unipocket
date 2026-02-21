@@ -13,7 +13,7 @@ import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
-import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import com.genesis.unipocket.user.command.presentation.request.UserCardCreateRequest;
 import com.genesis.unipocket.user.common.enums.CardCompany;
 import jakarta.servlet.http.Cookie;
 import java.util.UUID;
@@ -67,7 +67,8 @@ class UserCommandControllerTest {
 		UUID userId = UUID.randomUUID();
 		Long cardId = 1L;
 		String accessToken = "valid_token";
-		UserCardRequest request = new UserCardRequest("My Card", "1234", CardCompany.HYUNDAI);
+		UserCardCreateRequest request =
+				new UserCardCreateRequest("My Card", "1234", CardCompany.HYUNDAI);
 
 		// Mock authentication
 		given(jwtProvider.validateToken(accessToken)).willReturn(true);
@@ -75,7 +76,8 @@ class UserCommandControllerTest {
 		given(tokenBlacklistService.isBlacklisted("jti")).willReturn(false);
 		given(jwtProvider.getUserId(accessToken)).willReturn(userId);
 
-		given(userCommandFacade.createCard(any(UserCardRequest.class), any())).willReturn(cardId);
+		given(userCommandFacade.createCard(any(UserCardCreateRequest.class), any()))
+				.willReturn(cardId);
 
 		mockMvc.perform(
 						post("/users/cards")

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMatchRoute } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { toast } from 'sonner';
@@ -92,6 +92,24 @@ const LocaleSelectModal = ({
     initialSelectedCode,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [keyword, setKeyword] = useState('');
+
+  const filteredCountryCodes = useMemo(() => {
+    if (!keyword.trim()) return Object.values(COUNTRY_CODE);
+
+    return Object.values(COUNTRY_CODE).filter((countryCode) => {
+      const data = getCountryInfo(countryCode);
+      if (!data) return false;
+
+      const lowerKeyword = keyword.toLowerCase();
+
+      return (
+        data.countryName.toLowerCase().includes(lowerKeyword) ||
+        data.currencyName.toLowerCase().includes(lowerKeyword) ||
+        countryCode.toLowerCase().includes(lowerKeyword)
+      );
+    });
+  }, [keyword]);
 
   const handleSelect = (code: CountryCode) => {
     if (code === oppositeCode) {
@@ -143,16 +161,18 @@ const LocaleSelectModal = ({
 
       {/* select section */}
       <div className="flex h-full flex-col gap-4.5">
-        <div className="bg-fill-normal rounded-modal-10 flex h-14.25 items-center gap-[4.8px] p-[14.4px]">
+        <div className="bg-fill-normal rounded-modal-10 flex h-14.25 w-full items-center gap-[4.8px] p-[14.4px]">
           <Icons.Search className="text-line-normal-normal size-5" />
           <input
             type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
             placeholder="검색어를 입력해주세요."
             className="placeholder:text-label-assistive placeholder:headline1-medium w-full focus:outline-none"
           />
         </div>
         <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {Object.values(COUNTRY_CODE).map((countryCode, index, arr) => {
+          {filteredCountryCodes.map((countryCode, index, arr) => {
             const data = getCountryInfo(countryCode);
             if (!data) return null;
 
@@ -169,6 +189,11 @@ const LocaleSelectModal = ({
               />
             );
           })}
+          {filteredCountryCodes.length === 0 && (
+            <div className="headline1-medium text-label-assistive w-118 px-4 py-6 text-center">
+              검색 결과가 없습니다.
+            </div>
+          )}
         </div>
       </div>
       {isConfirmOpen && selectedCode && (

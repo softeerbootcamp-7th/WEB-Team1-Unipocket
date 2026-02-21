@@ -159,16 +159,10 @@ class AnalysisMonthlyDirtyMarkerServiceTest {
 		verify(accountMonthlyCategoryAggregateRepository).deleteByAccountBookId(accountBookId);
 		verify(accountMonthlyAggregateRepository).deleteByAccountBookId(accountBookId);
 		verify(pairMonthlyCategoryAggregateRepository)
-				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
-						CountryCode.US, CountryCode.KR, monthA);
-		verify(pairMonthlyCategoryAggregateRepository)
-				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
-						CountryCode.US, CountryCode.KR, monthB);
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+						CountryCode.US, CountryCode.KR, java.util.Set.of(monthA, monthB));
 		verify(pairMonthlyAggregateRepository)
-				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
-						CountryCode.US, CountryCode.KR, monthA);
-		verify(pairMonthlyAggregateRepository)
-				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
-						CountryCode.US, CountryCode.KR, monthB);
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+						CountryCode.US, CountryCode.KR, java.util.Set.of(monthA, monthB));
 	}
 }

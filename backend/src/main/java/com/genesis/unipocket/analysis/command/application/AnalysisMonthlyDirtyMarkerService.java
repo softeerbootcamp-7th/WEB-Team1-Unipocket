@@ -140,14 +140,12 @@ public class AnalysisMonthlyDirtyMarkerService {
 			return;
 		}
 
-		for (LocalDate month : affectedMonths) {
-			pairMonthlyCategoryAggregateRepository
-					.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
-							localCountryCode, baseCountryCode, month);
-			pairMonthlyAggregateRepository
-					.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonth(
-							localCountryCode, baseCountryCode, month);
-		}
+		pairMonthlyCategoryAggregateRepository
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+						localCountryCode, baseCountryCode, affectedMonths);
+		pairMonthlyAggregateRepository
+				.deleteByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthIn(
+						localCountryCode, baseCountryCode, affectedMonths);
 	}
 
 	private void upsertDirtyRows(

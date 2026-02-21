@@ -3,7 +3,7 @@ import { type CategoryId } from '@/types/category';
 import { type CountryCode } from '@/data/country/countryCode';
 
 interface AccountBook {
-  id: number;
+  accountBookId: number;
   title: string;
   localCountryCode: CountryCode;
   baseCountryCode: CountryCode;
@@ -18,7 +18,7 @@ interface AccountBook {
 
 type AccountBookResponseBase = Pick<
   AccountBook,
-  | 'id'
+  | 'accountBookId'
   | 'title'
   | 'localCountryCode'
   | 'baseCountryCode'
@@ -26,10 +26,13 @@ type AccountBookResponseBase = Pick<
   | 'endDate'
 >;
 
-type GetAccountBooksResponse = Pick<AccountBook, 'id' | 'title' | 'isMain'>[];
+type GetAccountBooksResponse = Pick<
+  AccountBook,
+  'accountBookId' | 'title' | 'isMain'
+>[];
 
 export interface AccountBookResponse {
-  id: number;
+  accountBookId: number;
   title: string;
   localCountryCode: CountryCode;
   baseCountryCode: CountryCode;
@@ -87,13 +90,18 @@ type CreateAccountBookRequest = Required<
 type CreateAccountBookResponse = Required<AccountBookResponseBase>;
 type GetAccountBookDetailResponse = Required<AccountBookResponseBase>;
 
-type UpdateAccountBookRequest = Partial<
+type UpdateAccountBookRequest = {
+  titlePresent?: boolean;
+  localCountryCodePresent?: boolean;
+  baseCountryCodePresent?: boolean;
+  startDatePresent?: boolean;
+  endDatePresent?: boolean;
+} & Partial<
   Pick<
     AccountBook,
     | 'title'
     | 'localCountryCode'
     | 'baseCountryCode'
-    | 'budget'
     | 'startDate'
     | 'endDate'
     | 'isMain'
@@ -105,12 +113,13 @@ type UpdateAccountBookResponse = Required<AccountBookResponseBase>;
 type UpdateAccountBookBudgetResponse = Required<
   Pick<
     AccountBook,
+    | 'accountBookId'
     | 'baseCountryCode'
     | 'localCountryCode'
     | 'budget'
     | 'budgetCreatedAt'
     | 'exchangeRate'
-  > & { accountBookId: number }
+  >
 >;
 
 type UpdateAccountBookExchangeRateResponse = Required<

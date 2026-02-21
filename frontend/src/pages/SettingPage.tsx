@@ -103,11 +103,12 @@ const MainAccountBookSelection = ({
   // const setMainMutation = useSetMainAccountBookMutation();
 
   const options = accountBooks.map((book) => ({
-    id: book.id,
+    id: book.accountBookId,
     name: book.title,
   }));
 
-  const selectedId = accountBooks.find((book) => book.isMain)?.id ?? 0;
+  const selectedId =
+    accountBooks.find((book) => book.isMain)?.accountBookId ?? 0;
 
   const handleSelect = (id: number) => {
     if (id === selectedId) return;
@@ -302,10 +303,10 @@ const AccountBookConfigurator = ({
   const [isPeriodModalOpen, setPeriodModalOpen] = useState(false);
 
   const activeAccountBookId = accountBooks.some(
-    (book) => book.id === selectedAccountBookId,
+    (book) => book.accountBookId === selectedAccountBookId,
   )
     ? selectedAccountBookId
-    : (accountBooks[0]?.id ?? null);
+    : (accountBooks[0]?.accountBookId ?? null);
 
   const {
     data: accountBookDetail,
@@ -343,7 +344,8 @@ const AccountBookConfigurator = ({
 
   const mainAccountBook = accountBooks.find((book) => book.isMain);
   const activeTitle =
-    accountBooks.find((book) => book.id === activeAccountBookId)?.title ?? '';
+    accountBooks.find((book) => book.accountBookId === activeAccountBookId)
+      ?.title ?? '';
 
   return (
     <SettingSection>
@@ -371,11 +373,11 @@ const AccountBookConfigurator = ({
             <div className="border-line-normal-neutral flex flex-wrap items-end gap-4 border-b">
               {accountBooks.map((book) => (
                 <button
-                  key={book.id}
-                  onClick={() => setSelectedAccountBookId(book.id)}
+                  key={book.accountBookId}
+                  onClick={() => setSelectedAccountBookId(book.accountBookId)}
                   className={clsx(
                     'body2-normal-medium flex items-center gap-1 pb-3',
-                    book.id === activeAccountBookId
+                    book.accountBookId === activeAccountBookId
                       ? 'border-label-normal text-label-normal border-b-2'
                       : 'text-label-assistive',
                   )}
@@ -402,7 +404,7 @@ const AccountBookConfigurator = ({
               </p>
             ) : (
               <AccountBookSettingsForm
-                key={accountBookDetail.id}
+                key={accountBookDetail.accountBookId}
                 detail={accountBookDetail}
                 onOpenNameModal={() => setNameModalOpen(true)}
                 onOpenDeleteModal={() => setDeleteModalOpen(true)}
@@ -435,7 +437,7 @@ const AccountBookConfigurator = ({
       {isDeleteModalOpen && (
         <AccountBookDeleteModal
           accountBookTitle={activeTitle}
-          isMain={mainAccountBook?.id === activeAccountBookId}
+          isMain={mainAccountBook?.accountBookId === activeAccountBookId}
           isSubmitting={deleteAccountBookMutation.isPending}
           onClose={() => setDeleteModalOpen(false)}
           onConfirm={() => {

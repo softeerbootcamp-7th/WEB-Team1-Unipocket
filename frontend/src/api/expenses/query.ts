@@ -7,6 +7,7 @@ import {
 import { toast } from 'sonner';
 
 import {
+  bulkUpdateExpenses,
   createManualExpense,
   deleteExpense,
   getExpenseDetail,
@@ -16,6 +17,7 @@ import {
   updateExpense,
 } from '@/api/expenses/api';
 import type {
+  BulkUpdateExpenseRequest,
   CreateManualExpenseRequest,
   ExpenseSearchFilter,
   UpdateExpenseRequest,
@@ -66,6 +68,27 @@ export const useUpdateExpenseMutation = () =>
     },
     onError: () => {
       toast.error('지출 수정에 실패했어요.');
+    },
+  });
+
+/** 지출 일괄 수정 Mutation */
+export const useBulkUpdateExpensesMutation = () =>
+  useMutation({
+    mutationFn: ({
+      accountBookId,
+      data,
+    }: {
+      accountBookId: number | string;
+      data: BulkUpdateExpenseRequest;
+    }) => bulkUpdateExpenses(accountBookId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['expenses', 'list', variables.accountBookId],
+      });
+      toast.success('지출 내역이 일괄 수정되었어요.');
+    },
+    onError: () => {
+      toast.error('지출 일괄 수정에 실패했어요.');
     },
   });
 

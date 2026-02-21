@@ -84,6 +84,8 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/expenses/${expenseId}/file-url`,
     MERCHANT_SEARCH: (accountBookId: number | string) =>
       `account-books/${accountBookId}/expenses/merchant-names`, // 거래처명 자동완성 검색 (GET)
+    BULK: (accountBookId: number | string) =>
+      `account-books/${accountBookId}/expenses/bulk`,
   },
   ACCOUNT_BOOKS: {
     BASE: 'account-books', // 가계부 목록 조회 (GET), 가계부 생성 (POST)

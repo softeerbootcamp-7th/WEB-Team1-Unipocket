@@ -1,6 +1,8 @@
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
 import {
+  type BulkUpdateExpenseRequest,
+  type BulkUpdateExpenseResponse,
   type CreateManualExpenseRequest,
   type CreateManualExpenseResponse,
   type ExpenseSearchFilter,
@@ -39,6 +41,21 @@ const updateExpense = (
     },
   });
 };
+
+/** 지출 내역 일괄 수정 */
+const bulkUpdateExpenses = (
+  accountBookId: number | string,
+  data: BulkUpdateExpenseRequest,
+): Promise<BulkUpdateExpenseResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.EXPENSES.BULK(accountBookId),
+    options: {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    },
+  });
+};
+
 /** 지출 내역 삭제 */
 const deleteExpense = (
   accountBookId: number | string,
@@ -139,6 +156,7 @@ const searchMerchantNames = (
 };
 
 export {
+  bulkUpdateExpenses,
   createManualExpense,
   deleteExpense,
   getExpenseDetail,

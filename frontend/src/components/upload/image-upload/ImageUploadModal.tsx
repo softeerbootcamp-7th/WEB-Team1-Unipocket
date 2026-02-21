@@ -10,7 +10,7 @@ interface ImageUploadModalProps {
 }
 
 const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   const {
     items,

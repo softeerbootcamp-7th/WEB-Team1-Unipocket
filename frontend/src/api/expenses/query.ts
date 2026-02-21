@@ -22,6 +22,7 @@ import type {
   ExpenseSearchFilter,
   UpdateExpenseRequest,
 } from '@/api/expenses/type';
+import { widgetKeys } from '@/api/widget/query';
 import { queryClient } from '@/main';
 
 export const expenseKeys = {
@@ -40,6 +41,13 @@ export const expenseKeys = {
     [...expenseKeys.fileUrls(accountBookId), expenseId] as const,
   merchants: (accountBookId: number | string, query: string, limit?: number) =>
     [...expenseKeys.all, 'merchants', accountBookId, query, limit] as const,
+};
+
+const invalidateRelatedQueries = (accountBookId: number | string) => {
+  queryClient.invalidateQueries({ queryKey: expenseKeys.lists(accountBookId) });
+  queryClient.invalidateQueries({
+    queryKey: widgetKeys.allDetails(accountBookId),
+  });
 };
 
 /** 지출 상세 Query Options */
@@ -71,8 +79,12 @@ export const useUpdateExpenseMutation = () =>
       data: UpdateExpenseRequest;
     }) => updateExpense(accountBookId, expenseId, data),
     onSuccess: (_, variables) => {
+      invalidateRelatedQueries(variables.accountBookId);
       queryClient.invalidateQueries({
-        queryKey: expenseKeys.lists(variables.accountBookId),
+        queryKey: expenseKeys.detail(
+          variables.accountBookId,
+          variables.expenseId,
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: expenseKeys.detail(
@@ -98,9 +110,7 @@ export const useBulkUpdateExpensesMutation = () =>
       data: BulkUpdateExpenseRequest;
     }) => bulkUpdateExpenses(accountBookId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: expenseKeys.lists(variables.accountBookId),
-      });
+      invalidateRelatedQueries(variables.accountBookId);
       toast.success('지출 내역이 일괄 수정되었어요.');
     },
     onError: () => {
@@ -119,9 +129,7 @@ export const useDeleteExpenseMutation = () =>
       expenseId: number | string;
     }) => deleteExpense(accountBookId, expenseId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: expenseKeys.lists(variables.accountBookId),
-      });
+      invalidateRelatedQueries(variables.accountBookId);
       queryClient.removeQueries({
         queryKey: expenseKeys.detail(
           variables.accountBookId,
@@ -146,9 +154,7 @@ export const useCreateManualExpenseMutation = () =>
       data: CreateManualExpenseRequest;
     }) => createManualExpense(accountBookId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: expenseKeys.lists(variables.accountBookId),
-      });
+      invalidateRelatedQueries(variables.accountBookId);
       toast.success('지출 내역이 생성되었어요.');
     },
     onError: () => {

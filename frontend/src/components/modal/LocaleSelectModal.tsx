@@ -45,10 +45,14 @@ const CountryItem = ({
       />
       <div className="flex w-full justify-between">
         <div className="flex gap-4">
-          <img src={flagImg} alt={`${country} flag`} />
-          <span>{country}</span>
+          <img width={35} height={25} src={flagImg} alt={`${country} flag`} />
+          <span className="heading2-medium text-label-normal whitespace-nowrap">
+            {country}
+          </span>
         </div>
-        <span>{currency}</span>
+        <span className="headline1-medium text-label-normal whitespace-nowrap">
+          {currency}
+        </span>
       </div>
     </div>
   );

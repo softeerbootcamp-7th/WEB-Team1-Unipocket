@@ -83,7 +83,8 @@ const CurrencyConverter = ({
   const {
     localCurrency,
     baseCurrency,
-    amountError,
+    localError,
+    baseError,
     handleCurrencyChange,
     isValid,
   } = useCurrencyConverter(RATE);
@@ -137,8 +138,8 @@ const CurrencyConverter = ({
           onChange={(value) => handleCurrencyChange(value, 'toBase')}
           className="flex-1"
           prefix={<ScaledSign sign={localCurrencySign} />}
-          isError={!!amountError}
-          errorMessage={amountError ?? undefined}
+          isError={!!localError}
+          errorMessage={localError ?? undefined}
         />
         {showCurrencyDropdown && (
           <div className="flex w-25 pt-7">
@@ -181,8 +182,8 @@ const CurrencyConverter = ({
           onChange={(value) => handleCurrencyChange(value, 'toLocal')}
           className="flex-1"
           prefix={<ScaledSign sign={baseCurrencySign} />}
-          isError={!!amountError}
-          errorMessage={amountError ?? undefined}
+          isError={!!baseError}
+          errorMessage={baseError ?? undefined}
         />
         {showCurrencyDropdown && (
           <p className="body2-normal-medium text-label-assistive ml-2.75 w-20 items-center pt-10.5">

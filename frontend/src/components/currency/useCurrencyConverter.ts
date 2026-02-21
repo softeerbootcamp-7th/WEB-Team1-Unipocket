@@ -31,27 +31,36 @@ const convertCurrency = (
 const useCurrencyConverter = (rate: number) => {
   const [localCurrency, setLocalCurrency] = useState('');
   const [baseCurrency, setBaseCurrency] = useState('');
-  const [amountError, setAmountError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [baseError, setBaseError] = useState<string | null>(null);
 
   const isValid = useMemo(() => {
-    return localCurrency !== '' && baseCurrency !== '' && !amountError;
-  }, [localCurrency, baseCurrency, amountError]);
+    return (
+      localCurrency !== '' && baseCurrency !== '' && !localError && !baseError
+    );
+  }, [localCurrency, baseCurrency, localError, baseError]);
 
   const handleCurrencyChange = (value: string, direction: Direction) => {
+    const [setError, clearError] =
+      direction === 'toBase'
+        ? [setLocalError, setBaseError]
+        : [setBaseError, setLocalError];
+
     if (value.replace(/[0-9.,]/g, '') !== '') {
-      setAmountError(ERROR_MESSAGES.INVALID_NUMBER);
+      setError(ERROR_MESSAGES.INVALID_NUMBER);
       return;
     }
 
     const sanitized = sanitizeInput(value);
 
     if ((sanitized.match(/\./g)?.length ?? 0) > 1) {
-      setAmountError(ERROR_MESSAGES.INVALID_NUMBER);
+      setError(ERROR_MESSAGES.INVALID_NUMBER);
       return;
     }
+
     const integerPart = sanitized.split('.')[0];
     if (integerPart.length > 15) {
-      setAmountError(ERROR_MESSAGES.MAX_LENGTH_EXCEEDED);
+      setError(ERROR_MESSAGES.MAX_LENGTH_EXCEEDED);
       return;
     }
 
@@ -64,19 +73,21 @@ const useCurrencyConverter = (rate: number) => {
     setPrimary(sanitized);
 
     if (sanitized !== '' && num <= 0) {
-      setAmountError(ERROR_MESSAGES.ZERO_OR_NEGATIVE);
+      setError(ERROR_MESSAGES.ZERO_OR_NEGATIVE);
       setSecondary('');
       return;
     }
 
-    setAmountError(null);
+    setError(null);
+    clearError(null);
     setSecondary(sanitized === '' ? '' : convertCurrency(num, direction, rate));
   };
 
   return {
     localCurrency,
     baseCurrency,
-    amountError,
+    localError,
+    baseError,
     handleCurrencyChange,
     isValid,
   };

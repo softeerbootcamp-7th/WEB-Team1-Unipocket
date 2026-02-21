@@ -1,8 +1,8 @@
 package com.genesis.unipocket.auth.command.application;
 
+import com.genesis.unipocket.auth.command.facade.port.UserExistenceChecker;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.exception.TokenException;
-import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import java.util.UUID;
@@ -24,7 +24,7 @@ public class AuthService {
 
 	private final JwtProvider jwtProvider;
 	private final TokenBlacklistService blacklistService;
-	private final UserCommandRepository userRepository;
+	private final UserExistenceChecker userExistenceChecker;
 
 	/**
 	 * 로그인 - Access Token과 Refresh Token 발급
@@ -35,9 +35,9 @@ public class AuthService {
 	@Transactional
 	public TokenPair login(UUID userId) {
 		// 사용자 존재 확인
-		userRepository
-				.findById(userId)
-				.orElseThrow(() -> new TokenException(ErrorCode.USER_NOT_FOUND));
+		if (!userExistenceChecker.existsById(userId)) {
+			throw new TokenException(ErrorCode.USER_NOT_FOUND);
+		}
 
 		// Access Token과 Refresh Token 발급
 		String accessToken = jwtProvider.createAccessToken(userId);

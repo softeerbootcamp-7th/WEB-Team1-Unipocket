@@ -3,10 +3,8 @@ package com.genesis.unipocket.auth.command.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.genesis.unipocket.auth.command.facade.port.UserExistenceChecker;
 import com.genesis.unipocket.global.exception.TokenException;
-import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
-import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,16 +19,15 @@ class AuthServiceTest {
 
 	@Mock private JwtProvider jwtProvider;
 	@Mock private TokenBlacklistService blacklistService;
-	@Mock private UserCommandRepository userRepository;
+	@Mock private UserExistenceChecker userExistenceChecker;
 	@InjectMocks private AuthService authService;
 
 	@Test
 	@DisplayName("로그인 - 성공")
 	void login_Success() {
 		UUID userId = UUID.randomUUID();
-		UserEntity user = UserEntity.builder().name("Test User").email("test@example.com").build();
 
-		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(userExistenceChecker.existsById(userId)).thenReturn(true);
 		when(jwtProvider.createAccessToken(userId)).thenReturn("access-token");
 		when(jwtProvider.createRefreshToken(userId)).thenReturn("refresh-token");
 
@@ -44,7 +41,7 @@ class AuthServiceTest {
 	@DisplayName("로그인 - 사용자 없음")
 	void login_UserNotFound() {
 		UUID userId = UUID.randomUUID();
-		when(userRepository.findById(userId)).thenReturn(Optional.empty());
+		when(userExistenceChecker.existsById(userId)).thenReturn(false);
 
 		assertThatThrownBy(() -> authService.login(userId)).isInstanceOf(TokenException.class);
 	}

@@ -24,7 +24,8 @@ const AccountBookNameModal = ({
   const [title, setTitle] = useState(currentTitle);
 
   const isDuplicate = accountBooks.some(
-    (book) => book.id !== accountBookId && book.title === title.trim(),
+    (book) =>
+      book.accountBookId !== accountBookId && book.title === title.trim(),
   );
   const isTooLong = title.trim().length > 10;
   const isValid = title.trim().length > 0 && !isDuplicate && !isTooLong;

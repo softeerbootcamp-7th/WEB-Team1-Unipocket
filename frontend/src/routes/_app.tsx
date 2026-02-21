@@ -16,6 +16,10 @@ export const Route = createFileRoute('/_app')({
     // 1. 로그인 여부 및 정지 계정 검사 (통과 못하면 '/'로 리다이렉트됨)
     const user = await requireAuth();
 
+    const { queryClient } = context;
+    const { accountBook, setAccountBook, clearAccountBook } =
+      useAccountBookStore.getState();
+
     // 2. '/init' 페이지에 있다면 이후 가계부 조회 로직을 스킵, needsOnboarding이 true인 경우에만 접근 가능
     if (location.pathname === '/init') {
       if (!user?.needsOnboarding) {
@@ -26,12 +30,9 @@ export const Route = createFileRoute('/_app')({
 
     // 3. 유저 정보의 needsOnboarding을 최우선으로 체크하여 불필요한 API 호출 방지
     if (user?.needsOnboarding) {
+      clearAccountBook();
       throw redirect({ to: '/init' });
     }
-
-    const { queryClient } = context;
-    const { accountBook, setAccountBook, clearAccountBook } =
-      useAccountBookStore.getState();
 
     // 4. 가계부 목록 조회
     const accountBooks = await queryClient.ensureQueryData(
@@ -44,9 +45,12 @@ export const Route = createFileRoute('/_app')({
       throw redirect({ to: '/init' });
     }
 
-    let targetId = accountBook?.id;
-    if (!targetId || !accountBooks.some((ab) => ab.id === targetId)) {
-      targetId = accountBooks[0].id;
+    let targetId = accountBook?.accountBookId;
+    if (
+      !targetId ||
+      !accountBooks.some((ab) => ab.accountBookId === targetId)
+    ) {
+      targetId = accountBooks[0].accountBookId;
     }
 
     try {

@@ -18,7 +18,7 @@ import type { Expense } from '@/api/expenses/type';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ExpenseTable = () => {
-  const accountBookId = useRequiredAccountBook().id;
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
   const { data } = useGetExpensesQuery(accountBookId, {
     page: 0,

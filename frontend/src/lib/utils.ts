@@ -26,8 +26,6 @@ export const getLocalTime = (country: CountryCode) => {
 
 /**
  * Date 객체를 'YYYY-MM-DD' 형식의 문자열로 변환
- * @param date 변환할 Date 객체
- * @returns 'YYYY-MM-DD' 형식의 문자열
  */
 export const formatDateToString = (date: Date): string => {
   const year = date.getFullYear();
@@ -39,8 +37,6 @@ export const formatDateToString = (date: Date): string => {
 
 /**
  * 'YYYY-MM-DD' 형식의 문자열을 Date 객체로 변환
- * @param dateString 'YYYY-MM-DD' 형식의 문자열
- * @returns Date 객체
  */
 export const parseStringToDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
@@ -49,8 +45,6 @@ export const parseStringToDate = (dateString: string): Date => {
 
 /**
  * Date 객체를 'YYYY.M.D.요일' 형식의 문자열로 변환
- * @param date 변환할 Date 객체
- * @returns 'YYYY.M.D.요일' 형식의 문자열
  */
 export const formatDateWithDay = (date: Date): string => {
   const weekDay = DAY_NAMES[date.getDay()];

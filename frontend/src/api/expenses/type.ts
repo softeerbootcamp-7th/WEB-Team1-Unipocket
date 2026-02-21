@@ -11,7 +11,7 @@ type ExpenseSourceType =
   | 'EXCEL';
 
 interface Travel {
-  id: number;
+  travelId: number;
   name: string;
   imageKey: string | null;
 }
@@ -26,6 +26,7 @@ interface PaymentMethod {
   } | null;
 }
 
+// @TODO 모든 amount는 string으로 바꿔야함
 interface Expense {
   expenseId: number;
   accountBookId: number;
@@ -77,7 +78,10 @@ type UpdateExpenseRequest = Partial<
 >;
 
 type UpdateExpenseResponse = Required<
-  Omit<Expense, 'travel' | 'updatedAt'> & { travelId: number | null }
+  Omit<Expense, 'travel' | 'updatedAt' | 'exchangeRate'> & {
+    travelId: number | null;
+    displayMerchantName: string;
+  }
 >;
 
 type CreateManualExpenseRequest = Required<
@@ -98,6 +102,9 @@ type CreateManualExpenseRequest = Required<
 
 interface GetExpensesResponse {
   expenses: Expense[];
+  totalCount: number;
+  page: number;
+  size: number;
 }
 
 type CreateManualExpenseResponse = Required<ExpenseResponseBase>;
@@ -109,7 +116,6 @@ type ExpenseSearchFilter = Partial<
     minAmount: number;
     maxAmount: number;
     travelId: number;
-    category: CategoryId;
     page: number;
     size: number;
     sort: string[];
@@ -126,7 +132,32 @@ interface SearchMerchantNamesResponse {
   merchantNames: string[];
 }
 
+type BulkUpdateExpenseItem = { expenseId: number } & Partial<
+  Pick<
+    Expense,
+    | 'merchantName'
+    | 'category'
+    | 'occurredAt'
+    | 'localCurrencyAmount'
+    | 'localCurrencyCode'
+    | 'baseCurrencyAmount'
+    | 'memo'
+  > & { userCardId: number; travelId: number }
+>;
+
+interface BulkUpdateExpenseRequest {
+  items: BulkUpdateExpenseItem[];
+}
+
+interface BulkUpdateExpenseResponse {
+  totalUpdated: number;
+  items: UpdateExpenseResponse[];
+}
+
 export type {
+  BulkUpdateExpenseItem,
+  BulkUpdateExpenseRequest,
+  BulkUpdateExpenseResponse,
   CreateManualExpenseRequest,
   CreateManualExpenseResponse,
   Expense,

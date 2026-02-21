@@ -15,8 +15,8 @@ const AccountBookSelector = () => {
     return null;
   }
 
-  const accountBookOptions = data.map(({ id, title }) => ({
-    id,
+  const accountBookOptions = data.map(({ accountBookId, title }) => ({
+    id: accountBookId,
     name: title,
   }));
 
@@ -33,7 +33,7 @@ const AccountBookSelector = () => {
   return (
     <Dropdown
       options={accountBookOptions}
-      selectedId={accountBook.id}
+      selectedId={accountBook.accountBookId}
       onSelect={handleOnSelect}
       itemWidth="w-fit"
     />

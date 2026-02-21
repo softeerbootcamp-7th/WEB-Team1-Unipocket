@@ -212,7 +212,13 @@ export const useImageUpload = (accountBookId: number) => {
         URL.revokeObjectURL(itemToRemove.url);
       }
 
-      return prev.filter((item) => item.id !== id);
+      const nextItems = prev.filter((item) => item.id !== id);
+
+      if (nextItems.length === 0) {
+        metaIdRef.current = undefined;
+      }
+
+      return nextItems;
     });
   };
 

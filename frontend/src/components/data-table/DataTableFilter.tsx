@@ -1,11 +1,10 @@
 import { type ComponentPropsWithoutRef, useRef, useState } from 'react';
-import { clsx } from 'clsx';
 
 import { useSearchNavigation } from '@/hooks/useSearchNavigation';
 
 import Chip, { CategoryChip } from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
-import { Checkbox } from '@/components/ui/checkbox';
+import { DataTableOptionList } from '@/components/data-table/DataTableOptionList';
 import {
   Popover,
   PopoverContent,
@@ -56,7 +55,6 @@ const DataTableSearchFilter = <T,>({
   const [isOpen, setIsOpen] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
 
   const toggleOption = (option: T) => {
     if (selectedOptions.includes(option)) {
@@ -208,50 +206,31 @@ const DataTableSearchFilter = <T,>({
         </div>
 
         {/* --- 리스트 && footer 영역 --- */}
-        <div
-          ref={listRef}
-          className="flex max-h-85 min-h-42 flex-col justify-between p-3"
-        >
-          <div className="scrollbar overflow-y-auto">
-            {!searchTerm && renderEmptyState ? (
-              renderEmptyState()
-            ) : (
-              <>
-                {filteredOptions.length > 0 ? (
-                  filteredOptions.map((option, index) => (
-                    <label
-                      key={String(option)}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      className={clsx(
-                        'group rounded-modal-6 flex cursor-pointer items-center gap-2.5 px-3 py-2 transition-colors',
-                        activeIndex === index && 'bg-background-alternative',
-                      )}
-                    >
-                      <Checkbox
-                        checked={selectedOptions.includes(option)}
-                        onCheckedChange={() => toggleOption(option)}
-                      />
-
-                      {/* 옵션 텍스트/컴포넌트 */}
-                      <div className="text-label-neutral flex-1 truncate text-sm">
-                        {renderOption(option, searchTerm)}
-                      </div>
-                    </label>
-                  ))
-                ) : (
-                  <div className="text-label-assistive p-4 text-center text-sm">
-                    검색 결과가 없습니다.
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          {/* Search All Trigger */}
-          {searchTerm &&
-            filteredOptions.length > 0 &&
-            renderSearchAllTrigger &&
-            renderSearchAllTrigger(searchTerm, handleSelectAll)}
-        </div>
+        <DataTableOptionList
+          items={filteredOptions}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+          isSelected={(option) => selectedOptions.includes(option)}
+          onSelect={(option) => toggleOption(option)}
+          renderItem={(option) => (
+            <div className="text-label-neutral flex-1 truncate text-sm">
+              {renderOption(option, searchTerm)}
+            </div>
+          )}
+          customEmptyContent={
+            !searchTerm && renderEmptyState ? renderEmptyState() : null
+          }
+          footer={
+            searchTerm && filteredOptions.length > 0 && renderSearchAllTrigger
+              ? renderSearchAllTrigger(searchTerm, handleSelectAll)
+              : null
+          }
+        />
+        {/* Search All Trigger */}
+        {searchTerm &&
+          filteredOptions.length > 0 &&
+          renderSearchAllTrigger &&
+          renderSearchAllTrigger(searchTerm, handleSelectAll)}
       </PopoverContent>
     </Popover>
   );

@@ -31,17 +31,12 @@ public class ExpenseQueryService {
 	}
 
 	public List<String> searchMerchantNames(Long accountBookId, String query, Integer limit) {
-
-		if (query == null || query.isBlank()) {
-			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
-		}
-
 		int pageSize = limit == null ? 10 : limit;
 		if (pageSize < 1 || pageSize > 20) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
 
-		String normalizedQuery = query.trim();
+		String normalizedQuery = query == null ? "" : query.trim();
 		return expenseQueryRepository.findMerchantNameSuggestions(
 				accountBookId, normalizedQuery, pageSize);
 	}

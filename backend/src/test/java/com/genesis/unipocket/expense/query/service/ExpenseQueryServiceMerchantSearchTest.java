@@ -37,14 +37,29 @@ class ExpenseQueryServiceMerchantSearchTest {
 	}
 
 	@Test
-	@DisplayName("검색어가 비어있으면 예외")
-	void searchMerchantNames_blankQuery_throws() {
-		assertThatThrownBy(() -> expenseQueryService.searchMerchantNames(1L, " ", 10))
-				.isInstanceOf(BusinessException.class)
-				.satisfies(
-						ex ->
-								assertThat(((BusinessException) ex).getCode())
-										.isEqualTo(ErrorCode.INVALID_INPUT_VALUE));
+	@DisplayName("검색어가 비어있으면 전체 거래처명을 조회한다")
+	void searchMerchantNames_blankQuery_returnsAll() {
+		Long accountBookId = 1L;
+		when(expenseQueryRepository.findMerchantNameSuggestions(accountBookId, "", 10))
+				.thenReturn(List.of("스타벅스", "맥도날드"));
+
+		List<String> result = expenseQueryService.searchMerchantNames(accountBookId, " ", 10);
+
+		assertThat(result).containsExactly("스타벅스", "맥도날드");
+		verify(expenseQueryRepository).findMerchantNameSuggestions(accountBookId, "", 10);
+	}
+
+	@Test
+	@DisplayName("검색어가 null이면 전체 거래처명을 조회한다")
+	void searchMerchantNames_nullQuery_returnsAll() {
+		Long accountBookId = 1L;
+		when(expenseQueryRepository.findMerchantNameSuggestions(accountBookId, "", 10))
+				.thenReturn(List.of("스타벅스", "맥도날드"));
+
+		List<String> result = expenseQueryService.searchMerchantNames(accountBookId, null, 10);
+
+		assertThat(result).containsExactly("스타벅스", "맥도날드");
+		verify(expenseQueryRepository).findMerchantNameSuggestions(accountBookId, "", 10);
 	}
 
 	@Test

@@ -54,12 +54,15 @@ public class ExpenseQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "거래처명 자동완성 검색 API", description = "가계부 내 지출내역의 거래처명을 prefix 기준으로 검색합니다.")
+	@Operation(
+			summary = "거래처명 자동완성 검색 API",
+			description =
+					"q가 비어있으면 전체 거래처명 목록을 반환하고, 값이 있으면 prefix 기준으로 검색합니다. limit 값은 1부터 20까지 지원됩니다.")
 	@GetMapping("/account-books/{accountBookId}/expenses/merchant-names")
 	public ResponseEntity<ExpenseMerchantSearchResponse> searchMerchantNames(
 			@LoginUser UUID userId,
 			@PathVariable Long accountBookId,
-			@RequestParam("q") String query,
+			@RequestParam(name = "q", required = false) String query,
 			@RequestParam(name = "limit", required = false) Integer limit) {
 
 		ExpenseMerchantSearchResponse response =

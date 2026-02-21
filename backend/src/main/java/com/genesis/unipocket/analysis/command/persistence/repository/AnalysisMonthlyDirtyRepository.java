@@ -62,6 +62,8 @@ public interface AnalysisMonthlyDirtyRepository
 			@Param("nowUtc") LocalDateTime nowUtc,
 			@Param("leaseUntilUtc") LocalDateTime leaseUntilUtc);
 
+	void deleteByAccountBookId(Long accountBookId);
+
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query(
 			"""

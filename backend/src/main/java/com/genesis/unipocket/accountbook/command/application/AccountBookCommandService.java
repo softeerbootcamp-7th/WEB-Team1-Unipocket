@@ -148,6 +148,8 @@ public class AccountBookCommandService {
 		AccountBookEntity entity =
 				findAndVerifyOwnership(command.accountBookId(), command.userId());
 
+		analysisMonthlyDirtyMarkerService.purgeMonthlyDataByAccountBook(
+				entity.getId(), entity.getLocalCountryCode(), entity.getBaseCountryCode());
 		repository.delete(entity);
 	}
 

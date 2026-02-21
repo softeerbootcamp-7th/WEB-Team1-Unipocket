@@ -71,6 +71,9 @@ const TOAST_MESSAGE = {
   LOCAL: '기준 통화와 동일한 통화로 설정할 수 없습니다.',
 } as const;
 
+/**
+ * 기준 통화 변경 시 mode = 'BASE', 현지 통화 변경 시 mode = 'LOCAL'로 설정
+ */
 const LocaleSelectModal = ({
   mode,
   onSelect,

@@ -10,7 +10,7 @@ export const Route = createFileRoute('/_auth')({
     // 이미 로그인된 유저라면 여기서 /home 또는 /init으로 튕겨나갑니다.
     await requireGuest();
   },
-  pendingComponent: () => <Skeleton className="h-64" />,
+  pendingComponent: () => <Skeleton className="h-dvh" />,
   component: AppLayout,
 });
 

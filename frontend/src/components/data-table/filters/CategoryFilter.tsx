@@ -19,6 +19,9 @@ const CategoryFilter = () => {
       selectedOptions={selectedCategories}
       setSelectedOptions={setSelectedCategories}
       isCategory
+      filterFn={(categoryId, term) =>
+        CATEGORIES[categoryId].name.toLowerCase().includes(term.toLowerCase())
+      }
       renderOption={(categoryId) => <CategoryChip categoryId={categoryId} />}
       onInputChange={() => {
         // 타이핑 할 때마다

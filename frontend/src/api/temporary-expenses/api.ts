@@ -14,7 +14,7 @@ import type {
 } from '@/api/temporary-expenses/type';
 
 // 임시지출 업로드 URL 발급
-export const getPresignedUrl = (
+const getPresignedUrl = (
   accountBookId: number,
   data: GetPresignedUrlRequest,
 ): Promise<GetPresignedUrlResponse> => {
@@ -28,7 +28,7 @@ export const getPresignedUrl = (
 };
 
 // 임시지출 파싱 시작
-export const startParse = (
+const startParse = (
   accountBookId: number,
   data: StartParseRequest,
 ): Promise<ParseTaskResponse> => {
@@ -42,7 +42,7 @@ export const startParse = (
 };
 
 // 임시지출 확정
-export const confirmMeta = (
+const confirmMeta = (
   accountBookId: number,
   metaId: number,
 ): Promise<ParseTaskResponse> => {
@@ -53,7 +53,7 @@ export const confirmMeta = (
 };
 
 // 임시지출 일괄 수정
-export const bulkUpdateTempExpenses = (
+const bulkUpdateTempExpenses = (
   accountBookId: number,
   metaId: number,
   fileId: number,
@@ -73,7 +73,7 @@ export const bulkUpdateTempExpenses = (
 };
 
 // 임시지출 메타 목록 조회
-export const getMetas = (accountBookId: number): Promise<GetMetasResponse> => {
+const getMetas = (accountBookId: number): Promise<GetMetasResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.TEMPORARY_EXPENSES.METAS(accountBookId),
     options: { method: 'GET' },
@@ -81,7 +81,7 @@ export const getMetas = (accountBookId: number): Promise<GetMetasResponse> => {
 };
 
 // 메타 내부 파일별 임시지출 조회
-export const getMetaFiles = (
+const getMetaFiles = (
   accountBookId: number,
   metaId: number,
 ): Promise<GetMetaFilesResponse> => {
@@ -92,7 +92,7 @@ export const getMetaFiles = (
 };
 
 // 메타 내부 파일 단건 임시지출 조회
-export const getMetaFileDetail = (
+const getMetaFileDetail = (
   accountBookId: number,
   metaId: number,
   fileId: number,
@@ -108,7 +108,7 @@ export const getMetaFileDetail = (
 };
 
 // 메타 내부 파일 열람 URL 발급
-export const getMetaFileUrl = (
+const getMetaFileUrl = (
   accountBookId: number,
   metaId: number,
   fileId: number,
@@ -124,10 +124,7 @@ export const getMetaFileUrl = (
 };
 
 // 임시지출 메타 삭제
-export const deleteMeta = (
-  accountBookId: number,
-  metaId: number,
-): Promise<void> => {
+const deleteMeta = (accountBookId: number, metaId: number): Promise<void> => {
   return customFetch({
     endpoint: ENDPOINTS.TEMPORARY_EXPENSES.DELETE_META(accountBookId, metaId),
     options: { method: 'DELETE' },
@@ -135,7 +132,7 @@ export const deleteMeta = (
 };
 
 // 임시지출 단건 삭제
-export const deleteTempExpense = (
+const deleteTempExpense = (
   accountBookId: number,
   metaId: number,
   fileId: number,
@@ -150,4 +147,17 @@ export const deleteTempExpense = (
     ),
     options: { method: 'DELETE' },
   });
+};
+
+export {
+  bulkUpdateTempExpenses,
+  confirmMeta,
+  deleteMeta,
+  deleteTempExpense,
+  getMetaFileDetail,
+  getMetaFiles,
+  getMetaFileUrl,
+  getMetas,
+  getPresignedUrl,
+  startParse,
 };

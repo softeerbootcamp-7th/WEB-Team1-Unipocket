@@ -4,10 +4,10 @@ import { toast } from 'sonner';
 
 import LocaleConfirmModal from '@/components/modal/LocaleConfirmModal';
 import CountryItem from '@/components/modal/LocaleSelectModal/CountryItem';
+import SearchInput from '@/components/modal/LocaleSelectModal/SearchInput';
 
 import type { CurrencyType } from '@/types/currency';
 
-import { Icons } from '@/assets';
 import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import { getCountryInfo } from '@/lib/country';
 
@@ -21,6 +21,21 @@ interface LocaleSelectModalProps {
 const TOAST_MESSAGE = {
   BASE: '현지 통화와 동일한 통화로 설정할 수 없습니다.',
   LOCAL: '기준 통화와 동일한 통화로 설정할 수 없습니다.',
+} as const;
+
+const MODAL_TEXT = {
+  BASE: {
+    title: '기준 통화 변경',
+    subTitle: '선택된 통화로 가계부의 통합 계산 기준이 됩니다',
+  },
+  LOCAL: {
+    title: '국가/통화 변경',
+    subTitle: '선택된 나라를 기준으로 현지통화가 설정됩니다',
+  },
+  LOCAL_INIT: {
+    title: '교환학생 가는 나라는 어디신가요?',
+    subTitle: '선택된 나라를 기준으로 현지통화가 설정됩니다',
+  },
 } as const;
 
 /**
@@ -87,22 +102,8 @@ const LocaleSelectModal = ({
     setIsConfirmOpen(false);
   };
 
-  const getTextContent = () => {
-    if (mode === 'BASE') {
-      return {
-        title: '기준 통화 변경',
-        subTitle: '선택된 통화로 가계부의 통합 계산 기준이 됩니다',
-      };
-    }
-
-    // LOCAL mode
-    return {
-      title: isInitPath ? '교환학생 가는 나라는 어디신가요?' : '국가/통화 변경',
-      subTitle: '선택된 나라를 기준으로 현지통화가 설정됩니다',
-    };
-  };
-
-  const { title, subTitle } = getTextContent();
+  const { title, subTitle } =
+    MODAL_TEXT[mode === 'LOCAL' && isInitPath ? 'LOCAL_INIT' : mode];
   return (
     <div className="rounded-modal-20 bg-background-normal flex flex-col items-center gap-12 px-7.5 py-13">
       {/* text section */}
@@ -115,16 +116,7 @@ const LocaleSelectModal = ({
 
       {/* select section */}
       <div className="flex h-full flex-col gap-4.5">
-        <div className="bg-fill-normal rounded-modal-10 flex h-14.25 w-full items-center gap-[4.8px] p-[14.4px]">
-          <Icons.Search className="text-line-normal-normal size-5" />
-          <input
-            type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="검색어를 입력해주세요."
-            className="placeholder:text-label-assistive placeholder:headline1-medium w-full focus:outline-none"
-          />
-        </div>
+        <SearchInput value={keyword} onChange={setKeyword} />
         <div className="flex flex-1 flex-col overflow-y-auto pb-50 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {filteredCountries.map((item, index, arr) => {
             const { countryCode, data } = item;

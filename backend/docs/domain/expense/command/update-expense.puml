@@ -1,0 +1,38 @@
+@startuml
+ title expense.command.update-expense
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "ExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "ExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "ExpenseCommandService" as Service
+  participant "ExpenseCommandContextService" as ContextService
+  participant "AnalysisMonthlyDirtyMarkerService (analysis)" as DirtyMarker
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "ExpenseRepository" as ExpenseRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookProvider
+  participant "UserCardInfoProvider (user)" as CardProvider
+  participant "ExchangeRateServiceImpl (exchange)" as ExchangeService
+ end box
+
+ Client -> Controller : PUT /account-books/{id}/expenses/{expenseId}
+ Controller -> Facade : updateExpense(expenseId, accountBookId, userId, request)
+ Facade -> AccountBookProvider : validateOwnership(accountBookId, userId)
+ Facade -> AccountBookProvider : getAccountBook(accountBookId, userId)
+ Facade -> ContextService : resolveLocalCurrencyCode(...)
+ Facade -> Service : updateExpense(ExpenseUpdateCommand)
+ Service -> ExpenseRepo : findById(expenseId)
+ Service -> ExchangeService : getExchangeRate(local, base, occurredAt)
+ Service -> ExpenseRepo : dirty checking update
+ Service -> DirtyMarker : markDirty(accountBookId, prevOccurredAt, newOccurredAt)
+ Facade -> ContextService : enrichWithCardInfo(result)
+ ContextService -> CardProvider : getUserCard(userCardId)\n[카드 결제 시]
+ Controller --> Client : 200 OK
+@enduml

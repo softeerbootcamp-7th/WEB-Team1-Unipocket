@@ -1,0 +1,32 @@
+@startuml
+ title expense.command.update-expenses-bulk
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "ExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "ExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "ExpenseCommandService" as Service
+  participant "ExpenseCommandContextService" as ContextService
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookProvider
+  participant "UserCardInfoProvider (user)" as CardProvider
+ end box
+
+ Client -> Controller : PUT /account-books/{id}/expenses/bulk
+ Controller -> Facade : updateExpensesBulk(accountBookId, userId, request)
+ Facade -> AccountBookProvider : validateOwnership(accountBookId, userId)
+ Facade -> AccountBookProvider : getAccountBook(accountBookId, userId)
+ loop request.items
+  Facade -> ContextService : resolveLocalCurrencyCode(...)
+  Facade -> Service : updateExpense(ExpenseUpdateCommand)
+  Service -> Service : 소유권/환율/금액 검증 + 저장
+  Facade -> ContextService : enrichWithCardInfo(result)
+  ContextService -> CardProvider : getUserCard(userCardId)\n[카드 결제 시]
+ end
+ Controller --> Client : 200 OK
+@enduml

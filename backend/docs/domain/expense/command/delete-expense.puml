@@ -1,0 +1,30 @@
+@startuml
+ title expense.command.delete-expense
+ autonumber
+ actor Client
+ box "Presentation Layer" #E3F2FD
+  participant "ExpenseCommandController" as Controller
+ end box
+ box "Facade Layer" #E8F5E9
+  participant "ExpenseCommandFacade" as Facade
+ end box
+ box "Application Layer" #FFF8E1
+  participant "ExpenseCommandService" as Service
+  participant "AnalysisMonthlyDirtyMarkerService (analysis)" as DirtyMarker
+ end box
+ box "Persistence Layer" #F5F5F5
+  participant "ExpenseRepository" as ExpenseRepo
+ end box
+ box "Cross Domain Providers" #FCE4EC
+  participant "AccountBookValidationProvider (accountbook)" as AccountBookProvider
+ end box
+
+ Client -> Controller : DELETE /account-books/{id}/expenses/{expenseId}
+ Controller -> Facade : deleteExpense(expenseId, accountBookId, userId)
+ Facade -> AccountBookProvider : validateOwnership(accountBookId, userId)
+ Facade -> Service : deleteExpense(expenseId, accountBookId)
+ Service -> ExpenseRepo : findById(expenseId)
+ Service -> ExpenseRepo : delete(expense)
+ Service -> DirtyMarker : markDirty(accountBookId, occurredAt)
+ Controller --> Client : 204 No Content
+@enduml

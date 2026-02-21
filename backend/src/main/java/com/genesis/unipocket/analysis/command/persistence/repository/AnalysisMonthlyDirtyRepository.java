@@ -61,4 +61,44 @@ public interface AnalysisMonthlyDirtyRepository
 			@Param("claimableStatuses") Collection<AnalysisBatchJobStatus> claimableStatuses,
 			@Param("nowUtc") LocalDateTime nowUtc,
 			@Param("leaseUntilUtc") LocalDateTime leaseUntilUtc);
+
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query(
+			"""
+			UPDATE AnalysisMonthlyDirtyEntity d
+			SET d.status = :pending,
+				d.nextRetryAtUtc = NULL,
+				d.leaseUntilUtc = NULL,
+				d.errorCode = NULL,
+				d.errorMessage = NULL
+			WHERE d.id = :id
+				AND d.status = :running
+				AND d.lastEventAtUtc > :claimTime
+			""")
+	int markPendingIfNewEventDuringRun(
+			@Param("id") Long id,
+			@Param("running") AnalysisBatchJobStatus running,
+			@Param("pending") AnalysisBatchJobStatus pending,
+			@Param("claimTime") LocalDateTime claimTime);
+
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query(
+			"""
+			UPDATE AnalysisMonthlyDirtyEntity d
+			SET d.status = :success,
+				d.nextRetryAtUtc = NULL,
+				d.leaseUntilUtc = NULL,
+				d.errorCode = NULL,
+				d.errorMessage = NULL,
+				d.lastEventAtUtc = :completedAt
+			WHERE d.id = :id
+				AND d.status = :running
+				AND d.lastEventAtUtc <= :claimTime
+			""")
+	int markSuccessIfNoNewEventDuringRun(
+			@Param("id") Long id,
+			@Param("running") AnalysisBatchJobStatus running,
+			@Param("success") AnalysisBatchJobStatus success,
+			@Param("claimTime") LocalDateTime claimTime,
+			@Param("completedAt") LocalDateTime completedAt);
 }

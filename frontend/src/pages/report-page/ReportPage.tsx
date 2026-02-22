@@ -54,6 +54,8 @@ const ReportPage = () => {
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
+  const isCurrentMonth =
+    year === now.getFullYear() && month === now.getMonth() + 1;
 
   const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
 
@@ -105,7 +107,10 @@ const ReportPage = () => {
             >
               <div className="flex w-113 flex-col justify-between">
                 <ReportMonthly data={data.compareWithAverage} />
-                <ReportMyself data={data.compareWithLastMonth} />
+                <ReportMyself
+                  data={data.compareWithLastMonth}
+                  isCurrentMonth={isCurrentMonth}
+                />
               </div>
 
               <div className="flex-1">

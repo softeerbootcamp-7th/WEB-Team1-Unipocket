@@ -8,6 +8,7 @@ import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 interface ReportMyselfProps {
+  isCurrentMonth: boolean;
   data: {
     diff: string;
     thisMonth: string;
@@ -24,7 +25,7 @@ interface ReportMyselfProps {
   };
 }
 
-const ReportMyself = ({ data }: ReportMyselfProps) => {
+const ReportMyself = ({ data, isCurrentMonth }: ReportMyselfProps) => {
   const { currencyType } = useReportContext();
   const countryCode = useAccountBookCountryCode(currencyType);
 
@@ -78,6 +79,7 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
           thisMonth={thisMonthData}
           lastMonth={lastMonthData}
           maxValue={maxValue}
+          isCurrentMonth={isCurrentMonth}
         />
       </ReportContent>
     </ReportContainer>

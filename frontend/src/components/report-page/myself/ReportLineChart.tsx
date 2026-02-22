@@ -16,6 +16,7 @@ interface ReportLineChartProps {
   maxValue: number;
   width?: number;
   height?: number;
+  isCurrentMonth: boolean;
 }
 
 const ReportLineChart = ({
@@ -24,32 +25,31 @@ const ReportLineChart = ({
   maxValue,
   width = 352,
   height = 140,
+  isCurrentMonth,
 }: ReportLineChartProps) => {
-  const maxDay = Math.max(thisMonth.dayCount, lastMonth.dayCount);
+  const maxDay = isCurrentMonth
+    ? lastMonth.dayCount
+    : Math.min(thisMonth.dayCount, lastMonth.dayCount);
+  const thisItems = thisMonth.items.slice(0, maxDay);
+  const lastItems = lastMonth.items.slice(0, maxDay);
 
-  const thisPath = buildLinePath(
-    thisMonth.items,
-    width,
-    height,
-    maxValue,
-    maxDay,
-  );
+  const thisPath = buildLinePath(thisItems, width, height, maxValue, maxDay);
   const lastLinePath = buildLinePath(
-    lastMonth.items,
+    lastItems,
     width,
     height,
     maxValue,
     maxDay,
   );
   const lastAreaPath = buildAreaPath(
-    lastMonth.items,
+    lastItems,
     width,
     height,
     maxValue,
     maxDay,
   );
 
-  const thisMonthWidth = (thisMonth.items.length / maxDay) * width;
+  const thisMonthWidth = (thisItems.length / maxDay) * width;
 
   return (
     <svg width={width} height={height}>

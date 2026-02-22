@@ -14,17 +14,25 @@ interface ReportLineGraphProps {
   thisMonth: MonthlyGraphData;
   lastMonth: MonthlyGraphData;
   maxValue: number;
+  isCurrentMonth: boolean;
 }
 
 const ReportLineGraph = ({
   thisMonth,
   lastMonth,
   maxValue,
+  isCurrentMonth,
 }: ReportLineGraphProps) => {
-  const maxDays = Math.max(thisMonth.dayCount, lastMonth.dayCount);
+  const endDay = isCurrentMonth
+    ? lastMonth.dayCount
+    : Math.min(thisMonth.dayCount, lastMonth.dayCount);
 
-  const positions = [0, ((thisMonth.dayCount - 1) / (maxDays - 1)) * 100, 100];
-  const labels = ['1일', `${thisMonth.dayCount}일`, `${maxDays}일`];
+  const positions = isCurrentMonth
+    ? [0, ((thisMonth.dayCount - 1) / (endDay - 1)) * 100, 100]
+    : [0, 100];
+  const labels = isCurrentMonth
+    ? ['1일', `${thisMonth.dayCount}일`, `${endDay}일`]
+    : ['1일', `${endDay}일`];
 
   return (
     <div className="flex flex-col gap-4">
@@ -43,6 +51,7 @@ const ReportLineGraph = ({
             thisMonth={thisMonth}
             lastMonth={lastMonth}
             maxValue={maxValue}
+            isCurrentMonth={isCurrentMonth}
           />
         </div>
       </div>

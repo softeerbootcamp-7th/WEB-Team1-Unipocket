@@ -112,6 +112,7 @@ type CreateManualExpenseResponse = Required<ExpenseResponseBase>;
 type ExpenseSearchFilter = Partial<{
   merchantName: string[];
   category: CategoryId[];
+  cardNumber: string[];
   startDate: string;
   endDate: string;
   travelId: number;

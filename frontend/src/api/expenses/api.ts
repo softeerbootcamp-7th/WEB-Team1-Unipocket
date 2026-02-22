@@ -92,14 +92,8 @@ const getExpenses = (
     if (filter.startDate) params.startDate = filter.startDate;
     if (filter.endDate) params.endDate = filter.endDate;
     if (filter.merchantName) params.merchantName = filter.merchantName;
-
-    // 카테고리가 배열이고 비어있지 않은 경우 문자열 배열로 변환해서 할당
     if (filter.category && filter.category.length > 0) {
       params.category = filter.category.map((id) => id.toString());
-    }
-
-    if (filter.travelId !== undefined && filter.travelId !== null) {
-      params.travelId = filter.travelId.toString();
     }
     if (filter.page !== undefined) {
       params.page = filter.page.toString();
@@ -109,6 +103,9 @@ const getExpenses = (
     }
     if (filter.sort && filter.sort.length > 0) {
       params.sort = filter.sort.join(',');
+    }
+    if (filter.cardNumber && filter.cardNumber.length > 0) {
+      params.cardNumber = filter.cardNumber;
     }
   }
 

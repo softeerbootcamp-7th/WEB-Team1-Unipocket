@@ -41,7 +41,7 @@ interface DataTableSearchFilterProps<T> {
   options: T[];
   selectedOptions: T[];
   setSelectedOptions: (selected: T[]) => void;
-  onInputChange: (term: string) => void;
+  onInputChange?: (term: string) => void;
   onSelect?: (term: T) => void;
   onSelectMultiple?: (terms: T[]) => void;
   isCategory?: boolean;
@@ -53,6 +53,7 @@ interface DataTableSearchFilterProps<T> {
     searchTerm: string,
     onSelectAll: () => void,
   ) => React.ReactNode;
+  getDisplayLabel?: (option: T) => string;
 }
 
 const DataTableSearchFilter = <T,>({
@@ -68,6 +69,7 @@ const DataTableSearchFilter = <T,>({
   onInputChange,
   onSelect,
   onSelectMultiple,
+  getDisplayLabel,
 }: DataTableSearchFilterProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -112,8 +114,8 @@ const DataTableSearchFilter = <T,>({
   // 💡 3. 검색어 변경 래퍼 함수 (onInputChange prop 지원을 위해)
   const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    handleSearchChange(value); // 훅의 상태 업데이트 (인덱스 0 초기화 포함)
-    onInputChange(value); // 외부 API 호출용 prop
+    handleSearchChange(value);
+    onInputChange?.(value);
   };
 
   // 컨테이너 클릭 시 인풋 포커스
@@ -150,10 +152,15 @@ const DataTableSearchFilter = <T,>({
 
   const getLabel = () => {
     if (!isActive) return title;
+
     const firstOption = selectedOptions[0];
-    const firstLabel = isCategory
-      ? CATEGORIES[firstOption as unknown as CategoryId].name
-      : String(firstOption);
+
+    let firstLabel = String(firstOption);
+    if (getDisplayLabel) {
+      firstLabel = getDisplayLabel(firstOption);
+    } else if (isCategory) {
+      firstLabel = CATEGORIES[firstOption as unknown as CategoryId].name;
+    }
 
     if (selectedOptions.length === 1) {
       return `${title}: ${firstLabel}`;
@@ -198,7 +205,9 @@ const DataTableSearchFilter = <T,>({
                 />
               ) : (
                 <Chip
-                  label={String(option)}
+                  label={
+                    getDisplayLabel ? getDisplayLabel(option) : String(option)
+                  }
                   onRemove={() => toggleOption(option)}
                 />
               )}

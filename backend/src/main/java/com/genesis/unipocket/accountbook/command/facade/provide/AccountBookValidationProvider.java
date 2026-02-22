@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AccountBookValidationProvider
 		implements ExpenseOwnershipValidator,
-				com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator,
 				com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator,
 				com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator,
 				AccountBookFetchService,

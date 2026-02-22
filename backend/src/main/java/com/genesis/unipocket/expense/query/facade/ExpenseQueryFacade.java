@@ -1,6 +1,6 @@
 package com.genesis.unipocket.expense.query.facade;
 
-import com.genesis.unipocket.expense.query.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
 import com.genesis.unipocket.expense.query.facade.port.ExpenseMediaAccessService;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseOneShotRow;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class ExpenseQueryFacade {
 
 	private final ExpenseQueryService expenseQueryService;
-	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final ExpenseOwnershipValidator expenseOwnershipValidator;
 	private final ExpenseMediaAccessService expenseMediaAccessService;
 
 	@Value("${app.media.presigned-get-expiration-seconds:600}")
@@ -71,6 +71,6 @@ public class ExpenseQueryFacade {
 	}
 
 	private void validateOwnership(Long accountBookId, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		expenseOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 	}
 }

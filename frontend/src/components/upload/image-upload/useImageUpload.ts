@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import type { SnackbarStatus } from '@/components/common/Snackbar';
 import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
 
 import { ENDPOINTS } from '@/api/config/endpoint';
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
-import { PARSE_STATUS, type ParseStatus } from '@/api/temporary-expenses/type';
 
 const MAX_TOTAL = uploadPolicy.image.maxCount;
 
 export const useImageUpload = (accountBookId: number) => {
   const [items, setItems] = useState<UploadItem[]>([]);
+  const [parseSnackbar, setParseSnackbar] = useState<{
+    isOpen: boolean;
+    status: SnackbarStatus;
+    description?: string;
+  }>({
+    isOpen: false,
+    status: 'default',
+  });
   const itemsRef = useRef<UploadItem[]>([]);
   const eventSourcesRef = useRef<Record<string, EventSource>>({});
   const metaIdRef = useRef<number | undefined>(undefined);
@@ -108,7 +116,7 @@ export const useImageUpload = (accountBookId: number) => {
       (item) => item.status === UPLOAD_STATUS.UPLOADED,
     );
 
-    if (uploadedItems.length === 0) return;
+    if (uploadedItems.length === 0) return false;
 
     try {
       const s3Keys = uploadedItems.map((item) => {
@@ -131,8 +139,15 @@ export const useImageUpload = (accountBookId: number) => {
 
       // 4. SSE 연결
       connectSSE(parse.taskId);
+      setParseSnackbar({
+        isOpen: true,
+        status: 'loading',
+        description: '0%',
+      });
+      return true;
     } catch {
       toast.error('파일 분석 요청에 실패했어요.');
+      return false;
     }
   };
 
@@ -158,50 +173,85 @@ export const useImageUpload = (accountBookId: number) => {
       delete eventSourcesRef.current[taskId];
     };
 
+    const markTaskAsParsed = () => {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.taskId === taskId
+            ? { ...item, status: UPLOAD_STATUS.PARSED }
+            : item,
+        ),
+      );
+      setParseSnackbar({
+        isOpen: true,
+        status: 'success',
+        description: '100%',
+      });
+    };
+
+    const handleProgressValue = (progress?: number) => {
+      if (typeof progress !== 'number') return;
+
+      const normalizedProgress = Math.max(0, Math.min(100, progress));
+
+      if (normalizedProgress >= 100) {
+        markTaskAsParsed();
+        closeEventSource();
+        return;
+      }
+
+      setParseSnackbar({
+        isOpen: true,
+        status: 'loading',
+        description: `${normalizedProgress}%`,
+      });
+    };
+
+    const parseEventData = (rawData: string) => {
+      return JSON.parse(rawData) as {
+        progress?: number;
+      };
+    };
+
     eventSource.onmessage = (event) => {
       try {
-        const parsed = JSON.parse(event.data) as {
-          status?: ParseStatus;
-        };
-
-        const { status } = parsed;
-
-        switch (status) {
-          case PARSE_STATUS.SUCCESS: {
-            setItems((prev) =>
-              prev.map((item) =>
-                item.taskId === taskId
-                  ? { ...item, status: UPLOAD_STATUS.PARSED }
-                  : item,
-              ),
-            );
-            toast.success('파일 분석이 완료됐어요.');
-            closeEventSource();
-            break;
-          }
-
-          case PARSE_STATUS.FAIL: {
-            setItems((prev) =>
-              prev.map((item) =>
-                item.taskId === taskId
-                  ? { ...item, status: UPLOAD_STATUS.ERROR }
-                  : item,
-              ),
-            );
-            toast.error('파일 분석에 실패했어요.');
-            closeEventSource();
-            break;
-          }
-
-          default:
-            closeEventSource();
-        }
+        const parsed = parseEventData(event.data);
+        handleProgressValue(parsed.progress);
       } catch {
         closeEventSource();
       }
     };
 
-    eventSource.onerror = closeEventSource;
+    eventSource.addEventListener('progress', (event) => {
+      try {
+        const parsed = parseEventData((event as MessageEvent).data);
+        handleProgressValue(parsed.progress);
+      } catch {
+        closeEventSource();
+      }
+    });
+
+    eventSource.addEventListener('complete', (event) => {
+      try {
+        const parsed = parseEventData((event as MessageEvent).data);
+        if (typeof parsed.progress === 'number') {
+          handleProgressValue(parsed.progress);
+          return;
+        }
+        markTaskAsParsed();
+        closeEventSource();
+      } catch {
+        closeEventSource();
+      }
+    });
+
+    eventSource.onerror = () => {
+      setParseSnackbar({ isOpen: false, status: 'default' });
+      closeEventSource();
+    };
+  };
+
+  const closeParseSnackbar = () => {
+    setParseSnackbar({ isOpen: false, status: 'default' });
   };
 
   const removeItem = (id: string) => {
@@ -245,5 +295,7 @@ export const useImageUpload = (accountBookId: number) => {
     handleFilesSelected,
     removeItem,
     isAllUploaded,
+    parseSnackbar,
+    closeParseSnackbar,
   };
 };

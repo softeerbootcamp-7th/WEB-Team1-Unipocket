@@ -200,6 +200,7 @@ const DateTimePicker = ({
             onSelect={handleHourSelect}
             options={hourOptions}
             size="md"
+            itemWidth="w-18"
           />
         </div>
         <span className="text-gray-400">:</span>
@@ -209,6 +210,7 @@ const DateTimePicker = ({
             onSelect={handleMinuteSelect}
             options={minuteOptions}
             size="md"
+            itemWidth="w-18"
           />
         </div>
       </div>

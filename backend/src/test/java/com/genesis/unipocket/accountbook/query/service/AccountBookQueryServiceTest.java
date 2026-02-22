@@ -61,7 +61,7 @@ class AccountBookQueryServiceTest {
 
 		AccountBookQueryResponse result = accountBookQueryService.getAccountBook(accountBookId);
 
-		assertThat(result.id()).isEqualTo(accountBookId);
+		assertThat(result.accountBookId()).isEqualTo(accountBookId);
 		assertThat(result.title()).isEqualTo("Title");
 	}
 
@@ -109,7 +109,7 @@ class AccountBookQueryServiceTest {
 		AccountBookDetailResponse result =
 				accountBookQueryService.getAccountBookDetail(userId, accountBookId);
 
-		assertThat(result.id()).isEqualTo(accountBookId);
+		assertThat(result.accountBookId()).isEqualTo(accountBookId);
 		assertThat(result.title()).isEqualTo("Title");
 	}
 

@@ -50,7 +50,7 @@ export function getData(): Expense[] {
       expenseId: 680,
       accountBookId: 900019,
       travel: {
-        id: 1,
+        travelId: 1,
         name: '제주도 여행',
         imageKey: 'travel-1.jpg',
       },
@@ -81,7 +81,7 @@ export function getData(): Expense[] {
       expenseId: 15280,
       accountBookId: 900019,
       travel: {
-        id: 1,
+        travelId: 1,
         name: '제주도 여행',
         imageKey: 'travel-1.jpg',
       },
@@ -109,7 +109,7 @@ export function getData(): Expense[] {
       accountBookId: 900019,
       updatedAt: '2026-02-17T10:15:30Z',
       travel: {
-        id: 1,
+        travelId: 1,
         name: '제주도 여행',
         imageKey: 'travel-1.jpg',
       },

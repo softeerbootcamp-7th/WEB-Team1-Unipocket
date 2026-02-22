@@ -2,16 +2,13 @@ package com.genesis.unipocket.expense.query.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.command.facade.port.UserCardFetchService;
-import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
+import com.genesis.unipocket.expense.query.persistence.repository.ExpenseQueryRepository;
+import com.genesis.unipocket.expense.query.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.media.command.application.MediaObjectStorage;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -20,17 +17,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ExpenseQueryServiceMerchantSearchTest {
 
-	@Mock private ExpenseRepository expenseRepository;
+	@Mock private ExpenseQueryRepository expenseQueryRepository;
 	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
-	@Mock private UserCardFetchService userCardFetchService;
-	@Mock private ExpenseMerchantSearchRateLimitService expenseMerchantSearchRateLimitService;
-	@Mock private MediaObjectStorage mediaObjectStorage;
-	@Mock private TravelInfoReader travelInfoReader;
 
 	@InjectMocks private ExpenseQueryService expenseQueryService;
 
@@ -39,8 +31,7 @@ class ExpenseQueryServiceMerchantSearchTest {
 	void searchMerchantNames_success() {
 		Long accountBookId = 1L;
 		UUID userId = UUID.randomUUID();
-		when(expenseRepository.findMerchantNameSuggestions(
-						eq(accountBookId), eq("스타"), eq(PageRequest.of(0, 10))))
+		when(expenseQueryRepository.findMerchantNameSuggestions(accountBookId, "스타", 10))
 				.thenReturn(List.of("스타벅스", "스타필드"));
 
 		List<String> result =
@@ -48,7 +39,6 @@ class ExpenseQueryServiceMerchantSearchTest {
 
 		assertThat(result).containsExactly("스타벅스", "스타필드");
 		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
-		verify(expenseMerchantSearchRateLimitService).validate(userId);
 	}
 
 	@Test

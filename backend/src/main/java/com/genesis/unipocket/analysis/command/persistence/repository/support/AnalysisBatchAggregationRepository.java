@@ -4,6 +4,7 @@ import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricT
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
+import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -32,10 +33,12 @@ public class AnalysisBatchAggregationRepository {
 								WHERE e.account_book_id = :accountBookId
 									AND e.occurred_at >= :startUtc
 									AND e.occurred_at < :endUtc
+									AND (e.category IS NULL OR e.category <> :incomeCategory)
 								""")
 								.setParameter("accountBookId", accountBookId)
 								.setParameter("startUtc", startUtc)
 								.setParameter("endUtc", endUtc)
+								.setParameter("incomeCategory", Category.INCOME.ordinal())
 								.getSingleResult();
 		return toAmountPairCount(row);
 	}
@@ -56,11 +59,13 @@ public class AnalysisBatchAggregationRepository {
 							AND e.occurred_at >= :startUtc
 							AND e.occurred_at < :endUtc
 							AND e.category IS NOT NULL
+							AND e.category <> :incomeCategory
 						GROUP BY e.category
 						""")
 						.setParameter("accountBookId", accountBookId)
 						.setParameter("startUtc", startUtc)
 						.setParameter("endUtc", endUtc)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
 						.getResultList();
 		return rows.stream().map(this::toCategoryAmountPairCount).toList();
 	}

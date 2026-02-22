@@ -11,6 +11,7 @@ import com.genesis.unipocket.accountbook.command.application.result.AccountBookR
 import com.genesis.unipocket.accountbook.command.facade.port.AccountBookDefaultWidgetPort;
 import com.genesis.unipocket.accountbook.command.facade.port.ExpenseCurrencySyncService;
 import com.genesis.unipocket.accountbook.command.facade.port.UserInfoReader;
+import com.genesis.unipocket.accountbook.command.facade.port.UserMainAccountBookService;
 import com.genesis.unipocket.accountbook.command.presentation.request.AccountBookUpdateRequest;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ class AccountBookCommandFacadeTest {
 	@Mock private UserInfoReader userInfoReader;
 	@Mock private AccountBookDefaultWidgetPort accountBookDefaultWidgetPort;
 	@Mock private ExpenseCurrencySyncService expenseCurrencySyncService;
+	@Mock private UserMainAccountBookService userMainAccountBookService;
 
 	@InjectMocks private AccountBookCommandFacade accountBookCommandFacade;
 
@@ -142,5 +144,33 @@ class AccountBookCommandFacadeTest {
 
 		// then
 		verify(expenseCurrencySyncService, never()).updateBaseCurrency(any(), any());
+	}
+
+	@Test
+	@DisplayName("updateAccountBook_partialCountryPatch_usesResultBaseCurrency")
+	void updateAccountBook_partialCountryPatch_usesResultBaseCurrency() {
+		UUID userId = UUID.randomUUID();
+		Long accountBookId = 1L;
+		LocalDate start = LocalDate.of(2026, 1, 1);
+		LocalDate end = LocalDate.of(2026, 12, 31);
+
+		AccountBookUpdateRequest req = new AccountBookUpdateRequest();
+		req.setLocalCountryCode(CountryCode.US);
+
+		when(accountBookCommandService.update(any()))
+				.thenReturn(
+						new AccountBookResult(
+								accountBookId,
+								"title2",
+								CountryCode.US,
+								CountryCode.KR,
+								start,
+								end,
+								true));
+
+		accountBookCommandFacade.updateAccountBook(userId, accountBookId, req);
+
+		verify(expenseCurrencySyncService)
+				.updateBaseCurrency(accountBookId, CountryCode.KR.getCurrencyCode());
 	}
 }

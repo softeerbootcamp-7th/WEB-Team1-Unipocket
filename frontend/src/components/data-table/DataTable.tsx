@@ -44,20 +44,38 @@ const DataTable = <TData,>({
       cell: Cell<TData, unknown>,
       currentTarget: EventTarget & HTMLTableCellElement,
     ) => {
-      const rect = currentTarget.getBoundingClientRect();
+      const editorType = cell.column.columnDef.meta?.cellEditor;
 
-      dispatch({
-        type: 'SET_ACTIVE_CELL',
-        payload: {
-          rowId: cell.row.id,
-          columnId: cell.column.id,
-          rect,
-          value: cell.getValue(),
-        },
-      });
+      const columnId = cell.column.id;
+      if (columnId === 'select') return;
+
+      const rect = currentTarget.getBoundingClientRect();
+      const payload = {
+        rowId: cell.row.id,
+        columnId,
+        rect,
+        value: cell.getValue(),
+      };
+
+      switch (editorType) {
+        case 'text':
+          dispatch({ type: 'SET_TEXT_CELL', payload });
+          break;
+        case 'category':
+          dispatch({ type: 'SET_CATEGORY_CELL', payload });
+          break;
+        case 'amount':
+          dispatch({ type: 'SET_AMOUNT_CELL', payload });
+          break;
+        case 'method':
+          dispatch({ type: 'SET_PAYMENT_CELL', payload });
+          break;
+        default:
+          break;
+      }
     },
     [dispatch],
-  ); // dispatch가 바뀌지 않는 한 함수 재사용
+  );
 
   return (
     <Table>
@@ -127,16 +145,13 @@ const DataTable = <TData,>({
                     data-state={row.getIsSelected() && 'selected'}
                   >
                     {row.getVisibleCells().map((cell) => {
-                      const isSelectColumn = cell.column.id === 'select';
                       return (
                         <TableCell
                           key={cell.id}
-                          onClick={
-                            isSelectColumn
-                              ? undefined
-                              : (e) => handleCellClick(cell, e.currentTarget)
+                          onClick={(e) =>
+                            handleCellClick(cell, e.currentTarget)
                           }
-                          className={isSelectColumn ? '' : 'cursor-pointer'}
+                          className="cursor-pointer"
                         >
                           {flexRender(
                             cell.column.columnDef.cell,

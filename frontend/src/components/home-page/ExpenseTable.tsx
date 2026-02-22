@@ -1,6 +1,8 @@
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableFilterProvider } from '@/components/data-table/DataTableFilter';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
+import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
+import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import CategoryFilter from '@/components/data-table/filters/CategoryFilter';
 import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
@@ -13,12 +15,12 @@ import UploadMenu from '@/components/upload/UploadMenu';
 
 import { useGetExpensesQuery } from '@/api/expenses/query';
 import type { Expense } from '@/api/expenses/type';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ExpenseTable = () => {
-  const { accountBook } = useAccountBookStore();
+  const accountBookId = useRequiredAccountBook().accountBookId;
 
-  const { data } = useGetExpensesQuery(accountBook!.id, {
+  const { data } = useGetExpensesQuery(accountBookId, {
     page: 0,
     size: 50,
   });
@@ -45,6 +47,10 @@ const ExpenseTable = () => {
           }
         />
         <SelectionActionBar />
+        <TextCellEditor />
+        {/* <AmountCellEditor /> */}
+        <CategoryCellEditor />
+        {/* <PaymentCellEditor /> */}
         <TableSidePanel />
       </DataTableProvider>
     </div>

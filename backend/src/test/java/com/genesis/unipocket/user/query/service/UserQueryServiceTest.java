@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
-import com.genesis.unipocket.user.command.persistence.entity.enums.UserRole;
-import com.genesis.unipocket.user.command.persistence.entity.enums.UserStatus;
+import com.genesis.unipocket.user.common.enums.CardCompany;
+import com.genesis.unipocket.user.common.enums.UserRole;
+import com.genesis.unipocket.user.common.enums.UserStatus;
 import com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;

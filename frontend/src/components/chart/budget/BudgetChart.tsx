@@ -2,12 +2,12 @@ import { useState } from 'react';
 
 import BudgetChartSkeleton from '@/components/chart/budget/BudgetChartSkeleton';
 import BudgetChartView from '@/components/chart/budget/BudgetChartView';
+import BudgetSetupModal from '@/components/chart/budget/BudgetSetupModal';
 import type { ChartMode } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
 import Button from '@/components/common/Button';
-import BudgetSetupModal from '@/components/modal/BudgetSetupModal';
 
 import { useWidgetQuery } from '@/api/widget/query';
 
@@ -15,7 +15,11 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
   const { data, isLoading } = useWidgetQuery('BUDGET');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const showSkeleton = isPreview || isLoading || !data;
+  const budgetAmount = Number(data?.budget) || 0;
+  const usedAmount = Number(data?.baseSpentAmount) || 0;
+  const localUsedAmount = Number(data?.localSpentAmount) || 0;
+
+  const showSkeleton = isPreview || isLoading || !data || budgetAmount === 0;
 
   return (
     <ChartContainer isPreview={isPreview}>
@@ -31,9 +35,9 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
       >
         {data && (
           <BudgetChartView
-            totalBudget={Number(data.budget)}
-            usedBudget={Number(data.baseSpentAmount)}
-            localUsedBudget={Number(data.localSpentAmount)}
+            totalBudget={budgetAmount}
+            usedBudget={usedAmount}
+            localUsedBudget={localUsedAmount}
             baseCode={data.baseCountryCode}
             localCode={data.localCountryCode}
           />

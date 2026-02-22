@@ -4,10 +4,8 @@ import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { type AnalysisChartItem } from '@/api/account-books/type';
-import { type CountryCode } from '@/data/country/countryCode';
-
 import { getCountryInfo } from '@/lib/country';
-import { useAccountBookStore } from '@/stores/useAccountBookStore';
+import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 interface ReportMyselfProps {
   data: {
@@ -28,11 +26,7 @@ interface ReportMyselfProps {
 
 const ReportMyself = ({ data }: ReportMyselfProps) => {
   const { currencyType } = useReportContext();
-  const countryCode = useAccountBookStore((state) =>
-    currencyType === 'LOCAL'
-      ? state.accountBook?.localCountryCode
-      : state.accountBook?.baseCountryCode,
-  ) as CountryCode;
+  const countryCode = useAccountBookCountryCode(currencyType);
 
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
 

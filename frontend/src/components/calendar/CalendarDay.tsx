@@ -42,8 +42,8 @@ export const CalendarDay = ({
       'bg-primary-normal/8 rounded-full': !isRange && isToday,
       'rounded-l-full left-[2.4px]': isCheckIn && endDate,
       'rounded-r-full right-[2.4px]': isCheckOut,
-      'rounded-l-[0px]': dayOfWeek === 0 && !isCheckIn,
-      'rounded-r-[0px]': dayOfWeek === 6 && !isCheckOut,
+      'rounded-l-[0px]': isRange && dayOfWeek === 0 && !isCheckIn,
+      'rounded-r-[0px]': isRange && dayOfWeek === 6 && !isCheckOut,
     });
   };
 

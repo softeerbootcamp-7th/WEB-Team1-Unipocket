@@ -8,12 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.*;
 
-/**
- * <b>임시지출내역 엔티티</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Entity
 @Getter
 @Builder

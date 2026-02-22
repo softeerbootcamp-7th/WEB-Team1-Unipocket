@@ -8,8 +8,8 @@ import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.auth.support.JwtTestHelper;
-import com.genesis.unipocket.exchange.command.persistence.entity.ExchangeRate;
-import com.genesis.unipocket.exchange.command.persistence.repository.ExchangeRateRepository;
+import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
@@ -100,7 +100,7 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").isNumber())
+				.andExpect(jsonPath("$.accountBookId").isNumber())
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.baseCurrencyCode").value("KR"));
 
@@ -229,7 +229,7 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("수정된 가계부"));
 
 		AccountBookEntity updated = accountBookRepository.findById(accountBookId).orElseThrow();
@@ -268,10 +268,42 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(secondId));
+				.andExpect(jsonPath("$.accountBookId").value(secondId));
 
 		assertThat(userRepository.findById(userId).orElseThrow().getMainBucketId())
 				.isEqualTo(secondId);
+	}
+
+	@Test
+	@DisplayName("가계부 수정 - 부분 필드(title)만 PATCH 가능")
+	void 가계부_수정_부분필드_title만_PATCH() throws Exception {
+		Long accountBookId = createAccountBook();
+
+		String body = """
+			{
+				"title": "부분수정 제목"
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
+				.andExpect(jsonPath("$.title").value("부분수정 제목"))
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.baseCurrencyCode").value("KR"))
+				.andExpect(jsonPath("$.startDate").value("2026-03-01"))
+				.andExpect(jsonPath("$.endDate").value("2026-03-31"));
+
+		AccountBookEntity updated = accountBookRepository.findById(accountBookId).orElseThrow();
+		assertThat(updated.getTitle()).isEqualTo("부분수정 제목");
+		assertThat(updated.getLocalCountryCode()).isEqualTo(CountryCode.JP);
+		assertThat(updated.getBaseCountryCode()).isEqualTo(CountryCode.KR);
+		assertThat(updated.getStartDate()).isEqualTo(LocalDate.of(2026, 3, 1));
+		assertThat(updated.getEndDate()).isEqualTo(LocalDate.of(2026, 3, 31));
 	}
 
 	@Test
@@ -378,6 +410,22 @@ class AccountBookControllerIntegrationTest {
 				.andExpect(jsonPath("$.code").value("400_ACCOUNT_BOOK_INVALID_COUNTRY_CODE"));
 	}
 
+	@Test
+	@DisplayName("수정 시 빈 JSON - 400")
+	void 수정시_빈_JSON_400() throws Exception {
+		Long accountBookId = createAccountBook();
+
+		mockMvc.perform(
+						patch("/account-books/{id}", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content("{}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
+				.andExpect(
+						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
+	}
+
 	// ========== PATCH /account-books/{id}/budget (예산 수정) ==========
 
 	@Test
@@ -466,9 +514,9 @@ class AccountBookControllerIntegrationTest {
 		mockMvc.perform(get("/account-books").with(jwtTestHelper.withJwtAuth(userId)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(2))
-				.andExpect(jsonPath("$[0].id").value(firstId))
+				.andExpect(jsonPath("$[0].accountBookId").value(firstId))
 				.andExpect(jsonPath("$[0].isMain").value(true))
-				.andExpect(jsonPath("$[1].id").value(secondId))
+				.andExpect(jsonPath("$[1].accountBookId").value(secondId))
 				.andExpect(jsonPath("$[1].isMain").value(false));
 	}
 
@@ -483,7 +531,7 @@ class AccountBookControllerIntegrationTest {
 						get("/account-books/{id}", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("test-user의 가계부1"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))

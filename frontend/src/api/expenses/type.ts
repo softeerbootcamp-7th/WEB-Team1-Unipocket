@@ -109,18 +109,16 @@ interface GetExpensesResponse {
 
 type CreateManualExpenseResponse = Required<ExpenseResponseBase>;
 
-type ExpenseSearchFilter = Partial<
-  Pick<Expense, 'category' | 'merchantName'> & {
-    startDate: string;
-    endDate: string;
-    minAmount: number;
-    maxAmount: number;
-    travelId: number;
-    page: number;
-    size: number;
-    sort: string[];
-  }
->;
+type ExpenseSearchFilter = Partial<{
+  merchantName: string[];
+  category: CategoryId[];
+  startDate: string;
+  endDate: string;
+  travelId: number;
+  page: number;
+  size: number;
+  sort: string[];
+}>;
 
 type GetExpenseFileUrlResponse = {
   presignedUrl: string;

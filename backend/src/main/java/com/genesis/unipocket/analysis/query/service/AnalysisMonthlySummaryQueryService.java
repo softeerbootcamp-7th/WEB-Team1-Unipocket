@@ -457,7 +457,7 @@ public class AnalysisMonthlySummaryQueryService {
 		OffsetDateTime startOffset = toOffsetUtc(startUtc);
 		OffsetDateTime endOffset = toOffsetUtc(endUtcExclusive);
 		if (currencyType == CurrencyType.LOCAL) {
-			OffsetDateTime refDateTime = startLocalDate.atStartOfDay().atOffset(ZoneOffset.UTC);
+			OffsetDateTime refDateTime = toOffsetUtc(startUtc);
 			try (Stream<Object[]> stream =
 					analysisQueryRepository.getMySpendEventsWithCurrency(
 							accountBookId, startOffset, endOffset)) {

@@ -2,20 +2,27 @@
 
 > **교환학생 지출 관리의 모든 과정을 스마트하게**
 
-🔗 **[서비스 바로가기](https://www.unipocket.co.kr/)**
-![alt text](unipocket.png)
+<p align="center">
+  <img src="unipocket.png" width="800" />
+</p>
+
+<p align="center">
+  🔗 <strong><a href="https://www.unipocket.co.kr/" target="_blank">
+  UniPocket 서비스 바로가기
+  </a></strong>
+</p>
 
 ---
 
 ## 📚 목차
 
-- [1. 서비스 소개](#-서비스-소개)
-- [2. 주요 기능](#-주요-기능)
-- [3. 팀원 소개](#-팀원-소개)
-- [4. Tech Stack](#-tech-stack)
-- [5. 협업 기록 & 데일리 프로세스](#-협업-기록--데일리-프로세스)
-- [6. Github & 서비스 링크](#-github--서비스-링크)
-- [7. 프로젝트 아키텍처](#프로젝트-아키텍처)
+- 🚀 [서비스 소개](#-서비스-소개)
+- 💡 [주요 기능](#-주요-기능)
+- 🧑🏻‍💻 [팀원 소개](#-팀원-소개)
+- 🔧 [Tech Stack](#-tech-stack)
+- 📝 [협업 기록 & 데일리 프로세스](#-협업-기록--데일리-프로세스)
+- 🔗 [Github & 서비스 링크](#-github--서비스-링크)
+- 🏗 [프로젝트 아키텍처](#-프로젝트-아키텍처)
 
 ---
 

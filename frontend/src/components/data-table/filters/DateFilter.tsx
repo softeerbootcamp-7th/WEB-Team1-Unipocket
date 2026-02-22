@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-import { formatDateToString, toOffsetDateTimeString } from '@/lib/utils';
+import { formatDateToString, formatToISODateTime } from '@/lib/utils';
 
 const DateFilter = () => {
   const { filter, updateFilter } = useDataTableFilter();
@@ -38,10 +38,8 @@ const DateFilter = () => {
     endDate: Date | null;
   }) => {
     updateFilter({
-      startDate: startDate
-        ? toOffsetDateTimeString(startDate, false)
-        : undefined, // 00:00:00
-      endDate: endDate ? toOffsetDateTimeString(endDate, true) : undefined, // 23:59:59
+      startDate: startDate ? formatToISODateTime(startDate, false) : undefined, // 00:00:00
+      endDate: endDate ? formatToISODateTime(endDate, true) : undefined, // 23:59:59
     });
   };
 

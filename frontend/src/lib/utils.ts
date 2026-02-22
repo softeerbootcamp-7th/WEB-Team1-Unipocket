@@ -52,38 +52,22 @@ export const formatDateWithDay = (date: Date): string => {
 };
 
 /**
- * Date 객체를 백엔드가 요구하는 OffsetDateTime 형식(예: 2026-02-08T00:00:00+09:00)으로 변환
+ * Date 객체를 ISO 8601 UTC 형식(예: 2026-02-07T15:00:00.000Z)으로 변환합니다.
  * @param date 변환할 날짜
- * @param isEndOfDay true면 23:59:59, false면 00:00:00으로 설정
+ * @param isEndOfDay true면 해당 일의 끝(23:59:59), false면 시작(00:00:00)으로 설정
  */
-export const toOffsetDateTimeString = (
+export const formatToISODateTime = (
   date: Date,
   isEndOfDay: boolean = false,
 ): string => {
+  // 원본 date 객체가 변하지 않도록 복사본 생성
   const targetDate = new Date(date);
 
-  // 시작일은 00:00:00, 종료일은 23:59:59로 시간 세팅
   if (isEndOfDay) {
     targetDate.setHours(23, 59, 59, 999);
   } else {
     targetDate.setHours(0, 0, 0, 0);
   }
 
-  // 타임존 오프셋 계산 (한국은 +09:00)
-  const offset = targetDate.getTimezoneOffset();
-  const sign = offset > 0 ? '-' : '+';
-  const absOffset = Math.abs(offset);
-  const hours = String(Math.floor(absOffset / 60)).padStart(2, '0');
-  const minutes = String(absOffset % 60).padStart(2, '0');
-
-  // 로컬 시간 기준으로 YYYY-MM-DDTHH:mm:ss 문자열 조립
-  const year = targetDate.getFullYear();
-  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-  const day = String(targetDate.getDate()).padStart(2, '0');
-  const hour = String(targetDate.getHours()).padStart(2, '0');
-  const minute = String(targetDate.getMinutes()).padStart(2, '0');
-  const second = String(targetDate.getSeconds()).padStart(2, '0');
-
-  // 최종 OffsetDateTime 규격 완성
-  return `${year}-${month}-${day}T${hour}:${minute}:${second}${sign}${hours}:${minutes}`;
+  return targetDate.toISOString();
 };

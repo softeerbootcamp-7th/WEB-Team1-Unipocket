@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
 import FolderCard from '@/components/travel-page/FolderCard';
-import { folderMap, type TravelPocket } from '@/components/travel-page/mock';
+import {
+  mockTravelPockets,
+  type TravelPocket,
+} from '@/components/travel-page/mock';
 import TravelContextMenu from '@/components/travel-page/TravelContextMenu';
 
 const TravelFolderList = () => {
@@ -19,7 +22,7 @@ const TravelFolderList = () => {
 
   return (
     <div className="bg-background-normal rounded-modal-8 shadow-semantic-subtle flex min-h-0 flex-1 flex-wrap gap-9 overflow-y-auto p-16">
-      {folderMap.map((folder) => (
+      {mockTravelPockets.map((folder) => (
         <Link
           to={`/travel/$travelId`}
           key={folder.travelId}

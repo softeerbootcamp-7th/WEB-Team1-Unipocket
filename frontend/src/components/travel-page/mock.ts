@@ -13,7 +13,7 @@ export interface TravelPocket {
   imageKey: string | null;
 }
 
-export const folderMap: TravelPocket[] = [
+export const mockTravelPockets: TravelPocket[] = [
   {
     travelId: 0,
     travelPlaceName: '뉴욕 보스턴',

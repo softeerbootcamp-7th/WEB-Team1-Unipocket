@@ -1,4 +1,4 @@
-import type { CountryCode } from '@/data/country/countryCode';
+import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import countryData from '@/data/country/countryData.json';
 import { COUNTRY_LOCALE_MAP } from '@/data/country/countryLocale';
 import type { CurrencyCode } from '@/data/country/currencyCode';
@@ -58,4 +58,18 @@ export const formatCurrency = (
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(amount);
+};
+
+export const getCountryInfoByCurrency = (currencyCode: CurrencyCode) => {
+  const countryCodes = Object.values(COUNTRY_CODE);
+
+  for (const code of countryCodes) {
+    const info = getCountryInfo(code);
+
+    if (info && info.currencyName === currencyCode) {
+      return info;
+    }
+  }
+
+  return undefined;
 };

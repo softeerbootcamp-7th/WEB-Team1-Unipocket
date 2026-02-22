@@ -26,6 +26,10 @@ public class TempExpensePaymentInfo {
 		return new TempExpensePaymentInfo(paymentsMethod, cardLastFourDigits, approvalNumber);
 	}
 
+	public static TempExpensePaymentInfo empty() {
+		return new TempExpensePaymentInfo(null, null, null);
+	}
+
 	public TempExpensePaymentInfo merge(
 			String paymentsMethod, String cardLastFourDigits, String approvalNumber) {
 		return new TempExpensePaymentInfo(

@@ -35,6 +35,10 @@ public class TempExpenseContentInfo {
 		return new TempExpenseContentInfo(trimToNull(merchantName), category, memo, occurredAt);
 	}
 
+	public static TempExpenseContentInfo empty() {
+		return new TempExpenseContentInfo(null, null, null, null);
+	}
+
 	public TempExpenseContentInfo merge(
 			String merchantName, Category category, String memo, LocalDateTime occurredAt) {
 		return new TempExpenseContentInfo(

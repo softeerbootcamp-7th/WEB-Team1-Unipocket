@@ -46,7 +46,8 @@ const ReportLineChart = ({
     maxDay,
   );
 
-  const thisMonthWidth = (thisItems.length / maxDay) * width;
+  const thisMonthWidth =
+    maxDay > 1 ? ((thisMonth.dayCount - 1) / (maxDay - 1)) * width : width;
 
   return (
     <svg width={width} height={height}>

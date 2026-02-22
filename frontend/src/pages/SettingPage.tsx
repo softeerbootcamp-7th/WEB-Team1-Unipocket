@@ -16,9 +16,9 @@ import {
 
 const SettingPage = () => {
   return (
-    <div className="flex flex-1 flex-col bg-amber-100 px-35 py-7.5">
+    <div className="flex flex-1 flex-col px-35 py-7.5">
       <h1 className="title2-semibold text-label-normal mb-6.5">설정</h1>
-      <div className="flex flex-1 flex-col gap-3.5 bg-amber-200">
+      <div className="flex flex-1 flex-col gap-3.5">
         <Suspense fallback={<MainAccountBookSkeleton />}>
           <MainAccountBookSelection />
         </Suspense>

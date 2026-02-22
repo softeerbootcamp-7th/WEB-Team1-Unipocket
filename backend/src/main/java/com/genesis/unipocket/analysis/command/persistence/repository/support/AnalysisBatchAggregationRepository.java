@@ -70,6 +70,27 @@ public class AnalysisBatchAggregationRepository {
 		return rows.stream().map(this::toCategoryAmountPairCount).toList();
 	}
 
+	public AmountPairCount aggregateTravelRaw(Long accountBookId, Long travelId) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+								SELECT
+									COALESCE(SUM(e.local_currency_amount), 0),
+									COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
+									COUNT(*)
+								FROM expenses e
+								WHERE e.account_book_id = :accountBookId
+									AND e.travel_id = :travelId
+									AND (e.category IS NULL OR e.category <> :incomeCategory)
+								""")
+								.setParameter("accountBookId", accountBookId)
+								.setParameter("travelId", travelId)
+								.setParameter("incomeCategory", Category.INCOME.ordinal())
+								.getSingleResult();
+		return toAmountPairCount(row);
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<ExpenseRow> findExpenseRowsByAccountBook(
 			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
@@ -373,6 +394,29 @@ public class AnalysisBatchAggregationRepository {
 						.setParameter("incomeCategory", Category.INCOME.ordinal())
 						.getResultList();
 		return rows.stream().map(this::toCategoryLocalCurrencyGroupRow).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LocalCurrencyGroupRow> aggregateTravelLocalAmountGroupedByCurrency(
+			Long accountBookId, Long travelId) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+						SELECT
+							e.local_currency_code,
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.travel_id = :travelId
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						GROUP BY e.local_currency_code
+						""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("travelId", travelId)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
+						.getResultList();
+		return rows.stream().map(this::toLocalCurrencyGroupRow).toList();
 	}
 
 	private LocalCurrencyGroupRow toLocalCurrencyGroupRow(Object[] row) {

@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react';
+import { useFilteredExpenses } from '@/hooks/useFilteredExpenses';
 
 import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
@@ -7,37 +7,17 @@ import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
-import { useGetExpensesQuery } from '@/api/expenses/query';
-import type { ExpenseSearchFilter } from '@/api/expenses/type';
-import { useRequiredAccountBook } from '@/stores/accountBookStore';
-
 const ExpenseTable = () => {
-  const { accountBookId } = useRequiredAccountBook();
-  const [isPending, startTransition] = useTransition();
-
-  const [filter, setFilter] = useState<ExpenseSearchFilter>({
-    page: 0,
-    size: 50,
-  });
-
-  const updateFilter = (newFilter: Partial<ExpenseSearchFilter>) => {
-    startTransition(() => {
-      setFilter((prev) => ({ ...prev, ...newFilter, page: 0 }));
-    });
-  };
-
-  const { data } = useGetExpensesQuery(accountBookId, filter);
+  const { data, filter, updateFilter } = useFilteredExpenses();
 
   return (
     <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
       <BaseExpenseTable
-        data={data.expenses}
-        isPending={isPending}
+        data={data}
         filter={filter}
         updateFilter={updateFilter}
-        filterActions={<UploadMenu />} // 💡 홈 화면만의 우측 상단 메뉴
+        filterActions={<UploadMenu />}
       >
-        {/* 💡 홈 화면만의 하단 에디터 및 액션바 */}
         <SelectionActionBar />
         <TextCellEditor />
         <CategoryCellEditor />

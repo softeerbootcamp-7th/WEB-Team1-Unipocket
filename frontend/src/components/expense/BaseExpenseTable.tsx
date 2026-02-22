@@ -14,7 +14,6 @@ import type { Expense, ExpenseSearchFilter } from '@/api/expenses/type';
 
 interface BaseExpenseTableProps {
   data: Expense[];
-  isPending: boolean;
   filter: ExpenseSearchFilter;
   updateFilter: (newFilter: Partial<ExpenseSearchFilter>) => void;
   blankFallbackText?: string;
@@ -24,7 +23,6 @@ interface BaseExpenseTableProps {
 
 const BaseExpenseTable = ({
   data,
-  isPending,
   filter,
   updateFilter,
   blankFallbackText,
@@ -32,7 +30,7 @@ const BaseExpenseTable = ({
   children,
 }: BaseExpenseTableProps) => {
   return (
-    <DataTableProvider columns={columns} data={data} isPending={isPending}>
+    <DataTableProvider columns={columns} data={data}>
       <DataTableFilterProvider filter={filter} updateFilter={updateFilter}>
         <DateFilter />
         <MerchantFilter />
@@ -40,7 +38,6 @@ const BaseExpenseTable = ({
         <MethodFilter />
         <div className="flex-1" />
         <SortDropdown />
-        {/* 각 페이지마다 달라지는 우측 상단 요소 렌더링 */}
         {filterActions}
       </DataTableFilterProvider>
 
@@ -54,8 +51,6 @@ const BaseExpenseTable = ({
         }
         blankFallbackText={blankFallbackText}
       />
-
-      {/* 각 페이지마다 달라지는 하단 요소(액션바, 에디터 등) 렌더링 */}
       {children}
     </DataTableProvider>
   );

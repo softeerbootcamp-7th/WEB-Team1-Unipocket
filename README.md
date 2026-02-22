@@ -2,8 +2,8 @@
 
 > **교환학생 지출 관리의 모든 과정을 스마트하게**
 
-🔗 **서비스 바로가기**  
-https://www.unipocket.co.kr/
+🔗 **[서비스 바로가기](https://www.unipocket.co.kr/)**
+![alt text](unipocket.png)
 
 ---
 

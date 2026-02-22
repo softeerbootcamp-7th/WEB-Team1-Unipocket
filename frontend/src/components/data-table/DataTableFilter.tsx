@@ -4,6 +4,7 @@ import { useSearchNavigation } from '@/hooks/useSearchNavigation';
 
 import Chip, { CategoryChip } from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
+import { DataTableFilterContext } from '@/components/data-table/context';
 import { DataTableOptionList } from '@/components/data-table/DataTableOptionList';
 import {
   Popover,
@@ -13,10 +14,26 @@ import {
 
 import { CATEGORIES, type CategoryId } from '@/types/category';
 
+import type { ExpenseSearchFilter } from '@/api/expenses/type';
+
+interface DataTableFilterProviderProps extends ComponentPropsWithoutRef<'div'> {
+  filter: ExpenseSearchFilter;
+  updateFilter: (newFilter: Partial<ExpenseSearchFilter>) => void;
+}
+
 const DataTableFilterProvider = ({
+  filter,
+  updateFilter,
   children,
-}: ComponentPropsWithoutRef<'div'>) => {
-  return <div className="mb-5 flex items-center gap-3 px-2.5">{children}</div>;
+  ...props
+}: DataTableFilterProviderProps) => {
+  return (
+    <DataTableFilterContext.Provider value={{ filter, updateFilter }}>
+      <div className="mb-5 flex items-center gap-3 px-2.5" {...props}>
+        {children}
+      </div>
+    </DataTableFilterContext.Provider>
+  );
 };
 
 interface DataTableSearchFilterProps<T> {
@@ -24,7 +41,7 @@ interface DataTableSearchFilterProps<T> {
   options: T[];
   selectedOptions: T[];
   setSelectedOptions: (selected: T[]) => void;
-  onInputChange: (term: string) => void;
+  onInputChange?: (term: string) => void;
   onSelect?: (term: T) => void;
   onSelectMultiple?: (terms: T[]) => void;
   isCategory?: boolean;
@@ -36,6 +53,7 @@ interface DataTableSearchFilterProps<T> {
     searchTerm: string,
     onSelectAll: () => void,
   ) => React.ReactNode;
+  getDisplayLabel?: (option: T) => string;
 }
 
 const DataTableSearchFilter = <T,>({
@@ -51,6 +69,7 @@ const DataTableSearchFilter = <T,>({
   onInputChange,
   onSelect,
   onSelectMultiple,
+  getDisplayLabel,
 }: DataTableSearchFilterProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -92,11 +111,10 @@ const DataTableSearchFilter = <T,>({
     },
   });
 
-  // 💡 3. 검색어 변경 래퍼 함수 (onInputChange prop 지원을 위해)
   const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    handleSearchChange(value); // 훅의 상태 업데이트 (인덱스 0 초기화 포함)
-    onInputChange(value); // 외부 API 호출용 prop
+    handleSearchChange(value);
+    onInputChange?.(value);
   };
 
   // 컨테이너 클릭 시 인풋 포커스
@@ -133,10 +151,15 @@ const DataTableSearchFilter = <T,>({
 
   const getLabel = () => {
     if (!isActive) return title;
+
     const firstOption = selectedOptions[0];
-    const firstLabel = isCategory
-      ? CATEGORIES[firstOption as unknown as CategoryId].name
-      : String(firstOption);
+
+    let firstLabel = String(firstOption);
+    if (getDisplayLabel) {
+      firstLabel = getDisplayLabel(firstOption);
+    } else if (isCategory) {
+      firstLabel = CATEGORIES[firstOption as unknown as CategoryId].name;
+    }
 
     if (selectedOptions.length === 1) {
       return `${title}: ${firstLabel}`;
@@ -181,7 +204,9 @@ const DataTableSearchFilter = <T,>({
                 />
               ) : (
                 <Chip
-                  label={String(option)}
+                  label={
+                    getDisplayLabel ? getDisplayLabel(option) : String(option)
+                  }
                   onRemove={() => toggleOption(option)}
                 />
               )}
@@ -193,7 +218,7 @@ const DataTableSearchFilter = <T,>({
             ref={inputRef}
             type="text"
             value={searchTerm}
-            onChange={onSearchInputChange} // 💡 래퍼 함수로 변경
+            onChange={onSearchInputChange}
             onKeyDown={handleKeyDown}
             placeholder={
               selectedOptions.length > 0
@@ -204,7 +229,6 @@ const DataTableSearchFilter = <T,>({
             autoComplete="off"
           />
         </div>
-
         {/* --- 리스트 && footer 영역 --- */}
         <DataTableOptionList
           items={filteredOptions}
@@ -226,11 +250,6 @@ const DataTableSearchFilter = <T,>({
               : null
           }
         />
-        {/* Search All Trigger */}
-        {searchTerm &&
-          filteredOptions.length > 0 &&
-          renderSearchAllTrigger &&
-          renderSearchAllTrigger(searchTerm, handleSelectAll)}
       </PopoverContent>
     </Popover>
   );

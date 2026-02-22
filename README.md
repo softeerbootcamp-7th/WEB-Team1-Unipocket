@@ -217,14 +217,14 @@ backend/
 
 ## 🔗 Github & 서비스 링크
 
-- 📘 Wiki  
-  https://github.com/softeerbootcamp-7th/WEB-Team1-Unipocket/wiki
+- 📘 Wiki
+  - [Wiki 바로가기](https://github.com/softeerbootcamp-7th/WEB-Team1-Unipocket/wiki)
 
-- 🎨 Figma (Design Handoff)  
-  https://www.figma.com/design/fC3n8H8ialRaNYWbI1coXA/-1%E1%84%90%E1%85%B5%E1%86%B7--Final-Design---Handoff?m=dev
+- 🎨 디자인
+  - [디자인 바로가기](https://www.figma.com/design/fC3n8H8ialRaNYWbI1coXA/-1%E1%84%90%E1%85%B5%E1%86%B7--Final-Design---Handoff?m=dev)
 
-- 📊 서비스 기획안  
-  https://www.figma.com/slides/CzLAOcxVJT5eNuchdMZbgB/%EC%A0%9C%EB%84%A4%EC%8B%9C%EC%8A%A4-%EC%84%9C%EB%B9%84%EC%8A%A4-%EA%B8%B0%ED%9A%8D%EC%95%88?t=edg8re9TN70qPRtK-0
+- 📊 서비스 기획안
+  - [서비스 기획안 바로가기](https://www.figma.com/slides/CzLAOcxVJT5eNuchdMZbgB/%EC%A0%9C%EB%84%A4%EC%8B%9C%EC%8A%A4-%EC%84%9C%EB%B9%84%EC%8A%A4-%EA%B8%B0%ED%9A%8D%EC%95%88?t=edg8re9TN70qPRtK-0)
 
 ---
 

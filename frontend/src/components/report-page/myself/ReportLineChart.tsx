@@ -13,23 +13,20 @@ type MonthlyChartData = {
 interface ReportLineChartProps {
   thisMonth: MonthlyChartData;
   lastMonth: MonthlyChartData;
+  maxDay: number;
   maxValue: number;
   width?: number;
   height?: number;
-  isCurrentMonth: boolean;
 }
 
 const ReportLineChart = ({
   thisMonth,
   lastMonth,
+  maxDay,
   maxValue,
   width = 352,
   height = 140,
-  isCurrentMonth,
 }: ReportLineChartProps) => {
-  const maxDay = isCurrentMonth
-    ? lastMonth.dayCount
-    : Math.min(thisMonth.dayCount, lastMonth.dayCount);
   const thisItems = thisMonth.items.slice(0, maxDay);
   const lastItems = lastMonth.items.slice(0, maxDay);
 

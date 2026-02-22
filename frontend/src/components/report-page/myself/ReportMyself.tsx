@@ -4,7 +4,7 @@ import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { type AnalysisChartItem } from '@/api/account-books/type';
-import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
+import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 interface ReportMyselfProps {
@@ -33,8 +33,8 @@ const ReportMyself = ({ data, isCurrentMonth }: ReportMyselfProps) => {
   const diffValue = Number(data.diff);
   const diff = Math.abs(diffValue);
   const isLess = diffValue < 0;
-  const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
-  const formattedThisMonthSpent = formatCurrencyAmount(
+  const formattedDiff = formatAmountByCountry(diff, countryCode, 0);
+  const formattedThisMonthSpent = formatAmountByCountry(
     Number(data.thisMonthSpent),
     countryCode,
     0,

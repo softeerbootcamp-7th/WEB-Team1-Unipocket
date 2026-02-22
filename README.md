@@ -3,7 +3,7 @@
 > **교환학생 지출 관리의 모든 과정을 스마트하게**
 
 <p align="center">
-  <img src="unipocket.png" width="800" />
+  <img src="unipocket.png" width="1000" />
 </p>
 
 <p align="center">
@@ -288,4 +288,6 @@ UniPocket 팀은 프로젝트 기간 동안
 
 ## 🏗 프로젝트 아키텍처
 
-추가 예정
+<p align="center">
+  <img src="architecture.png" width="600" />
+</p>

@@ -12,10 +12,10 @@ import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfo
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseStatusPolicy;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -34,16 +34,16 @@ class TemporaryExpenseCommandServiceTest {
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 
-	private TemporaryExpenseCommandService service;
+	private TempExpenseService service;
 
 	@BeforeEach
 	void setUp() {
 		service =
-				new TemporaryExpenseCommandService(
+				new TempExpenseService(
 						temporaryExpenseRepository,
 						tempExpenseMetaRepository,
 						accountBookRateInfoProvider,
-						new TemporaryExpenseValidator());
+						new TempExpenseStatusPolicy());
 	}
 
 	@Test

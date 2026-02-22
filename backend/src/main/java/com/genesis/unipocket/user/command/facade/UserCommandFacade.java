@@ -6,7 +6,9 @@ import com.genesis.unipocket.user.command.application.command.DeleteCardCommand;
 import com.genesis.unipocket.user.command.application.command.RegisterUserCommand;
 import com.genesis.unipocket.user.command.application.command.WithdrawUserCommand;
 import com.genesis.unipocket.user.command.application.result.LoginOrRegisterResult;
-import com.genesis.unipocket.user.command.presentation.request.UserCardRequest;
+import com.genesis.unipocket.user.command.presentation.request.UserCardCreateRequest;
+import com.genesis.unipocket.user.command.presentation.request.UserCardUpdateRequest;
+import com.genesis.unipocket.user.command.presentation.response.UserCardUpdateResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class UserCommandFacade {
 		userCommandService.withdrawUser(command);
 	}
 
-	public Long createCard(UserCardRequest request, UUID userId) {
+	public Long createCard(UserCardCreateRequest request, UUID userId) {
 		CreateCardCommand command = CreateCardCommand.of(userId, request);
 		return userCommandService.createCard(command);
 	}
@@ -34,5 +36,11 @@ public class UserCommandFacade {
 	public void deleteCard(Long cardId, UUID userId) {
 		DeleteCardCommand command = DeleteCardCommand.of(cardId, userId);
 		userCommandService.deleteCard(command);
+	}
+
+	public UserCardUpdateResponse updateCard(
+			UUID userId, Long cardId, UserCardUpdateRequest request) {
+		return UserCardUpdateResponse.of(
+				userCommandService.updateCard(userId, cardId, request.nickname()));
 	}
 }

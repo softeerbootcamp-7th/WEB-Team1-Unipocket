@@ -26,6 +26,23 @@ public interface AnalysisMonthlyDirtyRepository
 			LocalDate targetYearMonth,
 			AnalysisBatchJobStatus status);
 
+	boolean existsByCountryCodeAndAccountBookIdAndStatusNot(
+			CountryCode countryCode, Long accountBookId, AnalysisBatchJobStatus status);
+
+	@Query(
+			"""
+			SELECT d.targetYearMonth
+			FROM AnalysisMonthlyDirtyEntity d
+			WHERE d.countryCode = :countryCode
+				AND d.accountBookId = :accountBookId
+				AND d.status <> :status
+			ORDER BY d.targetYearMonth ASC
+			""")
+	List<LocalDate> findTargetYearMonthsByCountryCodeAndAccountBookIdAndStatusNot(
+			@Param("countryCode") CountryCode countryCode,
+			@Param("accountBookId") Long accountBookId,
+			@Param("status") AnalysisBatchJobStatus status);
+
 	@Query(
 			"""
 			SELECT d.id

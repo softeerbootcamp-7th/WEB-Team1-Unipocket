@@ -207,7 +207,7 @@ public class AccountBookAmountQueryService {
 		return total;
 	}
 
-private CurrencyCode parseCurrencyCode(String rawCode) {
+	private CurrencyCode parseCurrencyCode(String rawCode) {
 		if (rawCode == null) {
 			return null;
 		}
@@ -222,7 +222,6 @@ private CurrencyCode parseCurrencyCode(String rawCode) {
 				return null;
 			}
 		}
-	}
 	}
 
 	private LocalDateTime toUtc(LocalDate localDate, ZoneId zoneId) {

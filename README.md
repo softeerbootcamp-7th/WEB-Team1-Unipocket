@@ -13,8 +13,9 @@
 - [2. 주요 기능](#-주요-기능)
 - [3. 팀원 소개](#-팀원-소개)
 - [4. Tech Stack](#-tech-stack)
-- [5. Github & 서비스 링크](#-github--서비스-링크)
-- [6. 프로젝트 아키텍처](#프로젝트-아키텍처)
+- [5. 협업 기록 & 데일리 프로세스](#-협업-기록--데일리-프로세스)
+- [6. Github & 서비스 링크](#-github--서비스-링크)
+- [7. 프로젝트 아키텍처](#프로젝트-아키텍처)
 
 ---
 
@@ -226,16 +227,55 @@ backend/
 
 ---
 
+## 📝 협업 기록 & 데일리 프로세스
+
+UniPocket 팀은 프로젝트 기간 동안  
+**매일 기록하고, 매일 공유하는 개발 프로세스**를 운영했습니다.
+
+### 📅 데일리 스크럼
+
+- 매일 **오전 10시** 진행
+- 공유 내용
+  - 어제 한 일
+  - 오늘 할 일
+- 이후 돌아가면서 각자의 진행 상황을 공유하고 논의하는 시간을 가졌습니다.
+
+🔗 **[데일리 스크럼 기록 바로가기](https://www.notion.so/bside/2ee22020273580d69a76dde3b9b5b337)**
+
+### 🔁 데일리 회고
+
+- 매일 **오후 6시** 진행
+- 공유 내용
+  - 오늘 느낀 점
+  - 개선할 점
+  - 팀/프로세스 관련 인사이트
+- 돌아가면서 발표하며 팀 전체의 방향성을 점검했습니다.
+
+🔗 **[회고 기록 바로가기](https://www.notion.so/bside/2ed22020273580cf8291e0b677324930)**
+
+---
+
 ## 🔗 Github & 서비스 링크
 
-- 📘 Wiki
-  - [Wiki 바로가기](https://github.com/softeerbootcamp-7th/WEB-Team1-Unipocket/wiki)
+프로젝트 관련 자료와 문서를 아래에서 확인하실 수 있습니다.
 
-- 🎨 디자인
-  - [디자인 바로가기](https://www.figma.com/design/fC3n8H8ialRaNYWbI1coXA/-1%E1%84%90%E1%85%B5%E1%86%B7--Final-Design---Handoff?m=dev)
+### 📘 Wiki
 
-- 📊 서비스 기획안
-  - [서비스 기획안 바로가기](https://www.figma.com/slides/CzLAOcxVJT5eNuchdMZbgB/%EC%A0%9C%EB%84%A4%EC%8B%9C%EC%8A%A4-%EC%84%9C%EB%B9%84%EC%8A%A4-%EA%B8%B0%ED%9A%8D%EC%95%88?t=edg8re9TN70qPRtK-0)
+프로젝트 진행 과정과 기술 문서를 정리한 공간입니다.
+
+🔗 **[Wiki 바로가기](https://github.com/softeerbootcamp-7th/WEB-Team1-Unipocket/wiki)**
+
+### 🎨 디자인 (Figma)
+
+최종 디자인 시안 및 핸드오프 문서를 확인할 수 있습니다.
+
+🔗 **[디자인 바로가기](https://www.figma.com/design/fC3n8H8ialRaNYWbI1coXA/-1%E1%84%90%E1%85%B5%E1%86%B7--Final-Design---Handoff?m=dev)**
+
+### 📊 서비스 기획안
+
+서비스 기획 배경과 기능 정의를 정리한 자료입니다.
+
+🔗 **[서비스 기획안 바로가기](https://www.figma.com/slides/CzLAOcxVJT5eNuchdMZbgB/%EC%A0%9C%EB%84%A4%EC%8B%9C%EC%8A%A4-%EC%84%9C%EB%B9%84%EC%8A%A4-%EA%B8%B0%ED%9A%8D%EC%95%88?t=edg8re9TN70qPRtK-0)**
 
 ---
 

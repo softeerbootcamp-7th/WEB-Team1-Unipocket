@@ -4,7 +4,7 @@ import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
 import { type AnalysisChartItem } from '@/api/account-books/type';
-import { getCountryInfo } from '@/lib/country';
+import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
 import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 interface ReportMyselfProps {
@@ -29,6 +29,14 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
   const countryCode = useAccountBookCountryCode(currencyType);
 
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
+  const diff = Math.abs(Number(data.diff));
+  const isLess = Number(data.diff) < 0;
+  const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
+  const formattedThisMonthSpent = formatCurrencyAmount(
+    Number(data.thisMonthSpent),
+    countryCode,
+    0,
+  );
 
   const thisMonthData = {
     label: data.thisMonth,
@@ -56,13 +64,13 @@ const ReportMyself = ({ data }: ReportMyselfProps) => {
           <h3 className="heading1-bold text-label-normal">
             지난달보다{' '}
             <span className="text-primary-strong">
-              {data.diff}
-              {unit} 더
+              {formattedDiff}
+              {unit} {isLess ? '덜' : '더'}
             </span>{' '}
             쓰는 중이에요
           </h3>
           <span className="body1-normal-medium text-label-alternative">
-            오늘까지 {thisMonthData.totalSpent}
+            오늘까지 {formattedThisMonthSpent}
             {unit} 썼어요
           </span>
         </div>

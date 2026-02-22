@@ -218,7 +218,7 @@ const DataTableSearchFilter = <T,>({
             ref={inputRef}
             type="text"
             value={searchTerm}
-            onChange={onSearchInputChange} // 💡 래퍼 함수로 변경
+            onChange={onSearchInputChange}
             onKeyDown={handleKeyDown}
             placeholder={
               selectedOptions.length > 0

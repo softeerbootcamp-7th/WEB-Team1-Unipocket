@@ -5,26 +5,28 @@ import {
 } from '@/components/setting-page/SettingLayout';
 
 import {
-  useAccountBooksSuspenseQuery,
-  useSetMainAccountBookMutation,
+  useGetAccountBooksQuery,
+  useUpdateAccountBookMutation,
 } from '@/api/account-books/query';
 
 const MainAccountBookSelection = () => {
-  const { data: accountBooks } = useAccountBooksSuspenseQuery();
-  const setMainMutation = useSetMainAccountBookMutation();
-
+  const { data: accountBooks } = useGetAccountBooksQuery();
+  const updateAccountBookMutation = useUpdateAccountBookMutation();
   const accountBookOptions = accountBooks.map((book) => ({
-    id: book.id,
+    id: book.accountBookId,
     name: book.title,
   }));
 
   // 가계부가 하나도 없는 경우는 accountBookOptions가 0일 때 대체 텍스트 보여주도록 처리해서 0이 무의미함
   const selectedId =
-    accountBooks.find((book) => book.isMain)?.id ?? accountBooks[0]?.id ?? 0;
+    accountBooks.find((book) => book.isMain)?.accountBookId ?? 0;
 
   const handleSelect = (id: number) => {
     if (id === selectedId) return;
-    setMainMutation.mutate(id);
+    updateAccountBookMutation.mutate({
+      accountBookId: id,
+      data: { isMain: true },
+    });
   };
 
   return (
@@ -37,7 +39,7 @@ const MainAccountBookSelection = () => {
       ) : (
         <Dropdown
           itemWidth="w-full"
-          selected={selectedId}
+          selectedId={selectedId}
           onSelect={handleSelect}
           options={accountBookOptions}
         />
@@ -50,7 +52,7 @@ const MainAccountBookSkeleton = () => (
   <SettingSection>
     <SettingTitle>메인 가계부 설정</SettingTitle>
     <Dropdown
-      selected={0}
+      selectedId={0}
       onSelect={() => {}}
       options={[{ id: 0, name: '-' }]}
     />

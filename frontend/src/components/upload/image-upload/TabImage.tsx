@@ -32,15 +32,19 @@ const TabImage = ({
         <span className="caption1-medium text-label-normal truncate">
           {fileName}
         </span>
-        <div className="caption1-medium flex items-center gap-1.5">
-          <div className="flex items-center gap-0.5">
-            <Icons.Checkmark className="size-4" />
-            <span className="text-status-positive">{successCount}건</span>
-          </div>
-          <div className="flex items-center gap-0.5">
-            <Icons.Warning className="size-4" />
-            <span className="text-status-cautionary">{warningCount}건</span>
-          </div>
+        <div className="caption1-medium flex h-4 items-center gap-1.5">
+          {successCount > 0 && (
+            <div className="flex items-center gap-0.5">
+              <Icons.Checkmark className="size-4" />
+              <span className="text-status-positive">{successCount}건</span>
+            </div>
+          )}
+          {warningCount > 0 && (
+            <div className="flex items-center gap-0.5">
+              <Icons.Warning className="size-4" />
+              <span className="text-status-cautionary">{warningCount}건</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

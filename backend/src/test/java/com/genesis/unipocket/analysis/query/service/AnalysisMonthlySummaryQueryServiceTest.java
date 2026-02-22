@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
@@ -20,8 +22,10 @@ import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
 import com.genesis.unipocket.analysis.query.persistence.response.AnalysisOverviewRes;
 import com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
@@ -47,6 +51,7 @@ class AnalysisMonthlySummaryQueryServiceTest {
 	@Mock private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
 	@Mock private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
+	@Mock private ExchangeRateService exchangeRateService;
 
 	@InjectMocks private AnalysisMonthlySummaryQueryService service;
 
@@ -273,6 +278,86 @@ class AnalysisMonthlySummaryQueryServiceTest {
 
 		assertThat(res.compareByCategory().maxDiffCategoryIndex())
 				.isEqualTo(Category.LIVING.ordinal());
+	}
+
+	@Test
+	void getAnalysisOverview_localCurrencyType_convertsAndSumsMixedCurrencies() {
+		UUID userId = UUID.randomUUID();
+		Long accountBookId = 30L;
+
+		// AccountBook: US (USD local), KR (KRW base)
+		when(analysisQueryRepository.getAccountBookCountryCodes(accountBookId))
+				.thenReturn(new Object[] {CountryCode.US, CountryCode.KR});
+
+		// Dirty pending → real-time path (no batch data)
+		when(monthlyDirtyRepository
+						.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+								eq(CountryCode.US),
+								eq(accountBookId),
+								eq(LocalDate.of(2025, 12, 1)),
+								eq(AnalysisBatchJobStatus.SUCCESS)))
+				.thenReturn(true);
+
+		// Exchange rate: JPY → USD (15000 JPY → 100 USD)
+		when(exchangeRateService.convertAmount(
+						any(BigDecimal.class), eq(CurrencyCode.JPY), eq(CurrencyCode.USD), any()))
+				.thenReturn(new BigDecimal("100.00"));
+
+		// Daily events: this month has USD 200 + JPY 15000 on Dec 1; prev month empty
+		when(analysisQueryRepository.getMySpendEventsWithCurrency(
+						eq(accountBookId), any(OffsetDateTime.class), any(OffsetDateTime.class)))
+				.thenReturn(
+						java.util.stream.Stream.of(
+								new Object[] {
+									OffsetDateTime.parse("2025-12-01T10:00:00-05:00"),
+									new BigDecimal("200"),
+									CurrencyCode.USD
+								},
+								new Object[] {
+									OffsetDateTime.parse("2025-12-01T12:00:00-05:00"),
+									new BigDecimal("15000"),
+									CurrencyCode.JPY
+								}),
+						java.util.stream.Stream.empty());
+
+		// Category: FOOD with USD 200 + JPY 15000
+		when(analysisQueryRepository.getMyCategorySpentGroupedByCurrency(
+						eq(accountBookId), any(OffsetDateTime.class), any(OffsetDateTime.class)))
+				.thenReturn(
+						List.of(
+								new Object[] {
+									Category.FOOD, CurrencyCode.USD, new BigDecimal("200")
+								},
+								new Object[] {
+									Category.FOOD, CurrencyCode.JPY, new BigDecimal("15000")
+								}));
+
+		// No peer aggregate data
+		when(pairMonthlyAggregateRepository
+						.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+								any(), any(), any(), any(), any()))
+				.thenReturn(Optional.empty());
+
+		// Act
+		AnalysisOverviewRes res =
+				service.getAnalysisOverview(
+						userId, accountBookId, "2025", "12", CurrencyType.LOCAL);
+
+		// Assert: daily total = 200 (USD) + 100 (JPY→USD) = 300
+		assertThat(res.compareWithLastMonth().totalSpent().thisMonthToDate()).isEqualTo("300");
+
+		// Assert: FOOD = 200 (USD same) + 100 (JPY converted) = 300
+		AnalysisOverviewRes.CompareByCategory.CategoryItem foodItem =
+				res.compareByCategory().items().stream()
+						.filter(i -> i.categoryIndex() == Category.FOOD.ordinal())
+						.findFirst()
+						.orElseThrow();
+		assertThat(foodItem.mySpentAmount()).isEqualTo("300");
+
+		// Verify conversion called: once for daily series + once for category snapshot
+		verify(exchangeRateService, times(2))
+				.convertAmount(
+						any(BigDecimal.class), eq(CurrencyCode.JPY), eq(CurrencyCode.USD), any());
 	}
 
 	@Test

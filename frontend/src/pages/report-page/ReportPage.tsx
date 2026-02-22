@@ -54,6 +54,8 @@ const ReportPage = () => {
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
+  const isCurrentMonth =
+    year === now.getFullYear() && month === now.getMonth() + 1;
 
   const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
 
@@ -98,14 +100,20 @@ const ReportPage = () => {
 
         {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
         {data && (
-          <div className="flex w-full min-w-283 gap-3.5">
+          <div
+            key={`${year}-${month}`}
+            className="flex w-full min-w-283 gap-3.5"
+          >
             <ReportProvider
               currencyType={currencyType}
               onCurrencyTypeChange={setCurrencyType}
             >
               <div className="flex w-113 flex-col justify-between">
                 <ReportMonthly data={data.compareWithAverage} />
-                <ReportMyself data={data.compareWithLastMonth} />
+                <ReportMyself
+                  data={data.compareWithLastMonth}
+                  isCurrentMonth={isCurrentMonth}
+                />
               </div>
 
               <div className="flex-1">

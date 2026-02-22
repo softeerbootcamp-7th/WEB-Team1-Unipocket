@@ -14,8 +14,11 @@ import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepos
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -52,6 +55,7 @@ class ExpenseControllerIntegrationTest {
 
 	@Autowired private AccountBookCommandRepository accountBookRepository;
 	@Autowired private UserCommandRepository userRepository;
+	@Autowired private UserCardCommandRepository userCardRepository;
 
 	@Autowired private JwtTestHelper jwtTestHelper;
 
@@ -328,6 +332,35 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(2))
 				.andExpect(jsonPath("$.totalCount").value(2));
+	}
+
+	@Test
+	@DisplayName("지출내역 필터링 - 카드 4자리 필터는 입력 카드 기준(OR)으로만 조회")
+	void 지출내역_카드4자리_유저카드기준_필터링_성공() throws Exception {
+		// given
+		UserCardEntity matchedCard = createUserCard("매칭카드", "1234");
+		UserCardEntity unmatchedCard = createUserCard("비매칭카드", "5678");
+
+		createTestExpenseWithUserCard(
+				"매칭 결제", 2, "2026-02-04T12:00:00", 10000.0, matchedCard.getUserCardId());
+		createTestExpenseWithUserCard(
+				"비매칭 결제", 2, "2026-02-04T13:00:00", 12000.0, unmatchedCard.getUserCardId());
+		createTestExpenseWithDetails("현금 결제", 2, "2026-02-04T14:00:00", 9000.0, null);
+
+		// when & then - user_card.card_number=1234인 내역만 조회
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "occurredAt,desc")
+								.param("cardFourDigits", "1234"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses").isArray())
+				.andExpect(jsonPath("$.expenses.length()").value(1))
+				.andExpect(jsonPath("$.totalCount").value(1))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("매칭 결제"))
+				.andExpect(jsonPath("$.expenses[0].paymentMethod.card.lastDigits").value("1234"));
 	}
 
 	@Test
@@ -716,5 +749,52 @@ class ExpenseControllerIntegrationTest {
 				.findAll()
 				.get(expenseRepository.findAll().size() - 1)
 				.getExpenseId();
+	}
+
+	private Long createTestExpenseWithUserCard(
+			String merchantName,
+			Integer category,
+			String occurredAt,
+			Double amount,
+			Long userCardId)
+			throws Exception {
+		String userCardIdJson = userCardId != null ? String.valueOf(userCardId) : "null";
+		String body =
+				String.format(
+						"""
+			{
+			"merchantName": "%s",
+			"category": %d,
+			"userCardId": %s,
+			"occurredAt": "%sZ",
+			"localCurrencyAmount": %.1f,
+			"localCurrencyCode": "KRW",
+			"memo": "테스트"
+			}
+			""",
+						merchantName, category, userCardIdJson, occurredAt, amount);
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isCreated());
+
+		return expenseRepository
+				.findAll()
+				.get(expenseRepository.findAll().size() - 1)
+				.getExpenseId();
+	}
+
+	private UserCardEntity createUserCard(String nickName, String cardNumber) {
+		UserEntity user = userRepository.findById(userId).orElseThrow();
+		return userCardRepository.save(
+				UserCardEntity.builder()
+						.user(user)
+						.nickName(nickName)
+						.cardNumber(cardNumber)
+						.cardCompany(CardCompany.HYUNDAI)
+						.build());
 	}
 }

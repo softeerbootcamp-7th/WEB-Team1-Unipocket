@@ -230,7 +230,6 @@ const DataTableSearchFilter = <T,>({
             autoComplete="off"
           />
         </div>
-
         {/* --- 리스트 && footer 영역 --- */}
         <DataTableOptionList
           items={filteredOptions}
@@ -252,11 +251,6 @@ const DataTableSearchFilter = <T,>({
               : null
           }
         />
-        {/* Search All Trigger */}
-        {searchTerm &&
-          filteredOptions.length > 0 &&
-          renderSearchAllTrigger &&
-          renderSearchAllTrigger(searchTerm, handleSelectAll)}
       </PopoverContent>
     </Popover>
   );

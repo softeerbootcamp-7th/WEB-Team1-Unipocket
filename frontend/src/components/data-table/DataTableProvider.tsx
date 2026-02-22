@@ -7,6 +7,7 @@ import {
   type Updater,
   useReactTable,
 } from '@tanstack/react-table';
+import clsx from 'clsx';
 
 import {
   DataTableContext,
@@ -57,12 +58,14 @@ interface DataTableProviderProps<
 > extends ComponentPropsWithoutRef<'div'> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isPending?: boolean;
 }
 
 const DataTableProvider = <TData, TValue = unknown>({
   columns,
   data,
   children,
+  isPending = false,
 }: DataTableProviderProps<TData, TValue>) => {
   const [tableState, dispatch] = useReducer(tableReducer, {
     selectionMode: null,
@@ -109,7 +112,12 @@ const DataTableProvider = <TData, TValue = unknown>({
         } as DataTableContextType<unknown>
       }
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div
+        className={clsx(
+          'flex min-h-0 flex-1 flex-col overflow-hidden',
+          isPending && 'pointer-events-none opacity-50',
+        )}
+      >
         {children}
       </div>
     </DataTableContext.Provider>

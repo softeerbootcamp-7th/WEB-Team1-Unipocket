@@ -4,6 +4,7 @@ import { useSearchNavigation } from '@/hooks/useSearchNavigation';
 
 import Chip, { CategoryChip } from '@/components/common/Chip';
 import Filter from '@/components/common/Filter';
+import { DataTableFilterContext } from '@/components/data-table/context';
 import { DataTableOptionList } from '@/components/data-table/DataTableOptionList';
 import {
   Popover,
@@ -13,10 +14,26 @@ import {
 
 import { CATEGORIES, type CategoryId } from '@/types/category';
 
+import type { ExpenseSearchFilter } from '@/api/expenses/type';
+
+interface DataTableFilterProviderProps extends ComponentPropsWithoutRef<'div'> {
+  filter: ExpenseSearchFilter;
+  updateFilter: (newFilter: Partial<ExpenseSearchFilter>) => void;
+}
+
 const DataTableFilterProvider = ({
+  filter,
+  updateFilter,
   children,
-}: ComponentPropsWithoutRef<'div'>) => {
-  return <div className="mb-5 flex items-center gap-3 px-2.5">{children}</div>;
+  ...props
+}: DataTableFilterProviderProps) => {
+  return (
+    <DataTableFilterContext.Provider value={{ filter, updateFilter }}>
+      <div className="mb-5 flex items-center gap-3 px-2.5" {...props}>
+        {children}
+      </div>
+    </DataTableFilterContext.Provider>
+  );
 };
 
 interface DataTableSearchFilterProps<T> {

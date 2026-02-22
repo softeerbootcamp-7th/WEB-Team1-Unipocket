@@ -1,3 +1,6 @@
+import { useState, useTransition } from 'react';
+
+import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableFilterProvider } from '@/components/data-table/DataTableFilter';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
@@ -8,27 +11,44 @@ import DateFilter from '@/components/data-table/filters/DateFilter';
 import MerchantFilter from '@/components/data-table/filters/MerchantFilter';
 import MethodFilter from '@/components/data-table/filters/MethodFilter';
 import SortDropdown from '@/components/data-table/filters/SortDropdown';
-import SelectionActionBar from '@/components/data-table/SelectionActionBar';
 import { columns } from '@/components/home-page/columns';
 import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
 import { useGetExpensesQuery } from '@/api/expenses/query';
-import type { Expense } from '@/api/expenses/type';
+import type { Expense, ExpenseSearchFilter } from '@/api/expenses/type';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ExpenseTable = () => {
   const accountBookId = useRequiredAccountBook().accountBookId;
 
-  const { data } = useGetExpensesQuery(accountBookId, {
+  const [filter, setFilter] = useState<ExpenseSearchFilter>({
     page: 0,
     size: 50,
   });
 
+  const updateFilter = (newFilter: Partial<ExpenseSearchFilter>) => {
+    startTransition(() => {
+      setFilter((prev) => ({
+        ...prev,
+        ...newFilter,
+        page: 0,
+      }));
+    });
+  };
+
+  const { data } = useGetExpensesQuery(accountBookId, filter);
+
+  const [isPending, startTransition] = useTransition();
+
   return (
     <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
-      <DataTableProvider columns={columns} data={data.expenses}>
-        <DataTableFilterProvider>
+      <DataTableProvider
+        columns={columns}
+        data={data.expenses}
+        isPending={isPending}
+      >
+        <DataTableFilterProvider filter={filter} updateFilter={updateFilter}>
           <DateFilter />
           <MerchantFilter />
           <CategoryFilter />

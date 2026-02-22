@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import Calendar, { type DateRange } from '@/components/calendar/Calendar';
+import Calendar from '@/components/calendar/Calendar';
 import {
   DATE_PRESETS,
   type DatePresetId,
@@ -9,6 +9,7 @@ import {
 import CalendarInput from '@/components/common/CalendarInput';
 import Divider from '@/components/common/Divider';
 import Filter from '@/components/common/Filter';
+import { useDataTableFilter } from '@/components/data-table/context';
 import {
   Popover,
   PopoverAnchor,
@@ -16,17 +17,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-import { formatDateToString } from '@/lib/utils';
+import { formatDateToString, toOffsetDateTimeString } from '@/lib/utils';
 
 const DateFilter = () => {
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: null,
-    endDate: null,
-  });
+  const { filter, updateFilter } = useDataTableFilter();
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const isActive = !!(dateRange.startDate || dateRange.endDate);
+  const isActive = !!(filter.startDate || filter.endDate);
 
   const handleDateChange = ({
     startDate,
@@ -35,7 +34,12 @@ const DateFilter = () => {
     startDate: Date | null;
     endDate: Date | null;
   }) => {
-    setDateRange({ startDate, endDate });
+    updateFilter({
+      startDate: startDate
+        ? toOffsetDateTimeString(startDate, false)
+        : undefined, // 00:00:00
+      endDate: endDate ? toOffsetDateTimeString(endDate, true) : undefined, // 23:59:59
+    });
   };
 
   const handlePresetClick = (id: DatePresetId) => {
@@ -49,11 +53,11 @@ const DateFilter = () => {
 
   const filterLabel = (() => {
     if (!isActive) return '날짜';
-    const startStr = dateRange.startDate
-      ? formatDateToString(dateRange.startDate)
+    const startStr = filter.startDate
+      ? formatDateToString(new Date(filter.startDate))
       : '';
-    const endStr = dateRange.endDate
-      ? formatDateToString(dateRange.endDate)
+    const endStr = filter.endDate
+      ? formatDateToString(new Date(filter.endDate))
       : '';
     return `날짜: ${startStr} - ${endStr}`;
   })();
@@ -102,29 +106,31 @@ const DateFilter = () => {
                 <CalendarInput
                   title="시작일"
                   value={
-                    dateRange.startDate
-                      ? formatDateToString(dateRange.startDate)
+                    filter.startDate
+                      ? formatDateToString(new Date(filter.startDate))
                       : ''
                   }
                   onClick={() => setIsCalendarOpen(true)}
                   onClear={() =>
                     handleDateChange({
                       startDate: null,
-                      endDate: dateRange.endDate,
+                      endDate: filter.endDate ? new Date(filter.endDate) : null,
                     })
                   }
                 />
                 <CalendarInput
                   title="종료일"
                   value={
-                    dateRange.endDate
-                      ? formatDateToString(dateRange.endDate)
+                    filter.endDate
+                      ? formatDateToString(new Date(filter.endDate))
                       : ''
                   }
                   onClick={() => setIsCalendarOpen(true)}
                   onClear={() =>
                     handleDateChange({
-                      startDate: dateRange.startDate,
+                      startDate: filter.startDate
+                        ? new Date(filter.startDate)
+                        : null,
                       endDate: null,
                     })
                   }
@@ -139,8 +145,8 @@ const DateFilter = () => {
               alignOffset={-20}
             >
               <Calendar
-                startDate={dateRange.startDate}
-                endDate={dateRange.endDate}
+                startDate={filter.startDate ? new Date(filter.startDate) : null}
+                endDate={filter.endDate ? new Date(filter.endDate) : null}
                 onChange={handleDateChange}
               />
             </PopoverContent>

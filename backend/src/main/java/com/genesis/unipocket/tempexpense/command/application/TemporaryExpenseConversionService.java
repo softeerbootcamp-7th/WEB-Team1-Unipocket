@@ -1,173 +1,116 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
+import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.tempexpense.command.application.result.BatchConversionResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
-import com.genesis.unipocket.tempexpense.command.application.result.ConversionResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
-import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
+import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
+import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.File.FileType;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
-import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseConversionAmount;
+import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
-import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
-import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
-import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
-import java.util.ArrayList;
+import java.time.ZoneOffset;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- * <b>임시지출내역 변환 서비스</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Slf4j
 @Service
 @AllArgsConstructor
 public class TemporaryExpenseConversionService {
 
 	private final TemporaryExpenseRepository tempExpenseRepository;
-	private final TempExpenseMetaRepository metaRepository;
+	private final FileRepository fileRepository;
+	private final ExpenseRepository expenseRepository;
+	private final ExchangeRateService exchangeRateService;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
-	private final ParsingProgressPublisher progressPublisher;
-	private final TemporaryExpenseSingleConversionTxService singleConversionTxService;
-	private final TemporaryExpenseValidator temporaryExpenseValidator;
+	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 
-	@Qualifier("parsingExecutor") private final Executor parsingExecutor;
-
-	/**
-	 * 메타 단위 비동기 확정 시작
-	 */
+	@Transactional
 	public ConfirmStartResult startConfirmAsync(Long accountBookId, Long tempExpenseMetaId) {
-		TempExpenseMeta meta =
-				metaRepository
-						.findById(tempExpenseMetaId)
-						.orElseThrow(
-								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-		if (!meta.getAccountBookId().equals(accountBookId)) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH);
-		}
+		temporaryExpenseScopeValidator.validateMetaScope(accountBookId, tempExpenseMetaId);
 
-		List<Long> targetIds =
-				tempExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId).stream()
-						.map(TemporaryExpense::getTempExpenseId)
-						.toList();
-
-		if (targetIds.isEmpty()) {
+		List<TemporaryExpense> expenses =
+				tempExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId);
+		if (expenses.isEmpty()) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND);
 		}
 
-		validateRequiredFieldsForBatch(meta.getAccountBookId(), targetIds);
+		AccountBookRateInfo rateInfo = accountBookRateInfoProvider.getRateInfo(accountBookId);
+		CurrencyCode defaultBaseCurrencyCode = rateInfo.baseCurrencyCode();
+		CurrencyCode defaultLocalCurrencyCode = rateInfo.localCurrencyCode();
 
-		String taskId = UUID.randomUUID().toString();
-		progressPublisher.registerTask(taskId, accountBookId);
-
-		CompletableFuture.runAsync(
-				() -> convertBatchAsync(accountBookId, targetIds, taskId), parsingExecutor);
-		return new ConfirmStartResult(taskId, targetIds.size());
-	}
-
-	public CompletableFuture<BatchConversionResult> convertBatchAsync(
-			Long accountBookId, List<Long> tempExpenseIds, String taskId) {
-		log.info(
-				"Starting async batch conversion for task: {}, expenses: {}",
-				taskId,
-				tempExpenseIds.size());
-		try {
-			int totalExpenses = tempExpenseIds.size();
-			int completed = 0;
-			List<ConversionResult> results = new ArrayList<>();
-			int successCount = 0;
-			int failedCount = 0;
-
-			for (Long tempExpenseId : tempExpenseIds) {
-				progressPublisher.publishProgress(
-						taskId,
-						new ParsingProgressPublisher.ParsingProgressEvent(
-								completed,
-								totalExpenses,
-								"tempExpenseId=" + tempExpenseId,
-								(completed * 100) / totalExpenses));
-				try {
-					var expense =
-							singleConversionTxService.convertToExpense(
-									accountBookId, tempExpenseId);
-					results.add(
-							new ConversionResult(
-									tempExpenseId, expense.getExpenseId(), "SUCCESS", null));
-					successCount++;
-				} catch (Exception e) {
-					log.error("Failed to convert temporary expense: {}", tempExpenseId, e);
-					results.add(
-							new ConversionResult(tempExpenseId, null, "FAILED", e.getMessage()));
-					failedCount++;
-					progressPublisher.publishFileError(
-							taskId,
-							new ParsingProgressPublisher.FileErrorEvent(
-									completed + 1,
-									totalExpenses,
-									"tempExpenseId=" + tempExpenseId,
-									((completed + 1) * 100) / totalExpenses,
-									e.getMessage()));
-				}
-				completed++;
-			}
-
-			BatchConversionResult finalResult =
-					new BatchConversionResult(
-							totalExpenses, successCount, failedCount, List.copyOf(results));
-			progressPublisher.complete(taskId, finalResult);
-			return CompletableFuture.completedFuture(finalResult);
-		} catch (Exception e) {
-			log.error("Batch conversion failed before completion. taskId={}", taskId, e);
-			String errorMessage =
-					(e instanceof BusinessException businessException)
-							? businessException.getMessage()
-							: ErrorCode.TEMP_EXPENSE_PARSE_FAILED.getMessage();
-			progressPublisher.publishError(taskId, errorMessage);
-			return CompletableFuture.failedFuture(e);
-		}
-	}
-
-	private void validateRequiredFieldsForBatch(Long accountBookId, List<Long> tempExpenseIds) {
-		List<TemporaryExpense> expenses = tempExpenseRepository.findAllById(tempExpenseIds);
-		if (expenses.size() != tempExpenseIds.size()) {
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_NOT_FOUND);
-		}
-		CurrencyCode defaultBaseCurrencyCode =
-				accountBookRateInfoProvider.getRateInfo(accountBookId).baseCurrencyCode();
-		List<TempExpenseConvertValidationException.Violation> violations = new ArrayList<>();
 		for (TemporaryExpense expense : expenses) {
-			CurrencyCode resolvedBaseCurrencyCode =
-					resolveBaseCurrencyCode(expense, defaultBaseCurrencyCode);
-			List<String> missingOrInvalidFields =
-					temporaryExpenseValidator.findMissingOrInvalidFields(
-							expense, resolvedBaseCurrencyCode);
-			if (!missingOrInvalidFields.isEmpty()) {
-				violations.add(
-						new TempExpenseConvertValidationException.Violation(
-								expense.getTempExpenseId(), missingOrInvalidFields));
-			}
+			convertOne(accountBookId, expense, defaultBaseCurrencyCode, defaultLocalCurrencyCode);
 		}
-		if (!violations.isEmpty()) {
-			throw new TempExpenseConvertValidationException(violations);
-		}
+		return new ConfirmStartResult(null, expenses.size());
 	}
 
-	private CurrencyCode resolveBaseCurrencyCode(
-			TemporaryExpense temp, CurrencyCode defaultBaseCurrencyCode) {
-		if (temp.getBaseCountryCode() != null) {
-			return temp.getBaseCountryCode();
+	private void convertOne(
+			Long accountBookId,
+			TemporaryExpense temp,
+			CurrencyCode defaultBaseCurrencyCode,
+			CurrencyCode defaultLocalCurrencyCode) {
+		File file =
+				temp.getFileId() != null
+						? fileRepository.findById(temp.getFileId()).orElse(null)
+						: null;
+
+		var amountInfo = temp.getAmountInfoOrEmpty();
+		TempExpenseConversionAmount conversionAmount =
+				amountInfo.resolveForConversion(
+						defaultLocalCurrencyCode,
+						defaultBaseCurrencyCode,
+						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
+						exchangeRateService);
+
+		ExpenseManualCreateArgs args =
+				new ExpenseManualCreateArgs(
+						accountBookId,
+						temp.getMerchantName(),
+						temp.getCategory(),
+						null,
+						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
+						amountInfo.getLocalCurrencyAmount(),
+						conversionAmount.localCurrencyCode(),
+						conversionAmount.baseCurrencyAmount(),
+						conversionAmount.baseCurrencyCode(),
+						conversionAmount.calculatedBaseCurrencyAmount(),
+						conversionAmount.baseCurrencyCode(),
+						temp.getMemo(),
+						null,
+						conversionAmount.exchangeRate());
+
+		ExpenseEntity expense =
+				ExpenseEntity.convertedFromTemporary(
+						args,
+						resolveExpenseSource(file != null ? file.getFileType() : null),
+						file != null ? file.getS3Key() : null,
+						temp.getApprovalNumber(),
+						temp.getCardLastFourDigits());
+		expenseRepository.save(expense);
+		tempExpenseRepository.delete(temp);
+	}
+
+	private ExpenseSource resolveExpenseSource(FileType fileType) {
+		if (fileType == null) {
+			return ExpenseSource.MANUAL;
 		}
-		return defaultBaseCurrencyCode;
+		return switch (fileType) {
+			case IMAGE -> ExpenseSource.IMAGE_RECEIPT;
+			case CSV -> ExpenseSource.CSV;
+			case EXCEL -> ExpenseSource.EXCEL;
+		};
 	}
 }

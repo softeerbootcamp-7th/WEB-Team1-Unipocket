@@ -1,7 +1,6 @@
 package com.genesis.unipocket.expense.query.presentation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,7 +15,6 @@ import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepos
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
@@ -33,7 +31,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,10 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @ActiveProfiles("test-it")
 @Import(TestcontainersConfiguration.class)
-@TestPropertySource(
-		properties = {
-			"expense.rate-limit.merchant-search.max-requests-per-minute=1",
-		})
 @Transactional
 @Tag("integration")
 class ExpenseMerchantSearchIntegrationTest {
@@ -117,24 +110,27 @@ class ExpenseMerchantSearchIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("거래처명 검색 요청이 분당 제한을 초과하면 429 + Retry-After를 반환한다")
-	void searchMerchantNames_rateLimitExceeded() throws Exception {
+	@DisplayName("거래처명 검색 - q가 빈값이면 전체 목록을 반환한다")
+	void searchMerchantNames_blankQuery_returnsAll() throws Exception {
 		mockMvc.perform(
 						get("/account-books/{accountBookId}/expenses/merchant-names", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId))
-								.queryParam("q", "스타"))
-				.andExpect(status().isOk());
+								.queryParam("q", "")
+								.queryParam("limit", "10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.merchantNames.length()").value(1))
+				.andExpect(jsonPath("$.merchantNames[0]").value("스타벅스 코리아"));
+	}
 
+	@Test
+	@DisplayName("거래처명 검색 - q가 없으면 전체 목록을 반환한다")
+	void searchMerchantNames_nullQuery_returnsAll() throws Exception {
 		mockMvc.perform(
 						get("/account-books/{accountBookId}/expenses/merchant-names", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId))
-								.queryParam("q", "스타"))
-				.andExpect(status().isTooManyRequests())
-				.andExpect(header().exists("Retry-After"))
-				.andExpect(
-						jsonPath("$.code")
-								.value(
-										ErrorCode.EXPENSE_MERCHANT_SEARCH_RATE_LIMIT_EXCEEDED
-												.getCode()));
+								.queryParam("limit", "10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.merchantNames.length()").value(1))
+				.andExpect(jsonPath("$.merchantNames[0]").value("스타벅스 코리아"));
 	}
 }

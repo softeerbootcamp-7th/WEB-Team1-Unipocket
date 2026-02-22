@@ -27,12 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * <b>임시지출내역 컨트롤러</b>
- *
- * @author 김동균
- * @since 2026-02-08
- */
 @Tag(name = "임시지출내역 기능")
 @RestController
 @RequiredArgsConstructor
@@ -65,9 +59,7 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.ok(PresignedUrlResponse.from(result));
 	}
 
-	@Operation(
-			summary = "임시지출 확정",
-			description = "메타 단위로 임시지출 전체를 비동기로 확정 변환하고 진행 조회용 taskId를 반환합니다.")
+	@Operation(summary = "임시지출 확정", description = "메타 단위로 임시지출 전체를 즉시 확정 변환합니다.")
 	@PostMapping("/temporary-expense-metas/{tempExpenseMetaId}/confirm")
 	public ResponseEntity<BatchConvertStartResponse> confirm(
 			@PathVariable Long accountBookId,
@@ -78,14 +70,8 @@ public class TemporaryExpenseCommandController {
 				temporaryExpenseCommandFacade.confirm(accountBookId, tempExpenseMetaId, userId);
 
 		BatchConvertStartResponse response =
-				new BatchConvertStartResponse(
-						result.taskId(),
-						result.totalExpenses(),
-						"/account-books/"
-								+ accountBookId
-								+ "/temporary-expenses/parse-status/"
-								+ result.taskId());
-		return ResponseEntity.accepted().body(response);
+				new BatchConvertStartResponse(result.taskId(), result.totalExpenses(), null);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(
@@ -106,10 +92,7 @@ public class TemporaryExpenseCommandController {
 				new BatchParseResponse(
 						result.taskId(),
 						result.totalFiles(),
-						"/account-books/"
-								+ accountBookId
-								+ "/temporary-expenses/parse-status/"
-								+ result.taskId());
+						buildParseStatusUrl(accountBookId, result.taskId()));
 
 		return ResponseEntity.accepted().body(response);
 	}
@@ -150,5 +133,9 @@ public class TemporaryExpenseCommandController {
 		temporaryExpenseCommandFacade.deleteTemporaryExpenseByFile(
 				accountBookId, tempExpenseMetaId, fileId, tempExpenseId, userId);
 		return ResponseEntity.noContent().build();
+	}
+
+	private String buildParseStatusUrl(Long accountBookId, String taskId) {
+		return "/account-books/" + accountBookId + "/temporary-expenses/parse-status/" + taskId;
 	}
 }

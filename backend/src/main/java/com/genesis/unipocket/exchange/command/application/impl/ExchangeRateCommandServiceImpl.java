@@ -3,23 +3,26 @@ package com.genesis.unipocket.exchange.command.application.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.exchange.command.application.ExchangeRateCommandService;
 import com.genesis.unipocket.exchange.command.application.impl.dto.YahooChartResponse;
-import com.genesis.unipocket.exchange.command.persistence.entity.ExchangeRate;
-import com.genesis.unipocket.exchange.command.persistence.repository.ExchangeRateRepository;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
+import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -33,12 +36,14 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 
 	private static final int MAX_BACKTRACK_DAYS = 3650;
 	private static final int FETCH_LOOKBACK_DAYS = 14;
+	private static final int MAX_UPSERT_RETRY = 3;
+	private static final int MIN_RETRY_BACKOFF_MS = 20;
+	private static final int MAX_RETRY_BACKOFF_MS = 100;
 
 	@Value("${exchange.yahoo.chart-url:https://query1.finance.yahoo.com/v8/finance/chart/{symbol}}")
 	private String yahooChartUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}";
 
 	private final ExchangeRateRepository exchangeRateRepository;
-	private final ExchangeRateQueryService exchangeRateQueryService;
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 
@@ -60,7 +65,9 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 				RateOnDate foundDbRate = dbRate.get();
 				if (isValidRate(foundDbRate.rate())) {
 					BigDecimal rate = foundDbRate.rate();
-					saveRateIfMissing(currencyCode, targetDate, rate);
+					if (!foundDbRate.date().isEqual(targetDate)) {
+						saveRateIfMissing(currencyCode, targetDate, rate);
+					}
 					return rate;
 				}
 				log.warn(
@@ -113,32 +120,46 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 					rate);
 			return;
 		}
-		if (exchangeRateQueryService.findLatestRateInRange(currencyCode, date, date).isPresent()) {
-			return;
-		}
-		try {
-			exchangeRateRepository.save(
-					ExchangeRate.builder()
-							.currencyCode(currencyCode)
-							.recordedAt(date.atStartOfDay())
-							.rate(rate)
-							.build());
-		} catch (DataIntegrityViolationException e) {
-			log.warn(
-					"Skip duplicate rate insert due to concurrent write. currency={}, date={}",
-					currencyCode,
-					date);
+		LocalDateTime recordedAt = date.atStartOfDay();
+		for (int attempt = 1; attempt <= MAX_UPSERT_RETRY; attempt++) {
+			try {
+				exchangeRateRepository.upsertRate(currencyCode.name(), recordedAt, rate);
+				return;
+			} catch (DeadlockLoserDataAccessException | CannotAcquireLockException e) {
+				if (attempt == MAX_UPSERT_RETRY) {
+					throw e;
+				}
+				long backoffMillis =
+						ThreadLocalRandom.current()
+								.nextLong(MIN_RETRY_BACKOFF_MS, MAX_RETRY_BACKOFF_MS + 1);
+				log.warn(
+						"Deadlock/lock timeout during exchange rate upsert. Retrying."
+								+ " currency={}, date={}, attempt={}, backoffMs={}",
+						currencyCode,
+						date,
+						attempt,
+						backoffMillis);
+				sleepBackoff(backoffMillis);
+			}
 		}
 	}
 
 	private Optional<RateOnDate> findLatestDbRateInRange(
 			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
-		return exchangeRateQueryService
-				.findLatestRateInRange(currencyCode, startDate, endDate)
+		return findLatestEntityInRange(currencyCode, startDate, endDate)
 				.map(
 						dbRate ->
 								new RateOnDate(
 										dbRate.getRecordedAt().toLocalDate(), dbRate.getRate()));
+	}
+
+	private Optional<ExchangeRate> findLatestEntityInRange(
+			CurrencyCode currencyCode, LocalDate startDate, LocalDate endDate) {
+		LocalDateTime startOfRange = startDate.atStartOfDay();
+		LocalDateTime endExclusive = endDate.plusDays(1).atStartOfDay();
+		return exchangeRateRepository
+				.findTopByCurrencyCodeAndRecordedAtGreaterThanEqualAndRecordedAtLessThanOrderByRecordedAtDesc(
+						currencyCode, startOfRange, endExclusive);
 	}
 
 	private Optional<RateOnDate> findLatestRateInMap(
@@ -154,8 +175,19 @@ public class ExchangeRateCommandServiceImpl implements ExchangeRateCommandServic
 
 	private void saveMissingRates(
 			CurrencyCode currencyCode, Map<LocalDate, BigDecimal> ratesByDate) {
-		for (Map.Entry<LocalDate, BigDecimal> entry : ratesByDate.entrySet()) {
+		Map<LocalDate, BigDecimal> sortedRatesByDate = new TreeMap<>(ratesByDate);
+		for (Map.Entry<LocalDate, BigDecimal> entry : sortedRatesByDate.entrySet()) {
 			saveRateIfMissing(currencyCode, entry.getKey(), entry.getValue());
+		}
+	}
+
+	private void sleepBackoff(long backoffMillis) {
+		try {
+			Thread.sleep(backoffMillis);
+		} catch (InterruptedException interruptedException) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException(
+					"Exchange rate upsert retry interrupted", interruptedException);
 		}
 	}
 

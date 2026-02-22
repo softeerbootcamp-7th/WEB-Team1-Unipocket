@@ -6,14 +6,6 @@ import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryE
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * <b>임시지출내역 수정 Command DTO</b>
- * <p>
- * Facade -> Application
- *
- * @author 김동균
- * @since 2026-02-08
- */
 public record TemporaryExpenseUpdateCommand(
 		String merchantName,
 		Category category,

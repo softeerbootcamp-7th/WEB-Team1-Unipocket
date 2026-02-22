@@ -6,6 +6,8 @@ import com.genesis.unipocket.media.command.application.MediaPathPrefixManager;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import com.genesis.unipocket.travel.command.facade.port.TravelImageUploadPathIssueService;
 import com.genesis.unipocket.travel.command.facade.port.dto.TravelImageUploadPathInfo;
+import com.genesis.unipocket.travel.query.port.TravelImageAccessService;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +18,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class TravelImageUploadProvider implements TravelImageUploadPathIssueService {
+public class TravelImageUploadProvider
+		implements TravelImageUploadPathIssueService, TravelImageAccessService {
 
 	private final MediaObjectStorage mediaObjectStorage;
 	private final MediaPathPrefixManager mediaPathPrefixManager;
@@ -32,5 +35,20 @@ public class TravelImageUploadProvider implements TravelImageUploadPathIssueServ
 						mediaPathPrefixManager.getTravelImagePrefix(), mediaContentType);
 
 		return new TravelImageUploadPathInfo(response.presignedUrl(), response.imageKey());
+	}
+
+	@Override
+	public boolean isTravelImageKey(String imageKey) {
+		return mediaPathPrefixManager.isTravelImageKey(imageKey);
+	}
+
+	@Override
+	public boolean exists(String imageKey) {
+		return mediaObjectStorage.exists(imageKey);
+	}
+
+	@Override
+	public String issueGetPath(String imageKey, Duration expiration) {
+		return mediaObjectStorage.getPresignedGetUrl(imageKey, expiration);
 	}
 }

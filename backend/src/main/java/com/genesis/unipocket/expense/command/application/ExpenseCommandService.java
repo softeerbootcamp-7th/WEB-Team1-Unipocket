@@ -1,10 +1,10 @@
 package com.genesis.unipocket.expense.command.application;
 
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
-import com.genesis.unipocket.expense.application.result.ExpenseResult;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
+import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
@@ -23,16 +23,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionOperations;
 
-/**
- * <b>지출내역 엔티티 관련 서비스 클래스</b>
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class ExpenseCommandService {
+	private static final int MAX_MERCHANT_NAME_LENGTH = 40;
+
 	private final ExpenseRepository expenseRepository;
 	private final ExchangeRateService exchangeRateService;
 	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
@@ -156,7 +152,12 @@ public class ExpenseCommandService {
 	}
 
 	private void validateMerchantName(String merchantName) {
-		if (merchantName == null || merchantName.isBlank()) {
+		if (merchantName == null) {
+			throw new BusinessException(ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
+		}
+
+		String normalized = merchantName.trim();
+		if (normalized.isEmpty() || normalized.length() > MAX_MERCHANT_NAME_LENGTH) {
 			throw new BusinessException(ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
 		}
 	}

@@ -9,7 +9,7 @@ import {
 } from '@/components/common/Tab';
 import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
-import { columns } from '@/components/landing-page/columns';
+import { columns } from '@/components/home-page/columns';
 import { getData } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';

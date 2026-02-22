@@ -1,6 +1,8 @@
 package com.genesis.unipocket.user.command.persistence.entity;
 
-import com.genesis.unipocket.user.command.persistence.entity.enums.CardCompany;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -42,5 +44,13 @@ public class UserCardEntity {
 		this.nickName = nickName;
 		this.cardNumber = cardNumber;
 		this.cardCompany = cardCompany;
+	}
+
+	public void updateNickname(String nickname) {
+		if (nickname.length() > 40) {
+			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+		}
+
+		this.nickName = nickname;
 	}
 }

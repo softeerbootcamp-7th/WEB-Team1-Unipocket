@@ -18,7 +18,7 @@ import com.genesis.unipocket.auth.support.JwtTestHelper;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
+import com.genesis.unipocket.media.command.facade.provide.TempExpenseMediaProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -44,6 +45,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -60,10 +62,11 @@ class TemporaryExpenseSseIntegrationTest {
 	@Autowired private FileRepository fileRepository;
 	@Autowired private TemporaryExpenseRepository temporaryExpenseRepository;
 	@Autowired private JwtTestHelper jwtTestHelper;
+	@Autowired private TransactionTemplate transactionTemplate;
 
 	@MockitoBean private GeminiService geminiService;
 	@MockitoBean private ExchangeRateService exchangeRateService;
-	@MockitoBean private TempExpenseMediaAccessService tempExpenseMediaAccessService;
+	@MockitoBean private TempExpenseMediaProvider tempExpenseMediaProvider;
 
 	private Long accountBookId;
 	private Long tempExpenseMetaId;
@@ -109,10 +112,22 @@ class TemporaryExpenseSseIntegrationTest {
 						.build());
 	}
 
+	@AfterEach
+	void cleanAsyncPersistedData() {
+		transactionTemplate.executeWithoutResult(
+				status -> {
+					temporaryExpenseRepository.deleteByTempExpenseMetaId(tempExpenseMetaId);
+					fileRepository.deleteByTempExpenseMetaId(tempExpenseMetaId);
+					tempExpenseMetaRepository.deleteById(tempExpenseMetaId);
+					accountBookRepository.deleteById(accountBookId);
+					userRepository.deleteById(userId);
+				});
+	}
+
 	@Test
-	@DisplayName("SSE complete 이벤트에 파일별 성공/실패 결과가 포함된다")
-	void parseStatusStream_containsFileResultsInCompleteEvent() throws Exception {
-		when(tempExpenseMediaAccessService.issueGetPath(anyString(), any()))
+	@DisplayName("SSE 스트림은 progress(%) 지표와 complete 이벤트를 반환한다")
+	void parseStatusStream_containsProgressPercentAndCompleteEvent() throws Exception {
+		when(tempExpenseMediaProvider.issueGetPath(anyString(), any()))
 				.thenReturn("https://example.com/test-receipt.png");
 		when(geminiService.parseReceiptImage(anyString(), anyString()))
 				.thenReturn(
@@ -168,13 +183,27 @@ class TemporaryExpenseSseIntegrationTest {
 		assertThat(sseResult.getResponse().getStatus()).isEqualTo(200);
 
 		String sseBody = sseResult.getResponse().getContentAsString();
+		assertThat(sseBody).contains("event:progress");
 		assertThat(sseBody).contains("event:complete");
-		assertThat(sseBody).contains("\"fileResults\"");
-		assertThat(sseBody).contains("\"status\":\"SUCCESS\"");
-		assertThat(sseBody).contains(s3Key);
+		assertThat(sseBody).contains("\"progress\":100");
 
 		assertThat(temporaryExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId))
 				.hasSize(1);
+	}
+
+	@Test
+	@DisplayName("SSE 스트림은 진행/완료 상태가 없으면 404를 반환한다")
+	void parseStatusStream_returnsNotFoundWhenTaskMissing() throws Exception {
+		MvcResult result =
+				mockMvc.perform(
+								get(
+												"/account-books/{accountBookId}/temporary-expenses/parse-status/{taskId}",
+												accountBookId,
+												UUID.randomUUID())
+										.with(jwtTestHelper.withJwtAuth(userId)))
+						.andReturn();
+
+		assertThat(result.getResponse().getStatus()).isEqualTo(404);
 	}
 
 	private record ParseRequest(Long tempExpenseMetaId, List<String> s3Keys) {}

@@ -2,8 +2,8 @@ package com.genesis.unipocket.tempexpense.query.facade;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
-import com.genesis.unipocket.tempexpense.common.infrastructure.ParsingProgressPublisher;
+import com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;
@@ -56,18 +56,26 @@ public class TemporaryExpenseQueryFacade {
 	public SseEmitter streamParsingProgress(Long accountBookId, String taskId, UUID userId) {
 		validateOwnership(accountBookId, userId);
 
-		if (!progressPublisher.isTaskOwnedBy(taskId, accountBookId)) {
+		SseEmitter emitter = new SseEmitter(PARSING_SSE_TIMEOUT_MS);
+		bindEmitterLifecycle(taskId, emitter);
+		boolean activeSubscribed = progressPublisher.addEmitter(taskId, accountBookId, emitter);
+		if (activeSubscribed) {
+			return emitter;
+		}
+
+		boolean terminalReplayed =
+				progressPublisher.replayTerminalIfPresent(taskId, accountBookId, emitter);
+		if (!terminalReplayed) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_TASK_NOT_FOUND);
 		}
 
-		SseEmitter emitter = new SseEmitter(PARSING_SSE_TIMEOUT_MS);
+		return emitter;
+	}
 
-		progressPublisher.addEmitter(taskId, emitter);
+	private void bindEmitterLifecycle(String taskId, SseEmitter emitter) {
 		emitter.onCompletion(() -> progressPublisher.removeEmitter(taskId));
 		emitter.onTimeout(() -> progressPublisher.removeEmitter(taskId));
 		emitter.onError((e) -> progressPublisher.removeEmitter(taskId));
-
-		return emitter;
 	}
 
 	private void validateOwnership(Long accountBookId, UUID userId) {

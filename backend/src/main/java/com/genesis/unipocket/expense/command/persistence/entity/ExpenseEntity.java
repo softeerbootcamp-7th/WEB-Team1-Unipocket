@@ -10,12 +10,6 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import lombok.*;
 
-/**
- * <b>지출내역 엔티티</b>
- *
- * @author codingbaraGo
- * @since 2026-02-03
- */
 @Entity
 @Getter
 @Builder

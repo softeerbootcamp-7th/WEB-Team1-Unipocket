@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.exchange.command.application.ExchangeRateCommandService;
-import com.genesis.unipocket.exchange.command.persistence.repository.ExchangeRateRepository;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;

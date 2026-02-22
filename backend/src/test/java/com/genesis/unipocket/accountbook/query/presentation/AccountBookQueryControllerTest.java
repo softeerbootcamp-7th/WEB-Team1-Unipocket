@@ -6,14 +6,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookAmountResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
+import com.genesis.unipocket.accountbook.query.service.AccountBookAmountQueryService;
 import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -34,6 +37,7 @@ class AccountBookQueryControllerTest {
 	@Autowired private MockMvc mockMvc;
 
 	@MockitoBean private AccountBookQueryService accountBookQueryService;
+	@MockitoBean private AccountBookAmountQueryService accountBookAmountQueryService;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
 
@@ -58,10 +62,10 @@ class AccountBookQueryControllerTest {
 						get("/account-books")
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].id").value(1L))
+				.andExpect(jsonPath("$[0].accountBookId").value(1L))
 				.andExpect(jsonPath("$[0].title").value("메인 가계부"))
 				.andExpect(jsonPath("$[0].isMain").value(true))
-				.andExpect(jsonPath("$[1].id").value(2L));
+				.andExpect(jsonPath("$[1].accountBookId").value(2L));
 	}
 
 	@Test
@@ -86,8 +90,45 @@ class AccountBookQueryControllerTest {
 						get("/account-books/{accountBookId}", accountBookId)
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(accountBookId))
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("메인 가계부"));
+	}
+
+	@Test
+	@DisplayName("가계부 지출 합계 조회 성공")
+	void getAccountBookAmount_Success() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 1L;
+
+		given(accountBookAmountQueryService.getAccountBookAmount(userId.toString(), accountBookId))
+				.willReturn(
+						new AccountBookAmountResponse(
+								CountryCode.JP,
+								CurrencyCode.JPY,
+								CountryCode.KR,
+								CurrencyCode.KRW,
+								new BigDecimal("12000.50"),
+								new BigDecimal("109000.10"),
+								new BigDecimal("1200.00"),
+								new BigDecimal("11000.00")));
+		mockAuthentication(accessToken, userId);
+
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/amount", accountBookId)
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.localCountryCode").value("JP"))
+				.andExpect(jsonPath("$.localCurrencyCode").value("JPY"))
+				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
+				.andExpect(jsonPath("$.baseCurrencyCode").value("KRW"))
+				.andExpect(jsonPath("$.totalLocalAmount").value("12000.50"))
+				.andExpect(jsonPath("$.totalBaseAmount").value("109000.10"))
+				.andExpect(jsonPath("$.thisMonthLocalAmount").value("1200.00"))
+				.andExpect(jsonPath("$.thisMonthBaseAmount").value("11000.00"));
+
+		verify(accountBookAmountQueryService)
+				.getAccountBookAmount(userId.toString(), accountBookId);
 	}
 
 	@Test

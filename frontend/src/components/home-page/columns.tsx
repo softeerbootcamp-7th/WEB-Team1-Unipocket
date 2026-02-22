@@ -32,6 +32,9 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'merchantName',
     header: () => <>거래처</>,
+    meta: {
+      cellEditor: 'text',
+    },
     cell: ({ row, table }) => (
       <div className="relative flex items-center">
         <span>{row.getValue('merchantName')}</span>
@@ -43,6 +46,9 @@ export const columns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'category',
+    meta: {
+      cellEditor: 'category',
+    },
     header: () => <>카테고리</>,
     cell: ({ row }) => {
       const categoryId = row.getValue('category') as CategoryId;
@@ -56,6 +62,9 @@ export const columns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'localCurrencyAmount',
+    meta: {
+      cellEditor: 'amount',
+    },
     header: () => <>현지 금액</>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('localCurrencyAmount'));
@@ -68,6 +77,9 @@ export const columns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'baseCurrencyAmount',
+    meta: {
+      cellEditor: 'amount',
+    },
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('baseCurrencyAmount'));
@@ -86,6 +98,9 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: 'paymentMethod',
     header: () => <>결제 수단</>,
+    meta: {
+      cellEditor: 'method',
+    },
     cell: ({ row }) => {
       const payment = row.original.paymentMethod;
       return <PaymentMethodDisplay paymentMethod={payment} />;
@@ -93,6 +108,9 @@ export const columns: ColumnDef<Expense>[] = [
   },
   {
     id: 'travel',
+    meta: {
+      cellEditor: 'text',
+    },
     header: () => <>여행</>,
     cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
   },

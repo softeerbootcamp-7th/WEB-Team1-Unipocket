@@ -1,21 +1,22 @@
 package com.genesis.unipocket.tempexpense.command.application.parsing;
 
-import com.genesis.unipocket.expense.support.ExchangeAmountCalculator;
+import com.genesis.unipocket.expense.common.util.ExchangeAmountCalculator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
-import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
-import com.genesis.unipocket.tempexpense.command.application.result.ParsingResult;
+import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseAmountInfo;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseContentInfo;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseStatusPolicy;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,52 +26,47 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemporaryExpensePersistenceService {
 
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
-	private final TemporaryExpenseValidator temporaryExpenseValidator;
+	private final TempExpenseStatusPolicy tempExpenseStatusPolicy;
+	private final ExchangeRateProvider exchangeRateProvider;
 
 	@Transactional
-	public ParsingResult persist(
+	public void persist(
 			File file,
 			TempExpenseMeta meta,
 			List<NormalizedParsedExpenseItem> normalizedItems,
-			AccountBookRateContext rateContext,
-			Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap) {
+			AccountBookRateContext rateContext) {
 		List<TemporaryExpense> createdExpenses = new ArrayList<>();
-		int normalCount = 0;
-		int incompleteCount = 0;
 
 		for (NormalizedParsedExpenseItem item : normalizedItems) {
-			TemporaryExpenseStatus status =
-					temporaryExpenseValidator.resolveStatus(
-							null,
-							item.merchantName(),
-							item.category(),
+			CalculatedAmount calculatedAmount =
+					calculateAmounts(item, rateContext.baseCurrencyCode());
+			TempExpenseContentInfo contentInfo =
+					TempExpenseContentInfo.of(
+							item.merchantName(), item.category(), item.memo(), item.occurredAt());
+			TempExpenseAmountInfo amountInfo =
+					TempExpenseAmountInfo.of(
 							item.localCurrencyCode(),
 							item.localAmount(),
 							rateContext.baseCurrencyCode(),
-							item.occurredAt());
-			if (status == TemporaryExpenseStatus.NORMAL) {
-				normalCount++;
-			} else if (status == TemporaryExpenseStatus.INCOMPLETE) {
-				incompleteCount++;
-			}
-
-			CalculatedAmount calculatedAmount =
-					calculateAmounts(item, rateContext.baseCurrencyCode(), exchangeRateMap);
+							calculatedAmount.baseAmount(),
+							calculatedAmount.exchangeRate());
+			TemporaryExpenseStatus status =
+					tempExpenseStatusPolicy.resolve(contentInfo, amountInfo);
 
 			TemporaryExpense expense =
 					TemporaryExpense.builder()
 							.tempExpenseMetaId(meta.getTempExpenseMetaId())
 							.fileId(file.getFileId())
-							.merchantName(item.merchantName())
-							.category(item.category())
-							.localCountryCode(item.localCurrencyCode())
-							.localCurrencyAmount(item.localAmount())
-							.baseCountryCode(rateContext.baseCurrencyCode())
-							.baseCurrencyAmount(calculatedAmount.baseAmount())
-							.exchangeRate(calculatedAmount.exchangeRate())
+							.merchantName(contentInfo.getMerchantName())
+							.category(contentInfo.getCategory())
+							.localCountryCode(amountInfo.getLocalCurrencyCode())
+							.localCurrencyAmount(amountInfo.getLocalCurrencyAmount())
+							.baseCountryCode(amountInfo.getBaseCurrencyCode())
+							.baseCurrencyAmount(amountInfo.getBaseCurrencyAmount())
+							.exchangeRate(amountInfo.getExchangeRate())
 							.paymentsMethod("카드")
-							.memo(item.memo())
-							.occurredAt(item.occurredAt())
+							.memo(contentInfo.getMemo())
+							.occurredAt(contentInfo.getOccurredAt())
 							.status(status)
 							.cardLastFourDigits(item.cardLastFourDigits())
 							.approvalNumber(item.approvalNumber())
@@ -78,20 +74,11 @@ public class TemporaryExpensePersistenceService {
 			createdExpenses.add(expense);
 		}
 
-		List<TemporaryExpense> savedExpenses = temporaryExpenseRepository.saveAll(createdExpenses);
-		return new ParsingResult(
-				meta.getTempExpenseMetaId(),
-				savedExpenses.size(),
-				normalCount,
-				incompleteCount,
-				0,
-				savedExpenses);
+		temporaryExpenseRepository.saveAll(createdExpenses);
 	}
 
 	private CalculatedAmount calculateAmounts(
-			NormalizedParsedExpenseItem item,
-			CurrencyCode baseCurrencyCode,
-			Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap) {
+			NormalizedParsedExpenseItem item, CurrencyCode baseCurrencyCode) {
 		BigDecimal baseAmount = null;
 		BigDecimal exchangeRate = null;
 
@@ -109,13 +96,21 @@ public class TemporaryExpensePersistenceService {
 		if (item.localAmount() == null || item.occurredAt() == null) {
 			return new CalculatedAmount(null, null);
 		}
-
-		ExchangeRateLookupCommand key =
-				new ExchangeRateLookupCommand(
-						item.localCurrencyCode(),
-						baseCurrencyCode,
-						item.occurredAt().toLocalDate());
-		exchangeRate = exchangeRateMap.get(key);
+		if (item.localCurrencyCode() == null) {
+			return new CalculatedAmount(null, null);
+		}
+		if (item.localCurrencyCode() == baseCurrencyCode) {
+			exchangeRate = BigDecimal.ONE;
+		} else {
+			exchangeRate =
+					exchangeRateProvider.getExchangeRate(
+							item.localCurrencyCode(),
+							baseCurrencyCode,
+							item.occurredAt()
+									.toLocalDate()
+									.atStartOfDay()
+									.atOffset(ZoneOffset.UTC));
+		}
 		if (exchangeRate != null) {
 			baseAmount =
 					ExchangeAmountCalculator.calculateBaseAmount(item.localAmount(), exchangeRate);

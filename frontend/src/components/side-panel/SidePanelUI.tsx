@@ -1,21 +1,19 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
-import { formatDateTime } from '@/components/calendar/date.utils';
 import Button from '@/components/common/Button';
-import { CategoryChip } from '@/components/common/Chip';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
-import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
+import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
+import type { SidePanelFormValues } from '@/components/side-panel/type';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
-import ValueContainer, {
-  type ValueItemProps,
-} from '@/components/side-panel/ValueContainer';
+import { useSidePanelValues } from '@/components/side-panel/useSidePanelValues';
+import ValueContainer from '@/components/side-panel/ValueContainer';
 import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
 import type { Expense } from '@/api/expenses/type';
@@ -33,6 +31,7 @@ interface SidePanelUIProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Partial<Expense>;
+  onSubmit?: (values: SidePanelFormValues) => void;
 }
 
 const SidePanelUI = ({
@@ -40,6 +39,7 @@ const SidePanelUI = ({
   isOpen,
   onClose,
   initialData,
+  onSubmit,
 }: SidePanelUIProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
@@ -53,35 +53,43 @@ const SidePanelUI = ({
     setSelectedDateTime,
     isDateTimePickerOpen,
     setIsDateTimePickerOpen,
+    resetForm,
   } = useSidePanelForm(initialData);
 
-  const categoryValue = initialData?.category ? (
-    <CategoryChip categoryId={initialData.category} />
-  ) : (
-    '-'
+  const [currencyValues, setCurrencyValues] = useState<CurrencyValues | null>(
+    null,
   );
+  const [resetKey, setResetKey] = useState(0);
 
-  const paymentValue = initialData?.paymentMethod ? (
-    initialData.paymentMethod.isCash ? (
-      '현금'
-    ) : (
-      <PaymentMethodDisplay paymentMethod={initialData.paymentMethod} />
-    )
-  ) : (
-    '-'
-  );
+  const valueItems = useSidePanelValues({
+    initialData,
+    selectedDateTime,
+    onDateTimeClick: () => setIsDateTimePickerOpen((prev) => !prev),
+  });
 
-  const valueItems = [
-    {
-      label: '일시',
-      value: selectedDateTime ? formatDateTime(selectedDateTime) : '비어 있음',
-      onClick: () => setIsDateTimePickerOpen((prev) => !prev),
-    },
+  const handleReset = () => {
+    resetForm();
+    setCurrencyValues(null);
+    setResetKey((k) => k + 1);
+  };
 
-    { label: '카테고리', value: categoryValue },
-    { label: '결제 수단', value: paymentValue },
-    { label: '여행', value: initialData?.travel?.name ?? '-' },
-  ] as const satisfies ValueItemProps[];
+  const handleSubmit = () => {
+    if (!onSubmit || !selectedDateTime || !currencyValues || !title) return;
+
+    onSubmit({
+      merchantName: title,
+      category: initialData?.category ?? 1, // @TODO: 실제 선택 상태로 교체
+      userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태로 교체
+      occurredAt: selectedDateTime,
+      localCurrencyAmount: currencyValues.localAmount,
+      localCurrencyCode: currencyValues.localCurrencyCode,
+      baseCurrencyAmount: currencyValues.baseAmount,
+      memo,
+      travelId: initialData?.travel?.travelId ?? undefined, // @TODO: 실제 선택 상태로 교체
+    });
+
+    handleReset();
+  };
 
   useLayoutEffect(() => {
     if (!titleRef.current) return;
@@ -107,7 +115,7 @@ const SidePanelUI = ({
       ref={panelRef}
       className={clsx(
         'z-sidebar fixed top-0 right-0',
-        'flex flex-col gap-8 pb-50',
+        'flex flex-col gap-8 pb-20',
         'scrollbar h-dvh w-100 overflow-auto',
         'border-line-normal-normal bg-background-normal border-l',
         'transform transition-transform duration-300 ease-out',
@@ -124,23 +132,14 @@ const SidePanelUI = ({
           onClick={onClose}
         />
         <div className="flex items-center gap-2">
-          {/* <div className="flex items-center gap-1">
-            {isEditing ? (
-              <>
-                <p className="label2-medium text-label-alternative">
-                  저장 중...
-                </p>
-                <Icons.Loading className="text-label-assistive h-3 w-3 animate-spin" />
-              </>
-            ) : (
-              <>
-                <p className="label2-medium text-label-alternative">저장됨</p>
-                <Icons.CheckmarkCircle className="h-3 w-3" />
-              </>
-            )}
-          </div> */}
-          <Button variant="solid">저장</Button>
-          <Button>삭제</Button>
+          <Button variant="solid" onClick={handleSubmit}>
+            저장
+          </Button>
+          {mode === 'manual' ? (
+            <Button onClick={handleReset}>초기화</Button>
+          ) : (
+            <Button>삭제</Button>
+          )}
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">
@@ -152,7 +151,12 @@ const SidePanelUI = ({
           )}
           value={title}
           onChange={(e) => {
-            setTitle(e.target.value);
+            setTitle(e.target.value.trimStart());
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
           }}
           placeholder="거래처를 입력해 주세요."
         />
@@ -169,7 +173,11 @@ const SidePanelUI = ({
           )}
         </div>
         <Divider style="thin" />
-        <MoneyContainer />
+        <MoneyContainer
+          key={resetKey}
+          rateUpdatedAt={selectedDateTime ?? undefined}
+          onValuesChange={setCurrencyValues}
+        />
         <Divider style="thin" />
         <TextInput
           value={memo}

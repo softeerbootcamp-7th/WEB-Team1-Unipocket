@@ -227,6 +227,56 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 일괄 수정 - 성공")
+	void 지출내역_일괄수정_성공() throws Exception {
+		Long expenseId1 = createTestExpense();
+		Long expenseId2 = createTestExpense();
+
+		String updateBody =
+				"""
+			{
+			"items": [
+				{
+				"expenseId": %d,
+				"merchantName": "일괄수정-1",
+				"category": 2,
+				"userCardId": null,
+				"occurredAt": "2026-02-04T12:30:00Z",
+				"localCurrencyAmount": 11111.0,
+				"localCurrencyCode": "KRW",
+				"memo": "bulk-1",
+				"travelId": null
+				},
+				{
+				"expenseId": %d,
+				"merchantName": "일괄수정-2",
+				"category": 3,
+				"userCardId": null,
+				"occurredAt": "2026-02-05T12:30:00Z",
+				"localCurrencyAmount": 22222.0,
+				"localCurrencyCode": "KRW",
+				"memo": "bulk-2",
+				"travelId": null
+				}
+			]
+			}
+			"""
+						.formatted(expenseId1, expenseId2);
+
+		mockMvc.perform(
+						put("/account-books/{accountBookId}/expenses/bulk", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(updateBody))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalUpdated").value(2))
+				.andExpect(jsonPath("$.items").isArray())
+				.andExpect(jsonPath("$.items.length()").value(2))
+				.andExpect(jsonPath("$.items[0].displayMerchantName").value("일괄수정-1"))
+				.andExpect(jsonPath("$.items[1].displayMerchantName").value("일괄수정-2"));
+	}
+
+	@Test
 	@DisplayName("지출내역 삭제 - 성공")
 	void 지출내역_삭제_성공() throws Exception {
 		// given
@@ -326,26 +376,25 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("지출내역 필터링 - 금액 범위 필터")
-	void 지출내역_금액범위_필터링_성공() throws Exception {
-		// given - 다양한 금액의 지출내역 생성
-		createTestExpenseWithDetails("저렴한 식당", 2, "2026-02-04T12:00:00", 5000.0, null);
-		createTestExpenseWithDetails("중간 식당", 2, "2026-02-04T13:00:00", 15000.0, null);
-		createTestExpenseWithDetails("고급 식당", 2, "2026-02-04T14:00:00", 50000.0, null);
+	@DisplayName("지출내역 필터링 - 거래처명 다중값(OR) 필터")
+	void 지출내역_거래처명_다중값_필터링_성공() throws Exception {
+		// given
+		createTestExpenseWithDetails("스타벅스", 2, "2026-02-04T12:00:00", 10000.0, null);
+		createTestExpenseWithDetails("맥도날드", 2, "2026-02-04T13:00:00", 15000.0, null);
+		createTestExpenseWithDetails("버거킹", 2, "2026-02-04T14:00:00", 50000.0, null);
 
-		// when & then - 10000 ~ 30000 범위 조회
+		// when & then - 스타벅스 또는 맥도날드만 조회
 		mockMvc.perform(
 						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId))
 								.param("page", "0")
 								.param("size", "20")
 								.param("sort", "occurredAt,desc")
-								.param("minAmount", "10000")
-								.param("maxAmount", "30000"))
+								.param("merchantName", "스타벅스", "맥도날드"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.expenses").isArray())
-				.andExpect(jsonPath("$.expenses.length()").value(1))
-				.andExpect(jsonPath("$.totalCount").value(1));
+				.andExpect(jsonPath("$.expenses.length()").value(2))
+				.andExpect(jsonPath("$.totalCount").value(2));
 	}
 
 	@Test
@@ -535,6 +584,31 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 수기 작성 - merchantName 40자 초과 입력 시 실패")
+	void 수기지출_merchant_40자초과_입력시_실패() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"localCurrencyAmount": 10000.0,
+			"localCurrencyCode": "KRW",
+			"memo": "invalid"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"));
+	}
+
+	@Test
 	@DisplayName("지출내역 필터링 - 복합 조건 필터")
 	void 지출내역_복합조건_필터링_성공() throws Exception {
 		// given - 다양한 조건의 지출내역 생성
@@ -543,7 +617,7 @@ class ExpenseControllerIntegrationTest {
 		createTestExpenseWithDetails("맥도날드", 2, "2026-02-04T14:00:00", 8000.0, null);
 		createTestExpenseWithDetails("택시", 3, "2026-02-04T15:00:00", 15000.0, null);
 
-		// when & then - 카테고리=FOOD, 거래처명=스타벅스, 금액 8000~15000
+		// when & then - 카테고리=FOOD, 거래처명=스타벅스, 12:30~14:00(UTC) 범위
 		mockMvc.perform(
 						get("/account-books/{accountBookId}/expenses", accountBookId)
 								.with(jwtTestHelper.withJwtAuth(userId))
@@ -552,8 +626,8 @@ class ExpenseControllerIntegrationTest {
 								.param("sort", "occurredAt,desc")
 								.param("category", "2")
 								.param("merchantName", "스타벅스")
-								.param("minAmount", "8000")
-								.param("maxAmount", "15000"))
+								.param("startDate", "2026-02-04T12:30:00Z")
+								.param("endDate", "2026-02-04T14:00:00Z"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(1))

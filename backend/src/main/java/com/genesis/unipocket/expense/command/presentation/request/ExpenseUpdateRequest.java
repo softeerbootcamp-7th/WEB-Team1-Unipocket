@@ -4,18 +4,12 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/**
- * <b>지출내역 수정 요청 DTO</b>
- * <p>Full replacement (PUT) - 모든 필드 필수
- *
- * @author bluefishez
- * @since 2026-02-07
- */
 public record ExpenseUpdateRequest(
-		@NotBlank String merchantName,
+		@NotBlank @Size(max = 40, message = "거래처명은 40자 이하여야 합니다.") String merchantName,
 		Category category,
 		Long userCardId,
 		@NotNull Instant occurredAt,

@@ -12,6 +12,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,17 @@ import org.springframework.test.context.ActiveProfiles;
 class S3ServiceIntegrationTest {
 
 	@Autowired private S3Service s3Service;
+
+	@AfterEach
+	void cleanItTestKeys() {
+		List<String> keys =
+				s3Service.listAllObjectKeys().stream()
+						.filter(key -> key.startsWith("it-test/"))
+						.toList();
+		if (!keys.isEmpty()) {
+			s3Service.deleteObjects(keys);
+		}
+	}
 
 	@Test
 	@DisplayName("Presigned URL 발급 - 지원 미디어 타입")

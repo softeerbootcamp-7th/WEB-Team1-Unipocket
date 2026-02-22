@@ -18,8 +18,8 @@
 
 - 🚀 [서비스 소개](#-서비스-소개)
 - 💡 [주요 기능](#-주요-기능)
-- 🧑🏻‍💻 [팀원 소개](#-팀원-소개)
 - 🔧 [Tech Stack](#-tech-stack)
+- 🧑🏻‍💻 [팀원 소개](#-팀원-소개)
 - 📝 [협업 기록 & 데일리 프로세스](#-협업-기록--데일리-프로세스)
 - 🔗 [Github & 서비스 링크](#-github--서비스-링크)
 - 🏗 [프로젝트 아키텍처](#-프로젝트-아키텍처)
@@ -83,58 +83,6 @@
 - 동일 국가/지역 평균 지출과 비교
 - 내 소비 수준 객관적 점검 가능
 - 소비 패턴 분석 기반 인사이트 제공
-
----
-
-## 🧑🏻‍💻 팀원 소개
-
-<table>
-  <thead>
-    <tr>
-      <th align="center" colspan="3">💻 Frontend</th>
-      <th align="center" colspan="2">🛠️ Backend</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-<td align="center" width="200">
-    <a href="https://github.com/1jiwoo27">
-    <img src="https://github.com/1jiwoo27.png" width="120" />
-    <br />
-    <sub><b>엄지우</b></sub>
-    </a>
-</td>
-<td align="center" width="200">
-    <a href="https://github.com/Kjiw0n">
-    <img src="https://github.com/Kjiw0n.png" width="120" />
-    <br />
-    <sub><b>김지원</b></sub>
-    </a>
-</td>
-<td align="center" width="200">
-    <a href="https://github.com/minngyuseong">
-    <img src="https://github.com/minngyuseong.png" width="120" />
-    <br />
-    <sub><b>성민규</b></sub>
-    </a>
-</td>
-<td align="center" width="200">
-    <a href="https://github.com/AnarchyDeve">
-        <img src="https://github.com/AnarchyDeve.png" width="120" />
-        <br />
-        <sub><b>김동균</b></sub>
-    </a>
-</td>
-<td align="center" width="200">
-    <a href="https://github.com/kcw2205">
-        <img src="https://github.com/kcw2205.png" width="120" />
-        <br />
-        <sub><b>김찬우</b></sub>
-    </a>
-</td>
-</tr>
-  </tbody>
-</table>
 
 ---
 
@@ -234,6 +182,58 @@ backend/
 
 ---
 
+## 🧑🏻‍💻 팀원 소개
+
+<table>
+  <thead>
+    <tr>
+      <th align="center" colspan="3">💻 Frontend</th>
+      <th align="center" colspan="2">🛠️ Backend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+<td align="center" width="200">
+    <a href="https://github.com/1jiwoo27">
+    <img src="https://github.com/1jiwoo27.png" width="120" />
+    <br />
+    <sub><b>엄지우</b></sub>
+    </a>
+</td>
+<td align="center" width="200">
+    <a href="https://github.com/Kjiw0n">
+    <img src="https://github.com/Kjiw0n.png" width="120" />
+    <br />
+    <sub><b>김지원</b></sub>
+    </a>
+</td>
+<td align="center" width="200">
+    <a href="https://github.com/minngyuseong">
+    <img src="https://github.com/minngyuseong.png" width="120" />
+    <br />
+    <sub><b>성민규</b></sub>
+    </a>
+</td>
+<td align="center" width="200">
+    <a href="https://github.com/AnarchyDeve">
+        <img src="https://github.com/AnarchyDeve.png" width="120" />
+        <br />
+        <sub><b>김동균</b></sub>
+    </a>
+</td>
+<td align="center" width="200">
+    <a href="https://github.com/kcw2205">
+        <img src="https://github.com/kcw2205.png" width="120" />
+        <br />
+        <sub><b>김찬우</b></sub>
+    </a>
+</td>
+</tr>
+  </tbody>
+</table>
+
+---
+
 ## 📝 협업 기록 & 데일리 프로세스
 
 UniPocket 팀은 프로젝트 기간 동안  
@@ -245,7 +245,7 @@ UniPocket 팀은 프로젝트 기간 동안
 - 공유 내용
   - 어제 한 일
   - 오늘 할 일
-- 이후 돌아가면서 각자의 진행 상황을 공유하고 논의하는 시간을 가졌습니다.
+- 돌아가면서 각자의 진행 상황을 공유하고 논의하는 시간을 가졌습니다.
 
 🔗 **[데일리 스크럼 기록 바로가기](https://www.notion.so/bside/2ee22020273580d69a76dde3b9b5b337)**
 

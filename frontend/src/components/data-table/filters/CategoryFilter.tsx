@@ -10,7 +10,7 @@ const CategoryFilter = () => {
   const categoryOptions = Object.keys(CATEGORIES).map(Number) as CategoryId[];
 
   // 전역 filter 객체에서 선택된 카테고리 배열 가져오기 (없으면 빈 배열)
-  const selectedCategories = (filter.category as unknown as CategoryId[]) || [];
+  const selectedCategories = filter.category || [];
 
   const handleCategoryChange = (selected: CategoryId[]) => {
     updateFilter({

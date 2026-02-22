@@ -29,6 +29,8 @@ const BaseExpenseTable = ({
   filterActions,
   children,
 }: BaseExpenseTableProps) => {
+  const currentSort = filter.sort?.[0] || 'occurredAt,desc';
+  const isAmountSort = currentSort.startsWith('baseCurrencyAmount');
   return (
     <DataTableProvider columns={columns} data={data}>
       <DataTableFilterProvider filter={filter} updateFilter={updateFilter}>
@@ -42,13 +44,21 @@ const BaseExpenseTable = ({
       </DataTableFilterProvider>
 
       <DataTable
-        groupBy={(row: Expense) =>
-          new Date(row.occurredAt).toLocaleDateString('ko-KR', {
+        groupBy={(row: Expense) => {
+          const dateStr = new Date(row.occurredAt).toLocaleDateString('ko-KR', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
-          })
-        }
+          });
+
+          // 금액 정렬일 경우 '날짜__baseCurrencyAmount' 형태로 키를 만들어
+          // 날짜별 그룹핑을 유지하면서도 같은 날짜 내에서는 금액 순으로 정렬되도록 함
+          return isAmountSort
+            ? `${dateStr}__${row.baseCurrencyAmount}`
+            : dateStr;
+        }}
+        //  화면에 보여줄 때는 '__' 뒤의 baseCurrencyAmount를 날려버리고 날짜만 표시
+        groupDisplay={(groupKey: string) => groupKey.split('__')[0]}
         blankFallbackText={blankFallbackText}
       />
       {children}

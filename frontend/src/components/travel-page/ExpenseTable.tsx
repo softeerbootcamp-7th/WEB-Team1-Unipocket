@@ -14,7 +14,6 @@ interface ExpenseTableProps {
 const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
   const travelId = 1; // 임시 @지원이 여행 PR에서 이어서해줄거임!
 
-  // 💡 초기 필터값으로 travelId를 넘겨줍니다.
   const { data, filter, updateFilter } = useFilteredExpenses({ travelId });
 
   return (

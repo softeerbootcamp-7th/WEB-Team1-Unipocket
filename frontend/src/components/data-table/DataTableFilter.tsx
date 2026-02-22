@@ -111,7 +111,6 @@ const DataTableSearchFilter = <T,>({
     },
   });
 
-  // 💡 3. 검색어 변경 래퍼 함수 (onInputChange prop 지원을 위해)
   const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     handleSearchChange(value);

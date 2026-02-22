@@ -65,7 +65,7 @@ public class ExpenseQueryDslRepository {
 		QTravel travel = QTravel.travel;
 		QUserCardEntity userCard = QUserCardEntity.userCardEntity;
 
-		BooleanBuilder predicate = buildPredicate(accountBookId, filter, expense);
+		BooleanBuilder predicate = buildPredicate(accountBookId, filter, expense, userCard);
 		OrderSpecifier<?>[] orderSpecifiers = toOrderSpecifiers(pageable.getSort(), expense);
 
 		List<ExpenseOneShotRow> content =
@@ -88,6 +88,8 @@ public class ExpenseQueryDslRepository {
 				queryFactory
 						.select(expense.expenseId.count())
 						.from(expense)
+						.leftJoin(userCard)
+						.on(userCard.userCardId.eq(expense.userCardId))
 						.where(predicate)
 						.fetchOne();
 
@@ -110,7 +112,10 @@ public class ExpenseQueryDslRepository {
 	}
 
 	private BooleanBuilder buildPredicate(
-			Long accountBookId, ExpenseSearchFilter filter, QExpenseEntity expense) {
+			Long accountBookId,
+			ExpenseSearchFilter filter,
+			QExpenseEntity expense,
+			QUserCardEntity userCard) {
 		BooleanBuilder predicate = new BooleanBuilder(expense.accountBookId.eq(accountBookId));
 
 		if (filter == null) {
@@ -130,7 +135,7 @@ public class ExpenseQueryDslRepository {
 			predicate.and(expense.category.in(filter.category()));
 		}
 		if (hasValues(filter.cardFourDigits())) {
-			predicate.and(expense.cardNumber.in(filter.cardFourDigits()));
+			predicate.and(userCard.cardNumber.in(filter.cardFourDigits()));
 		}
 		if (hasValues(filter.merchantName())) {
 			BooleanBuilder merchantOr = new BooleanBuilder();

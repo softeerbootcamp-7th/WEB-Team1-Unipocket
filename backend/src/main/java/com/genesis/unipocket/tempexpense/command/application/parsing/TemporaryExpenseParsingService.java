@@ -4,23 +4,17 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
-import com.genesis.unipocket.tempexpense.command.application.parsing.command.ExchangeRateLookupCommand;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.AccountBookRateContext;
 import com.genesis.unipocket.tempexpense.command.application.parsing.result.NormalizedParsedExpenseItem;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
-import com.genesis.unipocket.tempexpense.command.facade.port.ExchangeRateProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
 import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpenseScopeValidationProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
-import com.genesis.unipocket.tempexpense.common.util.TemporaryExpenseBatchTaskRunner;
 import com.genesis.unipocket.tempexpense.common.util.TemporaryExpenseTaskSupport;
-import java.math.BigDecimal;
-import java.time.ZoneOffset;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +36,10 @@ public class TemporaryExpenseParsingService {
 
 	private static final int MAX_DOCUMENT_PARSE_FILES = 1;
 	private static final int MAX_IMAGE_PARSE_FILES = 3;
+	private static final String GEMINI_RATE_LIMIT = "GEMINI_RATE_LIMIT";
 
 	private final FileRepository fileRepository;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
-	private final ExchangeRateProvider exchangeRateProvider;
 	private final TemporaryExpenseFieldParser fieldParser;
 	private final TemporaryExpenseParseClient temporaryExpenseParseClient;
 	private final TemporaryExpensePersistenceService temporaryExpensePersistenceService;
@@ -94,41 +88,6 @@ public class TemporaryExpenseParsingService {
 		return new ParseStartResult(taskId, files.size());
 	}
 
-	private void parseAndPersistExpenses(
-			File file, TempExpenseMeta meta, AccountBookRateContext rateContext) {
-		var geminiResponse = temporaryExpenseParseClient.parse(file);
-		if (!geminiResponse.success()) {
-			if (geminiResponse.isRateLimited()) {
-				log.error("Gemini rate limited. fileId={}", file.getFileId());
-				throw new GeminiRateLimitException();
-			}
-			log.error(
-					"Gemini parsing failed. fileId={}, reason={}",
-					file.getFileId(),
-					geminiResponse.errorMessage());
-			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
-		}
-
-		List<NormalizedParsedExpenseItem> normalizedItems =
-				geminiResponse.items().stream()
-						.map(
-								item ->
-										normalizeParsedItem(
-												item, rateContext.defaultLocalCurrencyCode()))
-						.toList();
-
-		Map<ExchangeRateLookupCommand, BigDecimal> exchangeRateMap =
-				buildExchangeRateMap(normalizedItems, rateContext.baseCurrencyCode());
-		temporaryExpensePersistenceService.persist(
-				file, meta, normalizedItems, rateContext, exchangeRateMap);
-	}
-
-	private AccountBookRateContext resolveRateContext(Long accountBookId) {
-		AccountBookRateInfo accountBook = accountBookRateInfoProvider.getRateInfo(accountBookId);
-		return new AccountBookRateContext(
-				accountBook.baseCurrencyCode(), accountBook.localCurrencyCode());
-	}
-
 	private void validateParseFileLimit(List<File> files) {
 		boolean hasDocument =
 				files.stream()
@@ -142,6 +101,73 @@ public class TemporaryExpenseParsingService {
 		if (!hasDocument && files.size() > MAX_IMAGE_PARSE_FILES) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED);
 		}
+	}
+
+	void parseBatchFiles(TempExpenseMeta meta, List<File> files, String taskId) {
+		log.info("Starting async batch parsing for task: {}, files: {}", taskId, files.size());
+
+		AccountBookRateContext rateContext;
+		try {
+			rateContext = resolveRateContext(meta.getAccountBookId());
+		} catch (Exception e) {
+			String errorMessage =
+					TemporaryExpenseTaskSupport.resolveClientErrorMessage(
+							e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
+			progressPublisher.publishError(taskId, errorMessage);
+			throw TemporaryExpenseTaskSupport.rethrow(e);
+		}
+
+		int total = files.size();
+		int completed = 0;
+		progressPublisher.publishProgress(taskId, 0);
+
+		for (File file : files) {
+			try {
+				parseAndPersistExpenses(file, meta, rateContext);
+			} catch (Exception e) {
+				if (isGeminiRateLimit(e)) {
+					log.error("Gemini 429 encountered. aborting parse task. taskId={}", taskId);
+					String errorMessage =
+							TemporaryExpenseTaskSupport.resolveClientErrorMessage(
+									e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
+					progressPublisher.publishError(taskId, errorMessage);
+					throw TemporaryExpenseTaskSupport.rethrow(e);
+				}
+				log.error("Failed to parse file: {}", file.getS3Key(), e);
+			} finally {
+				completed++;
+				progressPublisher.publishProgress(
+						taskId, TemporaryExpenseTaskSupport.toPercent(completed, total));
+			}
+		}
+		progressPublisher.complete(taskId);
+	}
+
+	private AccountBookRateContext resolveRateContext(Long accountBookId) {
+		AccountBookRateInfo accountBook = accountBookRateInfoProvider.getRateInfo(accountBookId);
+		return new AccountBookRateContext(
+				accountBook.baseCurrencyCode(), accountBook.localCurrencyCode());
+	}
+
+	private void parseAndPersistExpenses(
+			File file, TempExpenseMeta meta, AccountBookRateContext rateContext) {
+		var geminiResponse = temporaryExpenseParseClient.parse(file);
+		if (!geminiResponse.success()) {
+			if (geminiResponse.isRateLimited()) {
+				throw new IllegalStateException(GEMINI_RATE_LIMIT);
+			}
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
+		}
+
+		List<NormalizedParsedExpenseItem> normalizedItems =
+				geminiResponse.items().stream()
+						.map(
+								item ->
+										normalizeParsedItem(
+												item, rateContext.defaultLocalCurrencyCode()))
+						.toList();
+
+		temporaryExpensePersistenceService.persist(file, meta, normalizedItems, rateContext);
 	}
 
 	private NormalizedParsedExpenseItem normalizeParsedItem(
@@ -159,82 +185,7 @@ public class TemporaryExpenseParsingService {
 				item.approvalNumber());
 	}
 
-	private Map<ExchangeRateLookupCommand, BigDecimal> buildExchangeRateMap(
-			List<NormalizedParsedExpenseItem> items, CurrencyCode baseCurrencyCode) {
-		Set<ExchangeRateLookupCommand> lookupKeys =
-				items.stream()
-						.filter(
-								item ->
-										item.localAmount() != null
-												&& item.occurredAt() != null
-												&& !(item.baseAmount() != null
-														&& item.baseCurrencyCode() != null
-														&& item.baseCurrencyCode()
-																== baseCurrencyCode))
-						.map(
-								item ->
-										new ExchangeRateLookupCommand(
-												item.localCurrencyCode(),
-												baseCurrencyCode,
-												item.occurredAt().toLocalDate()))
-						.collect(Collectors.toSet());
-
-		Map<ExchangeRateLookupCommand, BigDecimal> rateMap = new HashMap<>();
-		for (ExchangeRateLookupCommand key : lookupKeys) {
-			if (key.fromCurrencyCode() == key.toCurrencyCode()) {
-				rateMap.put(key, BigDecimal.ONE);
-				continue;
-			}
-			BigDecimal rate =
-					exchangeRateProvider.getExchangeRate(
-							key.fromCurrencyCode(),
-							key.toCurrencyCode(),
-							key.date().atStartOfDay().atOffset(ZoneOffset.UTC));
-			rateMap.put(key, rate);
-		}
-		return rateMap;
+	private boolean isGeminiRateLimit(Exception e) {
+		return e instanceof IllegalStateException && GEMINI_RATE_LIMIT.equals(e.getMessage());
 	}
-
-	void parseBatchFiles(TempExpenseMeta meta, List<File> files, String taskId) {
-		log.info("Starting async batch parsing for task: {}, files: {}", taskId, files.size());
-
-		AccountBookRateContext rateContext;
-		try {
-			rateContext = resolveRateContext(meta.getAccountBookId());
-		} catch (Exception e) {
-			String errorMessage =
-					TemporaryExpenseTaskSupport.resolveClientErrorMessage(
-							e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
-			progressPublisher.publishError(taskId, errorMessage);
-			throw TemporaryExpenseTaskSupport.rethrow(e);
-		}
-
-		TemporaryExpenseBatchTaskRunner.run(
-				taskId,
-				files,
-				progressPublisher,
-				ErrorCode.TEMP_EXPENSE_PARSE_FAILED,
-				file -> {
-					if (!Objects.equals(file.getTempExpenseMetaId(), meta.getTempExpenseMetaId())) {
-						log.warn(
-								"Skipping out-of-meta file. fileId={}, expectedMetaId={},"
-										+ " actualMetaId={}",
-								file.getFileId(),
-								meta.getTempExpenseMetaId(),
-								file.getTempExpenseMetaId());
-						return;
-					}
-					parseAndPersistExpenses(file, meta, rateContext);
-				},
-				(file, e) -> {
-					if (e instanceof GeminiRateLimitException) {
-						log.error("Gemini 429 encountered. aborting parse task. taskId={}", taskId);
-						return true;
-					}
-					log.error("Failed to parse file: {}", file.getS3Key(), e);
-					return false;
-				});
-	}
-
-	private static final class GeminiRateLimitException extends RuntimeException {}
 }

@@ -105,10 +105,12 @@ public class TemporaryExpenseQueryRepository {
 		return em.createQuery(
 						"SELECT new"
 							+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow(te.tempExpenseId,"
-							+ " te.tempExpenseMetaId, te.fileId, te.merchantName, te.category,"
-							+ " te.localCountryCode, te.localCurrencyAmount, te.baseCountryCode,"
-							+ " te.baseCurrencyAmount, te.paymentsMethod, te.memo, te.occurredAt,"
-							+ " te.status, te.cardLastFourDigits) FROM TemporaryExpense te WHERE"
+							+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName,"
+							+ " te.contentInfo.category, te.amountInfo.localCurrencyCode,"
+							+ " te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
+							+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod,"
+							+ " te.contentInfo.memo, te.contentInfo.occurredAt, te.status,"
+							+ " te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
 							+ " te.fileId IN :fileIds ORDER BY te.tempExpenseId ASC",
 						TemporaryExpenseItemRow.class)
 				.setParameter("fileIds", fileIds)
@@ -119,10 +121,12 @@ public class TemporaryExpenseQueryRepository {
 		return em.createQuery(
 						"SELECT new"
 							+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseItemRow(te.tempExpenseId,"
-							+ " te.tempExpenseMetaId, te.fileId, te.merchantName, te.category,"
-							+ " te.localCountryCode, te.localCurrencyAmount, te.baseCountryCode,"
-							+ " te.baseCurrencyAmount, te.paymentsMethod, te.memo, te.occurredAt,"
-							+ " te.status, te.cardLastFourDigits) FROM TemporaryExpense te WHERE"
+							+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName,"
+							+ " te.contentInfo.category, te.amountInfo.localCurrencyCode,"
+							+ " te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
+							+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod,"
+							+ " te.contentInfo.memo, te.contentInfo.occurredAt, te.status,"
+							+ " te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
 							+ " te.fileId = :fileId ORDER BY te.tempExpenseId ASC",
 						TemporaryExpenseItemRow.class)
 				.setParameter("fileId", fileId)

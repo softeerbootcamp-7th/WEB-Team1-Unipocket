@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 
 import { type DateRange } from '@/components/calendar/Calendar';
 import Button from '@/components/common/Button';
-import LocaleSelectModal from '@/components/modal/LocaleSelectModal';
+import LocaleSelectModal from '@/components/modal/LocaleSelectModal/LocaleSelectModal';
 import { SelectDateContent } from '@/components/modal/SelectDateModal';
 
 import { useCreateAccountBookMutation } from '@/api/account-books/query';

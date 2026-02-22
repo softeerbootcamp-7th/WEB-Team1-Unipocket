@@ -1,21 +1,29 @@
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
+
 interface TravelContextMenuProps {
   x: number;
   y: number;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onEditThumbnail: () => void;
   onEditName: () => void;
   onEditDate: () => void;
   onDelete: () => void;
-  onClose: () => void;
 }
 
 const TravelContextMenu = ({
   x,
   y,
+  open,
+  onOpenChange,
   onEditThumbnail,
   onEditName,
   onEditDate,
   onDelete,
-  onClose,
 }: TravelContextMenuProps) => {
   const menuItems = [
     { label: '썸네일 변경', action: onEditThumbnail },
@@ -25,45 +33,38 @@ const TravelContextMenu = ({
   ];
 
   return (
-    <div
-      className="bg-background-normal shadow-semantic-subtle z-overlay rounded-modal-16 border-line-normal-neutral absolute flex flex-col items-start border p-2"
-      style={{ top: y, left: x }}
-    >
-      {menuItems.map((item) => (
-        <TravelContextMenuItem
-          key={item.label}
-          label={item.label}
-          onAction={item.action}
-          onClose={onClose}
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor asChild>
+        <div
+          className="fixed size-1"
+          style={{
+            top: y,
+            left: x,
+          }}
         />
-      ))}
-    </div>
+      </PopoverAnchor>
+
+      <PopoverContent
+        side="right"
+        align="start"
+        sideOffset={0}
+        className="rounded-modal-16 border-line-normal-neutral bg-background-normal shadow-semantic-subtle flex flex-col items-start border p-2"
+      >
+        {menuItems.map((item) => (
+          <button
+            key={item.label}
+            className="body1-normal-bold text-label-normal hover:bg-fill-alternative rounded-modal-8 w-25 cursor-pointer px-2 py-3 text-start"
+            onClick={() => {
+              item.action();
+              onOpenChange(false);
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   );
 };
 
 export default TravelContextMenu;
-
-interface TravelContextMenuItemProps {
-  label: string;
-  onAction: () => void;
-  onClose: () => void;
-}
-
-const TravelContextMenuItem = ({
-  label,
-  onAction,
-  onClose,
-}: TravelContextMenuItemProps) => {
-  return (
-    <button
-      className="body1-normal-bold text-label-normal hover:bg-fill-alternative rounded-modal-8 w-25 cursor-pointer overflow-hidden px-2 py-3 text-start text-ellipsis"
-      onClick={(e) => {
-        e.stopPropagation();
-        onAction();
-        onClose();
-      }}
-    >
-      {label}
-    </button>
-  );
-};

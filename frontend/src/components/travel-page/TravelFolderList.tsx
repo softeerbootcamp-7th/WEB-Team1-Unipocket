@@ -17,15 +17,8 @@ const TravelFolderList = () => {
     setContextMenu({ x: e.clientX, y: e.clientY, folder });
   };
 
-  const closeContextMenu = () => {
-    setContextMenu(null);
-  };
-
   return (
-    <div
-      className="bg-background-normal rounded-modal-8 shadow-semantic-subtle flex min-h-0 flex-1 flex-wrap gap-9 overflow-y-auto p-16"
-      onClick={closeContextMenu}
-    >
+    <div className="bg-background-normal rounded-modal-8 shadow-semantic-subtle flex min-h-0 flex-1 flex-wrap gap-9 overflow-y-auto p-16">
       {folderMap.map((folder) => (
         <Link
           to={`/travel/$travelId`}
@@ -43,11 +36,14 @@ const TravelFolderList = () => {
         <TravelContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setContextMenu(null);
+          }}
           onEditThumbnail={() => {}}
           onEditName={() => {}}
           onEditDate={() => {}}
           onDelete={() => {}}
-          onClose={closeContextMenu}
         />
       )}
     </div>

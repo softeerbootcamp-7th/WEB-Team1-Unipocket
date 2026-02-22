@@ -22,6 +22,9 @@ import { formatDateToString, toOffsetDateTimeString } from '@/lib/utils';
 const DateFilter = () => {
   const { filter, updateFilter } = useDataTableFilter();
 
+  const startDate = filter.startDate ? new Date(filter.startDate) : null;
+  const endDate = filter.endDate ? new Date(filter.endDate) : null;
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -53,12 +56,8 @@ const DateFilter = () => {
 
   const filterLabel = (() => {
     if (!isActive) return '날짜';
-    const startStr = filter.startDate
-      ? formatDateToString(new Date(filter.startDate))
-      : '';
-    const endStr = filter.endDate
-      ? formatDateToString(new Date(filter.endDate))
-      : '';
+    const startStr = startDate ? formatDateToString(startDate) : '';
+    const endStr = endDate ? formatDateToString(endDate) : '';
     return `날짜: ${startStr} - ${endStr}`;
   })();
 
@@ -105,26 +104,18 @@ const DateFilter = () => {
               <div className="flex flex-col justify-between">
                 <CalendarInput
                   title="시작일"
-                  value={
-                    filter.startDate
-                      ? formatDateToString(new Date(filter.startDate))
-                      : ''
-                  }
+                  value={startDate ? formatDateToString(startDate) : ''}
                   onClick={() => setIsCalendarOpen(true)}
                   onClear={() =>
                     handleDateChange({
                       startDate: null,
-                      endDate: filter.endDate ? new Date(filter.endDate) : null,
+                      endDate: endDate,
                     })
                   }
                 />
                 <CalendarInput
                   title="종료일"
-                  value={
-                    filter.endDate
-                      ? formatDateToString(new Date(filter.endDate))
-                      : ''
-                  }
+                  value={endDate ? formatDateToString(endDate) : ''}
                   onClick={() => setIsCalendarOpen(true)}
                   onClear={() =>
                     handleDateChange({
@@ -145,8 +136,8 @@ const DateFilter = () => {
               alignOffset={-20}
             >
               <Calendar
-                startDate={filter.startDate ? new Date(filter.startDate) : null}
-                endDate={filter.endDate ? new Date(filter.endDate) : null}
+                startDate={startDate}
+                endDate={endDate}
                 onChange={handleDateChange}
               />
             </PopoverContent>

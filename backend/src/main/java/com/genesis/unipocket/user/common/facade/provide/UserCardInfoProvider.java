@@ -16,6 +16,10 @@ public class UserCardInfoProvider implements UserCardFetchService {
 
 	@Override
 	public Optional<UserCardInfo> getUserCard(Long userCardId) {
+		if (userCardId == null) {
+			return Optional.empty();
+		}
+
 		Optional<UserCardEntity> card = userCardCommandRepository.findById(userCardId);
 
 		return card.map(

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.genesis.unipocket.expense.query.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
 import com.genesis.unipocket.expense.query.facade.port.ExpenseMediaAccessService;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseOneShotRow;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseFileUrlResponse;
@@ -32,7 +32,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class ExpenseQueryFacadeTest {
 
 	@Mock private ExpenseQueryService expenseQueryService;
-	@Mock private AccountBookOwnershipValidator accountBookOwnershipValidator;
+	@Mock private ExpenseOwnershipValidator expenseOwnershipValidator;
 	@Mock private ExpenseMediaAccessService expenseMediaAccessService;
 
 	@InjectMocks private ExpenseQueryFacade expenseQueryFacade;
@@ -55,7 +55,7 @@ class ExpenseQueryFacadeTest {
 
 		assertThat(response.presignedUrl()).isEqualTo("signed-url");
 		assertThat(response.expiresInSeconds()).isEqualTo(600);
-		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
+		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
 		verify(expenseQueryService).getExpenseOneShot(expenseId, accountBookId);
 		verify(expenseMediaAccessService).issueGetPath("expense/file-key", Duration.ofSeconds(600));
 	}
@@ -82,7 +82,7 @@ class ExpenseQueryFacadeTest {
 						ex ->
 								assertThat(((BusinessException) ex).getCode())
 										.isEqualTo(ErrorCode.EXPENSE_FILE_LINK_NOT_FOUND));
-		verify(accountBookOwnershipValidator).validateOwnership(accountBookId, userId.toString());
+		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
 		verify(expenseQueryService).getExpenseOneShot(expenseId, accountBookId);
 		verify(expenseMediaAccessService).issueGetPath(" ", Duration.ofSeconds(600));
 	}

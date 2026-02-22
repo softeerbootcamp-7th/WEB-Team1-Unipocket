@@ -7,10 +7,10 @@ import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryEx
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseMetaBulkUpdateResponse;
+import com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

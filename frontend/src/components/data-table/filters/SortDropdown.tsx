@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-const DROPDOWN_WIDTH_CLASS = 'w-24';
+const DROPDOWN_WIDTH_CLASS = 'w-32';
 
 const CRITERIA = {
   DATE: 'occurredAt',

@@ -1,7 +1,6 @@
-import { useState } from 'react';
-
 import DropDown from '@/components/common/dropdown/Dropdown';
 import Icon from '@/components/common/Icon';
+import { useDataTableFilter } from '@/components/data-table/context';
 import {
   Popover,
   PopoverContent,
@@ -11,8 +10,8 @@ import {
 const DROPDOWN_WIDTH_CLASS = 'w-24';
 
 const CRITERIA = {
-  DATE: 'date',
-  AMOUNT: 'amount',
+  DATE: 'occurredAt',
+  AMOUNT: 'baseCurrencyAmount',
 } as const;
 
 const ORDER = {
@@ -36,10 +35,13 @@ type SortCriteriaType = (typeof CRITERIA)[keyof typeof CRITERIA];
 type SortOrderType = (typeof ORDER)[keyof typeof ORDER];
 
 const SortDropdown = () => {
-  const [sort, setSort] = useState<{
-    criteria: SortCriteriaType;
-    order: SortOrderType;
-  }>({ criteria: CRITERIA.DATE, order: ORDER.DESC });
+  const { filter, updateFilter } = useDataTableFilter();
+
+  const currentSort = filter.sort?.[0] || `${CRITERIA.DATE},${ORDER.DESC}`;
+  const [currentCriteria, currentOrder] = currentSort.split(',') as [
+    SortCriteriaType,
+    SortOrderType,
+  ];
 
   const criteriaOptions = CRITERIA_LIST.map((key, index) => ({
     id: index,
@@ -48,18 +50,23 @@ const SortDropdown = () => {
 
   const orderOptions = ORDER_LIST.map((key, index) => ({
     id: index,
-    name: LABELS[`${sort.criteria}_${key}` as keyof typeof LABELS],
+    name: LABELS[`${currentCriteria}_${key}` as keyof typeof LABELS],
   }));
 
-  const selectedCriteriaId = CRITERIA_LIST.indexOf(sort.criteria);
-  const selectedOrderId = ORDER_LIST.indexOf(sort.order);
+  const selectedCriteriaId = Math.max(
+    0,
+    CRITERIA_LIST.indexOf(currentCriteria),
+  );
+  const selectedOrderId = Math.max(0, ORDER_LIST.indexOf(currentOrder));
 
   const handleCriteriaSelect = (id: number) => {
-    setSort((prev) => ({ ...prev, criteria: CRITERIA_LIST[id] }));
+    const newCriteria = CRITERIA_LIST[id];
+    updateFilter({ sort: [`${newCriteria},${currentOrder}`] });
   };
 
   const handleOrderSelect = (id: number) => {
-    setSort((prev) => ({ ...prev, order: ORDER_LIST[id] }));
+    const newOrder = ORDER_LIST[id];
+    updateFilter({ sort: [`${currentCriteria},${newOrder}`] });
   };
 
   return (

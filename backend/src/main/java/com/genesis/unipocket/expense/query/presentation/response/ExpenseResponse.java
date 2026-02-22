@@ -1,14 +1,14 @@
 package com.genesis.unipocket.expense.query.presentation.response;
 
 import com.genesis.unipocket.expense.common.util.AmountFormatters;
-import com.genesis.unipocket.expense.query.port.dto.ExpenseTravelResult;
-import com.genesis.unipocket.expense.query.service.dto.ExpenseQueryResult;
+import com.genesis.unipocket.expense.query.persistence.response.ExpenseOneShotRow;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public record ExpenseResponse(
 		Long expenseId,
@@ -34,47 +34,46 @@ public record ExpenseResponse(
 
 	public record PaymentMethodResponse(boolean isCash, CardResponse card) {}
 
-	public record Travel(Long travelId, String name, String imageKey) {
-		public static Travel from(ExpenseTravelResult travel) {
-			if (travel == null) {
-				return null;
-			}
-			return new Travel(travel.travelId(), travel.name(), travel.imageKey());
-		}
-	}
+	public record Travel(Long travelId, String name, String imageKey) {}
 
-	public static ExpenseResponse from(ExpenseQueryResult dto) {
-		return from(dto, null);
-	}
-
-	public static ExpenseResponse from(ExpenseQueryResult dto, ExpenseTravelResult travel) {
+	public static ExpenseResponse from(ExpenseOneShotRow row) {
 		return new ExpenseResponse(
-				dto.expenseId(),
-				dto.accountBookId(),
-				Travel.from(travel),
-				dto.displayMerchantName(),
-				dto.exchangeRate(),
-				dto.category(),
-				dto.userCardId() != null
+				row.expenseId(),
+				row.accountBookId(),
+				toTravel(row),
+				row.merchantName(),
+				row.exchangeRate(),
+				row.category(),
+				row.userCardId() != null
 						? new PaymentMethodResponse(
 								false,
 								new CardResponse(
-										dto.cardCompany() != null
-												? dto.cardCompany().ordinal()
+										row.cardCompany() != null
+												? row.cardCompany().ordinal()
 												: null,
-										dto.cardLabel(),
-										dto.cardLastDigits()))
+										row.cardLabel(),
+										row.cardLastDigits()))
 						: new PaymentMethodResponse(true, null),
-				dto.occurredAt().toInstant(),
-				dto.updatedAt(),
-				AmountFormatters.toAmountString(dto.localCurrencyAmount()),
-				dto.localCurrencyCode(),
-				AmountFormatters.toAmountString(dto.baseCurrencyAmount()),
-				dto.baseCurrencyCode(),
-				dto.memo(),
-				dto.expenseSource(),
-				dto.approvalNumber(),
-				dto.cardNumber(),
-				dto.fileLink());
+				row.occurredAt().toInstant(),
+				row.updatedAt() != null ? row.updatedAt().atOffset(ZoneOffset.UTC) : null,
+				AmountFormatters.toAmountString(row.localCurrencyAmount()),
+				row.localCurrencyCode(),
+				AmountFormatters.toAmountString(row.baseCurrencyAmount()),
+				row.baseCurrencyCode(),
+				row.memo(),
+				row.source(),
+				row.approvalNumber(),
+				row.expenseCardNumber(),
+				row.fileLink());
+	}
+
+	private static Travel toTravel(ExpenseOneShotRow row) {
+		if (row.travelId() == null) {
+			return null;
+		}
+		if (row.travelName() == null && row.travelImageKey() == null) {
+			return null;
+		}
+		return new Travel(row.travelId(), row.travelName(), row.travelImageKey());
 	}
 }

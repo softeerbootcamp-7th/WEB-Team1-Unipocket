@@ -8,6 +8,7 @@ import com.genesis.unipocket.user.command.application.command.DeleteCardCommand;
 import com.genesis.unipocket.user.command.application.command.RegisterUserCommand;
 import com.genesis.unipocket.user.command.application.command.WithdrawUserCommand;
 import com.genesis.unipocket.user.command.application.result.LoginOrRegisterResult;
+import com.genesis.unipocket.user.command.application.result.UserCardUpdateResult;
 import com.genesis.unipocket.user.command.facade.port.SocialAuthReadPort;
 import com.genesis.unipocket.user.command.facade.port.SocialAuthWritePort;
 import com.genesis.unipocket.user.command.facade.port.TokenIssuePort;
@@ -128,5 +129,24 @@ public class UserCommandService {
 		}
 
 		userCardRepository.delete(userCard);
+	}
+
+	@Transactional
+	public UserCardUpdateResult updateCard(UUID userId, Long cardId, String nickname) {
+
+		UserCardEntity userCard =
+				userCardRepository
+						.findById(cardId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.CARD_NOT_FOUND));
+
+		if (!userCard.getUser().getId().equals(userId)) {
+			throw new BusinessException(ErrorCode.CARD_NOT_OWNED);
+		}
+
+		userCard.updateNickname(nickname);
+
+		userCardRepository.save(userCard);
+
+		return UserCardUpdateResult.of(userCard);
 	}
 }

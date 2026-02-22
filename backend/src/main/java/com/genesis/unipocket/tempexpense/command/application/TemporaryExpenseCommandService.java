@@ -8,10 +8,10 @@ import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExp
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpensePatch;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseStatusPolicy;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
-import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
-import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,7 @@ public class TemporaryExpenseCommandService {
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
-	private final TemporaryExpenseValidator temporaryExpenseValidator;
+	private final TempExpenseStatusPolicy tempExpenseStatusPolicy;
 
 	public TemporaryExpense findById(Long tempExpenseId) {
 		return temporaryExpenseRepository
@@ -37,57 +37,23 @@ public class TemporaryExpenseCommandService {
 			Long tempExpenseId, TemporaryExpenseUpdateCommand command) {
 		TemporaryExpense entity = findById(tempExpenseId);
 
-		String resolvedMerchantName = valueOr(command.merchantName(), entity.getMerchantName());
-		var resolvedCategory = valueOr(command.category(), entity.getCategory());
-		var resolvedLocalCountryCode =
-				valueOr(command.localCountryCode(), entity.getLocalCountryCode());
-		var resolvedLocalCurrencyAmount =
-				valueOr(command.localCurrencyAmount(), entity.getLocalCurrencyAmount());
 		var resolvedBaseCountryCode = resolveBaseCountryCode(command, entity);
-		var resolvedBaseCurrencyAmount =
-				valueOr(command.baseCurrencyAmount(), entity.getBaseCurrencyAmount());
-		String resolvedPaymentsMethod =
-				valueOr(command.paymentsMethod(), entity.getPaymentsMethod());
-		String resolvedMemo = valueOr(command.memo(), entity.getMemo());
-		var resolvedOccurredAt = valueOr(command.occurredAt(), entity.getOccurredAt());
-		String resolvedCardLastFourDigits =
-				valueOr(command.cardLastFourDigits(), entity.getCardLastFourDigits());
-
-		TemporaryExpenseStatus resolvedStatus =
-				temporaryExpenseValidator.resolveStatus(
-						entity.getStatus(),
-						resolvedMerchantName,
-						resolvedCategory,
-						resolvedLocalCountryCode,
-						resolvedLocalCurrencyAmount,
+		TempExpensePatch patch =
+				TempExpensePatch.from(
+						command.merchantName(),
+						command.category(),
+						command.localCountryCode(),
+						command.localCurrencyAmount(),
 						resolvedBaseCountryCode,
-						resolvedOccurredAt);
-
-		TemporaryExpense updated =
-				TemporaryExpense.builder()
-						.tempExpenseId(entity.getTempExpenseId())
-						.tempExpenseMetaId(entity.getTempExpenseMetaId())
-						.fileId(entity.getFileId())
-						.merchantName(resolvedMerchantName)
-						.category(resolvedCategory)
-						.localCountryCode(resolvedLocalCountryCode)
-						.localCurrencyAmount(resolvedLocalCurrencyAmount)
-						.baseCountryCode(resolvedBaseCountryCode)
-						.baseCurrencyAmount(resolvedBaseCurrencyAmount)
-						.exchangeRate(entity.getExchangeRate())
-						.paymentsMethod(resolvedPaymentsMethod)
-						.memo(resolvedMemo)
-						.occurredAt(resolvedOccurredAt)
-						.status(resolvedStatus)
-						.cardLastFourDigits(resolvedCardLastFourDigits)
-						.approvalNumber(entity.getApprovalNumber())
-						.build();
-
-		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(updated));
-	}
-
-	private <T> T valueOr(T candidate, T fallback) {
-		return candidate != null ? candidate : fallback;
+						command.baseCurrencyAmount(),
+						null,
+						command.paymentsMethod(),
+						command.memo(),
+						command.occurredAt(),
+						command.cardLastFourDigits(),
+						null);
+		entity.applyPatch(patch, tempExpenseStatusPolicy);
+		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(entity));
 	}
 
 	private CurrencyCode resolveBaseCountryCode(

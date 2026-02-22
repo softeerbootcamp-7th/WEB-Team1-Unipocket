@@ -108,4 +108,29 @@ class ExpenseMerchantSearchIntegrationTest {
 				.andExpect(jsonPath("$.merchantNames.length()").value(1))
 				.andExpect(jsonPath("$.merchantNames[0]").value("스타벅스 코리아"));
 	}
+
+	@Test
+	@DisplayName("거래처명 검색 - q가 빈값이면 전체 목록을 반환한다")
+	void searchMerchantNames_blankQuery_returnsAll() throws Exception {
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses/merchant-names", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("q", "")
+								.queryParam("limit", "10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.merchantNames.length()").value(1))
+				.andExpect(jsonPath("$.merchantNames[0]").value("스타벅스 코리아"));
+	}
+
+	@Test
+	@DisplayName("거래처명 검색 - q가 없으면 전체 목록을 반환한다")
+	void searchMerchantNames_nullQuery_returnsAll() throws Exception {
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses/merchant-names", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.queryParam("limit", "10"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.merchantNames.length()").value(1))
+				.andExpect(jsonPath("$.merchantNames[0]").value("스타벅스 코리아"));
+	}
 }

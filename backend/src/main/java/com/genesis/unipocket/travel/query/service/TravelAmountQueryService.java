@@ -96,7 +96,7 @@ public class TravelAmountQueryService {
 		return total;
 	}
 
-	private CurrencyCode parseCurrencyCode(String rawCode) {
+private CurrencyCode parseCurrencyCode(String rawCode) {
 		try {
 			int ordinal = Integer.parseInt(rawCode);
 			CurrencyCode[] values = CurrencyCode.values();
@@ -108,5 +108,6 @@ public class TravelAmountQueryService {
 				return null;
 			}
 		}
+	}
 	}
 }

@@ -28,10 +28,11 @@ interface ReportMyselfProps {
 const ReportMyself = ({ data, isCurrentMonth }: ReportMyselfProps) => {
   const { currencyType } = useReportContext();
   const countryCode = useAccountBookCountryCode(currencyType);
-
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
-  const diff = Math.abs(Number(data.diff));
-  const isLess = Number(data.diff) < 0;
+
+  const diffValue = Number(data.diff);
+  const diff = Math.abs(diffValue);
+  const isLess = diffValue < 0;
   const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
   const formattedThisMonthSpent = formatCurrencyAmount(
     Number(data.thisMonthSpent),

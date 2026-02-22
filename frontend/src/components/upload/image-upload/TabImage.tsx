@@ -4,7 +4,7 @@ interface TabImageProps {
   fileName: string;
   successCount: number;
   warningCount: number;
-  hasNotification?: boolean;
+  hasIssue?: boolean;
   thumbnailUrl: string;
 }
 
@@ -12,7 +12,7 @@ const TabImage = ({
   fileName,
   successCount,
   warningCount,
-  hasNotification = false,
+  hasIssue = false,
   thumbnailUrl,
 }: TabImageProps) => {
   return (
@@ -24,7 +24,7 @@ const TabImage = ({
           className="h-full w-full rounded-sm object-cover"
         />
       </div>
-      {hasNotification && (
+      {hasIssue && (
         <div className="bg-status-negative absolute -top-0.75 -left-0.75 h-1.5 w-1.5 rounded-full" />
       )}
 

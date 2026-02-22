@@ -23,6 +23,7 @@ export const useImageUpload = (accountBookId: number) => {
   const itemsRef = useRef<UploadItem[]>([]);
   const eventSourcesRef = useRef<Record<string, EventSource>>({});
   const metaIdRef = useRef<number | undefined>(undefined);
+  const completedRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     itemsRef.current = items;
@@ -174,6 +175,9 @@ export const useImageUpload = (accountBookId: number) => {
     };
 
     const markTaskAsParsed = () => {
+      if (completedRef.current[taskId]) return;
+      completedRef.current[taskId] = true;
+
       setItems((prev) =>
         prev.map((item) =>
           item.taskId === taskId
@@ -181,6 +185,7 @@ export const useImageUpload = (accountBookId: number) => {
             : item,
         ),
       );
+
       setParseSnackbar({
         isOpen: true,
         status: 'success',
@@ -199,11 +204,11 @@ export const useImageUpload = (accountBookId: number) => {
         return;
       }
 
-      setParseSnackbar({
+      setParseSnackbar((prev) => ({
+        ...prev,
         isOpen: true,
-        status: 'loading',
         description: `${normalizedProgress}%`,
-      });
+      }));
     };
 
     const parseEventData = (rawData: string) => {
@@ -245,7 +250,15 @@ export const useImageUpload = (accountBookId: number) => {
     });
 
     eventSource.onerror = () => {
-      setParseSnackbar({ isOpen: false, status: 'default' });
+      if (!completedRef.current[taskId]) {
+        toast.error('분석 중 연결이 끊어졌어요. 다시 시도해주세요.');
+      }
+
+      setParseSnackbar({
+        isOpen: false,
+        status: 'default',
+      });
+
       closeEventSource();
     };
   };

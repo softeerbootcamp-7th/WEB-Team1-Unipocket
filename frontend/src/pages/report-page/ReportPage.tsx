@@ -100,7 +100,10 @@ const ReportPage = () => {
 
         {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
         {data && (
-          <div className="flex w-full min-w-283 gap-3.5">
+          <div
+            key={`${year}-${month}`}
+            className="flex w-full min-w-283 gap-3.5"
+          >
             <ReportProvider
               currencyType={currencyType}
               onCurrencyTypeChange={setCurrencyType}

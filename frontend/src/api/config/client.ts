@@ -7,13 +7,6 @@ import {
 } from '@/api/config/constants';
 import { ApiError } from '@/api/config/error';
 
-interface customFetchParams {
-  endpoint: string;
-  params?: Record<string, string>;
-  options?: RequestInit;
-  isRetry?: boolean; // 재시도 여부 플래그 -> 401 재발급 시도 무한 루프 방지용
-}
-
 // 1. 재발급 요청의 Promise를 저장할 변수 (싱글톤 패턴처럼 동작)
 let refreshPromise: Promise<void> | null = null;
 
@@ -42,6 +35,13 @@ const refreshAccessToken = async (): Promise<void> => {
   return refreshPromise;
 };
 
+interface customFetchParams {
+  endpoint: string;
+  params?: Record<string, string | string[]>;
+  options?: RequestInit;
+  isRetry?: boolean; // 재시도 여부 플래그 -> 401 재발급 시도 무한 루프 방지용
+}
+
 export const customFetch = async <T>({
   endpoint,
   params,
@@ -57,7 +57,19 @@ export const customFetch = async <T>({
   // 1. 쿼리 스트링 처리 로직 분리 및 정렬 적용
   let queryString = '';
   if (params) {
-    const searchParams = new URLSearchParams(params);
+    const searchParams = new URLSearchParams();
+
+    // 객체의 키와 값을 순회하면서 배열인지 확인하고 처리
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        // 배열인 경우 (예: category: ['1', '2']) -> ?category=1&category=2
+        value.forEach((val) => searchParams.append(key, val));
+      } else if (value !== undefined && value !== null) {
+        // 단일 값인 경우 -> ?page=0
+        searchParams.append(key, value);
+      }
+    });
+
     searchParams.sort(); // 알파벳 순으로 파라미터 정렬 (캐싱 효율 상승)
     queryString = `?${searchParams.toString()}`;
   }

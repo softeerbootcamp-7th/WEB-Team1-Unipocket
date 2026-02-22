@@ -34,12 +34,12 @@ class TemporaryExpenseCommandServiceTest {
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 
-	private TemporaryExpenseCommandService service;
+	private TempExpenseService service;
 
 	@BeforeEach
 	void setUp() {
 		service =
-				new TemporaryExpenseCommandService(
+				new TempExpenseService(
 						temporaryExpenseRepository,
 						tempExpenseMetaRepository,
 						accountBookRateInfoProvider,

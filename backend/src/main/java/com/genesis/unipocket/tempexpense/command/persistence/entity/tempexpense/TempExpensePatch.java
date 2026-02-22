@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -59,6 +60,23 @@ public record TempExpensePatch(
 				occurredAt,
 				normalizeBlank(cardLastFourDigits),
 				normalizeBlank(approvalNumber));
+	}
+
+	public static TempExpensePatch from(
+			TemporaryExpenseUpdateCommand command, CurrencyCode resolvedBaseCurrencyCode) {
+		return from(
+				command.merchantName(),
+				command.category(),
+				command.localCountryCode(),
+				command.localCurrencyAmount(),
+				resolvedBaseCurrencyCode,
+				command.baseCurrencyAmount(),
+				null,
+				command.paymentsMethod(),
+				command.memo(),
+				command.occurredAt(),
+				command.cardLastFourDigits(),
+				null);
 	}
 
 	private static String normalizeBlank(String value) {

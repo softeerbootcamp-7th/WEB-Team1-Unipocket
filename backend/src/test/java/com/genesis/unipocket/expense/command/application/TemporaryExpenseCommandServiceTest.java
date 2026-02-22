@@ -7,7 +7,7 @@ import static org.mockito.Mockito.*;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
-import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseCommandService;
+import com.genesis.unipocket.tempexpense.command.application.TempExpenseService;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.application.result.TemporaryExpenseResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
@@ -39,14 +39,14 @@ class TemporaryExpenseCommandServiceTest {
 	@Mock private TempExpenseMetaRepository tempExpenseMetaRepository;
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 
-	private TemporaryExpenseCommandService service;
+	private TempExpenseService service;
 
 	private TemporaryExpense testExpense;
 
 	@BeforeEach
 	void setUp() {
 		service =
-				new TemporaryExpenseCommandService(
+				new TempExpenseService(
 						repository,
 						tempExpenseMetaRepository,
 						accountBookRateInfoProvider,
@@ -230,8 +230,8 @@ class TemporaryExpenseCommandServiceTest {
 	}
 
 	@Test
-	@DisplayName("ABNORMAL 상태는 수정해도 ABNORMAL 유지")
-	void updateTemporaryExpense_Abnormal_StaysAbnormal() {
+	@DisplayName("ABNORMAL 상태도 필드가 정상화되면 NORMAL로 변경")
+	void updateTemporaryExpense_Abnormal_BecomesNormalWhenDataIsFixed() {
 		// given
 		Long tempExpenseId = 1L;
 		TemporaryExpense abnormalExpense =
@@ -263,6 +263,6 @@ class TemporaryExpenseCommandServiceTest {
 		TemporaryExpenseResult result = service.updateTemporaryExpense(tempExpenseId, command);
 
 		// then
-		assertThat(result.status()).isEqualTo("ABNORMAL");
+		assertThat(result.status()).isEqualTo("NORMAL");
 	}
 }

@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class TemporaryExpenseCommandService {
+public class TempExpenseService {
 
 	private final TemporaryExpenseRepository temporaryExpenseRepository;
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;
@@ -36,47 +36,39 @@ public class TemporaryExpenseCommandService {
 	public TemporaryExpenseResult updateTemporaryExpense(
 			Long tempExpenseId, TemporaryExpenseUpdateCommand command) {
 		TemporaryExpense entity = findById(tempExpenseId);
+		return updateTemporaryExpense(entity, command, null);
+	}
 
-		var resolvedBaseCountryCode = resolveBaseCountryCode(command, entity);
-		TempExpensePatch patch =
-				TempExpensePatch.from(
-						command.merchantName(),
-						command.category(),
-						command.localCountryCode(),
-						command.localCurrencyAmount(),
-						resolvedBaseCountryCode,
+	TemporaryExpenseResult updateTemporaryExpense(
+			TemporaryExpense entity,
+			TemporaryExpenseUpdateCommand command,
+			CurrencyCode defaultBaseCurrencyCode) {
+		var amountInfo = entity.getAmountInfoOrEmpty();
+		CurrencyCode fallbackBaseCurrencyCode =
+				command.baseCountryCode() == null
+								&& amountInfo.getBaseCurrencyCode() == null
+								&& command.baseCurrencyAmount() != null
+						? (defaultBaseCurrencyCode != null
+								? defaultBaseCurrencyCode
+								: defaultBaseCurrency(entity))
+						: null;
+		var resolvedBaseCountryCode =
+				amountInfo.resolvePatchBaseCurrencyCode(
+						command.baseCountryCode(),
 						command.baseCurrencyAmount(),
-						null,
-						command.paymentsMethod(),
-						command.memo(),
-						command.occurredAt(),
-						command.cardLastFourDigits(),
-						null);
+						fallbackBaseCurrencyCode);
+		TempExpensePatch patch = TempExpensePatch.from(command, resolvedBaseCountryCode);
 		entity.applyPatch(patch, tempExpenseStatusPolicy);
 		return TemporaryExpenseResult.from(temporaryExpenseRepository.save(entity));
 	}
 
-	private CurrencyCode resolveBaseCountryCode(
-			TemporaryExpenseUpdateCommand command, TemporaryExpense entity) {
-		if (command.baseCountryCode() != null) {
-			return command.baseCountryCode();
-		}
-		if (entity.getBaseCountryCode() != null) {
-			return entity.getBaseCountryCode();
-		}
-		if (command.baseCurrencyAmount() != null) {
-			TempExpenseMeta meta =
-					tempExpenseMetaRepository
-							.findById(entity.getTempExpenseMetaId())
-							.orElseThrow(
-									() ->
-											new BusinessException(
-													ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
-			return accountBookRateInfoProvider
-					.getRateInfo(meta.getAccountBookId())
-					.baseCurrencyCode();
-		}
-		return null;
+	private CurrencyCode defaultBaseCurrency(TemporaryExpense entity) {
+		TempExpenseMeta meta =
+				tempExpenseMetaRepository
+						.findById(entity.getTempExpenseMetaId())
+						.orElseThrow(
+								() -> new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND));
+		return accountBookRateInfoProvider.getRateInfo(meta.getAccountBookId()).baseCurrencyCode();
 	}
 
 	@Transactional

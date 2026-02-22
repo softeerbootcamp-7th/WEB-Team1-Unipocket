@@ -10,13 +10,7 @@ public class TempExpenseStatusPolicy {
 	private static final BigDecimal ABNORMAL_THRESHOLD = new BigDecimal("0.10");
 
 	public TemporaryExpenseStatus resolve(
-			TemporaryExpenseStatus originalStatus,
-			TempExpenseContentInfo content,
-			TempExpenseAmountInfo amount) {
-		if (originalStatus == TemporaryExpenseStatus.ABNORMAL) {
-			return TemporaryExpenseStatus.ABNORMAL;
-		}
-
+			TempExpenseContentInfo content, TempExpenseAmountInfo amount) {
 		boolean hasRequiredFields =
 				content.hasRequired()
 						&& amount.getLocalCurrencyCode() != null

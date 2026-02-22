@@ -77,15 +77,9 @@ public class TemporaryExpense {
 		if (patch == null || !patch.hasAnyChange()) {
 			return;
 		}
-		if (this.contentInfo == null) {
-			this.contentInfo = TempExpenseContentInfo.of(null, null, null, null);
-		}
-		if (this.amountInfo == null) {
-			this.amountInfo = TempExpenseAmountInfo.of(null, null, null, null, null);
-		}
-		if (this.paymentInfo == null) {
-			this.paymentInfo = TempExpensePaymentInfo.of(null, null, null);
-		}
+		this.contentInfo = getContentInfoOrEmpty();
+		this.amountInfo = getAmountInfoOrEmpty();
+		this.paymentInfo = getPaymentInfoOrEmpty();
 
 		this.contentInfo =
 				this.contentInfo.merge(
@@ -100,7 +94,19 @@ public class TemporaryExpense {
 		this.paymentInfo =
 				this.paymentInfo.merge(
 						patch.paymentsMethod(), patch.cardLastFourDigits(), patch.approvalNumber());
-		this.status = statusPolicy.resolve(this.status, this.contentInfo, this.amountInfo);
+		this.status = statusPolicy.resolve(this.contentInfo, this.amountInfo);
+	}
+
+	public TempExpenseContentInfo getContentInfoOrEmpty() {
+		return contentInfo != null ? contentInfo : TempExpenseContentInfo.empty();
+	}
+
+	public TempExpenseAmountInfo getAmountInfoOrEmpty() {
+		return amountInfo != null ? amountInfo : TempExpenseAmountInfo.empty();
+	}
+
+	public TempExpensePaymentInfo getPaymentInfoOrEmpty() {
+		return paymentInfo != null ? paymentInfo : TempExpensePaymentInfo.empty();
 	}
 
 	// Legacy accessors to keep existing service/query code stable during 1st refactor step.

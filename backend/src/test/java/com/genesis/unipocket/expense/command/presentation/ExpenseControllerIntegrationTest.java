@@ -584,6 +584,31 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 수기 작성 - merchantName 40자 초과 입력 시 실패")
+	void 수기지출_merchant_40자초과_입력시_실패() throws Exception {
+		String body =
+				"""
+			{
+			"merchantName": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			"category": 2,
+			"userCardId": null,
+			"occurredAt": "2026-02-04T12:30:00Z",
+			"localCurrencyAmount": 10000.0,
+			"localCurrencyCode": "KRW",
+			"memo": "invalid"
+			}
+			""";
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"));
+	}
+
+	@Test
 	@DisplayName("지출내역 필터링 - 복합 조건 필터")
 	void 지출내역_복합조건_필터링_성공() throws Exception {
 		// given - 다양한 조건의 지출내역 생성

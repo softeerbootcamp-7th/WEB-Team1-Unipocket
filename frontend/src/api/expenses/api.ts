@@ -95,6 +95,7 @@ const getExpenses = (
     if (filter.category && filter.category.length > 0) {
       params.category = filter.category.map((id) => id.toString());
     }
+    if (filter.travelId) params.travelId = filter.travelId.toString();
     if (filter.page !== undefined) {
       params.page = filter.page.toString();
     }

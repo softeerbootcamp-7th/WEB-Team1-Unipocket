@@ -49,10 +49,12 @@ const TravelContextMenu = ({
         align="start"
         sideOffset={0}
         className="rounded-modal-16 border-line-normal-neutral bg-background-normal shadow-semantic-subtle flex flex-col items-start border p-2"
+        role="menu"
       >
         {menuItems.map((item) => (
           <button
             key={item.label}
+            role="menuitem"
             className="body1-normal-bold text-label-normal hover:bg-fill-alternative rounded-modal-8 w-25 cursor-pointer px-2 py-3 text-start"
             onClick={() => {
               item.action();

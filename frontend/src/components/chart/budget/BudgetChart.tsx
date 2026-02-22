@@ -7,6 +7,7 @@ import type { ChartMode } from '@/components/chart/chartType';
 import ChartContainer from '@/components/chart/layout/ChartContainer';
 import ChartContent from '@/components/chart/layout/ChartContent';
 import ChartHeader from '@/components/chart/layout/ChartHeader';
+import { CHART_MESSAGES } from '@/components/chart/message';
 import Button from '@/components/common/Button';
 
 import { useWidgetQuery } from '@/api/widget/query';
@@ -19,7 +20,8 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
   const usedAmount = Number(data?.baseSpentAmount) || 0;
   const localUsedAmount = Number(data?.localSpentAmount) || 0;
 
-  const showSkeleton = isPreview || isLoading || !data || budgetAmount === 0;
+  const showSkeleton = isPreview || isLoading || !data;
+  const isEmpty = !showSkeleton && budgetAmount === 0;
 
   return (
     <ChartContainer isPreview={isPreview}>
@@ -31,6 +33,8 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
       <ChartContent
         className="w-full p-5"
         isPreview={showSkeleton}
+        isEmpty={isEmpty}
+        emptyMessage={CHART_MESSAGES.BUDGET_EMPTY}
         skeleton={<BudgetChartSkeleton />}
       >
         {data && (

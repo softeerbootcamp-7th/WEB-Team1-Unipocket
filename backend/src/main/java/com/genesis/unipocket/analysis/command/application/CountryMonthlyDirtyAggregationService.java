@@ -274,7 +274,7 @@ public class CountryMonthlyDirtyAggregationService {
 				.toList();
 	}
 
-private CurrencyCode parseCurrencyCode(String code) {
+	private CurrencyCode parseCurrencyCode(String code) {
 		if (code == null) {
 			return null;
 		}
@@ -292,7 +292,6 @@ private CurrencyCode parseCurrencyCode(String code) {
 				return null;
 			}
 		}
-	}
 	}
 
 	private void finalizeDirtyRun(Long dirtyId, LocalDateTime claimTime) {

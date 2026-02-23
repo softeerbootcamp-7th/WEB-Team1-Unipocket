@@ -354,7 +354,7 @@ class ExpenseControllerIntegrationTest {
 								.param("page", "0")
 								.param("size", "20")
 								.param("sort", "occurredAt,desc")
-								.param("cardFourDigits", "1234"))
+								.param("cardNumber", "1234"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(1))

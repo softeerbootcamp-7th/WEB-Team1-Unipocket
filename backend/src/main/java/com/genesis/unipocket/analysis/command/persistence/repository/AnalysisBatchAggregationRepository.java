@@ -1,7 +1,7 @@
 package com.genesis.unipocket.analysis.command.persistence.repository;
 
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.global.common.enums.Category;

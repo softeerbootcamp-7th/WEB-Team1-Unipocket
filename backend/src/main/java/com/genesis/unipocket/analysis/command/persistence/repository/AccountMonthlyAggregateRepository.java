@@ -1,8 +1,8 @@
 package com.genesis.unipocket.analysis.command.persistence.repository;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyAggregateEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

@@ -32,6 +32,7 @@ const TravelPage = () => {
 
       {/* 생성 1단계: 포켓명 입력 */}
       <TravelPocketModal
+        key={activeModal.type === 'CREATE_NAME' ? 'open' : undefined}
         mode="create"
         isOpen={isOpen && activeModal.type === 'CREATE_NAME'}
         onClose={closeModal}
@@ -40,6 +41,7 @@ const TravelPage = () => {
 
       {/* 생성 2단계: 기간 선택 */}
       <SelectDateModal
+        key={activeModal.type === 'CREATE_DATE' ? 'open' : undefined}
         isOpen={isOpen && activeModal.type === 'CREATE_DATE'}
         onClose={closeModal}
         onConfirm={(dateRange) => {
@@ -110,14 +112,16 @@ const TravelPage = () => {
       />
 
       {/* 썸네일 변경 */}
-      {activeModal.type === 'EDIT_THUMBNAIL' && (
-        <TravelPocketImgModal
-          isOpen={isOpen}
-          onClose={closeModal}
-          travelId={activeModal.travelId}
-          imageKey={activeModal.imageKey}
-        />
-      )}
+      <TravelPocketImgModal
+        isOpen={isOpen && activeModal.type === 'EDIT_THUMBNAIL'}
+        onClose={closeModal}
+        travelId={
+          activeModal.type === 'EDIT_THUMBNAIL' ? activeModal.travelId : 0
+        }
+        imageKey={
+          activeModal.type === 'EDIT_THUMBNAIL' ? activeModal.imageKey : null
+        }
+      />
     </div>
   );
 };

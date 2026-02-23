@@ -70,7 +70,7 @@ const DataTable = <TData,>({
           dispatch({ type: 'SET_AMOUNT_CELL', payload });
           break;
         case 'method':
-          dispatch({ type: 'SET_PAYMENT_CELL', payload });
+          dispatch({ type: 'SET_METHOD_CELL', payload });
           break;
         default:
           break;

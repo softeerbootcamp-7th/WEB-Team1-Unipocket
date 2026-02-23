@@ -1,7 +1,9 @@
 import { useFilteredExpenses } from '@/hooks/useFilteredExpenses';
 
 import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
+import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
+import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import TableSidePanel from '@/components/side-panel/TableSidePanel';
@@ -21,6 +23,8 @@ const ExpenseTable = () => {
         <SelectionActionBar />
         <TextCellEditor />
         <CategoryCellEditor />
+        <AmountCellEditor />
+        <MethodCellEditor />
         <TableSidePanel />
       </BaseExpenseTable>
     </div>

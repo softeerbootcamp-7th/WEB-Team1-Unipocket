@@ -83,6 +83,9 @@ export const columns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'baseCurrencyAmount',
+    meta: {
+      cellEditor: 'amount',
+    },
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
       const amount = row.original.baseCurrencyAmount;

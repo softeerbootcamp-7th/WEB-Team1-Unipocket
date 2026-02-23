@@ -1,3 +1,8 @@
+export const ERROR_MESSAGE = {
+  LENGTH13: '공백 포함 최대 13자까지 입력 가능합니다.',
+  INVALID_CHAR: '허용되지 않는 문자가 포함되어 있습니다.',
+} as const;
+
 export const PAGE_TITLE = {
   TRAVEL: {
     title: '여행 포켓',

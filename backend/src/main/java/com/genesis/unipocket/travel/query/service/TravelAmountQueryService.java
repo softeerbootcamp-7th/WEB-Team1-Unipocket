@@ -2,7 +2,7 @@ package com.genesis.unipocket.travel.query.service;
 
 import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;

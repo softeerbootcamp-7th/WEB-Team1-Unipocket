@@ -1,6 +1,5 @@
-import clsx from 'clsx';
-
 import { type IconName, Icons } from '@/assets';
+import { cn } from '@/lib/utils';
 
 interface IconProps {
   width?: number;
@@ -8,6 +7,7 @@ interface IconProps {
   color?: string;
   iconName: IconName;
   ariaLabel?: string;
+  className?: string;
   onClick?: () => void;
 }
 
@@ -26,6 +26,7 @@ const Icon = ({
   color = 'text-label-alternative',
   iconName,
   ariaLabel,
+  className,
   onClick,
 }: IconProps) => {
   const IconComponent = Icons[iconName];
@@ -35,10 +36,11 @@ const Icon = ({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel ?? `${iconName} 버튼`}
-      className={clsx(
+      className={cn(
         color,
-        'hover:bg-fill-normal flex items-center justify-center rounded-lg transition-opacity',
+        'hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
         `w-[${width}px] h-[${height}px]`,
+        className,
       )}
     >
       <IconComponent width={width} height={height} />

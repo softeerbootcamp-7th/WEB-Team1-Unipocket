@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { LinkedCardItem } from '@/components/setting-page/LinkedCardItem';
 import CardCreateModal from '@/components/setting-page/modal/CardCreateModal';
 import CardDeleteModal from '@/components/setting-page/modal/CardDeleteModal';
 import CardNicknameModal from '@/components/setting-page/modal/CardNicknameModal';
@@ -9,57 +10,16 @@ import {
 } from '@/components/setting-page/SettingLayout';
 
 import {
-  useCardsSuspenseQuery,
+  useCardsQuery,
   useCreateCardMutation,
   useDeleteCardMutation,
   useUpdateCardNicknameMutation,
 } from '@/api/cards/query';
 import type { Card } from '@/api/cards/type';
-import { Cards, Icons } from '@/assets';
-
-interface LinkedCardItemProps {
-  card: Card;
-  onEdit: (card: Card) => void;
-  onDelete: (card: Card) => void;
-}
-const LinkedCardItem = ({ card, onEdit, onDelete }: LinkedCardItemProps) => {
-  return (
-    <div className="flex items-center justify-between border-b border-gray-100 py-3 last:border-0">
-      <div className="flex items-center gap-4">
-        <div className="h-10 w-16 overflow-hidden rounded-md border border-gray-200 bg-white">
-          <Cards.Default className="h-full w-full object-cover" />
-        </div>
-
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-semibold text-gray-900">
-            {card.cardCompany}
-          </span>
-          <span className="text-gray-400">({card.cardNumber})</span>
-          <span className="mx-1 text-gray-300">|</span>
-          <span className="text-gray-500">{card.nickName}</span>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          className="rounded-full p-2 transition-colors hover:bg-gray-100"
-          onClick={() => onEdit(card)}
-        >
-          <Icons.Update className="h-5 w-5 text-gray-400" />
-        </button>
-        <button
-          className="rounded-full p-2 text-red-400 transition-colors hover:bg-gray-100"
-          onClick={() => onDelete(card)}
-        >
-          <Icons.Trash className="h-5 w-5" />
-        </button>
-      </div>
-    </div>
-  );
-};
+import { Icons } from '@/assets';
 
 const LinkedCardList = () => {
-  const { data: cards } = useCardsSuspenseQuery();
+  const { data: cards, isLoading } = useCardsQuery();
   const createCardMutation = useCreateCardMutation();
   const updateCardNicknameMutation = useUpdateCardNicknameMutation();
   const deleteCardMutation = useDeleteCardMutation();
@@ -80,7 +40,7 @@ const LinkedCardList = () => {
 
   const handleEditNickname = (cardId: number, nickName: string) => {
     updateCardNicknameMutation.mutate(
-      { cardId, data: { nickName } },
+      { cardId, data: { nickname: nickName } },
       { onSuccess: () => setEditingCard(null) },
     );
   };
@@ -90,6 +50,10 @@ const LinkedCardList = () => {
       onSuccess: () => setDeletingCard(null),
     });
   };
+
+  if (isLoading || !cards) {
+    return null;
+  }
 
   return (
     <SettingSection>
@@ -111,13 +75,15 @@ const LinkedCardList = () => {
         )}
 
         <button
-          className="flex items-center gap-4 py-3"
+          className="flex cursor-pointer items-center gap-4 py-3"
           onClick={() => setCreateModalOpen(true)}
         >
-          <div className="flex h-10 w-16 items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50">
-            <span className="text-xl text-gray-400">+</span>
+          <div className="rounded-modal-4 border-label-assistive flex h-12.25 w-19.5 items-center justify-center border">
+            <Icons.Add className="text-label-assistive size-6" />
           </div>
-          <span className="text-sm text-gray-500">새 카드 추가</span>
+          <span className="headline1-medium text-label-alternative">
+            새 카드 추가
+          </span>
         </button>
       </div>
 
@@ -150,8 +116,4 @@ const LinkedCardList = () => {
   );
 };
 
-const CardListSkeleton = () => (
-  <div className="h-24 w-full animate-pulse rounded-md bg-black/10" />
-);
-
-export { CardListSkeleton, LinkedCardList };
+export { LinkedCardList };

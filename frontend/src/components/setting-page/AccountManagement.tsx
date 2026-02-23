@@ -6,7 +6,7 @@ import {
 const AccountManagement = () => {
   return (
     <SettingSection>
-      <SettingTitle disabled>계정 삭제</SettingTitle>
+      <SettingTitle className="text-label-assistive">계정 삭제</SettingTitle>
     </SettingSection>
   );
 };

@@ -5,10 +5,7 @@ import {
   ConfiguratorSkeleton,
 } from '@/components/setting-page/AccountBookConfigurator';
 import { AccountManagement } from '@/components/setting-page/AccountManagement';
-import {
-  CardListSkeleton,
-  LinkedCardList,
-} from '@/components/setting-page/LinkedCardList';
+import { LinkedCardList } from '@/components/setting-page/LinkedCardList';
 import {
   MainAccountBookSelector,
   MainAccountBookSkeleton,
@@ -16,15 +13,13 @@ import {
 
 const SettingPage = () => {
   return (
-    <div className="flex flex-1 flex-col px-35 py-7.5">
-      <h1 className="title2-semibold text-label-normal mb-6.5">설정</h1>
+    <div className="flex flex-1 flex-col gap-6.5 px-35 py-7.5">
+      <h1 className="title2-semibold text-label-normal">설정</h1>
       <div className="flex flex-1 flex-col gap-3.5">
         <Suspense fallback={<MainAccountBookSkeleton />}>
           <MainAccountBookSelector />
         </Suspense>
-        <Suspense fallback={<CardListSkeleton />}>
-          <LinkedCardList />
-        </Suspense>
+        <LinkedCardList />
         <Suspense fallback={<ConfiguratorSkeleton />}>
           <AccountBookConfigurator />
         </Suspense>

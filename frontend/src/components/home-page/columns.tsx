@@ -6,10 +6,7 @@ import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { type CategoryId } from '@/types/category';
-
 import type { Expense } from '@/api/expenses/type';
-import type { CurrencyCode } from '@/data/country/currencyCode';
 import { formatCurrency } from '@/lib/country';
 
 export const columns: ColumnDef<Expense>[] = [
@@ -40,7 +37,7 @@ export const columns: ColumnDef<Expense>[] = [
     },
     cell: ({ row, table }) => (
       <div className="relative flex items-center">
-        <span>{row.getValue('merchantName')}</span>
+        <span>{row.original.merchantName}</span>
         <div className="absolute right-0 z-10">
           <SidePanelButton row={row} table={table} />
         </div>
@@ -54,7 +51,7 @@ export const columns: ColumnDef<Expense>[] = [
     },
     header: () => <>카테고리</>,
     cell: ({ row }) => {
-      const categoryId = row.getValue('category') as CategoryId;
+      const categoryId = row.original.category;
       return <CategoryChip categoryId={categoryId} />;
     },
   },
@@ -63,9 +60,7 @@ export const columns: ColumnDef<Expense>[] = [
     header: () => <>현지 통화</>,
     cell: ({ row }) => (
       <>
-        <CurrencyBadge
-          currencyCode={row.getValue('localCurrencyCode') as CurrencyCode}
-        />
+        <CurrencyBadge currencyCode={row.original.localCurrencyCode} />
       </>
     ),
   },
@@ -97,7 +92,7 @@ export const columns: ColumnDef<Expense>[] = [
     accessorKey: 'exchangeRate',
     header: () => <>환율</>,
     cell: ({ row }) => {
-      const rate = parseFloat(row.getValue('exchangeRate'));
+      const rate = parseFloat(row.original.exchangeRate.toString());
 
       const formatted = new Intl.NumberFormat('ko-KR', {
         maximumFractionDigits: 0,
@@ -106,7 +101,7 @@ export const columns: ColumnDef<Expense>[] = [
     },
   },
   {
-    id: 'paymentMethod',
+    accessorKey: 'paymentMethod',
     header: () => <>결제 수단</>,
     meta: {
       cellEditor: 'method',
@@ -117,7 +112,7 @@ export const columns: ColumnDef<Expense>[] = [
     },
   },
   {
-    id: 'travel',
+    accessorKey: 'travel',
     meta: {
       cellEditor: 'text',
     },

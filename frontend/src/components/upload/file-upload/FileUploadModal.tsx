@@ -1,13 +1,12 @@
 import { useState } from 'react';
 
 import Modal from '@/components/modal/Modal';
-import ImageResultModal from '@/components/upload/image-upload/ImageResultModal';
+import FileUploadContent from '@/components/upload/file-upload/FileUploadContent';
+import { useFileUpload } from '@/components/upload/file-upload/useFileUpload';
+import ImageResultModal from '@/components/upload/image-upload/ImageResultModal'; // 임시로 연결 (파일 따로 구현 예정)
 
 import { Icons } from '@/assets';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
-
-import FileUploadContent from './FileUploadContent';
-import { useFileUpload } from './useFileUpload';
 
 interface FileUploadModalProps {
   isOpen: boolean;

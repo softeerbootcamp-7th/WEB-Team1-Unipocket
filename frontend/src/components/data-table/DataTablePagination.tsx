@@ -1,4 +1,31 @@
+import type { ReactNode } from 'react';
+
 import { Icons } from '@/assets';
+
+interface PaginationButtonProps {
+  onClick: () => void;
+  disabled: boolean;
+  ariaLabel: string;
+  children: ReactNode;
+}
+
+const PaginationButton = ({
+  onClick,
+  disabled,
+  ariaLabel,
+  children,
+}: PaginationButtonProps) => {
+  return (
+    <button
+      className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </button>
+  );
+};
 
 interface DataTablePaginationProps {
   page: number;
@@ -16,30 +43,27 @@ export const DataTablePagination = ({
 
   return (
     <div className="bg-background-normal relative flex items-center justify-center pt-1 pb-4">
-      {/* 상단 페이드(블러) 효과 */}
       <div className="from-background-normal to-background-normal/0 pointer-events-none absolute -top-8 left-0 h-8 w-full bg-linear-to-t" />
 
-      <button
-        className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
+      <PaginationButton
         onClick={() => canGoPrev && onPageChange(page - 1)}
         disabled={!canGoPrev}
-        aria-label="이전 페이지"
+        ariaLabel="이전 페이지"
       >
         <Icons.ChevronBack className="size-4" />
-      </button>
+      </PaginationButton>
 
       <div className="body2-normal-medium text-label-alternative px-4">
         {page + 1} / {Math.max(totalPages, 1)}
       </div>
 
-      <button
-        className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30"
+      <PaginationButton
         onClick={() => canGoNext && onPageChange(page + 1)}
         disabled={!canGoNext}
-        aria-label="다음 페이지"
+        ariaLabel="다음 페이지"
       >
         <Icons.ChevronForward className="size-4" />
-      </button>
+      </PaginationButton>
     </div>
   );
 };

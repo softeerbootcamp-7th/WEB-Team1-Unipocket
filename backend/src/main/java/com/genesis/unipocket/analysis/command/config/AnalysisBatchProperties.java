@@ -20,4 +20,5 @@ public class AnalysisBatchProperties {
 	private int retryBaseMinutes = 1;
 	private double outlierIqrMultiplier = 1.5d;
 	private int peerMinSampleSize = 10;
+	private int maxLoopsPerBatch = 200;
 }

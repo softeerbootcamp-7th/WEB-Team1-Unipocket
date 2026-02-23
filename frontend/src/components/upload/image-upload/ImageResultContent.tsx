@@ -94,7 +94,11 @@ const ImageResultContent = ({
               const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
 
               return (
-                <TabTrigger key={file.fileId} value={String(file.fileId)}>
+                <TabTrigger
+                  key={file.fileId}
+                  value={String(file.fileId)}
+                  className="w-full"
+                >
                   <FileImage
                     accountBookId={accountBookId}
                     metaId={metaId}

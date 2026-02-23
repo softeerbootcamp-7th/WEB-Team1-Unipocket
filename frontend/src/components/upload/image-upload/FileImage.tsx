@@ -28,11 +28,15 @@ const FileImage = ({
   // preview
   if (variant === 'preview') {
     return (
-      <div className="bg-background-alternative flex items-center justify-center rounded-2xl border border-gray-200 p-2.5">
+      <div className="border-line-normal-neutral aspect-400/533 w-full max-w-100 rounded-2xl border">
         {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt={fileName} className="h-120 rounded-lg" />
+          <img
+            src={thumbnailUrl}
+            alt={fileName}
+            className="h-full w-full rounded-2xl object-cover"
+          />
         ) : (
-          <div className="h-120 w-full animate-pulse rounded-lg bg-gray-200" />
+          <div className="h-full w-full animate-pulse rounded-2xl bg-gray-200" />
         )}
       </div>
     );
@@ -41,7 +45,7 @@ const FileImage = ({
   // tab
   return (
     <div className="relative flex h-12 w-34.5 cursor-pointer items-center gap-2">
-      <div className="border-line-normal-neutral flex h-12 w-9 items-center justify-center rounded-sm border">
+      <div className="border-line-normal-neutral flex h-12 w-9 shrink-0 items-center justify-center rounded-sm border">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}

@@ -10,4 +10,5 @@ public record ExpenseSearchFilter(
 		List<String> cardNumber, // OR
 		List<Category> category, // OR
 		List<String> merchantName, // OR
+		Boolean isCash,
 		Long travelId) {}

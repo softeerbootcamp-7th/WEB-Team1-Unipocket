@@ -10,6 +10,7 @@ import type {
   TempExpenseFile,
 } from '@/api/temporary-expenses/type';
 
+// 임시 테이블 (이미지 결과 확인에서 사용되는 테이블 가져와서 변경 예정)
 const tempExpenseColumns: ColumnDef<TempExpense>[] = [
   {
     accessorKey: 'occurredAt',

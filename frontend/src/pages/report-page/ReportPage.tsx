@@ -62,7 +62,7 @@ const ReportPage = () => {
   const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
 
   return (
-    <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
+    <div className="flex min-w-283 flex-col gap-8 px-4 pt-8 xl:px-30">
       <PageHeader {...PAGE_TITLE.REPORT} />
       <div className="flex min-w-283 flex-col gap-4.5">
         <div className="flex items-center justify-between">

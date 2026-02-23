@@ -1,4 +1,4 @@
-import { useFilteredExpenses } from '@/hooks/useFilteredExpenses';
+import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 
 import Button from '@/components/common/Button';
 import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
@@ -14,7 +14,9 @@ interface ExpenseTableProps {
 const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
   const travelId = 1; // 임시 @지원이 여행 PR에서 이어서해줄거임!
 
-  const { data, filter, updateFilter } = useFilteredExpenses({ travelId });
+  const { data, filter, updateFilter, totalPages } = useFilteredExpenses({
+    travelId,
+  });
 
   return (
     <BaseExpenseTable
@@ -27,6 +29,7 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
           지출 내역 불러오기
         </Button>
       }
+      totalPages={totalPages}
     >
       <SelectionActionBar />
       <TextCellEditor />

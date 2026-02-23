@@ -13,6 +13,7 @@ export const useInlineExpenseUpdate = () => {
     rowId: string,
     field: K,
     value: NonNullable<UpdateExpenseRequest[K]>,
+    extraUpdates?: Record<string, null | undefined>, //  반대쪽 금액 null 처리를 위해 추가
   ) => {
     const row = table.getRow(rowId);
     if (!row) return;
@@ -30,6 +31,7 @@ export const useInlineExpenseUpdate = () => {
       travelId: original.travel?.travelId || null,
       userCardId: original.paymentMethod.isCash ? null : 0,
       [field]: value, // 변경된 필드만 덮어쓰기
+      ...extraUpdates, // 전달된 null 값이 기존 값을 덮어씌움
     };
 
     mutate({

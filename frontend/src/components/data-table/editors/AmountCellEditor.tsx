@@ -40,10 +40,14 @@ const AmountCellEditorContent = ({
   const handleSave = () => {
     if (value !== String(amountCell.value)) {
       // 현재 열이 현지 금액인지 기준 금액인지 판별
-      const field = amountCell.columnId as
-        | 'localCurrencyAmount'
-        | 'baseCurrencyAmount';
-      updateInline(amountCell.rowId, field, Number(value));
+      const isLocal = amountCell.columnId === 'localCurrencyAmount';
+      const field = isLocal ? 'localCurrencyAmount' : 'baseCurrencyAmount';
+      const oppositeField = isLocal
+        ? 'baseCurrencyAmount'
+        : 'localCurrencyAmount';
+      updateInline(amountCell.rowId, field, Number(value), {
+        [oppositeField]: null,
+      });
     }
     dispatch({ type: 'SET_AMOUNT_CELL', payload: null });
   };

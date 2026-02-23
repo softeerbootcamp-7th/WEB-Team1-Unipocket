@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { type ReactNode, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -9,7 +9,7 @@ import Icon from '@/components/common/Icon';
 import { ModalContext } from '@/components/modal/useModalContext';
 
 export interface ModalButton {
-  label?: string;
+  label?: ReactNode;
   variant?: NonNullable<ButtonProps['variant']>;
 }
 

@@ -1,3 +1,4 @@
+import type React from 'react';
 import { useEffect } from 'react';
 
 import TextInput from '@/components/common/TextInput';
@@ -30,6 +31,12 @@ const TextInputContent = ({
     context.setActionReady(isValid);
   }, [isValid, context]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && isValid) {
+      context.onAction();
+    }
+  };
+
   return (
     <div className="flex h-60.5 w-83.75 flex-col gap-13">
       <div className="flex flex-col items-center gap-2.5">
@@ -46,6 +53,7 @@ const TextInputContent = ({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          onKeyDown={handleKeyDown}
           isError={!!errorMessage}
           errorMessage={errorMessage}
         />

@@ -1,9 +1,10 @@
-import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
+import { useParams } from '@tanstack/react-router';
 
 import Button from '@/components/common/Button';
 import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
+import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import TableSidePanel from '@/components/side-panel/TableSidePanel';
 
@@ -12,7 +13,10 @@ interface ExpenseTableProps {
 }
 
 const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
-  const travelId = 1; // 임시 @지원이 여행 PR에서 이어서해줄거임!
+  const { travelId: travelIdParam } = useParams({
+    from: '/_app/travel/$travelId',
+  });
+  const travelId = Number(travelIdParam);
 
   const { data, filter, updateFilter, totalPages } = useFilteredExpenses({
     travelId,

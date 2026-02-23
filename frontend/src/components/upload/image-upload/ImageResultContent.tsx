@@ -85,12 +85,17 @@ const ImageResultContent = ({
         <TabProvider variant="underline" defaultValue={String(files[0].fileId)}>
           <TabList>
             {files.map((file) => {
-              const successCount = file.expenses.filter(
-                (e) => e.status === 'NORMAL',
-              ).length;
-              const warningCount = file.expenses.filter(
-                (e) => e.status !== 'NORMAL',
-              ).length;
+              const { successCount, warningCount } = file.expenses.reduce(
+                (acc, e) => {
+                  if (e.status === 'NORMAL') {
+                    acc.successCount++;
+                  } else {
+                    acc.warningCount++;
+                  }
+                  return acc;
+                },
+                { successCount: 0, warningCount: 0 },
+              );
               const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
 
               return (

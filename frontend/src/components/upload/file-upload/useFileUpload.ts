@@ -40,7 +40,7 @@ export const useFileUpload = (accountBookId: number) => {
       const presigned = await getPresignedUrl(accountBookId, {
         fileName: file.name,
         mimeType,
-        uploadType: 'FILE',
+        uploadType: 'DOCS',
         tempExpenseMetaId: metaIdRef.current,
       });
 

@@ -427,7 +427,7 @@ public class CountryMonthlyDirtyAggregationService {
 						currencyType);
 		pairMonthlyCategoryAggregateRepository.flush();
 
-		if (monthlyRows.isEmpty()) {
+		if (monthlyRows.isEmpty() || monthlyRows.size() < properties.getPeerMinSampleSize()) {
 			pairMonthlyAggregateRepository
 					.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
 							pairMonthKey.localCountryCode(),

@@ -1,0 +1,142 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: backend-app:1.0
+    ports:
+      - "8080:8080"
+    environment:
+      # 로컬 프로파일 및 모킹된 인프라의 호스트 주소 지정
+      - SPRING_PROFILES_ACTIVE=local-test
+      - REDIS_HOST=redis
+      - LLM_API_URL=http://wiremock:8080
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
+      - AWS_REGION=${AWS_REGION:-ap-northeast-2}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-dummy-bucket}
+      - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT:-http://localstack:4566}
+      # JVM이 컨테이너의 메모리 제한을 인식하게 하는 핵심 옵션
+      - JAVA_OPTS=-XX:MaxRAMPercentage=75.0 -XX:MinRAMPercentage=50.0 -XX:+UseG1GC
+    deploy:
+      resources:
+        limits:
+          # AWS t4g.micro 인스턴스와 유사한 자원 할당
+          cpus: "2.0"
+          memory: 1G
+    depends_on:
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
+      localstack:
+        condition: service_healthy
+      localstack-init:
+        condition: service_completed_successfully
+      wiremock:
+        condition: service_started
+    networks:
+      - perf-network
+
+  mysql:
+    image: mysql:8.4.8
+    container_name: mysql_unipocket_k6test
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root1234
+      - MYSQL_DATABASE=unipocket # 초기 데이터베이스 이름 (필요시 수정)
+    networks:
+      - perf-network
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./sql/seed/exchange_rate.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+
+  redis:
+    image: redis:alpine
+    networks:
+      - perf-network
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4567:4566"
+    environment:
+      - SERVICES=s3,sqs
+      - AWS_DEFAULT_REGION=${AWS_REGION:-ap-northeast-2}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:4566/_localstack/health >/dev/null",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - perf-network
+
+  localstack-init:
+    image: amazon/aws-cli:2.22.13
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
+      - AWS_DEFAULT_REGION=${AWS_REGION:-ap-northeast-2}
+      - AWS_ENDPOINT_URL=${AWS_S3_ENDPOINT:-http://localstack:4566}
+      - S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-dummy-bucket}
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -eu
+        until aws --endpoint-url="$${AWS_ENDPOINT_URL}" s3api list-buckets >/dev/null 2>&1; do
+          echo "waiting for localstack..."
+          sleep 1
+        done
+        if aws --endpoint-url="$${AWS_ENDPOINT_URL}" s3api head-bucket --bucket "$${S3_BUCKET_NAME}" >/dev/null 2>&1; then
+          echo "bucket already exists: $${S3_BUCKET_NAME}"
+        else
+          aws --endpoint-url="$${AWS_ENDPOINT_URL}" s3api create-bucket --bucket "$${S3_BUCKET_NAME}" --create-bucket-configuration LocationConstraint="$${AWS_DEFAULT_REGION}"
+          echo "bucket created: $${S3_BUCKET_NAME}"
+        fi
+    networks:
+      - perf-network
+
+  wiremock:
+    image: wiremock/wiremock:latest
+    ports:
+      - "8081:8080"
+    command: ["--global-response-templating", "--async-response-enabled=true"]
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+    networks:
+      - perf-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      # 앞서 작성한 prometheus.yml 파일을 컨테이너 내부에 마운트
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - perf-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    networks:
+      - perf-network
+
+networks:
+  perf-network:
+    driver: bridge

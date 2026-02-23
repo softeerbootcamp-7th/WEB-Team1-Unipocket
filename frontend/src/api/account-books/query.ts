@@ -145,6 +145,7 @@ const useGetExchangeRateQuery = (
       getExchangeRate(occurredAt, baseCurrencyCode, localCurrencyCode),
     enabled: !!occurredAt && !!baseCurrencyCode && !!localCurrencyCode,
     staleTime: 1000 * 60 * 10, // 10분
+    placeholderData: (previousData) => previousData,
   });
 
 export {

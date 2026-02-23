@@ -83,13 +83,12 @@ const CurrencyConverter = ({
     () => rateUpdatedAt?.toISOString() ?? new Date().toISOString(),
     [rateUpdatedAt],
   );
-  const { data: exchangeRateData, isPending: isRateLoading } =
-    useGetExchangeRateQuery(
-      occurredAt,
-      localCurrencyName as CurrencyCode,
-      baseCurrencyName as CurrencyCode,
-    );
-  const rate = exchangeRateData?.exchangeRate ?? 1;
+  const { data: exchangeRateData } = useGetExchangeRateQuery(
+    occurredAt,
+    localCurrencyName as CurrencyCode,
+    baseCurrencyName as CurrencyCode,
+  );
+  const rate = exchangeRateData?.exchangeRate;
 
   const {
     localCurrency,
@@ -98,7 +97,7 @@ const CurrencyConverter = ({
     baseError,
     handleCurrencyChange,
     isValid,
-  } = useCurrencyConverter(rate);
+  } = useCurrencyConverter(rate ?? 0);
 
   const setActionReady = modalContext?.setActionReady;
 
@@ -156,8 +155,8 @@ const CurrencyConverter = ({
           <Icons.Swap className="text-label-neutral h-4 w-4" />
           <div className="flex flex-col gap-1">
             <p className="label1-normal-medium text-label-normal">
-              {isRateLoading
-                ? '환율 불러오는 중...'
+              {!rate
+                ? '환율 정보 없음'
                 : `${localCurrencyName} 1 = ${baseCurrencyName} ${rate.toLocaleString()}`}
             </p>
             <p className="label1-normal-medium text-label-alternative">

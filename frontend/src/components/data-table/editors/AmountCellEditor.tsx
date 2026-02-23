@@ -5,6 +5,7 @@ import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnch
 import type { ActiveCellState } from '@/components/data-table/type';
 
 import type { Expense } from '@/api/expenses/type';
+import { REGEX } from '@/constants/regex';
 
 const AmountCellEditor = () => {
   const { tableState } = useDataTable();
@@ -60,6 +61,11 @@ const AmountCellEditorContent = ({
     }
   }, [table, amountCell.rowId, amountCell.columnId]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numericValue = e.target.value.replace(REGEX.NON_NUMERIC, '');
+    setValue(numericValue);
+  };
+
   return (
     <CellEditorAnchor
       rect={amountCell.rect}
@@ -72,7 +78,7 @@ const AmountCellEditorContent = ({
         ref={inputRef}
         className="w-full px-1 outline-none"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={handleChange}
         onBlur={handleSave}
         onKeyDown={(e) => e.key === 'Enter' && handleSave()}
       />

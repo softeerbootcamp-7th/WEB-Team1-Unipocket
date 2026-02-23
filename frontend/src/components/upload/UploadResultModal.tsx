@@ -65,6 +65,7 @@ export default function UploadResultModal({
           color="text-label-neutral"
           width={20}
           height={20}
+          ariaLabel="모달 닫기"
           onClick={onClose}
         />
       </div>

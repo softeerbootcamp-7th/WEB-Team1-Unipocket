@@ -27,7 +27,7 @@ const TextInputContent = ({
   const isValid = value.length > 0 && errorMessage === undefined;
 
   useEffect(() => {
-    context?.setActionReady(isValid);
+    context.setActionReady(isValid);
   }, [isValid, context]);
 
   return (

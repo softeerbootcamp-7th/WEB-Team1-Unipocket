@@ -38,7 +38,10 @@ const Modal = ({
 }: ModalProps) => {
   // 모달의 확인 버튼 활성화 여부 (기본값 true: 단순 알림 모달 등을 위해)
   const [isActionReady, setActionReady] = useState(true);
-  const contextValue = useMemo(() => ({ setActionReady }), []);
+  const contextValue = useMemo(
+    () => ({ setActionReady, onAction }),
+    [onAction],
+  );
 
   // null 여부로 버튼 표시 여부 결정 (undefined는 기본값 적용, null은 버튼 숨김)
   const showCancel = cancelButton !== null;

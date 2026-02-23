@@ -19,6 +19,12 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/travels/${travelId}`, // 여행 상세 조회 (GET), 여행 수정 (PUT), 여행 부분 수정 (PATCH), 여행 삭제 (DELETE)
     WIDGETS: (accountBookId: number | string, travelId: number | string) =>
       `account-books/${accountBookId}/travels/${travelId}/widgets`, // 위젯 순서 수정 (PUT)
+    PRESIGNED_URL: (accountBookId: number | string) =>
+      `account-books/${accountBookId}/travels/images/presigned-url`, // 이미지 Presigned URL 발급 (POST)
+    IMAGE_URL: (accountBookId: number | string) =>
+      `account-books/${accountBookId}/travels/image-url`, // 이미지 URL 조회 (GET)
+    AMOUNT: (accountBookId: number | string, travelId: number | string) =>
+      `account-books/${accountBookId}/travels/${travelId}/amount`, // 여행 금액 조회 (GET)
   },
   TEMPORARY_EXPENSES: {
     METAS: (accountBookId: number | string) =>
@@ -93,9 +99,10 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}`, // 가계부 상세 조회 (GET), 가계부 수정 (PATCH), 가계부 삭제 (DELETE)
     BUDGET: (accountBookId: number | string) =>
       `account-books/${accountBookId}/budget`, // 가계부 예산 수정 (PATCH)
-    EXCHANGE_RATE: (accountBookId: number | string) =>
+    ACCOUNT_BOOK_RATE: (accountBookId: number | string) =>
       `account-books/${accountBookId}/exchange-rate`, // 가계부 환율 조회 (GET)
     ANALYSIS: (accountBookId: number | string) =>
       `account-books/${accountBookId}/analysis`, // 분석 전체 요약 조회 (GET)
+    EXCHANGE_RATE: 'exchange-rate', // 환율 조회 (GET)
   },
 } as const;

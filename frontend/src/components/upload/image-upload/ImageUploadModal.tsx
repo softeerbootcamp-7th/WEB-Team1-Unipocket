@@ -1,7 +1,7 @@
 import Snackbar from '@/components/common/Snackbar';
 import Modal from '@/components/modal/Modal';
+import { useImageUpload } from '@/components/upload/hooks/useImageUpload';
 import ImageUploadContent from '@/components/upload/image-upload/ImageUploadContent';
-import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
 
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 

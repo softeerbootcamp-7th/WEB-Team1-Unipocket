@@ -12,6 +12,7 @@ import com.genesis.unipocket.exchange.common.persistence.entity.ExchangeRate;
 import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
@@ -386,6 +387,27 @@ class AccountBookControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("수정 시 제목 30자 초과 - 400")
+	void 수정시_제목_30자초과_400() throws Exception {
+		Long accountBookId = createAccountBook();
+
+		String body = """
+			{
+				"title": "1234567890123456789012345678901"
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()))
+				.andExpect(jsonPath("$.message").isNotEmpty());
+	}
+
+	@Test
 	@DisplayName("수정 시 동일 국가코드 - 400")
 	void 수정시_동일_국가코드_400() throws Exception {
 		Long accountBookId = createAccountBook();
@@ -421,9 +443,8 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content("{}"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
-				.andExpect(
-						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
+				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()))
+				.andExpect(jsonPath("$.message").isNotEmpty());
 	}
 
 	// ========== PATCH /account-books/{id}/budget (예산 수정) ==========

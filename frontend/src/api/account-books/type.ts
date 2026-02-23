@@ -122,21 +122,28 @@ type UpdateAccountBookBudgetResponse = Required<
   >
 >;
 
-type UpdateAccountBookExchangeRateResponse = Required<
+type GetAccountBookExchangeRateResponse = Required<
   Pick<
     AccountBook,
     'baseCountryCode' | 'localCountryCode' | 'exchangeRate' | 'budgetCreatedAt'
   >
 >;
 
+type GetExchangeRateResponse = Required<
+  Pick<AccountBook, 'baseCountryCode' | 'localCountryCode' | 'exchangeRate'>
+> & {
+  occurredAt: string;
+};
+
 export type {
   AccountBook,
   CreateAccountBookRequest,
   CreateAccountBookResponse,
   GetAccountBookDetailResponse,
+  GetAccountBookExchangeRateResponse,
   GetAccountBooksResponse,
+  GetExchangeRateResponse,
   UpdateAccountBookBudgetResponse,
-  UpdateAccountBookExchangeRateResponse,
   UpdateAccountBookRequest,
   UpdateAccountBookResponse,
 };

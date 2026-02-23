@@ -8,6 +8,7 @@ interface TextInputProps {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   errorMessage?: string;
   isError?: boolean;
   isDisabled?: boolean;
@@ -20,6 +21,7 @@ const TextInput = ({
   placeholder,
   value,
   onChange,
+  onKeyDown,
   errorMessage,
   isError = false,
   isDisabled = false,
@@ -60,6 +62,7 @@ const TextInput = ({
           onFocus={() => !isDisabled && setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onChange={(e) => !isDisabled && onChange(e.target.value)}
+          onKeyDown={onKeyDown}
         />
 
         {!isDisabled && showClearButton && (

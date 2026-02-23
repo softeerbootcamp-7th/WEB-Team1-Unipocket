@@ -22,6 +22,7 @@ type TableUIState = {
   amountCell: ActiveCellState | null;
   paymentCell: ActiveCellState | null;
   activeRow: ActiveRowState | null;
+  travelCell: ActiveCellState | null;
 };
 
 type TableUIAction =
@@ -31,6 +32,7 @@ type TableUIAction =
   | { type: 'SET_CATEGORY_CELL'; payload: ActiveCellState | null }
   | { type: 'SET_AMOUNT_CELL'; payload: ActiveCellState | null }
   | { type: 'SET_PAYMENT_CELL'; payload: ActiveCellState | null }
-  | { type: 'SET_ACTIVE_ROW'; payload: ActiveRowState | null };
+  | { type: 'SET_ACTIVE_ROW'; payload: ActiveRowState | null }
+  | { type: 'SET_TRAVEL_CELL'; payload: ActiveCellState | null };
 
 export type { ActiveCellState, ActiveRowState, TableUIAction, TableUIState };

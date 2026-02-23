@@ -3,29 +3,36 @@ import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import type { CountryCode } from '@/data/country/countryCode';
 
 interface FolderCardProps {
-  label: string;
-  localCountryCode: CountryCode; // 현지통화
-  localCountryAmount: number; // 현지금액
-  baseCountryCode: CountryCode; // 기준통화
-  baseCountryAmount: number; // 기준금액
-  dateRange: string;
-  imageUrl: string | null;
+  travelPlaceName: string;
+  startDate: string;
+  endDate: string;
+  localCountryCode: CountryCode;
+  localCountryAmount: number;
+  baseCountryCode: CountryCode;
+  baseCountryAmount: number;
+  imageKey: string | null;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
 const FolderCard = ({
-  label,
-  dateRange,
+  travelPlaceName,
+  startDate,
+  endDate,
   localCountryCode,
   localCountryAmount,
   baseCountryCode,
   baseCountryAmount,
-  imageUrl,
+  imageKey,
+  onContextMenu,
 }: FolderCardProps) => {
   const pathData =
     'M12.3657 1.52247C12.5283 1.90441 12.9032 2.15234 13.3183 2.15234H21.9217C22.4935 2.15234 22.957 2.61586 22.957 3.18764V20.9647C22.957 21.5365 22.4935 22 21.9217 22H1.03529C0.463516 22 0 21.5365 0 20.9647V1.03529C0 0.463517 0.463517 0 1.03529 0H11.0332C11.4483 0 11.8233 0.247929 11.9858 0.629873L12.3657 1.52247Z';
 
   return (
-    <div className="flex w-46.5 flex-col items-center gap-[4.5]">
+    <div
+      className="flex w-46.5 flex-col items-center gap-4.5"
+      onContextMenu={onContextMenu}
+    >
       <div className="hover:animate-grow rounded-modal-16 bg-cool-neutral-99 border-line-normal-neutral relative cursor-pointer border p-2 transition-transform">
         <svg
           viewBox="0 0 23 22"
@@ -54,9 +61,9 @@ const FolderCard = ({
           />
 
           {/* 이미지 레이어 */}
-          {imageUrl && (
+          {imageKey && (
             <image
-              href={imageUrl}
+              href={imageKey}
               width="100%"
               height="100%"
               preserveAspectRatio="xMidYMid slice"
@@ -88,9 +95,11 @@ const FolderCard = ({
         </div>
       </div>
       <div className="flex flex-col gap-1.5 text-center">
-        <h3 className="body1-normal-bold text-label-normal">{label}</h3>
+        <h3 className="body1-normal-bold text-label-normal">
+          {travelPlaceName}
+        </h3>
         <p className="figure-body2-14-semibold text-label-alternative">
-          {dateRange}
+          {`${startDate} - ${endDate}`}
         </p>
       </div>
     </div>

@@ -160,6 +160,10 @@ public enum ErrorCode {
 			HttpStatus.BAD_REQUEST,
 			"400_TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED",
 			"파일 업로드 개수 제한을 초과했습니다."),
+	TEMP_EXPENSE_PARSE_RATE_LIMIT(
+			HttpStatus.TOO_MANY_REQUESTS,
+			"429_TEMP_EXPENSE_PARSE_RATE_LIMIT",
+			"요청이 많아 임시 지출 파싱이 지연되고 있습니다. 잠시 후 다시 시도해주세요."),
 	TEMP_EXPENSE_PARSE_TASK_NOT_FOUND(
 			HttpStatus.NOT_FOUND, "404_TEMP_EXPENSE_PARSE_TASK_NOT_FOUND", "파싱 작업을 찾을 수 없습니다."),
 	TEMP_EXPENSE_INVALID_FILE_TYPE(

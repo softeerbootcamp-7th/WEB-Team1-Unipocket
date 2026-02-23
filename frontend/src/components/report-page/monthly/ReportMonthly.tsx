@@ -3,7 +3,7 @@ import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
-import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
+import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const barWidth = {
@@ -37,7 +37,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
 
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
   const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
-  const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
+  const formattedDiff = formatAmountByCountry(diff, countryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]
@@ -47,7 +47,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
 
   return (
     <ReportContainer title="월별 지출 비교">
-      <ReportContent className="h-60 w-109 gap-7">
+      <ReportContent className="h-fit w-109 gap-8">
         <p className="heading1-bold text-label-normal">
           {!isEqual ? (
             <>

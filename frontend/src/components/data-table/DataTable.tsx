@@ -14,12 +14,14 @@ import {
 
 interface DataTableProps<TData> {
   groupBy?: (row: TData) => string;
+  groupDisplay?: (groupKey: string) => string; // 다른 groupKey로도
   enableGroupSelection?: boolean;
   blankFallbackText?: string;
 }
 
 const DataTable = <TData,>({
   groupBy,
+  groupDisplay,
   enableGroupSelection = true,
   blankFallbackText,
 }: DataTableProps<TData>) => {
@@ -70,6 +72,9 @@ const DataTable = <TData,>({
         case 'method':
           dispatch({ type: 'SET_PAYMENT_CELL', payload });
           break;
+        case 'travel':
+          dispatch({ type: 'SET_TRAVEL_CELL', payload });
+          break;
         default:
           break;
       }
@@ -97,7 +102,7 @@ const DataTable = <TData,>({
       </TableHeader>
       <TableBody>
         {Object.keys(groupedRows).length > 0 ? (
-          Object.entries(groupedRows).map(([date, dateRows]) => {
+          Object.entries(groupedRows).map(([groupKey, dateRows]) => {
             // 2. 해당 그룹의 선택 상태 계산
             const isAllGroupSelected = dateRows.every((row) =>
               row.getIsSelected(),
@@ -106,8 +111,12 @@ const DataTable = <TData,>({
               dateRows.some((row) => row.getIsSelected()) &&
               !isAllGroupSelected;
 
+            const displayLabel = groupDisplay
+              ? groupDisplay(groupKey)
+              : groupKey;
+
             return (
-              <React.Fragment key={date}>
+              <React.Fragment key={groupKey}>
                 {/* 날짜 그룹 헤더 행 */}
                 <TableRow
                   data-group-header
@@ -126,7 +135,7 @@ const DataTable = <TData,>({
                             row.toggleSelected(!!value),
                           );
                         }}
-                        aria-label={`Select all rows for ${date}`}
+                        aria-label={`Select all rows for ${displayLabel}`}
                       />
                     </TableCell>
                   )}
@@ -134,7 +143,7 @@ const DataTable = <TData,>({
                     colSpan={table.getVisibleLeafColumns().length - 1}
                     className="figure-body2-14-semibold text-label-alternative px-3 py-4"
                   >
-                    {date}
+                    {displayLabel}
                   </TableCell>
                 </TableRow>
 

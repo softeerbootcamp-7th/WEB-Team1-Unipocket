@@ -20,6 +20,7 @@ interface Travel {
 interface PaymentMethod {
   isCash: boolean;
   card: {
+    userCardId: number;
     company: CardId;
     label: string;
     lastDigits: string;

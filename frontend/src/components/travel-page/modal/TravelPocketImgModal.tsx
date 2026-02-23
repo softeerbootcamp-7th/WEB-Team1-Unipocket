@@ -5,13 +5,13 @@ interface TravelPocketImgModalProps extends Omit<
   'children' | 'onAction'
 > {
   travelId: number;
-  imageUrl: string | null;
+  imageKey: string | null;
   onAction?: () => void;
 }
 
 const TravelPocketImgModal = ({
   travelId,
-  imageUrl,
+  imageKey,
   onAction,
   onClose,
   ...modalProps
@@ -28,9 +28,9 @@ const TravelPocketImgModal = ({
         <p className="body1-normal-medium text-label-alternative">
           {travelId}UI는 추후 구현 예정
         </p>
-        {imageUrl && (
+        {imageKey && (
           <img
-            src={imageUrl}
+            src={imageKey}
             alt="현재 썸네일"
             className="h-40 w-40 rounded-lg object-cover"
           />

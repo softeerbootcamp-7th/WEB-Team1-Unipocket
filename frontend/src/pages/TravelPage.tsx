@@ -115,7 +115,7 @@ const TravelPage = () => {
           isOpen={isOpen}
           onClose={closeModal}
           travelId={activeModal.travelId}
-          imageUrl={activeModal.imageUrl}
+          imageKey={activeModal.imageKey}
         />
       )}
     </div>

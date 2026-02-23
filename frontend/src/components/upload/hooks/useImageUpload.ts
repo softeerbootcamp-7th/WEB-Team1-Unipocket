@@ -154,6 +154,7 @@ export const useImageUpload = (accountBookId: number) => {
     const closeEventSource = () => {
       eventSource.close();
       delete eventSourcesRef.current[taskId];
+      delete completedRef.current[taskId];
     };
 
     const handleProgressValue = (data: {

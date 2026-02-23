@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 
@@ -50,21 +50,6 @@ const CategoryCellEditorContent = ({
         handleSave();
       },
     });
-
-  useEffect(() => {
-    const scrollContainer = document.querySelector(
-      '[data-slot="table-container"]',
-    );
-
-    if (scrollContainer instanceof HTMLElement) {
-      const originalStyle = scrollContainer.style.overflow;
-      scrollContainer.style.overflow = 'hidden';
-
-      return () => {
-        scrollContainer.style.overflow = originalStyle;
-      };
-    }
-  }, []);
 
   const handleSave = () => {
     dispatch({ type: 'SET_CATEGORY_CELL', payload: null });

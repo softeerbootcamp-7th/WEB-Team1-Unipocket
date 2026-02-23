@@ -84,7 +84,7 @@ const LinkedCardList = () => {
 
   const handleEditNickname = (cardId: number, nickName: string) => {
     updateCardNicknameMutation.mutate(
-      { cardId, data: { nickName } },
+      { cardId, data: { nickname: nickName } },
       { onSuccess: () => setEditingCard(null) },
     );
   };

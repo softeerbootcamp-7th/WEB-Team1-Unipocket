@@ -12,5 +12,5 @@ export interface CreateCardRequest {
 }
 
 export interface UpdateCardNicknameRequest {
-  nickName: string;
+  nickname: string;
 }

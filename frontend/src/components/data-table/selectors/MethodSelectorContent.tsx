@@ -7,7 +7,7 @@ import { DataTableOptionList } from '@/components/data-table/DataTableOptionList
 import { PopoverContent } from '@/components/ui/popover';
 
 import { useGetCardsQuery } from '@/api/users/query';
-import { CASH } from '@/constants/method';
+import { CASH } from '@/constants/column';
 
 interface MethodSelectorContentProps extends PopoverContentProps {
   initialCardNumber: string | null;

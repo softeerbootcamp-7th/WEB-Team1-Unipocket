@@ -213,6 +213,9 @@ export const useImageUpload = (accountBookId: number) => {
         const parsed = JSON.parse((event as MessageEvent).data);
         handleProgressValue(parsed);
       } catch {
+        toast.error(
+          '분석 진행 상태를 가져오는 중 문제가 발생했어요. 다시 시도해주세요.',
+        );
         closeEventSource();
       }
     });

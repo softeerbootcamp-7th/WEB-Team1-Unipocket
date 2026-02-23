@@ -1,6 +1,7 @@
-import { useGetMetaFilesQuery } from '@/api/temporary-expenses/query';
 import ImageResultContent from '@/components/upload/image-upload/ImageResultContent';
 import UploadResultModal from '@/components/upload/UploadResultModal';
+
+import { useGetMetaFilesQuery } from '@/api/temporary-expenses/query';
 
 interface ImageResultModalProps {
   isOpen: boolean;

@@ -29,17 +29,12 @@ export const useImageUpload = (accountBookId: number) => {
     itemsRef.current = items;
   }, [items]);
 
-  // unmount 시 모든 SSE 정리
   useEffect(() => {
     const eventSources = eventSourcesRef.current;
-    const items = itemsRef.current;
     return () => {
       Object.values(eventSources).forEach((es) => es.close());
-
-      items.forEach((item) => {
-        if (item.url) {
-          URL.revokeObjectURL(item.url);
-        }
+      itemsRef.current.forEach((item) => {
+        if (item.url) URL.revokeObjectURL(item.url);
       });
     };
   }, []);
@@ -52,7 +47,6 @@ export const useImageUpload = (accountBookId: number) => {
 
     for (const file of files) {
       const id = crypto.randomUUID();
-
       const previewUrl = URL.createObjectURL(file);
 
       setItems((prev) => [
@@ -66,7 +60,6 @@ export const useImageUpload = (accountBookId: number) => {
       ]);
 
       try {
-        // 1. presigned 발급
         const presigned = await getPresignedUrl(accountBookId, {
           fileName: file.name,
           mimeType: file.type,
@@ -74,7 +67,6 @@ export const useImageUpload = (accountBookId: number) => {
           tempExpenseMetaId: metaIdRef.current,
         });
 
-        // 메타 ID 재사용 (1:N 업로드)
         metaIdRef.current = presigned.tempExpenseMetaId;
 
         setItems((prev) =>
@@ -83,18 +75,13 @@ export const useImageUpload = (accountBookId: number) => {
           ),
         );
 
-        // 2️. S3 업로드
         const response = await fetch(presigned.presignedUrl, {
           method: 'PUT',
           body: file,
-          headers: {
-            'Content-Type': file.type,
-          },
+          headers: { 'Content-Type': file.type },
         });
 
-        if (!response.ok) {
-          throw new Error(`S3 upload failed: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`S3 upload failed`);
 
         setItems((prev) =>
           prev.map((item) =>
@@ -120,16 +107,12 @@ export const useImageUpload = (accountBookId: number) => {
     if (uploadedItems.length === 0) return false;
 
     try {
-      const s3Keys = uploadedItems.map((item) => {
-        return item.s3Key!;
-      });
-
+      const s3Keys = uploadedItems.map((item) => item.s3Key!);
       const parse = await startParse(accountBookId, {
         tempExpenseMetaId: metaIdRef.current!,
         s3Keys,
       });
 
-      // 3. 파싱 시작과 동시에 상태 변경 (SSE로 성공/실패 업데이트 예정)
       setItems((prev) =>
         prev.map((item) =>
           item.status === UPLOAD_STATUS.UPLOADED
@@ -138,7 +121,6 @@ export const useImageUpload = (accountBookId: number) => {
         ),
       );
 
-      // 4. SSE 연결
       connectSSE(parse.taskId);
       setParseSnackbar({
         isOpen: true,
@@ -160,12 +142,8 @@ export const useImageUpload = (accountBookId: number) => {
       accountBookId,
       taskId,
     );
-
     const url = `${baseUrl}/${endpoint}`;
-
-    const eventSource = new EventSource(url, {
-      withCredentials: true,
-    });
+    const eventSource = new EventSource(url, { withCredentials: true });
 
     eventSourcesRef.current[taskId] = eventSource;
 
@@ -174,36 +152,50 @@ export const useImageUpload = (accountBookId: number) => {
       delete eventSourcesRef.current[taskId];
     };
 
-    const markTaskAsParsed = () => {
-      if (completedRef.current[taskId]) return;
-      completedRef.current[taskId] = true;
-
-      setItems((prev) =>
-        prev.map((item) =>
-          item.taskId === taskId
-            ? { ...item, status: UPLOAD_STATUS.PARSED }
-            : item,
-        ),
-      );
-
-      setParseSnackbar({
-        isOpen: true,
-        status: 'success',
-        description: '100%',
-      });
-    };
-
-    const handleProgressValue = (progress?: number) => {
+    const handleProgressValue = (data: {
+      progress?: number;
+      fileKey?: string;
+      code?: string;
+    }) => {
+      const { progress, fileKey, code } = data;
       if (typeof progress !== 'number') return;
 
       const normalizedProgress = Math.max(0, Math.min(100, progress));
 
+      // 1. 개별 파일 완료 상태 업데이트 (fileKey 매칭)
+      if (fileKey && code === 'SUCCESS') {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.s3Key === fileKey
+              ? { ...item, status: UPLOAD_STATUS.PARSED }
+              : item,
+          ),
+        );
+      }
+
+      // 2. 전체 완료 처리 (100% 도달 시)
       if (normalizedProgress >= 100) {
-        markTaskAsParsed();
+        if (completedRef.current[taskId]) return;
+        completedRef.current[taskId] = true;
+
+        setItems((prev) =>
+          prev.map((item) =>
+            item.taskId === taskId
+              ? { ...item, status: UPLOAD_STATUS.PARSED }
+              : item,
+          ),
+        );
+
+        setParseSnackbar({
+          isOpen: true,
+          status: 'success',
+          description: '100%',
+        });
         closeEventSource();
         return;
       }
 
+      // 3. 진행률 스낵바 업데이트
       setParseSnackbar((prev) => ({
         ...prev,
         isOpen: true,
@@ -211,54 +203,31 @@ export const useImageUpload = (accountBookId: number) => {
       }));
     };
 
-    const parseEventData = (rawData: string) => {
-      return JSON.parse(rawData) as {
-        progress?: number;
-      };
-    };
-
-    eventSource.onmessage = (event) => {
-      try {
-        const parsed = parseEventData(event.data);
-        handleProgressValue(parsed.progress);
-      } catch {
-        closeEventSource();
-      }
-    };
-
+    // 'progress' 이벤트 리스너
     eventSource.addEventListener('progress', (event) => {
       try {
-        const parsed = parseEventData((event as MessageEvent).data);
-        handleProgressValue(parsed.progress);
+        const parsed = JSON.parse((event as MessageEvent).data);
+        handleProgressValue(parsed);
       } catch {
         closeEventSource();
       }
     });
 
-    eventSource.addEventListener('complete', (event) => {
+    // 기본 message 리스너 (보험용)
+    eventSource.onmessage = (event) => {
       try {
-        const parsed = parseEventData((event as MessageEvent).data);
-        if (typeof parsed.progress === 'number') {
-          handleProgressValue(parsed.progress);
-          return;
-        }
-        markTaskAsParsed();
-        closeEventSource();
+        const parsed = JSON.parse(event.data);
+        handleProgressValue(parsed);
       } catch {
         closeEventSource();
       }
-    });
+    };
 
     eventSource.onerror = () => {
       if (!completedRef.current[taskId]) {
         toast.error('분석 중 연결이 끊어졌어요. 다시 시도해주세요.');
       }
-
-      setParseSnackbar({
-        isOpen: false,
-        status: 'default',
-      });
-
+      setParseSnackbar({ isOpen: false, status: 'default' });
       closeEventSource();
     };
   };
@@ -270,30 +239,19 @@ export const useImageUpload = (accountBookId: number) => {
   const removeItem = (id: string) => {
     setItems((prev) => {
       const itemToRemove = prev.find((item) => item.id === id);
-
       if (itemToRemove?.taskId) {
         const isLastItemForTask = !prev.some(
           (item) => item.id !== id && item.taskId === itemToRemove.taskId,
         );
-        if (isLastItemForTask) {
-          const eventSource = eventSourcesRef.current[itemToRemove.taskId];
-          if (eventSource) {
-            eventSource.close();
-            delete eventSourcesRef.current[itemToRemove.taskId];
-          }
+        if (isLastItemForTask && eventSourcesRef.current[itemToRemove.taskId]) {
+          eventSourcesRef.current[itemToRemove.taskId].close();
+          delete eventSourcesRef.current[itemToRemove.taskId];
         }
       }
-
-      if (itemToRemove?.url) {
-        URL.revokeObjectURL(itemToRemove.url);
-      }
+      if (itemToRemove?.url) URL.revokeObjectURL(itemToRemove.url);
 
       const nextItems = prev.filter((item) => item.id !== id);
-
-      if (nextItems.length === 0) {
-        metaIdRef.current = undefined;
-      }
-
+      if (nextItems.length === 0) metaIdRef.current = undefined;
       return nextItems;
     });
   };

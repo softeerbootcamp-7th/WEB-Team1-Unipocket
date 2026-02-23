@@ -50,3 +50,24 @@ export const formatDateWithDay = (date: Date): string => {
   const weekDay = DAY_NAMES[date.getDay()];
   return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}.${weekDay}`;
 };
+
+/**
+ * Date 객체를 ISO 8601 UTC 형식(예: 2026-02-07T15:00:00.000Z)으로 변환합니다.
+ * @param date 변환할 날짜
+ * @param isEndOfDay true면 해당 일의 끝(23:59:59), false면 시작(00:00:00)으로 설정
+ */
+export const formatToISODateTime = (
+  date: Date,
+  isEndOfDay: boolean = false,
+): string => {
+  // 원본 date 객체가 변하지 않도록 복사본 생성
+  const targetDate = new Date(date);
+
+  if (isEndOfDay) {
+    targetDate.setHours(23, 59, 59, 999);
+  } else {
+    targetDate.setHours(0, 0, 0, 0);
+  }
+
+  return targetDate.toISOString();
+};

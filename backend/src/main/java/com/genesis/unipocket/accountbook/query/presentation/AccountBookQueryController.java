@@ -1,8 +1,10 @@
 package com.genesis.unipocket.accountbook.query.presentation;
 
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookAmountResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookExchangeRateResponse;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse;
+import com.genesis.unipocket.accountbook.query.service.AccountBookAmountQueryService;
 import com.genesis.unipocket.accountbook.query.service.AccountBookQueryService;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountBookQueryController {
 
 	private final AccountBookQueryService accountBookQueryService;
+	private final AccountBookAmountQueryService accountBookAmountQueryService;
 
 	@Operation(summary = "가계부 목록 조회", description = "사용자가 접근 가능한 가계부 목록을 조회합니다.")
 	@GetMapping
@@ -39,6 +42,15 @@ public class AccountBookQueryController {
 			@LoginUser UUID userId, @PathVariable Long accountBookId) {
 		return ResponseEntity.ok(
 				accountBookQueryService.getAccountBookDetail(userId.toString(), accountBookId));
+	}
+
+	@Operation(summary = "가계부 지출 합계 조회", description = "전체/이번달 지출 합계를 로컬/기준 통화로 조회합니다.")
+	@GetMapping("/{accountBookId}/amount")
+	public ResponseEntity<AccountBookAmountResponse> getAccountBookAmount(
+			@LoginUser UUID userId, @PathVariable Long accountBookId) {
+		return ResponseEntity.ok(
+				accountBookAmountQueryService.getAccountBookAmount(
+						userId.toString(), accountBookId));
 	}
 
 	@Operation(

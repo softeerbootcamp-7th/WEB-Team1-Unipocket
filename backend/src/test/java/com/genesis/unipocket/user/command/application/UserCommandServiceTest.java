@@ -1,19 +1,26 @@
 package com.genesis.unipocket.user.command.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.global.config.OAuth2Properties.ProviderType;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.command.application.command.RegisterUserCommand;
 import com.genesis.unipocket.user.command.application.result.LoginOrRegisterResult;
+import com.genesis.unipocket.user.command.application.result.UserCardUpdateResult;
 import com.genesis.unipocket.user.command.facade.port.SocialAuthReadPort;
 import com.genesis.unipocket.user.command.facade.port.SocialAuthWritePort;
 import com.genesis.unipocket.user.command.facade.port.TokenIssuePort;
+import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -104,5 +111,69 @@ class UserCommandServiceTest {
 		verify(userRepository).save(userCaptor.capture());
 		assertThat(userCaptor.getValue().getName()).matches("user_[0-9a-f]{8}");
 		assertThat(result).isEqualTo(tokenResult);
+	}
+
+	@Test
+	@DisplayName("카드 닉네임 수정 성공")
+	void updateCard_success() {
+		UUID userId = UUID.randomUUID();
+		Long cardId = 1L;
+		UserEntity owner = UserEntity.reference(userId);
+		UserCardEntity userCard =
+				UserCardEntity.builder()
+						.user(owner)
+						.nickName("Before")
+						.cardNumber("1234")
+						.cardCompany(CardCompany.HYUNDAI)
+						.build();
+		ReflectionTestUtils.setField(userCard, "userCardId", cardId);
+
+		when(userCardRepository.findById(cardId)).thenReturn(Optional.of(userCard));
+
+		UserCardUpdateResult result = userCommandService.updateCard(userId, cardId, "After");
+
+		assertThat(result.nickName()).isEqualTo("After");
+		assertThat(result.userCardId()).isEqualTo(cardId);
+		verify(userCardRepository).save(userCard);
+	}
+
+	@Test
+	@DisplayName("카드 닉네임 수정 실패 - 카드 소유자가 아님")
+	void updateCard_failWhenNotOwner() {
+		UUID ownerId = UUID.randomUUID();
+		UUID requesterId = UUID.randomUUID();
+		Long cardId = 1L;
+		UserEntity owner = UserEntity.reference(ownerId);
+		UserCardEntity userCard =
+				UserCardEntity.builder()
+						.user(owner)
+						.nickName("Before")
+						.cardNumber("1234")
+						.cardCompany(CardCompany.HYUNDAI)
+						.build();
+
+		when(userCardRepository.findById(cardId)).thenReturn(Optional.of(userCard));
+
+		assertThatThrownBy(() -> userCommandService.updateCard(requesterId, cardId, "After"))
+				.isInstanceOfSatisfying(
+						BusinessException.class,
+						ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.CARD_NOT_OWNED));
+
+		verify(userCardRepository, never()).save(any());
+	}
+
+	@Test
+	@DisplayName("카드 닉네임 수정 실패 - 카드 없음")
+	void updateCard_failWhenCardNotFound() {
+		UUID userId = UUID.randomUUID();
+		Long cardId = 1L;
+		when(userCardRepository.findById(cardId)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> userCommandService.updateCard(userId, cardId, "After"))
+				.isInstanceOfSatisfying(
+						BusinessException.class,
+						ex -> assertThat(ex.getCode()).isEqualTo(ErrorCode.CARD_NOT_FOUND));
+
+		verify(userCardRepository, never()).save(any());
 	}
 }

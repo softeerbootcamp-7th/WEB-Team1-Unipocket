@@ -16,6 +16,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthly
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.support.AnalysisFixtureFactory;
+import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -24,6 +25,7 @@ import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -50,6 +52,8 @@ class CountryMonthlyDirtyAggregationServiceIntegrationTest {
 
 	@Autowired
 	private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
+
+	@Autowired private ExchangeRateRepository exchangeRateRepository;
 
 	@Test
 	void processCountryDirtyRows_pendingDirtyRowsExist_updatesAccountAndPairAggregates() {
@@ -167,6 +171,71 @@ class CountryMonthlyDirtyAggregationServiceIntegrationTest {
 		assertThat(livingBase.getTotalAmount()).isEqualByComparingTo("35.0000");
 		assertThat(livingBase.getAverageAmount()).isEqualByComparingTo("17.5000");
 		assertThat(transportBase.getTotalAmount()).isEqualByComparingTo("0.0000");
+	}
+
+	@Test
+	void processCountryDirtyRows_mixedLocalCurrencies_convertsToAccountBookLocalCurrency() {
+		LocalDate monthStart = LocalDate.of(2026, 1, 1);
+
+		// JPY rate on 2025-12-31: 1 USD = 150 JPY
+		// refDateTime = 2026-01-01T00:00Z → targetDate = 2025-12-31
+		exchangeRateRepository.upsertRate(
+				CurrencyCode.JPY.name(),
+				LocalDateTime.of(2025, 12, 31, 0, 0, 0),
+				new BigDecimal("150"));
+
+		UserEntity user = AnalysisFixtureFactory.saveUser(userRepository, "mixed-currency");
+		AccountBookEntity accountBook =
+				AnalysisFixtureFactory.saveAccountBook(
+						accountBookRepository, user, CountryCode.JP, CountryCode.KR, "jp-account");
+
+		// Expense 1: JPY (same as accountBook local) → sum directly
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBook.getId(),
+				Category.FOOD,
+				AnalysisFixtureFactory.utcDateTime(2026, 1, 10, 10, 0),
+				new BigDecimal("1000.00"),
+				new BigDecimal("8000.00"),
+				null,
+				CurrencyCode.JPY,
+				CurrencyCode.KRW,
+				"jpy-food");
+
+		// Expense 2: USD (different from accountBook local JPY) → convert to JPY
+		// 10 USD * 150 (JPY/USD) = 1500 JPY
+		AnalysisFixtureFactory.saveExpense(
+				expenseRepository,
+				accountBook.getId(),
+				Category.TRANSPORT,
+				AnalysisFixtureFactory.utcDateTime(2026, 1, 11, 10, 0),
+				new BigDecimal("10.00"),
+				new BigDecimal("14000.00"),
+				null,
+				CurrencyCode.USD,
+				CurrencyCode.KRW,
+				"usd-transport");
+
+		AnalysisFixtureFactory.savePendingDirty(
+				dirtyRepository, CountryCode.JP, accountBook.getId(), monthStart);
+
+		service.processCountryDirtyRows(CountryCode.JP);
+
+		// Total LOCAL = 1000 (JPY direct) + 1500 (10 USD * 150) = 2500 JPY
+		assertMonthlyAggregate(
+				accountBook.getId(),
+				monthStart,
+				AnalysisMetricType.TOTAL_LOCAL_AMOUNT,
+				AnalysisQualityType.CLEANED,
+				"2500");
+
+		// Total BASE = 8000 + 14000 = 22000 KRW
+		assertMonthlyAggregate(
+				accountBook.getId(),
+				monthStart,
+				AnalysisMetricType.TOTAL_BASE_AMOUNT,
+				AnalysisQualityType.CLEANED,
+				"22000");
 	}
 
 	private void assertMonthlyAggregate(

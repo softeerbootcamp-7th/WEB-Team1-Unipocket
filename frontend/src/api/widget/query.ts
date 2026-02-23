@@ -19,15 +19,23 @@ import type { UpdateWidgetLayoutRequest, WidgetResponseMap } from './type';
 export const widgetKeys = {
   all: ['widget'] as const,
 
+  allDetails: (accountBookId: number | string | undefined) =>
+    [...widgetKeys.all, 'detail', accountBookId] as const,
+
   detail: (
     accountBookId: number | undefined,
     widgetType: WidgetType,
     currencyType?: CurrencyType,
     period?: PeriodType,
-  ) => ['widget', accountBookId, widgetType, { currencyType, period }] as const,
+  ) =>
+    [
+      ...widgetKeys.allDetails(accountBookId),
+      widgetType,
+      { currencyType, period },
+    ] as const,
 
   layout: (accountBookId: number | undefined) =>
-    ['widget', 'layout', accountBookId] as const,
+    [...widgetKeys.all, 'layout', accountBookId] as const,
 };
 
 interface UseWidgetQueryOptions {

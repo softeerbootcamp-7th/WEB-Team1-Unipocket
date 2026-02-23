@@ -27,6 +27,8 @@ import org.springframework.transaction.support.TransactionOperations;
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class ExpenseCommandService {
+	private static final int MAX_MERCHANT_NAME_LENGTH = 40;
+
 	private final ExpenseRepository expenseRepository;
 	private final ExchangeRateService exchangeRateService;
 	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
@@ -150,7 +152,12 @@ public class ExpenseCommandService {
 	}
 
 	private void validateMerchantName(String merchantName) {
-		if (merchantName == null || merchantName.isBlank()) {
+		if (merchantName == null) {
+			throw new BusinessException(ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
+		}
+
+		String normalized = merchantName.trim();
+		if (normalized.isEmpty() || normalized.length() > MAX_MERCHANT_NAME_LENGTH) {
 			throw new BusinessException(ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
 		}
 	}

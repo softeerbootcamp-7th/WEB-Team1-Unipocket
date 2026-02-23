@@ -6,6 +6,7 @@ plugins {
 	id 'jacoco'
 }
 
+
 group = 'com.genesis'
 version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
@@ -34,6 +35,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+
+	// query dsl
+	implementation "com.querydsl:querydsl-jpa:5.1.0:jakarta"
+	annotationProcessor "com.querydsl:querydsl-apt:5.1.0:jakarta"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+
+	testAnnotationProcessor "com.querydsl:querydsl-apt:5.1.0:jakarta"
+	testAnnotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	testAnnotationProcessor "jakarta.annotation:jakarta.annotation-api"
 
 	// Redis Driver
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'

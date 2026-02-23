@@ -15,8 +15,10 @@ import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
 import com.genesis.unipocket.analysis.query.persistence.response.AnalysisOverviewRes;
 import com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
@@ -30,6 +32,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +57,7 @@ public class AnalysisMonthlySummaryQueryService {
 	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
 	private final PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final ExchangeRateService exchangeRateService;
 
 	public AnalysisOverviewRes getAnalysisOverview(
 			UUID userId,
@@ -72,6 +76,8 @@ public class AnalysisMonthlySummaryQueryService {
 		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(localCountryCode);
 		validateNotFutureYearMonth(year, month, zoneId);
 
+		CurrencyCode localCurrency = localCountryCode.getCurrencyCode();
+
 		MonthRange thisRange = buildMonthRange(year, month, zoneId, true);
 		MonthRange prevRange =
 				buildMonthRange(
@@ -89,7 +95,8 @@ public class AnalysisMonthlySummaryQueryService {
 						thisRange.endUtcExclusive(),
 						thisRange.startLocalDate(),
 						thisRange.endLocalDateInclusive(),
-						zoneId);
+						zoneId,
+						localCurrency);
 
 		DailySeries prevSeries =
 				buildDailySeries(
@@ -99,11 +106,13 @@ public class AnalysisMonthlySummaryQueryService {
 						prevRange.endUtcExclusive(),
 						prevRange.startLocalDate(),
 						prevRange.endLocalDateInclusive(),
-						zoneId);
+						zoneId,
+						localCurrency);
 
 		// 2. Category Snapshot & Peer Context
 		MyCategorySnapshot mySnapshot =
-				resolveMyCategorySnapshot(accountBookId, localCountryCode, thisRange, currencyType);
+				resolveMyCategorySnapshot(
+						accountBookId, localCountryCode, thisRange, currencyType, localCurrency);
 		Map<Category, BigDecimal> myCategoryMap = mySnapshot.categoryMap();
 
 		PairPeerContext peerContext =
@@ -361,7 +370,8 @@ public class AnalysisMonthlySummaryQueryService {
 			Long accountBookId,
 			CountryCode localCountryCode,
 			MonthRange range,
-			CurrencyType currencyType) {
+			CurrencyType currencyType,
+			CurrencyCode localCurrency) {
 		boolean monthlyBatchReady =
 				isMonthlyBatchReady(accountBookId, localCountryCode, range, currencyType);
 		if (monthlyBatchReady) {
@@ -389,13 +399,23 @@ public class AnalysisMonthlySummaryQueryService {
 			return new MyCategorySnapshot(categoryMap, true);
 		}
 
+		OffsetDateTime startOffset = toOffsetUtc(range.startUtc());
+		OffsetDateTime endOffset = toOffsetUtc(range.endUtcExclusive());
+
+		if (currencyType == CurrencyType.LOCAL) {
+			Map<Category, BigDecimal> realtimeCategoryMap =
+					toMyCategoryMapWithConversion(
+							analysisQueryRepository.getMyCategorySpentGroupedByCurrency(
+									accountBookId, startOffset, endOffset),
+							localCurrency,
+							startOffset);
+			return new MyCategorySnapshot(realtimeCategoryMap, false);
+		}
+
 		Map<Category, BigDecimal> realtimeCategoryMap =
 				toMyCategoryMap(
 						analysisQueryRepository.getMyCategorySpent(
-								accountBookId,
-								toOffsetUtc(range.startUtc()),
-								toOffsetUtc(range.endUtcExclusive()),
-								currencyType));
+								accountBookId, startOffset, endOffset, currencyType));
 		return new MyCategorySnapshot(realtimeCategoryMap, false);
 	}
 
@@ -431,15 +451,25 @@ public class AnalysisMonthlySummaryQueryService {
 			LocalDateTime endUtcExclusive,
 			LocalDate startLocalDate,
 			LocalDate endLocalDateInclusive,
-			ZoneId zoneId) {
+			ZoneId zoneId,
+			CurrencyCode localCurrency) {
 		Map<LocalDate, BigDecimal> dailyMap;
-		try (Stream<Object[]> stream =
-				analysisQueryRepository.getMySpendEvents(
-						accountBookId,
-						toOffsetUtc(startUtc),
-						toOffsetUtc(endUtcExclusive),
-						currencyType)) {
-			dailyMap = toDailyAmountMap(stream, zoneId);
+		OffsetDateTime startOffset = toOffsetUtc(startUtc);
+		OffsetDateTime endOffset = toOffsetUtc(endUtcExclusive);
+		if (currencyType == CurrencyType.LOCAL) {
+			OffsetDateTime refDateTime = toOffsetUtc(startUtc);
+			try (Stream<Object[]> stream =
+					analysisQueryRepository.getMySpendEventsWithCurrency(
+							accountBookId, startOffset, endOffset)) {
+				dailyMap =
+						toDailyAmountMapWithConversion(stream, localCurrency, refDateTime, zoneId);
+			}
+		} else {
+			try (Stream<Object[]> stream =
+					analysisQueryRepository.getMySpendEvents(
+							accountBookId, startOffset, endOffset, currencyType)) {
+				dailyMap = toDailyAmountMap(stream, zoneId);
+			}
 		}
 
 		BigDecimal cumulative = BigDecimal.ZERO;
@@ -460,6 +490,44 @@ public class AnalysisMonthlySummaryQueryService {
 			Category category = (Category) row[0];
 			result.put(category, toBigDecimal(row[1]));
 		}
+		return result;
+	}
+
+	private Map<Category, BigDecimal> toMyCategoryMapWithConversion(
+			List<Object[]> rows, CurrencyCode targetCurrency, OffsetDateTime refDateTime) {
+		Map<Category, BigDecimal> result = new EnumMap<>(Category.class);
+		for (Object[] row : rows) {
+			Category category = (Category) row[0];
+			CurrencyCode from = (CurrencyCode) row[1];
+			BigDecimal amount = toBigDecimal(row[2]);
+			if (from != null && from != targetCurrency) {
+				amount =
+						exchangeRateService.convertAmount(
+								amount, from, targetCurrency, refDateTime);
+			}
+			result.merge(category, amount, BigDecimal::add);
+		}
+		return result;
+	}
+
+	private Map<LocalDate, BigDecimal> toDailyAmountMapWithConversion(
+			Stream<Object[]> stream,
+			CurrencyCode targetCurrency,
+			OffsetDateTime refDateTime,
+			ZoneId zoneId) {
+		Map<LocalDate, BigDecimal> result = new HashMap<>();
+		stream.forEach(
+				row -> {
+					LocalDate date = toLocalDateInZone(row[0], zoneId);
+					CurrencyCode from = (CurrencyCode) row[2];
+					BigDecimal amount = toBigDecimal(row[1]);
+					if (from != null && from != targetCurrency) {
+						amount =
+								exchangeRateService.convertAmount(
+										amount, from, targetCurrency, refDateTime);
+					}
+					result.merge(date, amount, BigDecimal::add);
+				});
 		return result;
 	}
 

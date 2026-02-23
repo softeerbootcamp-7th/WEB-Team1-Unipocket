@@ -59,9 +59,7 @@ public class TemporaryExpenseCommandController {
 		return ResponseEntity.ok(PresignedUrlResponse.from(result));
 	}
 
-	@Operation(
-			summary = "임시지출 확정",
-			description = "메타 단위로 임시지출 전체를 비동기로 확정 변환하고 진행 조회용 taskId를 반환합니다.")
+	@Operation(summary = "임시지출 확정", description = "메타 단위로 임시지출 전체를 즉시 확정 변환합니다.")
 	@PostMapping("/temporary-expense-metas/{tempExpenseMetaId}/confirm")
 	public ResponseEntity<BatchConvertStartResponse> confirm(
 			@PathVariable Long accountBookId,
@@ -72,11 +70,8 @@ public class TemporaryExpenseCommandController {
 				temporaryExpenseCommandFacade.confirm(accountBookId, tempExpenseMetaId, userId);
 
 		BatchConvertStartResponse response =
-				new BatchConvertStartResponse(
-						result.taskId(),
-						result.totalExpenses(),
-						buildParseStatusUrl(accountBookId, result.taskId()));
-		return ResponseEntity.accepted().body(response);
+				new BatchConvertStartResponse(result.taskId(), result.totalExpenses(), null);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(

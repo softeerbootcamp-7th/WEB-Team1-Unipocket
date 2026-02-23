@@ -231,6 +231,96 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 수기 작성 - 다른 사용자 카드 사용 시 403")
+	void 수기지출_다른사용자카드_검증실패() throws Exception {
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("other-user@unipocket.com")
+								.name("other-user")
+								.mainBucketId(1L)
+								.build());
+		UserCardEntity otherUserCard =
+				userCardRepository.save(
+						UserCardEntity.builder()
+								.user(otherUser)
+								.nickName("타인카드")
+								.cardNumber("9999")
+								.cardCompany(CardCompany.SAMSUNG)
+								.build());
+
+		String body =
+				"""
+				{
+				"merchantName": "스타벅스",
+				"category": 2,
+				"userCardId": %d,
+				"occurredAt": "2026-02-04T12:30:00Z",
+				"localCurrencyAmount": 10000.0,
+				"localCurrencyCode": "KRW",
+				"memo": "아메리카노"
+				}
+				"""
+						.formatted(otherUserCard.getUserCardId());
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("403_CARD_NOT_OWNED"));
+	}
+
+	@Test
+	@DisplayName("지출내역 수정 - 다른 사용자 카드 사용 시 403")
+	void 지출내역_수정_다른사용자카드_검증실패() throws Exception {
+		Long expenseId = createTestExpense();
+
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("other-user2@unipocket.com")
+								.name("other-user2")
+								.mainBucketId(1L)
+								.build());
+		UserCardEntity otherUserCard =
+				userCardRepository.save(
+						UserCardEntity.builder()
+								.user(otherUser)
+								.nickName("타인카드2")
+								.cardNumber("8888")
+								.cardCompany(CardCompany.KB)
+								.build());
+
+		String updateBody =
+				"""
+				{
+				"merchantName": "스타벅스 수정",
+				"category": 2,
+				"userCardId": %d,
+				"occurredAt": "2026-02-04T12:30:00Z",
+				"localCurrencyAmount": 15000.0,
+				"localCurrencyCode": "KRW",
+				"memo": "수정된 메모",
+				"travelId": null
+				}
+				"""
+						.formatted(otherUserCard.getUserCardId());
+
+		mockMvc.perform(
+						put(
+										"/account-books/{accountBookId}/expenses/{expenseId}",
+										accountBookId,
+										expenseId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(updateBody))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("403_CARD_NOT_OWNED"));
+	}
+
+	@Test
 	@DisplayName("지출내역 일괄 수정 - 성공")
 	void 지출내역_일괄수정_성공() throws Exception {
 		Long expenseId1 = createTestExpense();
@@ -278,6 +368,56 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.items.length()").value(2))
 				.andExpect(jsonPath("$.items[0].displayMerchantName").value("일괄수정-1"))
 				.andExpect(jsonPath("$.items[1].displayMerchantName").value("일괄수정-2"));
+	}
+
+	@Test
+	@DisplayName("지출내역 일괄 수정 - 다른 사용자 카드 사용 시 403")
+	void 지출내역_일괄수정_다른사용자카드_검증실패() throws Exception {
+		Long expenseId = createTestExpense();
+
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("other-user3@unipocket.com")
+								.name("other-user3")
+								.mainBucketId(1L)
+								.build());
+		UserCardEntity otherUserCard =
+				userCardRepository.save(
+						UserCardEntity.builder()
+								.user(otherUser)
+								.nickName("타인카드3")
+								.cardNumber("7777")
+								.cardCompany(CardCompany.HANA)
+								.build());
+
+		String updateBody =
+				"""
+				{
+				"items": [
+					{
+					"expenseId": %d,
+					"merchantName": "일괄수정-실패",
+					"category": 2,
+					"userCardId": %d,
+					"occurredAt": "2026-02-04T12:30:00Z",
+					"localCurrencyAmount": 11111.0,
+					"localCurrencyCode": "KRW",
+					"memo": "bulk-fail",
+					"travelId": null
+					}
+				]
+				}
+				"""
+						.formatted(expenseId, otherUserCard.getUserCardId());
+
+		mockMvc.perform(
+						put("/account-books/{accountBookId}/expenses/bulk", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(updateBody))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("403_CARD_NOT_OWNED"));
 	}
 
 	@Test
@@ -360,7 +500,34 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses.length()").value(1))
 				.andExpect(jsonPath("$.totalCount").value(1))
 				.andExpect(jsonPath("$.expenses[0].merchantName").value("매칭 결제"))
+				.andExpect(
+						jsonPath("$.expenses[0].paymentMethod.card.userCardId")
+								.value(matchedCard.getUserCardId()))
 				.andExpect(jsonPath("$.expenses[0].paymentMethod.card.lastDigits").value("1234"));
+	}
+
+	@Test
+	@DisplayName("지출내역 필터링 - 현금만 조회")
+	void 지출내역_현금필터링_성공() throws Exception {
+		// given
+		UserCardEntity card = createUserCard("체크카드", "1234");
+		createTestExpenseWithUserCard(
+				"카드 결제", 2, "2026-02-04T12:00:00", 10000.0, card.getUserCardId());
+		createTestExpenseWithDetails("현금 결제", 2, "2026-02-04T13:00:00", 9000.0, null);
+
+		// when & then
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "occurredAt,desc")
+								.param("isCash", "true"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses.length()").value(1))
+				.andExpect(jsonPath("$.totalCount").value(1))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("현금 결제"))
+				.andExpect(jsonPath("$.expenses[0].paymentMethod.isCash").value(true));
 	}
 
 	@Test

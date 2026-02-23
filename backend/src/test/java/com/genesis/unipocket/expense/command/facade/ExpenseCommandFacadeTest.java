@@ -1,6 +1,7 @@
 package com.genesis.unipocket.expense.command.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -26,6 +27,8 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -101,6 +104,9 @@ class ExpenseCommandFacadeTest {
 		when(userCardFetchService.getUserCard(11L))
 				.thenReturn(
 						Optional.of(new UserCardInfo(11L, CardCompany.SAMSUNG, "main", "1234")));
+		when(userCardFetchService.getUserCardOwnedBy(11L, userId.toString()))
+				.thenReturn(
+						Optional.of(new UserCardInfo(11L, CardCompany.SAMSUNG, "main", "1234")));
 
 		ExpenseResult result =
 				expenseCommandFacade.createExpenseManual(request, accountBookId, userId);
@@ -123,7 +129,88 @@ class ExpenseCommandFacadeTest {
 		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
 		verify(analysisMonthlyDirtyMarkerService)
 				.markDirty(accountBookId, occurredAt.atOffset(ZoneOffset.UTC));
+		verify(userCardFetchService).getUserCardOwnedBy(11L, userId.toString());
 		verify(userCardFetchService).getUserCard(11L);
+	}
+
+	@Test
+	@DisplayName("수기 생성 - 다른 사용자 카드면 CARD_NOT_OWNED 예외를 반환한다")
+	void createExpenseManual_unownedCard_throwsCardNotOwned() {
+		Long accountBookId = 7L;
+		UUID userId = UUID.randomUUID();
+		Instant occurredAt = Instant.parse("2026-02-17T03:04:05Z");
+		ExpenseManualCreateRequest request =
+				new ExpenseManualCreateRequest(
+						"스타벅스",
+						Category.FOOD,
+						11L,
+						occurredAt,
+						new BigDecimal("100.00"),
+						null,
+						null,
+						"memo",
+						55L);
+
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+		when(userCardFetchService.getUserCardOwnedBy(11L, userId.toString()))
+				.thenReturn(Optional.empty());
+		when(userCardFetchService.getUserCard(11L))
+				.thenReturn(
+						Optional.of(new UserCardInfo(11L, CardCompany.SAMSUNG, "other", "1234")));
+
+		assertThatThrownBy(
+						() ->
+								expenseCommandFacade.createExpenseManual(
+										request, accountBookId, userId))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.CARD_NOT_OWNED));
+
+		verify(expenseService, never()).createExpenseManual(any());
+	}
+
+	@Test
+	@DisplayName("수기 생성 - 존재하지 않는 카드면 CARD_NOT_FOUND 예외를 반환한다")
+	void createExpenseManual_missingCard_throwsCardNotFound() {
+		Long accountBookId = 7L;
+		UUID userId = UUID.randomUUID();
+		Instant occurredAt = Instant.parse("2026-02-17T03:04:05Z");
+		ExpenseManualCreateRequest request =
+				new ExpenseManualCreateRequest(
+						"스타벅스",
+						Category.FOOD,
+						999L,
+						occurredAt,
+						new BigDecimal("100.00"),
+						null,
+						null,
+						"memo",
+						55L);
+
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+		when(userCardFetchService.getUserCardOwnedBy(999L, userId.toString()))
+				.thenReturn(Optional.empty());
+		when(userCardFetchService.getUserCard(999L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(
+						() ->
+								expenseCommandFacade.createExpenseManual(
+										request, accountBookId, userId))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.CARD_NOT_FOUND));
+
+		verify(expenseService, never()).createExpenseManual(any());
 	}
 
 	@Test

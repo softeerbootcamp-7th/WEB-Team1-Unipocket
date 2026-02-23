@@ -1,11 +1,12 @@
 interface ContentProps {
   title: string;
   description?: string;
+  subDescription?: string;
 }
 
-const TextContext = ({ title, description }: ContentProps) => {
+const TextContext = ({ title, description, subDescription }: ContentProps) => {
   return (
-    <div className="flex h-60.5 w-83.75 flex-col gap-13">
+    <div className="flex h-fit w-83.75 flex-col gap-13">
       <div className="flex flex-col items-center gap-2.5">
         <h2 className="text-label-normal headline1-bold">{title}</h2>
         {description && (
@@ -13,6 +14,7 @@ const TextContext = ({ title, description }: ContentProps) => {
             {description}
           </span>
         )}
+        <p className="min-h-32 p-10">{subDescription}</p>
       </div>
     </div>
   );

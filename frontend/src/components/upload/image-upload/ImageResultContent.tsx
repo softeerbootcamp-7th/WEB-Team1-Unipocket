@@ -1,13 +1,60 @@
+import type { ColumnDef } from '@tanstack/react-table';
+
 import {
   TabContent,
   TabList,
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
+import { DataTable } from '@/components/data-table/DataTable';
+import DataTableProvider from '@/components/data-table/DataTableProvider';
 import TabImage from '@/components/upload/image-upload/TabImage';
 
+import { CATEGORIES } from '@/types/category';
+
 import { useGetMetaFileUrlQuery } from '@/api/temporary-expenses/query';
-import type { TempExpenseFile } from '@/api/temporary-expenses/type';
+import type {
+  TempExpense,
+  TempExpenseFile,
+} from '@/api/temporary-expenses/type';
+
+const tempExpenseColumns: ColumnDef<TempExpense>[] = [
+  {
+    accessorKey: 'occurredAt',
+    header: () => <>날짜</>,
+    cell: ({ row }) =>
+      new Date(row.original.occurredAt).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }),
+  },
+  {
+    accessorKey: 'merchantName',
+    header: () => <>거래처</>,
+  },
+  {
+    accessorKey: 'category',
+    header: () => <>카테고리</>,
+    cell: ({ row }) => CATEGORIES[row.original.category]?.name ?? '-',
+  },
+  {
+    id: 'localAmount',
+    header: () => <>현지 금액</>,
+    cell: ({ row }) =>
+      `${row.original.localCurrencyAmount.toLocaleString()} ${row.original.localCountryCode}`,
+  },
+  {
+    id: 'baseAmount',
+    header: () => <>원화 금액</>,
+    cell: ({ row }) =>
+      `${row.original.baseCurrencyAmount.toLocaleString()} ${row.original.baseCountryCode}`,
+  },
+  {
+    accessorKey: 'status',
+    header: () => <>상태</>,
+  },
+];
 
 interface FileImageProps {
   accountBookId: number;
@@ -130,6 +177,24 @@ const ImageResultContent = ({
                     fileId={file.fileId}
                     fileName={fileName}
                   />
+                  <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
+                    <DataTableProvider
+                      columns={tempExpenseColumns}
+                      data={file.expenses}
+                    >
+                      <DataTable<TempExpense>
+                        enableGroupSelection={false}
+                        groupBy={(row) =>
+                          new Date(row.occurredAt).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          })
+                        }
+                        blankFallbackText="지출 내역이 없습니다"
+                      />
+                    </DataTableProvider>
+                  </div>
                 </div>
               </TabContent>
             );

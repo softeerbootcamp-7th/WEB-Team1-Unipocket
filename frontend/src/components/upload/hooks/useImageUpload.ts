@@ -60,6 +60,7 @@ export const useImageUpload = (accountBookId: number) => {
       ]);
 
       try {
+        // 1. presigned 발급
         const presigned = await getPresignedUrl(accountBookId, {
           fileName: file.name,
           mimeType: file.type,
@@ -75,6 +76,7 @@ export const useImageUpload = (accountBookId: number) => {
           ),
         );
 
+        // 2️. S3 업로드
         const response = await fetch(presigned.presignedUrl, {
           method: 'PUT',
           body: file,
@@ -113,6 +115,7 @@ export const useImageUpload = (accountBookId: number) => {
         s3Keys,
       });
 
+      // 3. 파싱 시작과 동시에 상태 변경
       setItems((prev) =>
         prev.map((item) =>
           item.status === UPLOAD_STATUS.UPLOADED
@@ -121,6 +124,7 @@ export const useImageUpload = (accountBookId: number) => {
         ),
       );
 
+      // 4. SSE 연결
       connectSSE(parse.taskId);
       setParseSnackbar({
         isOpen: true,
@@ -212,16 +216,6 @@ export const useImageUpload = (accountBookId: number) => {
         closeEventSource();
       }
     });
-
-    // 기본 message 리스너 (보험용)
-    eventSource.onmessage = (event) => {
-      try {
-        const parsed = JSON.parse(event.data);
-        handleProgressValue(parsed);
-      } catch {
-        closeEventSource();
-      }
-    };
 
     eventSource.onerror = () => {
       if (!completedRef.current[taskId]) {

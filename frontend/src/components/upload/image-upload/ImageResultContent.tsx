@@ -8,16 +8,18 @@ import {
 } from '@/components/common/Tab';
 import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
-import TabImage from '@/components/upload/image-upload/TabImage';
+import FileImage from '@/components/upload/image-upload/FileImage';
 
 import { CATEGORIES } from '@/types/category';
 
-import { useGetMetaFileUrlQuery } from '@/api/temporary-expenses/query';
 import type {
   TempExpense,
   TempExpenseFile,
 } from '@/api/temporary-expenses/type';
 
+// @TODO: 테이블 정리
+// 테이블은 upload/UploadResultTable.tsx 로 두고 이미지, 파일에서 공통으로 사용해도 될 것 같아요
+// 테이블의 전체 width 지정할 수 있도록 해주세요!
 const tempExpenseColumns: ColumnDef<TempExpense>[] = [
   {
     accessorKey: 'occurredAt',
@@ -56,64 +58,6 @@ const tempExpenseColumns: ColumnDef<TempExpense>[] = [
   },
 ];
 
-interface FileImageProps {
-  accountBookId: number;
-  metaId: number;
-  fileId: number;
-  fileName: string;
-}
-
-interface FileTabImageProps extends FileImageProps {
-  successCount: number;
-  warningCount: number;
-  hasIssue: boolean;
-}
-
-const FileTabImage = ({
-  accountBookId,
-  metaId,
-  fileId,
-  fileName,
-  successCount,
-  warningCount,
-  hasIssue,
-}: FileTabImageProps) => {
-  const { data } = useGetMetaFileUrlQuery(accountBookId, metaId, fileId);
-
-  return (
-    <TabImage
-      thumbnailUrl={data?.presignedUrl ?? ''}
-      fileName={fileName}
-      successCount={successCount}
-      warningCount={warningCount}
-      hasIssue={hasIssue}
-    />
-  );
-};
-
-const FileImage = ({
-  accountBookId,
-  metaId,
-  fileId,
-  fileName,
-}: FileImageProps) => {
-  const { data } = useGetMetaFileUrlQuery(accountBookId, metaId, fileId);
-
-  return (
-    <div className="bg-background-alternative flex items-center justify-center rounded-2xl border border-gray-200 p-2.5">
-      {data?.presignedUrl ? (
-        <img
-          src={data.presignedUrl}
-          alt={fileName}
-          className="h-120 rounded-lg"
-        />
-      ) : (
-        <div className="h-120 w-full animate-pulse rounded-lg bg-gray-200" />
-      )}
-    </div>
-  );
-};
-
 interface ImageResultContentProps {
   accountBookId: number;
   metaId: number;
@@ -151,7 +95,7 @@ const ImageResultContent = ({
 
               return (
                 <TabTrigger key={file.fileId} value={String(file.fileId)}>
-                  <FileTabImage
+                  <FileImage
                     accountBookId={accountBookId}
                     metaId={metaId}
                     fileId={file.fileId}
@@ -159,6 +103,7 @@ const ImageResultContent = ({
                     successCount={successCount}
                     warningCount={warningCount}
                     hasIssue={warningCount > 0}
+                    variant="tab"
                   />
                 </TabTrigger>
               );
@@ -176,6 +121,7 @@ const ImageResultContent = ({
                     metaId={metaId}
                     fileId={file.fileId}
                     fileName={fileName}
+                    variant="preview"
                   />
                   <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                     <DataTableProvider

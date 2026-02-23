@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { useModalContext } from '@/components/modal/useModalContext';
 import UploadFile from '@/components/upload/file-upload/UploadFile';
-import { useFileUpload } from '@/components/upload/file-upload/useFileUpload';
+import { useFileUpload } from '@/components/upload/hooks/useFileUpload';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
 const FileUploadContent = () => {

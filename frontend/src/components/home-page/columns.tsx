@@ -92,12 +92,9 @@ export const columns: ColumnDef<Expense>[] = [
     accessorKey: 'exchangeRate',
     header: () => <>환율</>,
     cell: ({ row }) => {
-      const rate = parseFloat(row.original.exchangeRate.toString());
-
-      const formatted = new Intl.NumberFormat('ko-KR', {
-        maximumFractionDigits: 0,
-      }).format(rate);
-      return <> {formatted}</>;
+      const amount = row.original.exchangeRate;
+      const code = row.original.baseCurrencyCode;
+      return <>{formatCurrency(amount, code)}</>;
     },
   },
   {

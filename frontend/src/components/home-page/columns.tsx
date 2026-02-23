@@ -119,6 +119,16 @@ export const columns: ColumnDef<Expense>[] = [
       cellEditor: 'text',
     },
     header: () => <>여행</>,
-    cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
+    cell: ({ row }) => {
+      const travelName = row.original.travel?.name || '-';
+      return (
+        <div
+          className="w-10 truncate text-left lg:w-20"
+          title={travelName !== '-' ? travelName : undefined}
+        >
+          {travelName}
+        </div>
+      );
+    },
   },
 ];

@@ -1,48 +1,26 @@
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 
-import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
-import WidgetList from '@/components/chart/widget/components/WidgetList';
-import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
-import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
-import { WidgetContext } from '@/components/chart/widget/WidgetContext';
-import ExpenseTable from '@/components/home-page/ExpenseTable';
-import ExpandableSheet from '@/components/layout/ExpandableSheet';
-import { Skeleton } from '@/components/ui/skeleton';
+import Button from '@/components/common/Button';
+import ImageResultModal from '@/components/upload/image-upload/ImageResultModal';
 
 const Homepage = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const widgetManager = useWidgetManager();
-  const { isWidgetEditMode } = widgetManager;
+  const [isOpen, setIsOpen] = useState(false); // 테스트용
 
   return (
-    <WidgetContext.Provider value={widgetManager}>
-      <div className="flex min-h-0 flex-1 flex-col gap-5 px-4 pt-8 xl:px-30">
-        <div className="flex flex-col gap-8">
-          <WidgetHeader />
-          <WidgetList />
-        </div>
-        <div className="relative min-h-0 flex-1">
-          {isWidgetEditMode && (
-            <ExpandableSheet collapsedHeight="100%" isExpandable={false}>
-              <WidgetPicker />
-            </ExpandableSheet>
-          )}
-          {!isWidgetEditMode && (
-            <ExpandableSheet
-              isExpanded={isExpanded}
-              onToggleExpand={setIsExpanded}
-              collapsedHeight="100%"
-              expandedHeight="93vh"
-            >
-              <Suspense fallback={<Skeleton className="h-100 w-full" />}>
-                <ExpenseTable />
-              </Suspense>
-            </ExpandableSheet>
-          )}
-        </div>
-      </div>
-    </WidgetContext.Provider>
+    <div className="p-10">
+      <Button onClick={() => setIsOpen(true)}>결과 모달 열기</Button>
+
+      <ImageResultModal
+        isOpen={isOpen}
+        imageCount={6}
+        expenseCount={13}
+        onClose={() => setIsOpen(false)}
+        onConfirm={() => {
+          console.log('지출 적용');
+          setIsOpen(false);
+        }}
+      />
+    </div>
   );
 };
 

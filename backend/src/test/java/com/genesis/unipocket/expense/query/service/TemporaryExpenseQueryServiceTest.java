@@ -78,8 +78,9 @@ class TemporaryExpenseQueryServiceTest {
 		when(temporaryExpenseQueryRepository.findFilesByMetaId(10L))
 				.thenReturn(
 						List.of(
-								new TemporaryExpenseFileRow(100L, 10L, "a.png", "IMAGE"),
-								new TemporaryExpenseFileRow(101L, 10L, "b.png", "IMAGE")));
+								new TemporaryExpenseFileRow(100L, 10L, "a.png", null, "IMAGE"),
+								new TemporaryExpenseFileRow(
+										101L, 10L, "b.png", "receipt-b.png", "IMAGE")));
 		when(temporaryExpenseQueryRepository.findExpensesByFileIds(List.of(100L, 101L)))
 				.thenReturn(
 						List.of(
@@ -120,8 +121,16 @@ class TemporaryExpenseQueryServiceTest {
 		assertThat(result.tempExpenseMetaId()).isEqualTo(10L);
 		assertThat(result.files()).hasSize(2);
 		assertThat(result.files().get(0).fileId()).isEqualTo(100L);
+		assertThat(result.files().get(0).fileName()).isEqualTo("unknown_file.png");
+		assertThat(result.files().get(0).normalCount()).isEqualTo(1);
+		assertThat(result.files().get(0).incompleteCount()).isEqualTo(0);
+		assertThat(result.files().get(0).abnormalCount()).isEqualTo(0);
 		assertThat(result.files().get(0).expenses()).hasSize(1);
 		assertThat(result.files().get(1).fileId()).isEqualTo(101L);
+		assertThat(result.files().get(1).fileName()).isEqualTo("receipt-b.png");
+		assertThat(result.files().get(1).normalCount()).isEqualTo(0);
+		assertThat(result.files().get(1).incompleteCount()).isEqualTo(1);
+		assertThat(result.files().get(1).abnormalCount()).isEqualTo(0);
 		assertThat(result.files().get(1).expenses()).hasSize(1);
 	}
 

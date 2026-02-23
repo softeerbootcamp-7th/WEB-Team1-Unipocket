@@ -40,7 +40,7 @@ export default function UploadResultModal({
 
   return (
     <div className="bg-background-alternative fixed inset-0 z-50 flex flex-col gap-8">
-      <div className="flex h-11.5 items-center justify-between border-b px-8">
+      <div className="border-line-normal-normal flex h-11.5 items-center justify-between border-b px-8">
         <span className="body2-normal-bold text-label-normal">결과 확인</span>
         <Icon
           iconName="Close"
@@ -53,7 +53,7 @@ export default function UploadResultModal({
       <div className="flex min-h-0 flex-1 flex-col gap-10 px-8">
         <div className="flex flex-col gap-2">
           <h2 className="title2-semibold text-label-normal">{title}</h2>
-          <span className="mt-2 text-sm text-gray-500">
+          <span className="body1-normal-medium text-gray-500">
             수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
             수정해주세요.
           </span>

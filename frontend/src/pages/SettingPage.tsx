@@ -10,9 +10,9 @@ import {
   LinkedCardList,
 } from '@/components/setting-page/LinkedCardList';
 import {
-  MainAccountBookSelection,
+  MainAccountBookSelector,
   MainAccountBookSkeleton,
-} from '@/components/setting-page/MainAccountBookSelection';
+} from '@/components/setting-page/MainAccountBookSelector';
 
 const SettingPage = () => {
   return (
@@ -20,7 +20,7 @@ const SettingPage = () => {
       <h1 className="title2-semibold text-label-normal mb-6.5">설정</h1>
       <div className="flex flex-1 flex-col gap-3.5">
         <Suspense fallback={<MainAccountBookSkeleton />}>
-          <MainAccountBookSelection />
+          <MainAccountBookSelector />
         </Suspense>
         <Suspense fallback={<CardListSkeleton />}>
           <LinkedCardList />

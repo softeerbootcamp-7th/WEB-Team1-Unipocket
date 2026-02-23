@@ -50,7 +50,7 @@ const DropDown = ({
   };
 
   return (
-    <div ref={dropdownRef} className="relative inline-block">
+    <div ref={dropdownRef} className="relative inline-block w-full">
       <Filter
         isOpen={isOpen}
         onClick={() => setIsOpen((v) => !v)}

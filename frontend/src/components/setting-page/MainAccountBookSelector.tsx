@@ -9,7 +9,7 @@ import {
   useUpdateAccountBookMutation,
 } from '@/api/account-books/query';
 
-const MainAccountBookSelection = () => {
+const MainAccountBookSelector = () => {
   const { data: accountBooks } = useGetAccountBooksQuery();
   const updateAccountBookMutation = useUpdateAccountBookMutation();
   const accountBookOptions = accountBooks.map((book) => ({
@@ -59,4 +59,4 @@ const MainAccountBookSkeleton = () => (
   </SettingSection>
 );
 
-export { MainAccountBookSelection, MainAccountBookSkeleton };
+export { MainAccountBookSelector, MainAccountBookSkeleton };

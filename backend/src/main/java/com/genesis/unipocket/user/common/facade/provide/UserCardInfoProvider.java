@@ -38,12 +38,7 @@ public class UserCardInfoProvider implements UserCardFetchService {
 			return Optional.empty();
 		}
 
-		UUID ownerId;
-		try {
-			ownerId = UUID.fromString(userId);
-		} catch (IllegalArgumentException e) {
-			return Optional.empty();
-		}
+		UUID ownerId = UUID.fromString(userId);
 
 		return userCardCommandRepository
 				.findByUserCardIdAndUser_Id(userCardId, ownerId)

@@ -72,14 +72,12 @@ const SortDropdown = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button>
-          <Icon
-            color="text-label-neutral"
-            iconName="SwapVertical"
-            width={20}
-            height={20}
-          />
-        </button>
+        <Icon
+          color="text-label-neutral"
+          iconName="SwapVertical"
+          width={20}
+          height={20}
+        />
       </PopoverTrigger>
       <PopoverContent
         align="end"

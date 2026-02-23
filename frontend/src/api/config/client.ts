@@ -126,8 +126,10 @@ export const customFetch = async <T>({
     }
 
     // 3. 정상 응답 처리 (200~299)
-    if (response.status === HTTP_STATUS.NO_CONTENT) return undefined as T;
-    return await response.json();
+    // body가 없는 응답(204, 201 empty 등)을 안전하게 처리
+    const text = await response.text();
+    if (!text) return undefined as T;
+    return JSON.parse(text) as T;
   } catch (error) {
     clearTimeout(timeoutId); // 에러 발생 시에도 타이머 해제 필수
 

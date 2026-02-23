@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { useEnterKey } from '@/hooks/useKeyboardEvent';
+
 import type { ModalProps } from '@/components/modal/Modal';
 import Modal from '@/components/modal/Modal';
 import TextContext from '@/components/modal/TextModal/TextContext';
@@ -25,7 +27,7 @@ export const TRAVEL_POCKET_MODAL_TEXT = {
   },
   EDIT: {
     TITLE: '포켓명을 수정해주세요',
-    DESCRIPTION: '공백 포함 최대 13자 이내',
+    DESCRIPTION: '공백 포함 최대 15자 이내',
     CONFIRM: '확인',
   },
   DELETE: {
@@ -52,7 +54,7 @@ const TravelPocketModal = ({
   }, [modalProps.isOpen]);
 
   const validatePocketName = (val: string) => {
-    if (val.length > 13) return ERROR_MESSAGE.LENGTH13;
+    if (val.length > 15) return ERROR_MESSAGE.LENGTH15;
     if (val.length > 0 && !REGEX.COMMON_TEXT.test(val))
       return ERROR_MESSAGE.INVALID_CHAR;
     return undefined;
@@ -80,6 +82,8 @@ const TravelPocketModal = ({
 
     onAction?.(pocketName);
   };
+
+  useEnterKey(modalProps.isOpen, handleAction, isDelete);
 
   return (
     <Modal

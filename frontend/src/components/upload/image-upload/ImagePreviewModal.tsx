@@ -1,4 +1,4 @@
-import useEscapeKey from '@/components/upload/hooks/useEscapeKey';
+import { useEscapeKey } from '@/hooks/useKeyboardEvent';
 
 interface ImagePreviewModalProps {
   isOpen: boolean;

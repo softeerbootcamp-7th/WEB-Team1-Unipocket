@@ -1,8 +1,9 @@
 import { type ReactNode, useEffect } from 'react';
 
+import { useEscapeKey } from '@/hooks/useKeyboardEvent';
+
 import Button from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
-import useEscapeKey from '@/components/upload/hooks/useEscapeKey';
 
 interface UploadResultModalProps {
   isOpen: boolean;

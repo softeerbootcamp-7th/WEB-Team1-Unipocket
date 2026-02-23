@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
+import { useEscapeKey } from '@/hooks/useKeyboardEvent';
+
 import Button, { type ButtonProps } from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
 import { ModalContext } from '@/components/modal/useModalContext';
@@ -46,6 +48,8 @@ const Modal = ({
   // null 여부로 버튼 표시 여부 결정 (undefined는 기본값 적용, null은 버튼 숨김)
   const showCancel = cancelButton !== null;
   const showConfirm = confirmButton !== null;
+
+  useEscapeKey(isOpen, onClose);
 
   const { label: cancelLabel = '취소', variant: cancelVariant = 'outlined' } =
     cancelButton ?? {};

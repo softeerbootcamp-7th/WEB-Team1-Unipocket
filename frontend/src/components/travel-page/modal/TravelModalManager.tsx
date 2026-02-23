@@ -3,7 +3,13 @@ import TravelPocketImgModal from '@/components/travel-page/modal/TravelPocketImg
 import TravelPocketModal from '@/components/travel-page/modal/TravelPocketModal';
 import type { TravelModalState } from '@/components/travel-page/modal/useTravelModal';
 
-import { parseStringToDate } from '@/lib/utils';
+import {
+  useCreateTravelMutation,
+  useDeleteTravelMutation,
+  usePatchTravelMutation,
+} from '@/api/travels/query';
+import type { PatchTravelRequest } from '@/api/travels/type';
+import { formatDateToString, parseStringToDate } from '@/lib/utils';
 
 interface TravelModalManagerProps {
   activeModal: TravelModalState;
@@ -16,93 +22,89 @@ const TravelModalManager = ({
   closeModal,
   openCreateDate,
 }: TravelModalManagerProps) => {
+  const { type } = activeModal;
+
+  const editTravelId = 'travelId' in activeModal ? activeModal.travelId : 0;
+
+  const createMutation = useCreateTravelMutation();
+  const patchMutation = usePatchTravelMutation();
+  const deleteMutation = useDeleteTravelMutation();
+
+  const handlePatch = (
+    payload: PatchTravelRequest & { travelId: number | string },
+  ) => {
+    patchMutation.mutate(payload, {
+      onSuccess: closeModal,
+      onError: closeModal,
+    });
+  };
+
   return (
     <>
-      {/* 생성 1단계: 포켓명 입력 */}
+      {/* 폴더명 관련 (생성/수정/삭제) */}
       <TravelPocketModal
-        mode="create"
-        isOpen={activeModal.type === 'CREATE_NAME'}
-        onClose={closeModal}
-        onAction={(name) => openCreateDate(name)}
-      />
-
-      {/* 생성 2단계: 기간 선택 */}
-      <SelectDateModal
-        isOpen={activeModal.type === 'CREATE_DATE'}
-        onClose={closeModal}
-        onConfirm={(dateRange) => {
-          // TS 타입 추론: 여기서는 activeModal이 CREATE_DATE 타입임을 보장
-          if (activeModal.type === 'CREATE_DATE') {
-            console.log('여행 생성 API:', activeModal.travelName, dateRange);
-          }
-          closeModal();
-        }}
-      />
-
-      {/* 폴더명 수정 */}
-      <TravelPocketModal
-        mode="edit"
-        isOpen={activeModal.type === 'EDIT_NAME'}
-        initialName={
-          activeModal.type === 'EDIT_NAME' ? activeModal.defaultName : ''
+        isOpen={['CREATE_NAME', 'EDIT_NAME', 'DELETE'].includes(type)}
+        mode={
+          type === 'CREATE_NAME'
+            ? 'create'
+            : type === 'EDIT_NAME'
+              ? 'edit'
+              : 'delete'
         }
+        initialName={type === 'EDIT_NAME' ? activeModal.defaultName : ''}
         onClose={closeModal}
         onAction={(name) => {
-          if (activeModal.type === 'EDIT_NAME') {
-            console.log('이름 수정 API:', activeModal.travelId, name);
-          }
-          closeModal();
+          if (type === 'CREATE_NAME') openCreateDate(name);
+          if (type === 'EDIT_NAME')
+            handlePatch({ ...activeModal, travelPlaceName: name });
+          if (type === 'DELETE')
+            deleteMutation.mutate(editTravelId, { onSuccess: closeModal });
         }}
       />
 
-      {/* 기간 수정 */}
+      {/* 기간 선택 관련 (생성/수정) */}
       <SelectDateModal
-        isOpen={activeModal.type === 'EDIT_DATE'}
+        isOpen={type === 'CREATE_DATE' || type === 'EDIT_DATE'}
         onClose={closeModal}
         initialDateRange={
-          activeModal.type === 'EDIT_DATE'
+          type === 'EDIT_DATE'
             ? {
-                startDate: parseStringToDate(
-                  activeModal.startDate.replaceAll('.', '-'),
-                ),
-                endDate: parseStringToDate(
-                  activeModal.endDate.replaceAll('.', '-'),
-                ),
+                startDate: parseStringToDate(activeModal.startDate),
+                endDate: parseStringToDate(activeModal.endDate),
               }
             : undefined
         }
-        onConfirm={(dateRange) => {
-          if (activeModal.type === 'EDIT_DATE') {
-            console.log('기간 수정 API:', activeModal.travelId, dateRange);
+        onConfirm={(range) => {
+          if (!range.startDate || !range.endDate) return closeModal();
+          const dates = {
+            startDate: formatDateToString(range.startDate),
+            endDate: formatDateToString(range.endDate),
+          };
+
+          if (type === 'CREATE_DATE') {
+            createMutation.mutate(
+              {
+                ...dates,
+                travelPlaceName: activeModal.travelName,
+                imageKey: '',
+              },
+              { onSuccess: closeModal },
+            );
+          } else if (type === 'EDIT_DATE') {
+            handlePatch({ ...activeModal, ...dates });
           }
-          closeModal();
         }}
       />
 
-      {/* 폴더 삭제 */}
-      <TravelPocketModal
-        mode="delete"
-        isOpen={activeModal.type === 'DELETE'}
-        onClose={closeModal}
-        onAction={() => {
-          if (activeModal.type === 'DELETE') {
-            console.log('삭제 API:', activeModal.travelId);
-          }
-          closeModal();
-        }}
-      />
-
-      {/* 썸네일 변경 */}
-      <TravelPocketImgModal
-        isOpen={activeModal.type === 'EDIT_THUMBNAIL'}
-        onClose={closeModal}
-        travelId={
-          activeModal.type === 'EDIT_THUMBNAIL' ? activeModal.travelId : 0
-        }
-        imageKey={
-          activeModal.type === 'EDIT_THUMBNAIL' ? activeModal.imageKey : null
-        }
-      />
+      {/* 썸네일 수정 */}
+      {type === 'EDIT_THUMBNAIL' && (
+        <TravelPocketImgModal
+          isOpen={true}
+          onClose={closeModal}
+          travelId={activeModal.travelId}
+          imageKey={activeModal.imageKey}
+        />
+      )}
     </>
   );
 };

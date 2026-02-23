@@ -20,7 +20,14 @@ const createMockResponse = (status: number, body?: unknown): Response =>
   ({
     ok: status >= 200 && status < 300,
     status,
+    // customFetch는 성공 응답에서 response.text()를 사용하고,
+    // 오류 응답에서 response.json()을 사용함
     json: vi.fn().mockResolvedValue(body ?? null),
+    text: vi
+      .fn()
+      .mockResolvedValue(
+        body !== undefined && body !== null ? JSON.stringify(body) : '',
+      ),
   }) as unknown as Response;
 
 describe('Account Books API', () => {

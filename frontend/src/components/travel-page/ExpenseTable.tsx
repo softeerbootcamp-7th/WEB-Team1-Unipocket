@@ -1,3 +1,5 @@
+import { useParams } from '@tanstack/react-router';
+
 import Button from '@/components/common/Button';
 import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
@@ -11,7 +13,10 @@ interface ExpenseTableProps {
 }
 
 const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
-  const travelId = 1; // 임시 @지원이 여행 PR에서 이어서해줄거임!
+  const { travelId: travelIdParam } = useParams({
+    from: '/_app/travel/$travelId',
+  });
+  const travelId = Number(travelIdParam);
 
   const { data, filter, updateFilter, totalPages } = useFilteredExpenses({
     travelId,

@@ -25,6 +25,7 @@ const resetCells = {
   categoryCell: null,
   amountCell: null,
   paymentCell: null,
+  travelCell: null,
 };
 
 const tableReducer = (state: TableUIState, action: TableUIAction) => {
@@ -44,6 +45,8 @@ const tableReducer = (state: TableUIState, action: TableUIAction) => {
       return { ...state, ...resetCells, amountCell: action.payload };
     case 'SET_PAYMENT_CELL':
       return { ...state, ...resetCells, paymentCell: action.payload };
+    case 'SET_TRAVEL_CELL':
+      return { ...state, ...resetCells, travelCell: action.payload };
     case 'SET_ACTIVE_ROW':
       return { ...state, activeRow: action.payload };
     default:

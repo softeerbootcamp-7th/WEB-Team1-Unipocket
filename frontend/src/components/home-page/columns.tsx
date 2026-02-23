@@ -116,7 +116,7 @@ export const columns: ColumnDef<Expense>[] = [
   {
     id: 'travel',
     meta: {
-      cellEditor: 'text',
+      cellEditor: 'travel',
     },
     header: () => <>여행</>,
     cell: ({ row }) => {

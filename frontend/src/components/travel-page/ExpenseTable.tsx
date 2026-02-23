@@ -1,4 +1,4 @@
-import { useFilteredExpenses } from '@/hooks/useFilteredExpenses';
+import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 
 import Button from '@/components/common/Button';
 import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';

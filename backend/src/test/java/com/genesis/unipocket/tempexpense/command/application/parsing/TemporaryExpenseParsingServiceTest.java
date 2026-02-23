@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
@@ -94,7 +95,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -177,7 +180,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -232,7 +237,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(eq("KRW"), any())).thenReturn(CurrencyCode.KRW);
@@ -301,7 +308,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(temporaryExpenseParseClient.parse(any(File.class)))
 				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
 		when(temporaryExpenseRepository.saveAll(anyList()))
@@ -385,7 +394,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -454,7 +465,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(temporaryExpenseParseClient.parse(first))
 				.thenReturn(
 						new GeminiService.GeminiParseResponse(
@@ -505,7 +518,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -579,7 +594,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(temporaryExpenseParseClient.parse(first))
 				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
 		when(temporaryExpenseParseClient.parse(second))
@@ -622,7 +639,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(temporaryExpenseParseClient.parse(file))
 				.thenReturn(
 						new GeminiService.GeminiParseResponse(false, List.of(), "internal", 500));

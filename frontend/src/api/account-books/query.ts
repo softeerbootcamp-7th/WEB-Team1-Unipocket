@@ -29,6 +29,9 @@ const accountBooksQueryOptions = queryOptions({
   queryKey: ['accountBooks', 'list'],
   queryFn: getAccountBooks,
   staleTime: 1000 * 30,
+  meta: {
+    errorMessage: '가계부 목록을 불러오지 못했어요.',
+  },
 });
 
 const useGetAccountBooksQuery = () => {
@@ -52,6 +55,9 @@ const accountBookDetailQueryOptions = (accountBookId: number | null) =>
     queryKey: ['accountBooks', 'detail', accountBookId],
     queryFn: () => getAccountBookDetail(accountBookId as number),
     enabled: !!accountBookId,
+    meta: {
+      errorMessage: '가계부 상세 정보를 불러오지 못했어요.',
+    },
   });
 
 const useAccountBookDetailQuery = (accountBookId: number | null) =>

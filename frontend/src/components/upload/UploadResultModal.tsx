@@ -1,8 +1,8 @@
 import { type ReactNode, useEffect } from 'react';
 
+import Button from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
-
-import Button from '../common/Button';
+import useEscapeKey from '@/components/upload/hooks/useEscapeKey';
 
 interface UploadResultModalProps {
   isOpen: boolean;
@@ -32,18 +32,7 @@ export default function UploadResultModal({
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+  useEscapeKey(isOpen, onClose);
 
   if (!isOpen) return null;
 

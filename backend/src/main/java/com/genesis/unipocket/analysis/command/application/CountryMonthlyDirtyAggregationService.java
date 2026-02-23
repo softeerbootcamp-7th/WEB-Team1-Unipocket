@@ -76,48 +76,61 @@ public class CountryMonthlyDirtyAggregationService {
 	private final ExchangeRateService exchangeRateService;
 
 	public void processCountryDirtyRows(CountryCode countryCode) {
-		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
-		List<Long> candidateIds =
-				monthlyDirtyRepository.findDispatchableIdsByCountryCode(
-						countryCode,
-						CLAIMABLE_STATUSES,
-						nowUtc,
-						PageRequest.of(0, properties.getDispatchBatchSize()));
-		if (candidateIds.isEmpty()) {
-			return;
-		}
-
+		ZoneId countryZone = CountryCodeTimezoneMapper.getZoneId(countryCode);
+		LocalDateTime batchStartUtc =
+				LocalDate.now(countryZone)
+						.atTime(properties.getRunHour(), properties.getRunMinute())
+						.atZone(countryZone)
+						.withZoneSameInstant(ZoneOffset.UTC)
+						.toLocalDateTime();
 		TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
 		Set<PairMonthKey> affectedPairMonths = new LinkedHashSet<>();
-		for (Long dirtyId : candidateIds) {
-			LocalDateTime claimTime = LocalDateTime.now(ZoneOffset.UTC);
-			Boolean claimed =
-					txTemplate.execute(
-							status -> {
-								int updated =
-										monthlyDirtyRepository.claimDirty(
-												dirtyId,
-												AnalysisBatchJobStatus.RUNNING,
-												CLAIMABLE_STATUSES,
-												claimTime,
-												claimTime.plusMinutes(
-														properties.getLeaseMinutes()));
-								return updated == 1;
-							});
 
-			if (!Boolean.TRUE.equals(claimed)) {
-				continue;
+		int maxLoops = properties.getMaxLoopsPerBatch();
+		int loopCount = 0;
+		while (loopCount++ < maxLoops) {
+			LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
+			List<Long> candidateIds =
+					monthlyDirtyRepository.findDispatchableIdsByCountryCode(
+							countryCode,
+							CLAIMABLE_STATUSES,
+							nowUtc,
+							batchStartUtc,
+							PageRequest.of(0, properties.getDispatchBatchSize()));
+			if (candidateIds.isEmpty()) {
+				break;
 			}
 
-			try {
-				PairMonthKey affectedKey =
-						txTemplate.execute(status -> processOneDirtyRow(dirtyId, claimTime));
-				if (affectedKey != null) {
-					affectedPairMonths.add(affectedKey);
+			for (Long dirtyId : candidateIds) {
+				LocalDateTime claimTime = LocalDateTime.now(ZoneOffset.UTC);
+				Boolean claimed =
+						txTemplate.execute(
+								status -> {
+									int updated =
+											monthlyDirtyRepository.claimDirty(
+													dirtyId,
+													AnalysisBatchJobStatus.RUNNING,
+													CLAIMABLE_STATUSES,
+													claimTime,
+													claimTime.plusMinutes(
+															properties.getLeaseMinutes()));
+									return updated == 1;
+								});
+
+				if (!Boolean.TRUE.equals(claimed)) {
+					continue;
 				}
-			} catch (Exception e) {
-				log.error("Failed to process monthly dirty row. dirtyId={}", dirtyId, e);
-				txTemplate.executeWithoutResult(status -> markFailure(dirtyId, e));
+
+				try {
+					PairMonthKey affectedKey =
+							txTemplate.execute(status -> processOneDirtyRow(dirtyId, claimTime));
+					if (affectedKey != null) {
+						affectedPairMonths.add(affectedKey);
+					}
+				} catch (Exception e) {
+					log.error("Failed to process monthly dirty row. dirtyId={}", dirtyId, e);
+					txTemplate.executeWithoutResult(status -> markFailure(dirtyId, e));
+				}
 			}
 		}
 

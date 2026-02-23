@@ -56,7 +56,7 @@ export default function UploadResultModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="upload-result-title"
-      className="bg-background-alternative fixed inset-0 z-50 flex flex-col gap-8"
+      className="bg-background-alternative z-overlay fixed inset-0 flex flex-col gap-8"
     >
       <div className="border-line-normal-normal flex h-11.5 items-center justify-between border-b px-8">
         <span className="body2-normal-bold text-label-normal">결과 확인</span>

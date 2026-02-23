@@ -56,12 +56,10 @@ const FileImage = ({
       {hasIssue && (
         <div className="bg-status-negative absolute -top-0.75 -left-0.75 h-1.5 w-1.5 rounded-full" />
       )}
-
       <div className="flex min-w-0 flex-col gap-1.5">
         <span className="caption1-medium text-label-normal truncate">
           {fileName}
         </span>
-
         <div className="caption1-medium flex h-4 items-center gap-1.5">
           {successCount > 0 && (
             <div className="flex items-center gap-0.5">
@@ -69,7 +67,6 @@ const FileImage = ({
               <span className="text-status-positive">{successCount}건</span>
             </div>
           )}
-
           {warningCount > 0 && (
             <div className="flex items-center gap-0.5">
               <Icons.Warning className="size-4" />

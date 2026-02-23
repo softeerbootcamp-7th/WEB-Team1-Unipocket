@@ -4,7 +4,7 @@ import Button from '@/components/common/Button';
 
 import { Icons } from '@/assets';
 
-type SnackbarStatus = 'loading' | 'success' | 'default';
+export type SnackbarStatus = 'loading' | 'success' | 'default';
 
 interface SnackbarProps {
   status?: SnackbarStatus;

@@ -76,7 +76,7 @@ export const CalendarDay = ({
       />
       <span
         className={cn(
-          'z-grouped-header relative flex h-full w-full items-center justify-center',
+          'z-header relative flex h-full w-full items-center justify-center',
           getSelectedCircleClass(),
         )}
       >

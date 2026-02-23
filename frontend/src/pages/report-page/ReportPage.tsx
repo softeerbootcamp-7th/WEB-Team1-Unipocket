@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import Switch from '@/components/common/Switch';
+import { useAutoFitScaleToViewport } from '@/hooks/useAutoFitScale';
+
 import PageHeader from '@/components/layout/PageHeader';
 import ReportControlSection from '@/components/report-page/ReportControlSection';
 import ReportSection from '@/components/report-page/ReportSection';
@@ -9,14 +10,12 @@ import {
   canGoToMonth,
   dateToYearMonth,
   getMaxYearMonth,
-  getNavButtonClass,
   parseYearMonth,
 } from '@/pages/report-page/report.utils';
 
 import { type CurrencyType } from '@/types/currency';
 
 import { useAnalysisQuery } from '@/api/account-books/query';
-import { Icons } from '@/assets';
 import { PAGE_TITLE } from '@/constants/message';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
@@ -59,10 +58,18 @@ const ReportPage = () => {
 
   const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
 
+  const { ref, scale } = useAutoFitScaleToViewport<HTMLDivElement>(16, 0.9, [
+    data,
+  ]);
+
   return (
-    <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
+    <div className="flex flex-col gap-8 px-30 pt-8">
       <PageHeader {...PAGE_TITLE.REPORT} />
-      <div className="flex flex-col gap-4.5">
+      <div
+        ref={ref}
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
+        className="flex flex-col gap-4.5"
+      >
         <ReportControlSection
           year={year}
           month={month}

@@ -1,4 +1,4 @@
-import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
+import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
 import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
 import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
@@ -21,7 +21,7 @@ const ExpenseTable = () => {
         updateFilter={updateFilter}
         filterActions={<UploadMenu />}
       >
-        <SelectionActionBar />
+        <UpdateActionBar />
         <TextCellEditor />
         <CategoryCellEditor />
         <AmountCellEditor />

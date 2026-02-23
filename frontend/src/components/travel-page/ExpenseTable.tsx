@@ -1,9 +1,8 @@
-import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
-
 import Button from '@/components/common/Button';
-import SelectionActionBar from '@/components/data-table/bars/SelectionActionBar';
+import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
+import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import TableSidePanel from '@/components/side-panel/TableSidePanel';
 
@@ -31,7 +30,7 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
       }
       totalPages={totalPages}
     >
-      <SelectionActionBar />
+      <UpdateActionBar />
       <TextCellEditor />
       <CategoryCellEditor />
       <TableSidePanel />

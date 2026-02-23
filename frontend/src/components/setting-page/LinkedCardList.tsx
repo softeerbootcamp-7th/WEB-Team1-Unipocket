@@ -1,20 +1,22 @@
 import { useState } from 'react';
 
+import Icon from '@/components/common/Icon';
 import CardCreateModal from '@/components/setting-page/modal/CardCreateModal';
 import CardDeleteModal from '@/components/setting-page/modal/CardDeleteModal';
 import CardNicknameModal from '@/components/setting-page/modal/CardNicknameModal';
-import { SettingSection } from '@/components/setting-page/SettingLayout';
+import {
+  SettingSection,
+  SettingTitle,
+} from '@/components/setting-page/SettingLayout';
 
 import {
-  useCardsSuspenseQuery,
+  useCardsQuery,
   useCreateCardMutation,
   useDeleteCardMutation,
   useUpdateCardNicknameMutation,
 } from '@/api/cards/query';
 import type { Card } from '@/api/cards/type';
 import { Cards, Icons } from '@/assets';
-
-import Icon from '../common/Icon';
 
 interface LinkedCardItemProps {
   card: Card;
@@ -63,7 +65,7 @@ const LinkedCardItem = ({ card, onEdit, onDelete }: LinkedCardItemProps) => {
 };
 
 const LinkedCardList = () => {
-  const { data: cards } = useCardsSuspenseQuery();
+  const { data: cards, isLoading } = useCardsQuery();
   const createCardMutation = useCreateCardMutation();
   const updateCardNicknameMutation = useUpdateCardNicknameMutation();
   const deleteCardMutation = useDeleteCardMutation();
@@ -95,11 +97,13 @@ const LinkedCardList = () => {
     });
   };
 
+  if (isLoading || !cards) {
+    return null;
+  }
+
   return (
     <SettingSection>
-      <p className="heading2-bold text-label-normal w-50 shrink-0">
-        국내카드 연동 목록
-      </p>
+      <SettingTitle>국내카드 연동 목록</SettingTitle>
       <div className="flex flex-col">
         {cards.length === 0 ? (
           <p className="body2-normal-regular text-label-assistive">
@@ -158,8 +162,4 @@ const LinkedCardList = () => {
   );
 };
 
-const CardListSkeleton = () => (
-  <div className="h-24 w-full animate-pulse rounded-md bg-black/10" />
-);
-
-export { CardListSkeleton, LinkedCardList };
+export { LinkedCardList };

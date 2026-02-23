@@ -5,10 +5,7 @@ import {
   ConfiguratorSkeleton,
 } from '@/components/setting-page/AccountBookConfigurator';
 import { AccountManagement } from '@/components/setting-page/AccountManagement';
-import {
-  CardListSkeleton,
-  LinkedCardList,
-} from '@/components/setting-page/LinkedCardList';
+import { LinkedCardList } from '@/components/setting-page/LinkedCardList';
 import {
   MainAccountBookSelector,
   MainAccountBookSkeleton,
@@ -22,9 +19,7 @@ const SettingPage = () => {
         <Suspense fallback={<MainAccountBookSkeleton />}>
           <MainAccountBookSelector />
         </Suspense>
-        <Suspense fallback={<CardListSkeleton />}>
-          <LinkedCardList />
-        </Suspense>
+        <LinkedCardList />
         <Suspense fallback={<ConfiguratorSkeleton />}>
           <AccountBookConfigurator />
         </Suspense>

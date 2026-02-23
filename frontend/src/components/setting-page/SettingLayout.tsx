@@ -1,3 +1,17 @@
+import { cn } from '@/lib/utils';
+
+const SettingTitle = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <p className={cn('heading2-bold text-label-normal w-50 shrink-0', className)}>
+    {children}
+  </p>
+);
+
 const SettingSection = ({ children }: { children: React.ReactNode }) => {
   return <div className="flex items-start py-2.5">{children}</div>;
 };
@@ -27,4 +41,4 @@ const SettingRow = ({ label, value, onEdit }: SettingRowProps) => {
   );
 };
 
-export { SettingRow, SettingSection };
+export { SettingRow, SettingSection, SettingTitle };

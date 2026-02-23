@@ -13,6 +13,7 @@ import AccountBookPeriodModal from '@/components/setting-page/modal/AccountBookP
 import {
   SettingRow,
   SettingSection,
+  SettingTitle,
 } from '@/components/setting-page/SettingLayout';
 
 import {
@@ -39,7 +40,6 @@ const AccountBookConfigurator = () => {
   const { data: accountBooks } = useGetAccountBooksQuery();
   const createAccountBookMutation = useCreateAccountBookMutation();
 
-  //  부모는 '새 가계부 만들기' 모달 상태만 관리합니다.
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   const handleCreateAccountBook = (data: {
@@ -56,14 +56,13 @@ const AccountBookConfigurator = () => {
     accountBooks[0].accountBookId.toString(),
   );
 
-  //  Suspense 쿼리이므로 isLoading 체크가 필요 없습니다.
   const { data: accountBookDetail } = useAccountBookDetailQuery(
     Number(activeAccountBookId),
   );
 
   return (
     <SettingSection>
-      <p className="heading2-bold text-label-normal w-50">가계부 설정</p>
+      <SettingTitle>가계부 설정</SettingTitle>
       <TabProvider
         value={activeAccountBookId}
         onValueChange={setActiveAccountBookId}
@@ -75,8 +74,8 @@ const AccountBookConfigurator = () => {
                 key={book.accountBookId}
                 value={String(book.accountBookId)}
               >
-                <span className="headline1-bold text-label-normal flex items-center justify-center gap-3 px-3.5 pt-3">
-                  {book.title}
+                <span className="headline1-bold text-label-normal flex min-w-0 items-center justify-center gap-3 px-3.5 pt-3">
+                  <span className="min-w-25 truncate">{book.title}</span>
                   {book.isMain && (
                     <Chip
                       label="메인"
@@ -97,7 +96,6 @@ const AccountBookConfigurator = () => {
         </div>
 
         <TabContent value={activeAccountBookId}>
-          {/*  중복 렌더링되던 부분을 지우고, 자식에게 필요한 데이터를 모두 넘겨줍니다. */}
           {accountBookDetail && (
             <AccountBookSettingsForm
               key={accountBookDetail.accountBookId}
@@ -119,7 +117,6 @@ const AccountBookConfigurator = () => {
   );
 };
 
-//  Props 타입 정의: 모달을 여는 함수 대신 필요한 데이터를 받습니다.
 interface AccountBookSettingsFormProps {
   detail: GetAccountBookDetailResponse;
   accountBooks: GetAccountBooksResponse;
@@ -129,7 +126,6 @@ const AccountBookSettingsForm = ({
   detail,
   accountBooks,
 }: AccountBookSettingsFormProps) => {
-  //  자식 컴포넌트가 자신의 뮤테이션과 모달 상태를 스스로 관리합니다.
   const updateAccountBookMutation = useUpdateAccountBookMutation();
   const deleteAccountBookMutation = useDeleteAccountBookMutation();
 
@@ -142,7 +138,6 @@ const AccountBookSettingsForm = ({
       ?.isMain ?? false;
 
   const formatDate = (dateStr: string) => dateStr.replace(/-/g, '.');
-
   const periodDisplay = `${formatDate(detail.startDate)} - ${formatDate(detail.endDate)}`;
 
   return (
@@ -154,18 +149,8 @@ const AccountBookSettingsForm = ({
             value={detail.title}
             onEdit={() => setNameModalOpen(true)}
           />
-          {/* <SettingRow
-          label="기준 통화 변경"
-          value={currencyDisplay}
-          onEdit={() => setCurrencyModalOpen(true)}
-        />
-        <SettingRow
-          label="국가/통화 변경"
-          value={countryDisplay}
-          onEdit={() => setCountryModalOpen(true)}
-        /> */}
           <SettingRow
-            label="카드 연동 기간 변경"
+            label="가계부 기간 변경"
             value={periodDisplay}
             onEdit={() => setPeriodModalOpen(true)}
           />
@@ -178,14 +163,13 @@ const AccountBookSettingsForm = ({
         </div>
 
         <p className="body2-normal-regular text-label-assistive">
-          * 한 가계부 안에, 지출 내역, 기준 통화 설정, 국가 설정, 카드 연동 기간
+          * 한 가계부 안에, 지출 내역, 기준 통화 설정, 국가 설정, 가계부 기간
           정보가 포함되어 있어요.
           <br />* 두 번째 교환학생을 가거나 가계부를 분리하고 싶다면, 새로운
           가계부를 추가해주세요.
         </p>
       </div>
 
-      {/*  개별 설정 모달들이 Form 컴포넌트 안에 위치합니다. */}
       {isNameModalOpen && (
         <AccountBookNameModal
           accountBooks={accountBooks}
@@ -215,22 +199,6 @@ const AccountBookSettingsForm = ({
           }}
         />
       )}
-      {/* 
-      {isCurrencyModalOpen && (
-        <LocaleSelectModal
-          mode="BASE"
-          onSelect={handleBaseCountrySelect}
-          selectedCode={selectedBaseCountry}
-        />
-      )}
-
-      {isCountryModalOpen && (
-        <LocaleSelectModal
-          mode="LOCAL"
-          onSelect={handleCountrySelect}
-          selectedCode={selectedCountry}
-        />
-      )} */}
 
       {isPeriodModalOpen && (
         <AccountBookPeriodModal

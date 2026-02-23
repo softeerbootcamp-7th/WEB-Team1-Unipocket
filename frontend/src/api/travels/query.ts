@@ -156,13 +156,16 @@ export const useUpdateTravelMutation = (travelId: number | string) => {
   });
 };
 
-export const usePatchTravelMutation = (travelId: number | string) => {
+export const usePatchTravelMutation = () => {
   const { accountBookId } = useRequiredAccountBook();
 
   return useMutation({
-    mutationFn: (data: PatchTravelRequest) =>
+    mutationFn: ({
+      travelId,
+      ...data
+    }: PatchTravelRequest & { travelId: number | string }) =>
       patchTravel(accountBookId, travelId, data),
-    onSuccess: () => {
+    onSuccess: (_, { travelId }) => {
       queryClient.invalidateQueries({
         queryKey: travelKeys.list(accountBookId),
       });

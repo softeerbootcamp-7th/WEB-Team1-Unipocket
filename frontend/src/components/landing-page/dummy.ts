@@ -63,6 +63,7 @@ export function getData(): Expense[] {
           company: 0,
           label: 'My Card 2',
           lastDigits: '0102',
+          userCardId: 123, // 💡 userCardId 추가
         },
       },
       exchangeRate: 1.0,

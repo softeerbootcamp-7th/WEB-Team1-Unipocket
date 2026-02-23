@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
@@ -21,6 +21,13 @@ export const useCardCompaniesSuspenseQuery = () =>
 
 export const useCardsSuspenseQuery = () =>
   useSuspenseQuery<Awaited<ReturnType<typeof getCards>>>({
+    queryKey: ['cards'],
+    queryFn: getCards,
+    staleTime: 1000 * 30,
+  });
+
+export const useCardsQuery = () =>
+  useQuery<Awaited<ReturnType<typeof getCards>>>({
     queryKey: ['cards'],
     queryFn: getCards,
     staleTime: 1000 * 30,

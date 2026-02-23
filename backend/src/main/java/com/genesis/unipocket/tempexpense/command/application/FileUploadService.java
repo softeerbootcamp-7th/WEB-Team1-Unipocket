@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class FileUploadService {
 
-	private static final int MAX_IMAGE_UPLOAD_COUNT = 10;
+	private static final int MAX_IMAGE_UPLOAD_COUNT = 3;
 	private static final int MAX_DOCUMENT_UPLOAD_COUNT = 1;
 
 	private final TempExpenseMetaRepository tempExpenseMetaRepository;

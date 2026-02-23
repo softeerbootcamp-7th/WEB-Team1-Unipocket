@@ -37,7 +37,7 @@ const AccountBookConfigurator = () => {
   const { data: accountBooks } = useGetAccountBooksQuery();
   const createAccountBookMutation = useCreateAccountBookMutation();
 
-  // 💡 부모는 '새 가계부 만들기' 모달 상태만 관리합니다.
+  //  부모는 '새 가계부 만들기' 모달 상태만 관리합니다.
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   const handleCreateAccountBook = (data: {
@@ -54,7 +54,7 @@ const AccountBookConfigurator = () => {
     accountBooks[0].accountBookId.toString(),
   );
 
-  // 💡 Suspense 쿼리이므로 isLoading 체크가 필요 없습니다.
+  //  Suspense 쿼리이므로 isLoading 체크가 필요 없습니다.
   const { data: accountBookDetail } = useAccountBookDetailQuery(
     Number(activeAccountBookId),
   );
@@ -93,7 +93,7 @@ const AccountBookConfigurator = () => {
         </div>
 
         <TabContent value={activeAccountBookId}>
-          {/* 💡 중복 렌더링되던 부분을 지우고, 자식에게 필요한 데이터를 모두 넘겨줍니다. */}
+          {/*  중복 렌더링되던 부분을 지우고, 자식에게 필요한 데이터를 모두 넘겨줍니다. */}
           {accountBookDetail && (
             <AccountBookSettingsForm
               key={accountBookDetail.accountBookId}
@@ -115,7 +115,7 @@ const AccountBookConfigurator = () => {
   );
 };
 
-// 💡 Props 타입 정의: 모달을 여는 함수 대신 필요한 데이터를 받습니다.
+//  Props 타입 정의: 모달을 여는 함수 대신 필요한 데이터를 받습니다.
 interface AccountBookSettingsFormProps {
   detail: GetAccountBookDetailResponse;
   accountBooks: GetAccountBooksResponse;
@@ -125,7 +125,7 @@ const AccountBookSettingsForm = ({
   detail,
   accountBooks,
 }: AccountBookSettingsFormProps) => {
-  // 💡 자식 컴포넌트가 자신의 뮤테이션과 모달 상태를 스스로 관리합니다.
+  //  자식 컴포넌트가 자신의 뮤테이션과 모달 상태를 스스로 관리합니다.
   const updateAccountBookMutation = useUpdateAccountBookMutation();
   const deleteAccountBookMutation = useDeleteAccountBookMutation();
 
@@ -180,7 +180,7 @@ const AccountBookSettingsForm = ({
         </p>
       </div>
 
-      {/* 💡 개별 설정 모달들이 Form 컴포넌트 안에 위치합니다. */}
+      {/*  개별 설정 모달들이 Form 컴포넌트 안에 위치합니다. */}
       {isNameModalOpen && (
         <AccountBookNameModal
           accountBooks={accountBooks}

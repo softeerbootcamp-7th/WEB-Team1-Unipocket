@@ -92,7 +92,7 @@ const DataTableSearchFilter = <T,>({
     },
   });
 
-  // 💡 3. 검색어 변경 래퍼 함수 (onInputChange prop 지원을 위해)
+  // 검색어 변경 래퍼 함수 (onInputChange prop 지원을 위해)
   const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     handleSearchChange(value); // 훅의 상태 업데이트 (인덱스 0 초기화 포함)
@@ -193,7 +193,7 @@ const DataTableSearchFilter = <T,>({
             ref={inputRef}
             type="text"
             value={searchTerm}
-            onChange={onSearchInputChange} // 💡 래퍼 함수로 변경
+            onChange={onSearchInputChange} //  래퍼 함수로 변경
             onKeyDown={handleKeyDown}
             placeholder={
               selectedOptions.length > 0

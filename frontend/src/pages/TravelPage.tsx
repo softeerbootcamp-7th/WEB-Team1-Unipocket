@@ -52,6 +52,9 @@ const TravelPage = () => {
 
       {/* 폴더명 수정 */}
       <TravelPocketModal
+        key={
+          activeModal.type === 'EDIT_NAME' ? activeModal.travelId : undefined
+        }
         mode="edit"
         isOpen={isOpen && activeModal.type === 'EDIT_NAME'}
         initialName={
@@ -68,13 +71,20 @@ const TravelPage = () => {
 
       {/* 기간 수정 */}
       <SelectDateModal
+        key={
+          activeModal.type === 'EDIT_DATE' ? activeModal.travelId : undefined
+        }
         isOpen={isOpen && activeModal.type === 'EDIT_DATE'}
         onClose={closeModal}
         initialDateRange={
           activeModal.type === 'EDIT_DATE'
             ? {
-                startDate: parseStringToDate(activeModal.startDate),
-                endDate: parseStringToDate(activeModal.endDate),
+                startDate: parseStringToDate(
+                  activeModal.startDate.replaceAll('.', '-'),
+                ),
+                endDate: parseStringToDate(
+                  activeModal.endDate.replaceAll('.', '-'),
+                ),
               }
             : undefined
         }

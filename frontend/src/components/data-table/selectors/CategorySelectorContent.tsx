@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { PopoverContentProps } from '@radix-ui/react-popover';
 
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -10,7 +9,7 @@ import { PopoverContent } from '@/components/ui/popover';
 import { CATEGORIES, type CategoryId } from '@/types/category';
 
 interface CategorySelectorContentProps extends PopoverContentProps {
-  initialCategoryId?: CategoryId;
+  initialCategoryId: CategoryId | null;
   onCategorySelect: (id: CategoryId) => void;
   onInteractOutside?: () => void;
 }
@@ -25,23 +24,21 @@ export const CategorySelectorContent = ({
   ...props
 }: CategorySelectorContentProps) => {
   const options = Object.keys(CATEGORIES) as unknown as CategoryId[];
-  const [selectedCategoryId, setSelectedCategoryId] =
-    useState<CategoryId | null>(initialCategoryId ?? null);
+  const currentCategory = initialCategoryId;
+
+  const initialIndex = Math.max(
+    0,
+    currentCategory !== null
+      ? options.findIndex((opt) => Number(opt) === Number(currentCategory))
+      : 0,
+  );
 
   const { activeIndex, setActiveIndex, handleKeyDown } =
     useKeyboardNavigation<CategoryId>({
       items: options,
-      initialActiveIndex: initialCategoryId || options[0],
-      onSelect: (selectedId) => {
-        setSelectedCategoryId(selectedId);
-        onCategorySelect(selectedId);
-      },
+      initialActiveIndex: initialIndex,
+      onSelect: onCategorySelect,
     });
-
-  const handleSelectAndSave = (selectedId: CategoryId) => {
-    setSelectedCategoryId(selectedId);
-    onCategorySelect(selectedId);
-  };
 
   return (
     <PopoverContent
@@ -56,8 +53,10 @@ export const CategorySelectorContent = ({
         items={options}
         activeIndex={activeIndex}
         setActiveIndex={setActiveIndex}
-        isSelected={(item) => Number(selectedCategoryId) === Number(item)}
-        onSelect={handleSelectAndSave}
+        isSelected={(item) =>
+          currentCategory !== null && Number(currentCategory) === Number(item)
+        }
+        onSelect={onCategorySelect}
         renderItem={(item) => <CategoryChip categoryId={item} />}
       />
     </PopoverContent>

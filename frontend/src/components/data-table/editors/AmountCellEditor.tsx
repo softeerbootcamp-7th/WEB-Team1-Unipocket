@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
+import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
 import type { ActiveCellState } from '@/components/data-table/type';
 
 import type { Expense } from '@/api/expenses/type';
@@ -27,6 +28,7 @@ const AmountCellEditorContent = ({
   amountCell: ActiveCellState;
 }) => {
   const { table, dispatch } = useDataTable();
+  const { updateInline } = useInlineExpenseUpdate();
   const [value, setValue] = useState(String(amountCell.value));
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,6 +38,17 @@ const AmountCellEditorContent = ({
   }, []);
 
   const handleSave = () => {
+    if (value !== String(amountCell.value)) {
+      // 현재 열이 현지 금액인지 기준 금액인지 판별
+      const isLocal = amountCell.columnId === 'localCurrencyAmount';
+      const field = isLocal ? 'localCurrencyAmount' : 'baseCurrencyAmount';
+      const oppositeField = isLocal
+        ? 'baseCurrencyAmount'
+        : 'localCurrencyAmount';
+      updateInline(amountCell.rowId, field, Number(value), {
+        [oppositeField]: null,
+      });
+    }
     dispatch({ type: 'SET_AMOUNT_CELL', payload: null });
   };
 

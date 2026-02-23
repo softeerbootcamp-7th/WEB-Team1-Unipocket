@@ -20,6 +20,7 @@ interface Travel {
 interface PaymentMethod {
   isCash: boolean;
   card: {
+    userCardId: number;
     company: CardId;
     label: string;
     lastDigits: string;
@@ -74,7 +75,7 @@ type UpdateExpenseRequest = Partial<
     | 'localCurrencyCode'
     | 'baseCurrencyAmount'
     | 'memo'
-  > & { userCardId: number; travelId: number }
+  > & { userCardId: number | null; travelId: number | null }
 >;
 
 type UpdateExpenseResponse = Required<
@@ -141,7 +142,7 @@ type BulkUpdateExpenseItem = { expenseId: number } & Partial<
     | 'localCurrencyCode'
     | 'baseCurrencyAmount'
     | 'memo'
-  > & { userCardId: number; travelId: number }
+  > & { userCardId: number | null; travelId: number | null }
 >;
 
 interface BulkUpdateExpenseRequest {

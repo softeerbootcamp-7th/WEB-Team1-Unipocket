@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { PopoverContentProps } from '@radix-ui/react-popover';
 
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -8,10 +7,11 @@ import { DataTableOptionList } from '@/components/data-table/DataTableOptionList
 import { PopoverContent } from '@/components/ui/popover';
 
 import { useGetTravelsQuery } from '@/api/travels/query';
+import { NONE_TRAVEL } from '@/constants/column';
 
 interface TravelSelectorContentProps extends PopoverContentProps {
-  initialTravelId?: number;
-  onTravelSelect: (travelId: number) => void;
+  initialTravelId: number | string | null;
+  onTravelSelect: (travelId: number | string) => void;
   onInteractOutside?: () => void;
 }
 
@@ -25,31 +25,29 @@ export const TravelSelectorContent = ({
   ...props
 }: TravelSelectorContentProps) => {
   const { data: travels = [] } = useGetTravelsQuery();
-  const options = travels.map((travel) => travel.travelId);
 
-  const [selectedTravelId, setSelectedTravelId] = useState<number | null>(
-    initialTravelId ?? null,
-  );
+  const options = [NONE_TRAVEL, ...travels.map((travel) => travel.travelId)];
 
-  const getTravelName = (travelId: number) => {
+  const currentTravel = initialTravelId;
+
+  const getTravelName = (travelId: number | string) => {
+    if (travelId === NONE_TRAVEL) return NONE_TRAVEL; // '-' 표시
     const travel = travels.find((t) => t.travelId === travelId);
     return travel?.travelPlaceName || '알 수 없는 여행';
   };
 
   const initialIndex = Math.max(
     0,
-    initialTravelId ? options.indexOf(initialTravelId) : 0,
+    currentTravel !== null ? options.indexOf(currentTravel) : 0,
   );
 
-  const { activeIndex, setActiveIndex, handleKeyDown } =
-    useKeyboardNavigation<number>({
-      items: options,
-      initialActiveIndex: initialIndex,
-      onSelect: (selectedId) => {
-        setSelectedTravelId(selectedId);
-        onTravelSelect(selectedId);
-      },
-    });
+  const { activeIndex, setActiveIndex, handleKeyDown } = useKeyboardNavigation<
+    number | string
+  >({
+    items: options,
+    initialActiveIndex: initialIndex,
+    onSelect: onTravelSelect,
+  });
 
   return (
     <PopoverContent
@@ -64,11 +62,8 @@ export const TravelSelectorContent = ({
         items={options}
         activeIndex={activeIndex}
         setActiveIndex={setActiveIndex}
-        isSelected={(item) => selectedTravelId === item}
-        onSelect={(selectedId) => {
-          setSelectedTravelId(selectedId);
-          onTravelSelect(selectedId);
-        }}
+        isSelected={(item) => currentTravel !== null && currentTravel === item}
+        onSelect={onTravelSelect}
         renderItem={(item) => <Chip label={getTravelName(item)} />}
       />
     </PopoverContent>

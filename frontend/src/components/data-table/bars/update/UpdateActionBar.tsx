@@ -44,7 +44,7 @@ const UpdateActionBar = () => {
     K extends keyof Omit<BulkUpdateExpenseItem, 'expenseId'>,
   >(
     field: K,
-    value: NonNullable<BulkUpdateExpenseItem[K]>,
+    value: BulkUpdateExpenseItem[K],
   ) => {
     const items: BulkUpdateExpenseItem[] = selectedRows.map((row) => {
       const original = row.original as Expense;
@@ -57,8 +57,10 @@ const UpdateActionBar = () => {
         localCurrencyCode: original.localCurrencyCode,
         baseCurrencyAmount: original.baseCurrencyAmount,
         memo: original.memo || '',
-        travelId: original.travel?.travelId || 0,
-        userCardId: original.paymentMethod.isCash ? 0 : 0,
+        travelId: original.travel?.travelId || null,
+        userCardId: original.paymentMethod.isCash
+          ? null
+          : original.paymentMethod.card?.userCardId,
       };
 
       return { ...basePayload, [field]: value };

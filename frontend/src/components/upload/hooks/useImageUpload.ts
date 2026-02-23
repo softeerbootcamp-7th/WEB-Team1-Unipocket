@@ -259,10 +259,6 @@ export const useImageUpload = (accountBookId: number) => {
     items.every((item) => item.status === UPLOAD_STATUS.UPLOADED);
 
   const clearItems = () => {
-    Object.values(eventSourcesRef.current).forEach((es) => es.close());
-    eventSourcesRef.current = {};
-    completedRef.current = {};
-
     itemsRef.current.forEach((item) => {
       if (item.url) URL.revokeObjectURL(item.url);
     });

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 
-import { CategoryChip } from '@/components/common/Chip';
+import Chip from '@/components/common/Chip';
 import { useDataTable } from '@/components/data-table/context';
 import { DataTableOptionList } from '@/components/data-table/DataTableOptionList';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
@@ -13,57 +13,65 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-import { CATEGORIES, type CategoryId } from '@/types/category';
+import { useGetCardsQuery } from '@/api/users/query';
 
-const CategoryCellEditor = () => {
+const MethodCellEditor = () => {
   const { tableState } = useDataTable();
-  const { categoryCell } = tableState;
+  const { methodCell } = tableState;
 
-  if (!categoryCell) return null;
+  if (!methodCell) return null;
 
   return (
-    <CategoryCellEditorContent
-      key={`${categoryCell.rowId}-${categoryCell.columnId}`}
-      categoryCell={categoryCell}
+    <MethodCellEditorContent
+      key={`${methodCell.rowId}-${methodCell.columnId}`}
+      methodCell={methodCell}
     />
   );
 };
 
-const CategoryCellEditorContent = ({
-  categoryCell,
+const MethodCellEditorContent = ({
+  methodCell,
 }: {
-  categoryCell: ActiveCellState;
+  methodCell: ActiveCellState;
 }) => {
   const { dispatch } = useDataTable();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<CategoryId>(
-    categoryCell.value as CategoryId,
+  const [selectedMethod, setSelectedMethod] = useState<string>(
+    methodCell.value as string,
   );
 
-  const options = Object.keys(CATEGORIES) as unknown as CategoryId[];
+  const { data: cards } = useGetCardsQuery();
+  const options = cards.map((card) => card.cardNumber);
+
+  const getNickName = (cardNumber: string) => {
+    const card = cards.find((c) => c.cardNumber === cardNumber);
+    return card?.nickName || cardNumber;
+  };
+
+  const initialIndex = Math.max(0, options.indexOf(selectedMethod));
 
   const { activeIndex, setActiveIndex, handleKeyDown } =
-    useKeyboardNavigation<CategoryId>({
+    useKeyboardNavigation<string>({
       items: options,
-      initialActiveIndex: selectedCategoryId,
+      initialActiveIndex: initialIndex,
       onSelect: (selectedId) => {
-        setSelectedCategoryId(selectedId);
+        setSelectedMethod(selectedId);
         handleSave();
       },
     });
 
   const handleSave = () => {
-    dispatch({ type: 'SET_CATEGORY_CELL', payload: null });
+    dispatch({ type: 'SET_METHOD_CELL', payload: null });
   };
 
-  const handleSelectAndSave = (selectedId: CategoryId) => {
-    setSelectedCategoryId(selectedId);
-    dispatch({ type: 'SET_CATEGORY_CELL', payload: null });
+  const handleSelectAndSave = (selectedId: string) => {
+    setSelectedMethod(selectedId);
+    dispatch({ type: 'SET_METHOD_CELL', payload: null });
   };
 
   return (
     <Popover open={true} onOpenChange={(open) => !open && handleSave()}>
       <PopoverTrigger asChild>
-        <CellEditorAnchor rect={categoryCell.rect} style={{ opacity: 0 }} />
+        <CellEditorAnchor rect={methodCell.rect} style={{ opacity: 0 }} />
       </PopoverTrigger>
 
       <PopoverContent
@@ -77,13 +85,13 @@ const CategoryCellEditorContent = ({
           items={options}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
-          isSelected={(item) => Number(selectedCategoryId) === Number(item)}
+          isSelected={(item) => selectedMethod === item}
           onSelect={handleSelectAndSave}
-          renderItem={(item) => <CategoryChip categoryId={item} />}
+          renderItem={(item) => <Chip label={getNickName(item)} />}
         />
       </PopoverContent>
     </Popover>
   );
 };
 
-export default CategoryCellEditor;
+export default MethodCellEditor;

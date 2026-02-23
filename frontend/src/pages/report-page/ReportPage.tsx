@@ -63,7 +63,7 @@ const ReportPage = () => {
   ]);
 
   return (
-    <div className="flex flex-col gap-8 px-30 pt-8">
+    <div className="flex flex-col gap-8 px-4 pt-8 xl:px-30">
       <PageHeader {...PAGE_TITLE.REPORT} />
       <div
         ref={ref}

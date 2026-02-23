@@ -33,11 +33,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test-it")
 @Import(TestcontainersConfiguration.class)
+@TestPropertySource(properties = "analysis.batch.peer-min-sample-size=2")
 @Transactional
 @Tag("integration")
 class CountryMonthlyDirtyAggregationServiceIntegrationTest {

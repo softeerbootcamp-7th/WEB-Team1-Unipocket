@@ -3,7 +3,6 @@ package com.genesis.unipocket.expense.query.persistence.repository;
 import com.genesis.unipocket.expense.command.persistence.entity.QExpenseEntity;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseOneShotRow;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
-import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -31,8 +30,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class ExpenseQueryDslRepository {
-
-	private static final BigDecimal NEGATIVE_ONE = BigDecimal.valueOf(-1L);
 
 	private final JPAQueryFactory queryFactory;
 
@@ -155,12 +152,6 @@ public class ExpenseQueryDslRepository {
 	}
 
 	private OrderSpecifier<?>[] toOrderSpecifiers(Sort sort, QExpenseEntity expense) {
-		NumberExpression<BigDecimal> signedDisplayBaseAmount =
-				new CaseBuilder()
-						.when(expense.category.eq(Category.INCOME))
-						.then(displayBaseAmountExpression(expense))
-						.otherwise(displayBaseAmountExpression(expense).multiply(NEGATIVE_ONE));
-
 		List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
 		if (sort != null && sort.isSorted()) {
@@ -173,8 +164,8 @@ public class ExpenseQueryDslRepository {
 					case "baseCurrencyAmount" ->
 							orderSpecifiers.add(
 									asc
-											? signedDisplayBaseAmount.asc()
-											: signedDisplayBaseAmount.desc());
+											? displayBaseAmountExpression(expense).asc()
+											: displayBaseAmountExpression(expense).desc());
 					default -> throw new BusinessException(ErrorCode.EXPENSE_INVALID_SORT);
 				}
 			}

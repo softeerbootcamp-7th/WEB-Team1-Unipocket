@@ -431,7 +431,7 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("지출내역 정렬 - 금액순 정렬 시 지출은 음수, 수입은 양수로 판정")
+	@DisplayName("지출내역 정렬 - 금액 내림차순은 절댓값 기준 단순 정렬")
 	void 지출내역_금액정렬시_소비수입_분리_성공() throws Exception {
 		// given
 		createTestExpenseWithDetails("소비-중간", 2, "2026-02-04T12:00:00", 30000.0, null);
@@ -451,13 +451,13 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses[0].category").value(9))
 				.andExpect(jsonPath("$.expenses[0].merchantName").value("수입-큼"))
 				.andExpect(jsonPath("$.expenses[1].category").value(2))
-				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-중간"))
 				.andExpect(jsonPath("$.expenses[2].category").value(2))
-				.andExpect(jsonPath("$.expenses[2].merchantName").value("소비-중간"));
+				.andExpect(jsonPath("$.expenses[2].merchantName").value("소비-작음"));
 	}
 
 	@Test
-	@DisplayName("지출내역 정렬 - 금액 오름차순 정렬 시 지출 우선 후 수입")
+	@DisplayName("지출내역 정렬 - 금액 오름차순은 절댓값 기준 단순 정렬")
 	void 지출내역_금액오름차순_정렬_성공() throws Exception {
 		// given
 		createTestExpenseWithDetails("소비-중간", 2, "2026-02-04T12:00:00", 30000.0, null);
@@ -475,11 +475,34 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(3))
 				.andExpect(jsonPath("$.expenses[0].category").value(2))
-				.andExpect(jsonPath("$.expenses[0].merchantName").value("소비-중간"))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("소비-작음"))
 				.andExpect(jsonPath("$.expenses[1].category").value(2))
-				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-중간"))
 				.andExpect(jsonPath("$.expenses[2].category").value(9))
 				.andExpect(jsonPath("$.expenses[2].merchantName").value("수입-큼"));
+	}
+
+	@Test
+	@DisplayName("지출내역 정렬 - 발생일 오름차순 정렬 성공")
+	void 지출내역_발생일오름차순_정렬_성공() throws Exception {
+		// given
+		createTestExpenseWithDetails("가장늦은지출", 2, "2026-02-04T14:00:00", 10000.0, null);
+		createTestExpenseWithDetails("가장이른지출", 2, "2026-02-04T12:00:00", 10000.0, null);
+		createTestExpenseWithDetails("중간지출", 2, "2026-02-04T13:00:00", 10000.0, null);
+
+		// when & then
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "occurredAt,asc"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses").isArray())
+				.andExpect(jsonPath("$.expenses.length()").value(3))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("가장이른지출"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("중간지출"))
+				.andExpect(jsonPath("$.expenses[2].merchantName").value("가장늦은지출"));
 	}
 
 	@Test

@@ -16,7 +16,7 @@ const TravelPage = () => {
   } = useTravelModal();
 
   return (
-    <div className="flex flex-1 flex-col gap-4 px-30 py-8">
+    <div className="8 flex flex-1 flex-col gap-4 px-4 py-8 xl:px-30">
       <TravelHeader onCreateClick={openCreateName} />
       <TravelFolderList
         onOpenEditThumbnail={openEditThumbnail}

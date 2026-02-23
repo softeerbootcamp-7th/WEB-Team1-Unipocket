@@ -20,7 +20,7 @@ type TableUIState = {
   textCell: ActiveCellState | null;
   categoryCell: ActiveCellState | null;
   amountCell: ActiveCellState | null;
-  paymentCell: ActiveCellState | null;
+  methodCell: ActiveCellState | null;
   activeRow: ActiveRowState | null;
   travelCell: ActiveCellState | null;
 };
@@ -31,8 +31,8 @@ type TableUIAction =
   | { type: 'SET_TEXT_CELL'; payload: ActiveCellState | null }
   | { type: 'SET_CATEGORY_CELL'; payload: ActiveCellState | null }
   | { type: 'SET_AMOUNT_CELL'; payload: ActiveCellState | null }
-  | { type: 'SET_PAYMENT_CELL'; payload: ActiveCellState | null }
-  | { type: 'SET_ACTIVE_ROW'; payload: ActiveRowState | null }
-  | { type: 'SET_TRAVEL_CELL'; payload: ActiveCellState | null };
+  | { type: 'SET_METHOD_CELL'; payload: ActiveCellState | null }
+  | { type: 'SET_TRAVEL_CELL'; payload: ActiveCellState | null }
+  | { type: 'SET_ACTIVE_ROW'; payload: ActiveRowState | null };
 
 export type { ActiveCellState, ActiveRowState, TableUIAction, TableUIState };

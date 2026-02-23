@@ -35,7 +35,7 @@ const TravelDetailPage = () => {
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   return (
-    <div className="flex h-full flex-col px-30 pt-8">
+    <div className="flex h-full flex-col px-4 pt-8 xl:px-30">
       <div className="mb-10 flex items-end gap-4">
         <TripSummary />
         <Divider style="vertical" className="h-15" />

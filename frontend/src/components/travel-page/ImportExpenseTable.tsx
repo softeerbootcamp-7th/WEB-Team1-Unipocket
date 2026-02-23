@@ -1,4 +1,4 @@
-import ImportToFolderBar from '@/components/data-table/bars/ImportToFolderBar';
+import ImportToFolderBar from '@/components/data-table/bars/import/ImportToFolderBar';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 

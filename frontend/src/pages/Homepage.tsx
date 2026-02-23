@@ -17,7 +17,7 @@ const Homepage = () => {
 
   return (
     <WidgetContext.Provider value={widgetManager}>
-      <div className="flex min-h-0 flex-1 flex-col gap-5 px-30 pt-8">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 px-4 pt-8 xl:px-30">
         <div className="flex flex-col gap-8">
           <WidgetHeader />
           <WidgetList />

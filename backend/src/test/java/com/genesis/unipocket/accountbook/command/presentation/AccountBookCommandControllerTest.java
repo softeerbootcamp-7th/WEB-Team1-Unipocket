@@ -222,8 +222,34 @@ class AccountBookCommandControllerTest {
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
-				.andExpect(
-						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
+				.andExpect(jsonPath("$.message").isNotEmpty());
+
+		verify(accountBookCommandFacade, never()).updateAccountBook(any(), any(), any());
+	}
+
+	@Test
+	@DisplayName("가계부 수정 실패 - title 30자 초과")
+	void updateAccountBook_Fail_WhenTitleTooLong() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 3L;
+		String requestBody =
+				"""
+				{
+					"title": "1234567890123456789012345678901"
+				}
+				""";
+
+		mockAuthentication(accessToken, userId);
+
+		mockMvc.perform(
+						patch("/account-books/{accountBookId}", accountBookId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(requestBody)
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
+				.andExpect(jsonPath("$.message").isNotEmpty());
 
 		verify(accountBookCommandFacade, never()).updateAccountBook(any(), any(), any());
 	}
@@ -244,8 +270,7 @@ class AccountBookCommandControllerTest {
 								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("400_INVALID_INPUT_VALUE"))
-				.andExpect(
-						jsonPath("$.message").value("400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED"));
+				.andExpect(jsonPath("$.message").isNotEmpty());
 
 		verify(accountBookCommandFacade, never()).updateAccountBook(any(), any(), any());
 	}

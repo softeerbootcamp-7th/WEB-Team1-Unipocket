@@ -47,7 +47,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
 
   return (
     <ReportContainer title="월별 지출 비교">
-      <ReportContent className="h-60 w-109 gap-7">
+      <ReportContent className="h-fit w-109 gap-8">
         <p className="heading1-bold text-label-normal">
           {!isEqual ? (
             <>

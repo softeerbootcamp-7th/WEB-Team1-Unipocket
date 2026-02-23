@@ -72,6 +72,9 @@ const DataTable = <TData,>({
         case 'method':
           dispatch({ type: 'SET_METHOD_CELL', payload });
           break;
+        case 'travel':
+          dispatch({ type: 'SET_TRAVEL_CELL', payload });
+          break;
         default:
           break;
       }

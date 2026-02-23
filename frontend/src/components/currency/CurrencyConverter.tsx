@@ -1,4 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
 
@@ -6,12 +7,15 @@ import Divider from '@/components/common/Divider';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import TextInput from '@/components/common/TextInput';
 import useCurrencyConverter from '@/components/currency/useCurrencyConverter';
+import useCurrencyInfo, {
+  currencyOptions,
+} from '@/components/currency/useCurrencyInfo';
 import { ModalContext } from '@/components/modal/useModalContext';
 
+import { useGetExchangeRateQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
 import countryData from '@/data/country/countryData.json';
 import type { CurrencyCode } from '@/data/country/currencyCode';
-import { getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 export type CurrencyValues = {
@@ -20,24 +24,7 @@ export type CurrencyValues = {
   baseAmount: number;
 };
 
-type CurrencyOption = {
-  id: number;
-  name: string;
-  sign: string;
-};
-
-const currencyOptions: CurrencyOption[] = Object.values(countryData).map(
-  (country, index) => ({
-    id: index + 1,
-    name: country.currencyName,
-    sign: country.currencySign,
-  }),
-);
-
-const DEFAULT_LOCAL_CURRENCY_TYPE = 13; // USD. 실제값으로 변경 필요
-
-// 환율 고정 (API 연동 후 선택 가능하도록 변경 예정)
-const RATE = 1464; // USD -> KRW
+const toNumber = (s: string) => parseFloat(s.replace(/,/g, ''));
 
 interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
@@ -80,6 +67,30 @@ const CurrencyConverter = ({
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
+  const { localCountryCode } = useRequiredAccountBook();
+  const [localCurrencyType, setLocalCurrencyType] = useState(() => {
+    const idx = Object.keys(countryData).indexOf(localCountryCode);
+    return idx >= 0 ? idx + 1 : 1;
+  });
+
+  const {
+    localCurrencyName,
+    localCurrencySign,
+    baseCurrencyName,
+    baseCurrencySign,
+  } = useCurrencyInfo(showCurrencyDropdown, localCurrencyType);
+
+  const occurredAt = useMemo(
+    () => rateUpdatedAt?.toISOString() ?? new Date().toISOString(),
+    [rateUpdatedAt],
+  );
+  const { data: exchangeRateData } = useGetExchangeRateQuery(
+    occurredAt,
+    localCurrencyName as CurrencyCode,
+    baseCurrencyName as CurrencyCode,
+  );
+  const rate = exchangeRateData?.exchangeRate;
+
   const {
     localCurrency,
     baseCurrency,
@@ -87,33 +98,27 @@ const CurrencyConverter = ({
     baseError,
     handleCurrencyChange,
     isValid,
-  } = useCurrencyConverter(RATE);
-  const [localCurrencyType, setLocalCurrencyType] = useState(
-    DEFAULT_LOCAL_CURRENCY_TYPE,
-  );
+  } = useCurrencyConverter(rate ?? 0);
 
-  const localCurrencyName = currencyOptions.find(
-    (o) => o.id === localCurrencyType,
-  )?.name;
-  const localCurrencySign = currencyOptions.find(
-    (o) => o.id === localCurrencyType,
-  )?.sign;
+  const setActionReady = modalContext?.setActionReady;
 
-  const baseCountryInfo = getCountryInfo(
-    useRequiredAccountBook().baseCountryCode,
-  );
-  const baseCurrencyName = baseCountryInfo?.currencyName;
-  const baseCurrencySign = baseCountryInfo?.currencySign;
+  const handleCurrencySelect = (id: number) => {
+    const selected = currencyOptions.find((o) => o.id === id);
+
+    if (selected?.name === baseCurrencyName) {
+      toast.error('기준 통화와 동일한 통화는 선택할 수 없습니다.');
+      return;
+    }
+
+    setLocalCurrencyType(id);
+  };
 
   useEffect(() => {
-    if (modalContext) {
-      modalContext.setActionReady(isValid);
-    }
-  }, [isValid, modalContext]);
+    setActionReady?.(isValid);
+  }, [isValid, setActionReady]);
 
   useEffect(() => {
     if (!onValuesChange || !isValid || !localCurrencyName) return;
-    const toNumber = (s: string) => parseFloat(s.replace(/,/g, ''));
     onValuesChange({
       localAmount: toNumber(localCurrency),
       localCurrencyCode: localCurrencyName as CurrencyCode,
@@ -145,7 +150,7 @@ const CurrencyConverter = ({
           <div className="flex w-25 pt-7">
             <DropDown
               selectedId={localCurrencyType}
-              onSelect={setLocalCurrencyType}
+              onSelect={handleCurrencySelect}
               options={currencyOptions}
               size="lg"
               itemWidth="w-25"
@@ -162,7 +167,9 @@ const CurrencyConverter = ({
           <Icons.Swap className="text-label-neutral h-4 w-4" />
           <div className="flex flex-col gap-1">
             <p className="label1-normal-medium text-label-normal">
-              {localCurrencyName} 1 = {baseCurrencyName} {RATE.toLocaleString()}
+              {!rate
+                ? '환율 정보 없음'
+                : `${localCurrencyName} 1 = ${baseCurrencyName} ${rate.toLocaleString()}`}
             </p>
             <p className="label1-normal-medium text-label-alternative">
               자동 환율 적용 중 ({rateDate} 기준)

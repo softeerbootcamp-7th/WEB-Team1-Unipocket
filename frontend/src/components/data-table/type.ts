@@ -21,8 +21,8 @@ type TableUIState = {
   categoryCell: ActiveCellState | null;
   amountCell: ActiveCellState | null;
   methodCell: ActiveCellState | null;
-  travelCell: ActiveCellState | null;
   activeRow: ActiveRowState | null;
+  travelCell: ActiveCellState | null;
 };
 
 type TableUIAction =

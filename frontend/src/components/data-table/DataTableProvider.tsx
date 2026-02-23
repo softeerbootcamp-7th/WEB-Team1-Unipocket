@@ -25,6 +25,7 @@ const resetCells = {
   categoryCell: null,
   amountCell: null,
   methodCell: null,
+  paymentCell: null,
   travelCell: null,
 };
 

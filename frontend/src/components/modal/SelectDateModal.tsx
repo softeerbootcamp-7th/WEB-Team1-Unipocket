@@ -109,6 +109,13 @@ const SelectDateModal = ({
     initialDateRange ?? { startDate: null, endDate: null },
   );
 
+  useEffect(() => {
+    if (modalProps.isOpen) {
+      setDateRange(initialDateRange ?? { startDate: null, endDate: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalProps.isOpen]);
+
   const handleDatesChange = ({
     startDate,
     endDate,

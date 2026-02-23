@@ -8,7 +8,23 @@ import {
 } from '@/components/travel-page/mock';
 import TravelContextMenu from '@/components/travel-page/TravelContextMenu';
 
-const TravelFolderList = () => {
+interface TravelFolderListProps {
+  onOpenEditThumbnail: (travelId: number, imageUrl: string | null) => void;
+  onOpenEditName: (travelId: number, defaultName: string) => void;
+  onOpenEditDate: (
+    travelId: number,
+    startDate: string,
+    endDate: string,
+  ) => void;
+  onOpenDelete: (travelId: number) => void;
+}
+
+const TravelFolderList = ({
+  onOpenEditThumbnail,
+  onOpenEditName,
+  onOpenEditDate,
+  onOpenDelete,
+}: TravelFolderListProps) => {
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -43,10 +59,32 @@ const TravelFolderList = () => {
           onOpenChange={(open) => {
             if (!open) setContextMenu(null);
           }}
-          onEditThumbnail={() => {}}
-          onEditName={() => {}}
-          onEditDate={() => {}}
-          onDelete={() => {}}
+          onEditThumbnail={() => {
+            onOpenEditThumbnail(
+              contextMenu.folder.travelId,
+              contextMenu.folder.imageKey,
+            );
+            setContextMenu(null);
+          }}
+          onEditName={() => {
+            onOpenEditName(
+              contextMenu.folder.travelId,
+              contextMenu.folder.travelPlaceName,
+            );
+            setContextMenu(null);
+          }}
+          onEditDate={() => {
+            onOpenEditDate(
+              contextMenu.folder.travelId,
+              contextMenu.folder.startDate,
+              contextMenu.folder.endDate,
+            );
+            setContextMenu(null);
+          }}
+          onDelete={() => {
+            onOpenDelete(contextMenu.folder.travelId);
+            setContextMenu(null);
+          }}
         />
       )}
     </div>

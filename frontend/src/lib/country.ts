@@ -1,6 +1,7 @@
-import type { CountryCode } from '@/data/country/countryCode';
+import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import countryData from '@/data/country/countryData.json';
 import { COUNTRY_LOCALE_MAP } from '@/data/country/countryLocale';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 
 export interface CountryInfo {
   code: CountryCode;
@@ -32,7 +33,7 @@ export const getCountryInfo = (code: CountryCode): CountryInfo | null => {
  * @param fractionDigits - 소수점 자릿수 (기본값: 2)
  * @returns 포맷팅된 문자열
  */
-export const formatCurrencyAmount = (
+export const formatAmountByCountry = (
   amount: number,
   countryCode: CountryCode,
   fractionDigits: number = 2,
@@ -43,4 +44,32 @@ export const formatCurrencyAmount = (
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
+};
+
+export const formatCurrency = (
+  amount: number,
+  currencyCode: CurrencyCode,
+  fractionDigits: number = 2,
+): string => {
+  return new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency: currencyCode,
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(amount);
+};
+
+export const getCountryInfoByCurrency = (currencyCode: CurrencyCode) => {
+  const countryCodes = Object.values(COUNTRY_CODE);
+
+  for (const code of countryCodes) {
+    const info = getCountryInfo(code);
+
+    if (info && info.currencyName === currencyCode) {
+      return info;
+    }
+  }
+
+  return undefined;
 };

@@ -1,7 +1,7 @@
 import ComparisonCard from '@/components/chart/comparison/ComparisonCard';
 
 import type { CountryCode } from '@/data/country/countryCode';
-import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
+import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 
 interface ComparisonChartViewProps {
   month: number;
@@ -32,7 +32,7 @@ const ComparisonChartView = ({
 
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
   const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
-  const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
+  const formattedDiff = formatAmountByCountry(diff, countryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]

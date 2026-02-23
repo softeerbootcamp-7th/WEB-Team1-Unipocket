@@ -3,7 +3,7 @@ import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import { useReportContext } from '@/components/report-page/ReportContext';
 
-import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
+import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const barWidth = {
@@ -37,7 +37,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
 
   const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
   const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
-  const formattedDiff = formatCurrencyAmount(diff, countryCode, 0);
+  const formattedDiff = formatAmountByCountry(diff, countryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]

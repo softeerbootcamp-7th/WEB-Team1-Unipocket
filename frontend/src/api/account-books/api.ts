@@ -4,15 +4,17 @@ import type {
   CreateAccountBookRequest,
   CreateAccountBookResponse,
   GetAccountBookDetailResponse,
+  GetAccountBookExchangeRateResponse,
   GetAccountBooksResponse,
   GetAnalysisResponse,
+  GetExchangeRateResponse,
   UpdateAccountBookBudgetResponse,
-  UpdateAccountBookExchangeRateResponse,
   UpdateAccountBookRequest,
   UpdateAccountBookResponse,
 } from '@/api/account-books/type';
 import { customFetch } from '@/api/config/client';
 import { ENDPOINTS } from '@/api/config/endpoint';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 
 const getAccountBooks = (): Promise<GetAccountBooksResponse> => {
   return customFetch({
@@ -84,9 +86,9 @@ const updateAccountBookBudget = (
 const getAccountBookExchangeRate = (
   accountBookId: number,
   occurredAt: string,
-): Promise<UpdateAccountBookExchangeRateResponse> => {
+): Promise<GetAccountBookExchangeRateResponse> => {
   return customFetch({
-    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.EXCHANGE_RATE(accountBookId)}`,
+    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.ACCOUNT_BOOK_RATE(accountBookId)}`,
     params: occurredAt ? { occurredAt } : undefined,
     options: {
       method: 'GET',
@@ -113,6 +115,24 @@ const getAnalysis = (
   });
 };
 
+const getExchangeRate = (
+  occurredAt: string,
+  baseCurrencyCode: CurrencyCode,
+  localCurrencyCode: CurrencyCode,
+): Promise<GetExchangeRateResponse> => {
+  return customFetch({
+    endpoint: `${ENDPOINTS.ACCOUNT_BOOKS.EXCHANGE_RATE}`,
+    params: {
+      occurredAt,
+      baseCurrencyCode,
+      localCurrencyCode,
+    },
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
 export {
   createAccountBook,
   deleteAccountBook,
@@ -120,6 +140,7 @@ export {
   getAccountBookExchangeRate,
   getAccountBooks,
   getAnalysis,
+  getExchangeRate,
   updateAccountBook,
   updateAccountBookBudget,
 };

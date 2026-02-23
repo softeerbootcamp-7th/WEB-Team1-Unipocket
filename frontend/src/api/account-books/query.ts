@@ -14,6 +14,7 @@ import {
   getAccountBookDetail,
   getAccountBooks,
   getAnalysis,
+  getExchangeRate,
   updateAccountBook,
   updateAccountBookBudget,
 } from '@/api/account-books/api';
@@ -22,6 +23,7 @@ import type {
   GetAnalysisResponse,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 import { queryClient } from '@/main';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
@@ -132,6 +134,19 @@ const useUpdateAccountBookBudgetMutation = () => {
   });
 };
 
+const useGetExchangeRateQuery = (
+  occurredAt: string,
+  baseCurrencyCode: CurrencyCode,
+  localCurrencyCode: CurrencyCode,
+) =>
+  useQuery({
+    queryKey: ['exchangeRate', occurredAt, baseCurrencyCode, localCurrencyCode],
+    queryFn: () =>
+      getExchangeRate(occurredAt, baseCurrencyCode, localCurrencyCode),
+    enabled: !!occurredAt && !!baseCurrencyCode && !!localCurrencyCode,
+    staleTime: 1000 * 60 * 10, // 10분
+  });
+
 export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
@@ -140,6 +155,7 @@ export {
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
   useGetAccountBooksQuery,
+  useGetExchangeRateQuery,
   useUpdateAccountBookBudgetMutation,
   useUpdateAccountBookMutation,
 };

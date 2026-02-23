@@ -17,7 +17,7 @@ const ReportContent = ({
   return (
     <div
       className={cn(
-        'rounded-modal-8 bg-cool-neutral-99 flex flex-col p-7',
+        'rounded-modal-8 bg-cool-neutral-99 flex flex-col px-7 pt-5 pb-8',
         className,
       )}
     >

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { toast } from 'sonner';
 
 import { type DateRange } from '@/components/calendar/Calendar';
 import Button from '@/components/common/Button';
@@ -49,16 +48,18 @@ const InitPage = () => {
     const formattedStartDate = formatDateToString(dateRange.startDate);
     const formattedEndDate = formatDateToString(dateRange.endDate);
 
-    try {
-      createAccountBook({
+    createAccountBook(
+      {
         localCountryCode: selectedCountry,
         startDate: formattedStartDate,
         endDate: formattedEndDate,
-      });
-      navigate({ to: '/home' });
-    } catch {
-      toast.error('가계부 생성에 실패했어요. 다시 시도해주세요.');
-    }
+      },
+      {
+        onSuccess: () => {
+          navigate({ to: '/home' });
+        },
+      },
+    );
   };
 
   const handlePrevButton = () => {

@@ -27,8 +27,8 @@ export const useInlineExpenseUpdate = () => {
       localCurrencyCode: original.localCurrencyCode,
       baseCurrencyAmount: original.baseCurrencyAmount,
       memo: original.memo || '',
-      travelId: original.travel?.travelId || 0,
-      userCardId: original.paymentMethod.isCash ? 0 : 0,
+      travelId: original.travel?.travelId || null,
+      userCardId: original.paymentMethod.isCash ? null : 0,
       [field]: value, // 변경된 필드만 덮어쓰기
     };
 

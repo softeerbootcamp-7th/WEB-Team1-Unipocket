@@ -8,13 +8,14 @@ import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
 const ExpenseTable = () => {
-  const { data, filter, updateFilter } = useFilteredExpenses();
+  const { data, totalPages, filter, updateFilter } = useFilteredExpenses();
 
   return (
     <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
       <BaseExpenseTable
         data={data}
         filter={filter}
+        totalPages={totalPages}
         updateFilter={updateFilter}
         filterActions={<UploadMenu />}
       >

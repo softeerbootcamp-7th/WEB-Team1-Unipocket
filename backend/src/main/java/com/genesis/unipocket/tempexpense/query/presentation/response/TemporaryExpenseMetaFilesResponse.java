@@ -7,5 +7,12 @@ public record TemporaryExpenseMetaFilesResponse(
 		Long tempExpenseMetaId, LocalDateTime createdAt, List<FileExpenses> files) {
 
 	public record FileExpenses(
-			Long fileId, String s3Key, String fileType, List<TemporaryExpenseResponse> expenses) {}
+			Long fileId,
+			String s3Key,
+			String fileName,
+			String fileType,
+			int normalCount,
+			int incompleteCount,
+			int abnormalCount,
+			List<TemporaryExpenseResponse> expenses) {}
 }

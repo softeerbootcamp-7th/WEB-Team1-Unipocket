@@ -72,8 +72,9 @@ public class TemporaryExpenseQueryRepository {
 		return em.createQuery(
 						"SELECT new"
 							+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow(f.fileId,"
-							+ " f.tempExpenseMetaId, f.s3Key, f.fileType) FROM File f WHERE"
-							+ " f.tempExpenseMetaId = :tempExpenseMetaId ORDER BY f.fileId ASC",
+							+ " f.tempExpenseMetaId, f.s3Key, f.fileName, f.fileType) FROM File f"
+							+ " WHERE f.tempExpenseMetaId = :tempExpenseMetaId ORDER BY f.fileId"
+							+ " ASC",
 						TemporaryExpenseFileRow.class)
 				.setParameter("tempExpenseMetaId", tempExpenseMetaId)
 				.getResultList();
@@ -85,10 +86,10 @@ public class TemporaryExpenseQueryRepository {
 				.createQuery(
 						"SELECT new"
 							+ " com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow(f.fileId,"
-							+ " f.tempExpenseMetaId, f.s3Key, f.fileType) FROM File f JOIN"
-							+ " TempExpenseMeta tm ON tm.tempExpenseMetaId = f.tempExpenseMetaId"
-							+ " WHERE tm.accountBookId = :accountBookId AND tm.tempExpenseMetaId ="
-							+ " :tempExpenseMetaId AND f.fileId = :fileId",
+							+ " f.tempExpenseMetaId, f.s3Key, f.fileName, f.fileType) FROM File f"
+							+ " JOIN TempExpenseMeta tm ON tm.tempExpenseMetaId ="
+							+ " f.tempExpenseMetaId WHERE tm.accountBookId = :accountBookId AND"
+							+ " tm.tempExpenseMetaId = :tempExpenseMetaId AND f.fileId = :fileId",
 						TemporaryExpenseFileRow.class)
 				.setParameter("accountBookId", accountBookId)
 				.setParameter("tempExpenseMetaId", tempExpenseMetaId)

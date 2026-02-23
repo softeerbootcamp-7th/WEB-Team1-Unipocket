@@ -46,7 +46,7 @@ export const expenseKeys = {
 
 const invalidateRelatedQueries = (
   accountBookId: number | string,
-  travelId?: number | string,
+  travelId?: number | string | null,
 ) => {
   queryClient.invalidateQueries({ queryKey: expenseKeys.lists(accountBookId) });
   queryClient.invalidateQueries({

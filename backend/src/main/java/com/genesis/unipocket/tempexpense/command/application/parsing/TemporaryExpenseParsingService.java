@@ -15,6 +15,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.common.util.TemporaryExpenseTaskSupport;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,10 @@ public class TemporaryExpenseParsingService {
 
 	private static final int MAX_DOCUMENT_PARSE_FILES = 1;
 	private static final int MAX_IMAGE_PARSE_FILES = 3;
-	private static final String GEMINI_RATE_LIMIT = "GEMINI_RATE_LIMIT";
+	private static final String FILE_PROGRESS_CODE_SUCCESS = "SUCCESS";
+	private static final String FILE_PROGRESS_CODE_FAILED_TOO_MANY_REQUEST =
+			"FAILED_TOO_MANY_REQUEST";
+	private static final String FILE_PROGRESS_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 	private final FileRepository fileRepository;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
@@ -110,37 +114,60 @@ public class TemporaryExpenseParsingService {
 		try {
 			rateContext = resolveRateContext(meta.getAccountBookId());
 		} catch (Exception e) {
-			String errorMessage =
-					TemporaryExpenseTaskSupport.resolveClientErrorMessage(
+			ErrorCode errorCode =
+					TemporaryExpenseTaskSupport.resolveErrorCode(
 							e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
-			progressPublisher.publishError(taskId, errorMessage);
+			progressPublisher.publishError(taskId, errorCode);
 			throw TemporaryExpenseTaskSupport.rethrow(e);
 		}
 
 		int total = files.size();
 		int completed = 0;
+		List<String> succeededFileKeys = new ArrayList<>();
+		List<FailedFile> failedFiles = new ArrayList<>();
 		progressPublisher.publishProgress(taskId, 0);
 
 		for (File file : files) {
+			String progressMessage = "PROCESSING: " + file.getS3Key();
+			String progressCode = null;
 			try {
 				parseAndPersistExpenses(file, meta, rateContext);
+				succeededFileKeys.add(file.getS3Key());
+				progressMessage = buildPerFileProgressMessage(file.getS3Key(), true, null);
+				progressCode = buildPerFileProgressCode(true, null);
 			} catch (Exception e) {
-				if (isGeminiRateLimit(e)) {
-					log.error("Gemini 429 encountered. aborting parse task. taskId={}", taskId);
-					String errorMessage =
-							TemporaryExpenseTaskSupport.resolveClientErrorMessage(
-									e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
-					progressPublisher.publishError(taskId, errorMessage);
-					throw TemporaryExpenseTaskSupport.rethrow(e);
-				}
+				ErrorCode errorCode =
+						TemporaryExpenseTaskSupport.resolveErrorCode(
+								e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
+				failedFiles.add(new FailedFile(file.getS3Key(), errorCode));
+				progressMessage = buildPerFileProgressMessage(file.getS3Key(), false, errorCode);
+				progressCode = buildPerFileProgressCode(false, errorCode);
 				log.error("Failed to parse file: {}", file.getS3Key(), e);
 			} finally {
 				completed++;
 				progressPublisher.publishProgress(
-						taskId, TemporaryExpenseTaskSupport.toPercent(completed, total));
+						taskId,
+						TemporaryExpenseTaskSupport.toPercent(completed, total),
+						progressMessage,
+						progressCode,
+						file.getS3Key());
 			}
 		}
-		progressPublisher.complete(taskId);
+		if (failedFiles.isEmpty()) {
+			progressPublisher.complete(taskId);
+			return;
+		}
+
+		ErrorCode terminalCode =
+				failedFiles.stream()
+								.allMatch(
+										failedFile ->
+												failedFile.errorCode()
+														== ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT)
+						? ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT
+						: ErrorCode.TEMP_EXPENSE_PARSE_FAILED;
+		String summaryMessage = buildTerminalSummaryMessage(succeededFileKeys, failedFiles);
+		progressPublisher.publishError(taskId, terminalCode, summaryMessage);
 	}
 
 	private AccountBookRateContext resolveRateContext(Long accountBookId) {
@@ -154,7 +181,7 @@ public class TemporaryExpenseParsingService {
 		var geminiResponse = temporaryExpenseParseClient.parse(file);
 		if (!geminiResponse.success()) {
 			if (geminiResponse.isRateLimited()) {
-				throw new IllegalStateException(GEMINI_RATE_LIMIT);
+				throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT);
 			}
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
 		}
@@ -185,7 +212,41 @@ public class TemporaryExpenseParsingService {
 				item.approvalNumber());
 	}
 
-	private boolean isGeminiRateLimit(Exception e) {
-		return e instanceof IllegalStateException && GEMINI_RATE_LIMIT.equals(e.getMessage());
+	private String buildPerFileProgressMessage(
+			String s3Key, boolean success, ErrorCode errorCodeOrNull) {
+		if (success) {
+			return "SUCCESS: " + s3Key;
+		}
+		return "FAILED: " + s3Key + " (" + errorCodeOrNull.getCode() + ")";
 	}
+
+	private String buildPerFileProgressCode(boolean success, ErrorCode errorCodeOrNull) {
+		if (success) {
+			return FILE_PROGRESS_CODE_SUCCESS;
+		}
+		if (errorCodeOrNull == ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT) {
+			return FILE_PROGRESS_CODE_FAILED_TOO_MANY_REQUEST;
+		}
+		return FILE_PROGRESS_CODE_INTERNAL_SERVER_ERROR;
+	}
+
+	private String buildTerminalSummaryMessage(
+			List<String> succeededFileKeys, List<FailedFile> failedFiles) {
+		String succeeded = succeededFileKeys.isEmpty() ? "-" : String.join(", ", succeededFileKeys);
+		String failed =
+				failedFiles.stream()
+						.map(file -> file.s3Key() + " [" + file.errorCode().getCode() + "]")
+						.collect(Collectors.joining(", "));
+		return "TEMP_EXPENSE_PARSE_RESULT success="
+				+ succeededFileKeys.size()
+				+ " ("
+				+ succeeded
+				+ "), failed="
+				+ failedFiles.size()
+				+ " ("
+				+ failed
+				+ ")";
+	}
+
+	private record FailedFile(String s3Key, ErrorCode errorCode) {}
 }

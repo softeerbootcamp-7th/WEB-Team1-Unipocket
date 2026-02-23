@@ -100,11 +100,11 @@ const CurrencyConverter = ({
     isValid,
   } = useCurrencyConverter(rate);
 
+  const setActionReady = modalContext?.setActionReady;
+
   useEffect(() => {
-    if (modalContext) {
-      modalContext.setActionReady(isValid);
-    }
-  }, [isValid, modalContext]);
+    setActionReady?.(isValid);
+  }, [isValid, setActionReady]);
 
   useEffect(() => {
     if (!onValuesChange || !isValid || !localCurrencyName) return;

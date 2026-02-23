@@ -1,5 +1,6 @@
 package com.genesis.unipocket.analysis.command.persistence.entity;
 
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.Column;

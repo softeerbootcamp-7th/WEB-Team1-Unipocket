@@ -11,13 +11,14 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "analysis.batch")
 public class AnalysisBatchProperties {
 
-	private boolean enabled = true;
-	private int runHour = 3;
-	private int runMinute = 0;
-	private int dispatchBatchSize = 20;
-	private int leaseMinutes = 30;
-	private int maxRetry = 7;
-	private int retryBaseMinutes = 1;
-	private double outlierIqrMultiplier = 1.5d;
-	private int peerMinSampleSize = 10;
+	private boolean enabled;
+	private int runHour;
+	private int runMinute;
+	private int dispatchBatchSize;
+	private int leaseMinutes;
+	private int maxRetry;
+	private int retryBaseMinutes;
+	private double outlierIqrMultiplier;
+	private int peerMinSampleSize;
+	private int maxLoopsPerBatch;
 }

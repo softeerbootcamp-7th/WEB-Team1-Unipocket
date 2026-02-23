@@ -8,6 +8,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
@@ -18,7 +19,12 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExp
 import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseConversionAmount;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
+import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +42,7 @@ public class TemporaryExpenseConversionService {
 	private final ExchangeRateService exchangeRateService;
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
+	private final TemporaryExpenseValidator temporaryExpenseValidator;
 
 	@Transactional
 	public ConfirmStartResult startConfirmAsync(Long accountBookId, Long tempExpenseMetaId) {
@@ -50,9 +57,30 @@ public class TemporaryExpenseConversionService {
 		AccountBookRateInfo rateInfo = accountBookRateInfoProvider.getRateInfo(accountBookId);
 		CurrencyCode defaultBaseCurrencyCode = rateInfo.baseCurrencyCode();
 		CurrencyCode defaultLocalCurrencyCode = rateInfo.localCurrencyCode();
+		ZoneId localZoneId = CountryCodeTimezoneMapper.getZoneId(rateInfo.localCountryCode());
+
+		List<TempExpenseConvertValidationException.Violation> violations = new ArrayList<>();
+		for (TemporaryExpense expense : expenses) {
+			List<String> missing =
+					temporaryExpenseValidator.findMissingOrInvalidFields(
+							expense, defaultBaseCurrencyCode);
+			if (!missing.isEmpty()) {
+				violations.add(
+						new TempExpenseConvertValidationException.Violation(
+								expense.getTempExpenseId(), missing));
+			}
+		}
+		if (!violations.isEmpty()) {
+			throw new TempExpenseConvertValidationException(violations);
+		}
 
 		for (TemporaryExpense expense : expenses) {
-			convertOne(accountBookId, expense, defaultBaseCurrencyCode, defaultLocalCurrencyCode);
+			convertOne(
+					accountBookId,
+					expense,
+					defaultBaseCurrencyCode,
+					defaultLocalCurrencyCode,
+					localZoneId);
 		}
 		return new ConfirmStartResult(null, expenses.size());
 	}
@@ -61,18 +89,27 @@ public class TemporaryExpenseConversionService {
 			Long accountBookId,
 			TemporaryExpense temp,
 			CurrencyCode defaultBaseCurrencyCode,
-			CurrencyCode defaultLocalCurrencyCode) {
+			CurrencyCode defaultLocalCurrencyCode,
+			ZoneId localZoneId) {
+		temporaryExpenseValidator.validateConvertible(temp, defaultBaseCurrencyCode);
+
 		File file =
 				temp.getFileId() != null
 						? fileRepository.findById(temp.getFileId()).orElse(null)
 						: null;
+
+		OffsetDateTime occurredAtUtc =
+				temp.getOccurredAt()
+						.atZone(localZoneId)
+						.withZoneSameInstant(ZoneOffset.UTC)
+						.toOffsetDateTime();
 
 		var amountInfo = temp.getAmountInfoOrEmpty();
 		TempExpenseConversionAmount conversionAmount =
 				amountInfo.resolveForConversion(
 						defaultLocalCurrencyCode,
 						defaultBaseCurrencyCode,
-						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
+						occurredAtUtc,
 						exchangeRateService);
 
 		ExpenseManualCreateArgs args =
@@ -81,7 +118,7 @@ public class TemporaryExpenseConversionService {
 						temp.getMerchantName(),
 						temp.getCategory(),
 						null,
-						temp.getOccurredAt().atOffset(ZoneOffset.UTC),
+						occurredAtUtc,
 						amountInfo.getLocalCurrencyAmount(),
 						conversionAmount.localCurrencyCode(),
 						conversionAmount.baseCurrencyAmount(),

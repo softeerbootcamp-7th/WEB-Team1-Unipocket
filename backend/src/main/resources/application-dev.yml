@@ -106,7 +106,15 @@ media:
 analysis:
   batch:
     enabled: true
+    run-hour: 3
+    run-minute: 0
     dispatch-batch-size: 20
+    lease-minutes: 30
+    max-retry: 7
+    retry-base-minutes: 1
+    outlier-iqr-multiplier: 1.5
+    peer-min-sample-size: 10
+    max-loops-per-batch: 200
     dispatcher:
       fixed-delay-ms: 6000000
 

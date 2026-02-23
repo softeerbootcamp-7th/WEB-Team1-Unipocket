@@ -114,6 +114,34 @@ class TemporaryExpenseQueryControllerIntegrationTest {
 						.occurredAt(LocalDateTime.of(2026, 2, 1, 9, 30))
 						.status(TemporaryExpenseStatus.NORMAL)
 						.build());
+
+		temporaryExpenseRepository.save(
+				TemporaryExpense.builder()
+						.tempExpenseMetaId(metaId)
+						.fileId(fileId)
+						.merchantName("올리브영")
+						.category(Category.SHOPPING)
+						.localCountryCode(CurrencyCode.KRW)
+						.localCurrencyAmount(BigDecimal.valueOf(12000))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(BigDecimal.valueOf(12000))
+						.occurredAt(LocalDateTime.of(2026, 2, 1, 10, 30))
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.build());
+
+		temporaryExpenseRepository.save(
+				TemporaryExpense.builder()
+						.tempExpenseMetaId(metaId)
+						.fileId(fileId)
+						.merchantName("이상 데이터")
+						.category(Category.LEISURE)
+						.localCountryCode(CurrencyCode.KRW)
+						.localCurrencyAmount(BigDecimal.valueOf(1))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(BigDecimal.valueOf(1))
+						.occurredAt(LocalDateTime.of(2026, 2, 1, 11, 30))
+						.status(TemporaryExpenseStatus.ABNORMAL)
+						.build());
 	}
 
 	@Test
@@ -126,8 +154,10 @@ class TemporaryExpenseQueryControllerIntegrationTest {
 				.andExpect(jsonPath("$.metas.length()").value(1))
 				.andExpect(jsonPath("$.metas[0].tempExpenseMetaId").value(metaId))
 				.andExpect(jsonPath("$.metas[0].fileCount").value(1))
-				.andExpect(jsonPath("$.metas[0].totalExpenses").value(1))
-				.andExpect(jsonPath("$.metas[0].normalCount").value(1));
+				.andExpect(jsonPath("$.metas[0].totalExpenses").value(3))
+				.andExpect(jsonPath("$.metas[0].normalCount").value(1))
+				.andExpect(jsonPath("$.metas[0].incompleteCount").value(1))
+				.andExpect(jsonPath("$.metas[0].abnormalCount").value(1));
 	}
 
 	@Test
@@ -143,7 +173,11 @@ class TemporaryExpenseQueryControllerIntegrationTest {
 				.andExpect(jsonPath("$.tempExpenseMetaId").value(metaId))
 				.andExpect(jsonPath("$.files.length()").value(1))
 				.andExpect(jsonPath("$.files[0].fileId").value(fileId))
-				.andExpect(jsonPath("$.files[0].expenses.length()").value(1))
+				.andExpect(jsonPath("$.files[0].fileName").value("unknown_file.png"))
+				.andExpect(jsonPath("$.files[0].normalCount").value(1))
+				.andExpect(jsonPath("$.files[0].incompleteCount").value(1))
+				.andExpect(jsonPath("$.files[0].abnormalCount").value(1))
+				.andExpect(jsonPath("$.files[0].expenses.length()").value(3))
 				.andExpect(jsonPath("$.files[0].expenses[0].tempExpenseMetaId").value(metaId))
 				.andExpect(jsonPath("$.files[0].expenses[0].fileId").value(fileId));
 	}
@@ -160,7 +194,11 @@ class TemporaryExpenseQueryControllerIntegrationTest {
 								.with(jwtTestHelper.withJwtAuth(userId)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.fileId").value(fileId))
-				.andExpect(jsonPath("$.expenses.length()").value(1))
+				.andExpect(jsonPath("$.fileName").value("unknown_file.png"))
+				.andExpect(jsonPath("$.normalCount").value(1))
+				.andExpect(jsonPath("$.incompleteCount").value(1))
+				.andExpect(jsonPath("$.abnormalCount").value(1))
+				.andExpect(jsonPath("$.expenses.length()").value(3))
 				.andExpect(jsonPath("$.expenses[0].tempExpenseMetaId").value(metaId))
 				.andExpect(jsonPath("$.expenses[0].fileId").value(fileId));
 	}

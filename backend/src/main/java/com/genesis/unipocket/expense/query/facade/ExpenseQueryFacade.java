@@ -1,5 +1,7 @@
 package com.genesis.unipocket.expense.query.facade;
 
+import com.genesis.unipocket.expense.command.facade.port.AccountBookFetchService;
+import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
 import com.genesis.unipocket.expense.query.facade.port.ExpenseMediaAccessService;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseOneShotRow;
@@ -9,7 +11,9 @@ import com.genesis.unipocket.expense.query.presentation.response.ExpenseListResp
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseMerchantSearchResponse;
 import com.genesis.unipocket.expense.query.presentation.response.ExpenseResponse;
 import com.genesis.unipocket.expense.query.service.ExpenseQueryService;
+import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -25,25 +29,32 @@ public class ExpenseQueryFacade {
 	private final ExpenseQueryService expenseQueryService;
 	private final ExpenseOwnershipValidator expenseOwnershipValidator;
 	private final ExpenseMediaAccessService expenseMediaAccessService;
+	private final AccountBookFetchService accountBookFetchService;
 
 	@Value("${app.media.presigned-get-expiration-seconds:600}")
 	private int presignedGetExpirationSeconds;
 
 	public ExpenseResponse getExpense(Long expenseId, Long accountBookId, UUID userId) {
-		validateOwnership(accountBookId, userId);
+		AccountBookInfo accountBook =
+				accountBookFetchService.getAccountBook(accountBookId, userId.toString());
+		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(accountBook.localCountryCode());
 		ExpenseOneShotRow row = expenseQueryService.getExpenseOneShot(expenseId, accountBookId);
-		return ExpenseResponse.from(row);
+		return ExpenseResponse.from(row, zoneId);
 	}
 
 	public ExpenseListResponse getExpenses(
 			Long accountBookId, UUID userId, ExpenseSearchFilter filter, Pageable pageable) {
-		validateOwnership(accountBookId, userId);
+		AccountBookInfo accountBook =
+				accountBookFetchService.getAccountBook(accountBookId, userId.toString());
+		ZoneId zoneId = CountryCodeTimezoneMapper.getZoneId(accountBook.localCountryCode());
 
 		Page<ExpenseOneShotRow> rowPage =
 				expenseQueryService.getExpensesOneShot(accountBookId, filter, pageable);
 
 		List<ExpenseResponse> responses =
-				rowPage.getContent().stream().map(ExpenseResponse::from).toList();
+				rowPage.getContent().stream()
+						.map(row -> ExpenseResponse.from(row, zoneId))
+						.toList();
 
 		return ExpenseListResponse.of(
 				responses,

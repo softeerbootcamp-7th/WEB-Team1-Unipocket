@@ -1,7 +1,7 @@
 package com.genesis.unipocket.analysis.command.persistence.repository;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyCategoryAggregateEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

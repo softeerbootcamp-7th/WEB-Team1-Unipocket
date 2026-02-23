@@ -7,9 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.support.AnalysisFixtureFactory;
 import com.genesis.unipocket.auth.support.JwtTestHelper;

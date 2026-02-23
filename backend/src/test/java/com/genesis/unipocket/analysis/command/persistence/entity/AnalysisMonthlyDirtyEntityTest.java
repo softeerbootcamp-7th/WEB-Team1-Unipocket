@@ -2,6 +2,7 @@ package com.genesis.unipocket.analysis.command.persistence.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

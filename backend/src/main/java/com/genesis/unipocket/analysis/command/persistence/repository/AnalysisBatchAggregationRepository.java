@@ -1,7 +1,7 @@
-package com.genesis.unipocket.analysis.command.persistence.repository.support;
+package com.genesis.unipocket.analysis.command.persistence.repository;
 
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.global.common.enums.Category;
@@ -68,6 +68,27 @@ public class AnalysisBatchAggregationRepository {
 						.setParameter("incomeCategory", Category.INCOME.ordinal())
 						.getResultList();
 		return rows.stream().map(this::toCategoryAmountPairCount).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TravelAmountRow> aggregateAllTravelsRaw(Long accountBookId) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+						SELECT
+							e.travel_id,
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.travel_id IS NOT NULL
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						GROUP BY e.travel_id
+						""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
+						.getResultList();
+		return rows.stream().map(this::toTravelAmountRow).toList();
 	}
 
 	public AmountPairCount aggregateTravelRaw(Long accountBookId, Long travelId) {
@@ -436,4 +457,16 @@ public class AnalysisBatchAggregationRepository {
 		return new CategoryLocalCurrencyGroupRow(
 				categoryValue, localCurrencyCode, localAmountSum, expenseCount);
 	}
+
+	private TravelAmountRow toTravelAmountRow(Object[] row) {
+		Long travelId = row[0] == null ? null : ((Number) row[0]).longValue();
+		BigDecimal localAmount =
+				row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
+		BigDecimal baseAmount =
+				row[2] == null ? BigDecimal.ZERO : new BigDecimal(row[2].toString());
+		return new TravelAmountRow(travelId, localAmount, baseAmount);
+	}
+
+	public record TravelAmountRow(
+			Long travelId, BigDecimal totalLocalAmount, BigDecimal totalBaseAmount) {}
 }

@@ -131,8 +131,14 @@ public class ExpenseQueryDslRepository {
 		if (hasValues(filter.category())) {
 			predicate.and(expense.category.in(filter.category()));
 		}
-		if (hasValues(filter.cardFourDigits())) {
-			predicate.and(userCard.cardNumber.in(filter.cardFourDigits()));
+		if (hasValues(filter.cardNumber())) {
+			predicate.and(userCard.cardNumber.in(filter.cardNumber()));
+		}
+		if (filter.isCash() != null) {
+			predicate.and(
+					Boolean.TRUE.equals(filter.isCash())
+							? expense.userCardId.isNull()
+							: expense.userCardId.isNotNull());
 		}
 		if (hasValues(filter.merchantName())) {
 			BooleanBuilder merchantOr = new BooleanBuilder();

@@ -7,7 +7,8 @@ import java.util.List;
 public record ExpenseSearchFilter(
 		OffsetDateTime startDate,
 		OffsetDateTime endDate,
-		List<String> cardFourDigits, // OR
+		List<String> cardNumber, // OR
 		List<Category> category, // OR
 		List<String> merchantName, // OR
+		Boolean isCash,
 		Long travelId) {}

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.analysis.query.port;
+package com.genesis.unipocket.analysis.query.facade.port;
 
 public interface AccountBookOwnershipValidator {
 

@@ -2,6 +2,8 @@ package com.genesis.unipocket.tempexpense.query.service;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
+import com.genesis.unipocket.tempexpense.common.util.TempExpenseFileNameResolver;
 import com.genesis.unipocket.tempexpense.query.persistence.repository.TemporaryExpenseQueryRepository;
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow;
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaRow;
@@ -66,12 +68,8 @@ public class TemporaryExpenseQueryService {
 				files.stream()
 						.map(
 								file ->
-										new TemporaryExpenseMetaFilesResponse.FileExpenses(
-												file.fileId(),
-												file.s3Key(),
-												file.fileType() != null
-														? String.valueOf(file.fileType())
-														: null,
+										toFileExpenses(
+												file,
 												expensesByFileId.getOrDefault(
 														file.fileId(), List.of())))
 						.toList();
@@ -89,11 +87,7 @@ public class TemporaryExpenseQueryService {
 						.map(TemporaryExpenseResponse::from)
 						.toList();
 
-		return new TemporaryExpenseMetaFilesResponse.FileExpenses(
-				file.fileId(),
-				file.s3Key(),
-				file.fileType() != null ? String.valueOf(file.fileType()) : null,
-				expenses);
+		return toFileExpenses(file, expenses);
 	}
 
 	public String issueTemporaryExpenseFileUrl(
@@ -146,4 +140,38 @@ public class TemporaryExpenseQueryService {
 				.findScopedFile(accountBookId, tempExpenseMetaId, fileId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEMP_EXPENSE_SCOPE_MISMATCH));
 	}
+
+	private TemporaryExpenseMetaFilesResponse.FileExpenses toFileExpenses(
+			TemporaryExpenseFileRow file, List<TemporaryExpenseResponse> expenses) {
+		StatusCount statusCount = countStatuses(expenses);
+		return new TemporaryExpenseMetaFilesResponse.FileExpenses(
+				file.fileId(),
+				file.s3Key(),
+				TempExpenseFileNameResolver.resolveOrFallback(file.fileName(), file.s3Key()),
+				file.fileType() != null ? String.valueOf(file.fileType()) : null,
+				statusCount.normalCount(),
+				statusCount.incompleteCount(),
+				statusCount.abnormalCount(),
+				expenses);
+	}
+
+	private StatusCount countStatuses(List<TemporaryExpenseResponse> expenses) {
+		int normalCount = 0;
+		int incompleteCount = 0;
+		int abnormalCount = 0;
+
+		for (TemporaryExpenseResponse expense : expenses) {
+			if (TemporaryExpenseStatus.NORMAL.name().equals(expense.status())) {
+				normalCount++;
+			} else if (TemporaryExpenseStatus.INCOMPLETE.name().equals(expense.status())) {
+				incompleteCount++;
+			} else if (TemporaryExpenseStatus.ABNORMAL.name().equals(expense.status())) {
+				abnormalCount++;
+			}
+		}
+
+		return new StatusCount(normalCount, incompleteCount, abnormalCount);
+	}
+
+	private record StatusCount(int normalCount, int incompleteCount, int abnormalCount) {}
 }

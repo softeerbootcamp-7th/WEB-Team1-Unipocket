@@ -14,6 +14,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepo
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TempExpenseMetaRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
+import com.genesis.unipocket.tempexpense.common.util.TempExpenseFileNameResolver;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +56,7 @@ public class FileUploadService {
 						.tempExpenseMetaId(savedMeta.getTempExpenseMetaId())
 						.fileType(fileType)
 						.s3Key(s3Response.imageKey())
+						.fileName(TempExpenseFileNameResolver.normalize(fileName))
 						.build();
 		fileRepository.save(file);
 
@@ -62,6 +64,7 @@ public class FileUploadService {
 				savedMeta.getTempExpenseMetaId(),
 				s3Response.presignedUrl(),
 				s3Response.imageKey(),
+				file.getFileName(),
 				presignedPutExpirationSeconds);
 	}
 

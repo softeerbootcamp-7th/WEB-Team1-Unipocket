@@ -20,6 +20,9 @@ export const useImageUpload = (accountBookId: number) => {
     isOpen: false,
     status: 'default',
   });
+  const [parsedMetaId, setParsedMetaId] = useState<number | undefined>(
+    undefined,
+  );
   const itemsRef = useRef<UploadItem[]>([]);
   const eventSourcesRef = useRef<Record<string, EventSource>>({});
   const metaIdRef = useRef<number | undefined>(undefined);
@@ -125,7 +128,7 @@ export const useImageUpload = (accountBookId: number) => {
       );
 
       // 4. SSE 연결
-      connectSSE(parse.taskId);
+      connectSSE(parse.taskId, metaIdRef.current!);
       setParseSnackbar({
         isOpen: true,
         status: 'loading',
@@ -138,7 +141,7 @@ export const useImageUpload = (accountBookId: number) => {
     }
   };
 
-  const connectSSE = (taskId: string) => {
+  const connectSSE = (taskId: string, metaId: number) => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
     if (!baseUrl) return;
 
@@ -196,6 +199,7 @@ export const useImageUpload = (accountBookId: number) => {
           status: 'success',
           description: '100%',
         });
+        setParsedMetaId(metaId);
         closeEventSource();
         return;
       }
@@ -276,5 +280,6 @@ export const useImageUpload = (accountBookId: number) => {
     parseSnackbar,
     closeParseSnackbar,
     clearItems,
+    parsedMetaId,
   };
 };

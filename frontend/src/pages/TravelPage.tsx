@@ -1,23 +1,34 @@
-import { useState } from 'react';
+import TravelModalManager from '@/components/travel-page/modal/TravelModalManager';
+import { useTravelModal } from '@/components/travel-page/modal/useTravelModal';
+import TravelFolderList from '@/components/travel-page/TravelFolderList';
+import TravelHeader from '@/components/travel-page/TravelHeader';
 
-import Button from '@/components/common/Button';
-import ImageResultModal from '@/components/upload/image-upload/ImageResultModal';
 const TravelPage = () => {
-  const [isOpen, setIsOpen] = useState(false); // 테스트용
+  const {
+    activeModal,
+    closeModal,
+    openCreateName,
+    openCreateDate,
+    openEditName,
+    openEditDate,
+    openDelete,
+    openEditThumbnail,
+  } = useTravelModal();
 
   return (
-    <div className="p-10">
-      <Button onClick={() => setIsOpen(true)}>결과 모달 열기</Button>
+    <div className="8 flex flex-1 flex-col gap-4 px-4 py-8 xl:px-30">
+      <TravelHeader onCreateClick={openCreateName} />
+      <TravelFolderList
+        onOpenEditThumbnail={openEditThumbnail}
+        onOpenEditName={openEditName}
+        onOpenEditDate={openEditDate}
+        onOpenDelete={openDelete}
+      />
 
-      <ImageResultModal
-        isOpen={isOpen}
-        imageCount={6}
-        expenseCount={13}
-        onClose={() => setIsOpen(false)}
-        onConfirm={() => {
-          console.log('지출 적용');
-          setIsOpen(false);
-        }}
+      <TravelModalManager
+        activeModal={activeModal}
+        closeModal={closeModal}
+        openCreateDate={openCreateDate}
       />
     </div>
   );

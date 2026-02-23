@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 public class TemporaryExpenseParsingService {
 
 	private static final int MAX_DOCUMENT_PARSE_FILES = 1;
-	private static final int MAX_IMAGE_PARSE_FILES = 3;
+	private static final int MAX_IMAGE_PARSE_FILES = 10;
 	private static final String FILE_PROGRESS_CODE_SUCCESS = "SUCCESS";
 	private static final String FILE_PROGRESS_CODE_FAILED_TOO_MANY_REQUEST =
 			"FAILED_TOO_MANY_REQUEST";

@@ -50,7 +50,7 @@ const bulkUpdateExpenses = (
   return customFetch({
     endpoint: ENDPOINTS.EXPENSES.BULK(accountBookId),
     options: {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify(data),
     },
   });

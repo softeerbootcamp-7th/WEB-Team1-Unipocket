@@ -2,9 +2,9 @@ package com.genesis.unipocket.travel.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.travel.query.persistence.response.TravelDetailQueryResponse;
-import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
 import com.genesis.unipocket.travel.query.presentation.response.TravelAmountResponse;
 import com.genesis.unipocket.travel.query.presentation.response.TravelImageViewUrlResponse;
+import com.genesis.unipocket.travel.query.presentation.response.TravelListItemResponse;
 import com.genesis.unipocket.travel.query.service.TravelAmountQueryService;
 import com.genesis.unipocket.travel.query.service.TravelQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +30,7 @@ public class TravelQueryController {
 
 	@Operation(summary = "여행 탐색 API", description = "account-bookId 하위의 여행 폴더-메타데이터들을 조회합니다.")
 	@GetMapping
-	public ResponseEntity<List<TravelQueryResponse>> getTravels(
+	public ResponseEntity<List<TravelListItemResponse>> getTravels(
 			@PathVariable Long accountBookId, @LoginUser UUID userId) {
 		return ResponseEntity.ok(travelQueryService.getTravels(accountBookId, userId));
 	}

@@ -1,5 +1,8 @@
 package com.genesis.unipocket.travel.query.service;
 
+import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
@@ -8,9 +11,13 @@ import com.genesis.unipocket.travel.query.persistence.response.TravelDetailQuery
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
 import com.genesis.unipocket.travel.query.persistence.response.WidgetOrderDto;
 import com.genesis.unipocket.travel.query.port.TravelImageAccessService;
+import com.genesis.unipocket.travel.query.presentation.response.TravelListItemResponse;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,13 +31,52 @@ public class TravelQueryService {
 	private final TravelQueryRepository travelQueryRepository;
 	private final UserAccountBookValidator userAccountBookValidator;
 	private final TravelImageAccessService travelImageAccessService;
+	private final AccountBookQueryRepository accountBookQueryRepository;
+	private final AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 
 	@Value("${app.media.presigned-get-expiration-seconds:600}")
 	private int presignedGetExpirationSeconds;
 
-	public List<TravelQueryResponse> getTravels(Long accountBookId, UUID userId) {
-		userAccountBookValidator.validateUserAccountBook(userId.toString(), accountBookId);
-		return travelQueryRepository.findAllByAccountBookId(accountBookId);
+	public List<TravelListItemResponse> getTravels(Long accountBookId, UUID userId) {
+		AccountBookDetailResponse accountBook =
+				accountBookQueryRepository
+						.findDetailById(userId, accountBookId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+
+		List<TravelQueryResponse> travels =
+				travelQueryRepository.findAllByAccountBookId(accountBookId);
+
+		Map<Long, AnalysisBatchAggregationRepository.TravelAmountRow> amountByTravelId =
+				analysisBatchAggregationRepository.aggregateAllTravelsRaw(accountBookId).stream()
+						.collect(
+								Collectors.toMap(
+										AnalysisBatchAggregationRepository.TravelAmountRow
+												::travelId,
+										row -> row));
+
+		return travels.stream()
+				.map(
+						t -> {
+							var amounts =
+									amountByTravelId.getOrDefault(
+											t.travelId(),
+											new AnalysisBatchAggregationRepository.TravelAmountRow(
+													t.travelId(),
+													BigDecimal.ZERO,
+													BigDecimal.ZERO));
+							return new TravelListItemResponse(
+									t.travelId(),
+									t.accountBookId(),
+									t.travelPlaceName(),
+									t.startDate(),
+									t.endDate(),
+									t.imageKey(),
+									accountBook.localCountryCode(),
+									amounts.totalLocalAmount(),
+									accountBook.baseCountryCode(),
+									amounts.totalBaseAmount());
+						})
+				.toList();
 	}
 
 	public TravelDetailQueryResponse getTravelDetail(

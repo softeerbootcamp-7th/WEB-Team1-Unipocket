@@ -1,3 +1,12 @@
+import type { WidgetType } from '@/components/chart/widget/type';
+
+import type { CurrencyType } from '@/types/currency';
+import type { PeriodType } from '@/types/period';
+
+import type { WidgetLayoutItem, WidgetResponseMap } from '@/api/widget/type';
+
+export type { WidgetResponseMap as TravelWidgetResponseMap };
+
 export interface TravelWidget {
   type: string; // e.g. 'BUDGET'
   order: number;
@@ -67,4 +76,18 @@ export interface GetTravelAmountResponse {
   baseCurrencyCode: string;
   totalLocalAmount: number;
   totalBaseAmount: number;
+}
+
+// GET|PUT /account-books/{accountBookId}/travels/{travelId}/widgets
+export type TravelWidgetLayoutItem = WidgetLayoutItem;
+export type GetTravelWidgetLayoutResponse = WidgetLayoutItem[];
+export type UpdateTravelWidgetLayoutRequest = WidgetLayoutItem[];
+
+// GET /account-books/{accountBookId}/travels/{travelId}/widget
+export interface GetTravelWidgetRequest {
+  accountBookId: number | string;
+  travelId: number | string;
+  widgetType: WidgetType;
+  currencyType?: CurrencyType;
+  period?: PeriodType;
 }

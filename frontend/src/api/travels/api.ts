@@ -8,9 +8,13 @@ import type {
   GetTravelAmountResponse,
   GetTravelDetailResponse,
   GetTravelsResponse,
+  GetTravelWidgetLayoutResponse,
+  GetTravelWidgetRequest,
   PatchTravelRequest,
+  TravelWidgetResponseMap,
   UpdateTravelRequest,
   UpdateTravelResponse,
+  UpdateTravelWidgetLayoutRequest,
 } from '@/api/travels/type';
 
 export const getTravels = (
@@ -111,6 +115,48 @@ export const getTravelAmount = (
 ): Promise<GetTravelAmountResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.TRAVELS.AMOUNT(accountBookId, travelId),
+    options: { method: 'GET' },
+  });
+};
+
+export const getTravelWidgetLayout = (
+  accountBookId: number | string,
+  travelId: number | string,
+): Promise<GetTravelWidgetLayoutResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.TRAVELS.WIDGETS(accountBookId, travelId),
+    options: { method: 'GET' },
+  });
+};
+
+export const updateTravelWidgetLayout = (
+  accountBookId: number | string,
+  travelId: number | string,
+  data: UpdateTravelWidgetLayoutRequest,
+): Promise<GetTravelWidgetLayoutResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.TRAVELS.WIDGETS(accountBookId, travelId),
+    options: {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    },
+  });
+};
+
+export const getTravelWidget = <T extends keyof TravelWidgetResponseMap>({
+  accountBookId,
+  travelId,
+  widgetType,
+  currencyType,
+  period,
+}: GetTravelWidgetRequest): Promise<TravelWidgetResponseMap[T]> => {
+  return customFetch({
+    endpoint: ENDPOINTS.WIDGETS.TRAVEL_DATA(accountBookId, travelId),
+    params: {
+      widgetType,
+      ...(currencyType && { currencyType }),
+      ...(period && { period }),
+    },
     options: { method: 'GET' },
   });
 };

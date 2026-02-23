@@ -49,7 +49,7 @@ export default function UploadResultModal({
 
   const title = imageCount
     ? `${imageCount}개의 사진에서 ${expenseCount}건의 지출 내역이 생성됐어요.`
-    : `${expenseCount}개의 지출 내역이 생성됐어요.`;
+    : `${expenseCount}건의 지출 내역이 생성됐어요.`;
 
   return (
     <div

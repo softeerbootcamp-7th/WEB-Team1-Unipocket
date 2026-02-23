@@ -7,25 +7,19 @@ import { parseStringToDate } from '@/lib/utils';
 
 interface TravelModalManagerProps {
   activeModal: TravelModalState;
-  isOpen: boolean;
   closeModal: () => void;
   openCreateDate: (travelName: string) => void;
 }
 
 const TravelModalManager = ({
   activeModal,
-  isOpen,
   closeModal,
   openCreateDate,
 }: TravelModalManagerProps) => {
-  // 열린 모달이 없으면 렌더링하지 않음
-  if (!isOpen || activeModal.type === 'NONE') return null;
-
   return (
     <>
       {/* 생성 1단계: 포켓명 입력 */}
       <TravelPocketModal
-        key={activeModal.type === 'CREATE_NAME' ? 'open' : undefined}
         mode="create"
         isOpen={activeModal.type === 'CREATE_NAME'}
         onClose={closeModal}
@@ -34,7 +28,6 @@ const TravelModalManager = ({
 
       {/* 생성 2단계: 기간 선택 */}
       <SelectDateModal
-        key={activeModal.type === 'CREATE_DATE' ? 'open' : undefined}
         isOpen={activeModal.type === 'CREATE_DATE'}
         onClose={closeModal}
         onConfirm={(dateRange) => {
@@ -48,9 +41,6 @@ const TravelModalManager = ({
 
       {/* 폴더명 수정 */}
       <TravelPocketModal
-        key={
-          activeModal.type === 'EDIT_NAME' ? activeModal.travelId : undefined
-        }
         mode="edit"
         isOpen={activeModal.type === 'EDIT_NAME'}
         initialName={
@@ -67,9 +57,6 @@ const TravelModalManager = ({
 
       {/* 기간 수정 */}
       <SelectDateModal
-        key={
-          activeModal.type === 'EDIT_DATE' ? activeModal.travelId : undefined
-        }
         isOpen={activeModal.type === 'EDIT_DATE'}
         onClose={closeModal}
         initialDateRange={

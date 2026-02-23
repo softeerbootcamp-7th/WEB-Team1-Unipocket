@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { ModalProps } from '@/components/modal/Modal';
 import Modal from '@/components/modal/Modal';
@@ -44,7 +44,12 @@ const TravelPocketModal = ({
 }: TravelPocketModalProps) => {
   const [pocketName, setPocketName] = useState(initialName);
 
-  if (modalProps.isOpen === false) return null;
+  useEffect(() => {
+    if (modalProps.isOpen) {
+      setPocketName(initialName);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalProps.isOpen]);
 
   const validatePocketName = (val: string) => {
     if (val.length > 13) return ERROR_MESSAGE.LENGTH13;

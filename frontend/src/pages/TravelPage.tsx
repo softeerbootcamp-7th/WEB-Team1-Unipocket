@@ -6,7 +6,6 @@ import TravelHeader from '@/components/travel-page/TravelHeader';
 const TravelPage = () => {
   const {
     activeModal,
-    isOpen,
     closeModal,
     openCreateName,
     openCreateDate,
@@ -28,7 +27,6 @@ const TravelPage = () => {
 
       <TravelModalManager
         activeModal={activeModal}
-        isOpen={isOpen}
         closeModal={closeModal}
         openCreateDate={openCreateDate}
       />

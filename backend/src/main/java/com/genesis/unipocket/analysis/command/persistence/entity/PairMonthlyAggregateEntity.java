@@ -1,5 +1,7 @@
 package com.genesis.unipocket.analysis.command.persistence.entity;
 
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import jakarta.persistence.Column;

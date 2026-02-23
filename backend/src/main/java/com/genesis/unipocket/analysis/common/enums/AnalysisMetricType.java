@@ -1,4 +1,4 @@
-package com.genesis.unipocket.analysis.command.persistence.entity;
+package com.genesis.unipocket.analysis.common.enums;
 
 public enum AnalysisMetricType {
 	TOTAL_LOCAL_AMOUNT,

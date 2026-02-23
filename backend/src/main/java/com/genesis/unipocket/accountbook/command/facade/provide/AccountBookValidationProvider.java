@@ -2,6 +2,7 @@ package com.genesis.unipocket.accountbook.command.facade.provide;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.analysis.query.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.expense.command.facade.port.AccountBookFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AccountBookValidationProvider
 		implements ExpenseOwnershipValidator,
-				com.genesis.unipocket.analysis.query.port.AccountBookOwnershipValidator,
+				AccountBookOwnershipValidator,
 				com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator,
 				AccountBookFetchService,
 				AccountBookRateInfoProvider,
@@ -60,7 +61,8 @@ public class AccountBookValidationProvider
 						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 		return new AccountBookRateInfo(
 				accountBook.getBaseCountryCode().getCurrencyCode(),
-				accountBook.getLocalCountryCode().getCurrencyCode());
+				accountBook.getLocalCountryCode().getCurrencyCode(),
+				accountBook.getLocalCountryCode());
 	}
 
 	private AccountBookEntity findAndValidate(Long accountBookId, String userId) {

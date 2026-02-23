@@ -11,6 +11,7 @@ import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
@@ -22,6 +23,7 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseM
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
+import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,6 +44,7 @@ class TemporaryExpenseConversionServiceTest {
 	@Mock private ExchangeRateService exchangeRateService;
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 	@Mock private TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidationProvider;
+	@Mock private TemporaryExpenseValidator temporaryExpenseValidator;
 
 	private TemporaryExpenseConversionService service;
 
@@ -54,7 +57,8 @@ class TemporaryExpenseConversionServiceTest {
 						expenseRepository,
 						exchangeRateService,
 						accountBookRateInfoProvider,
-						temporaryExpenseScopeValidationProvider);
+						temporaryExpenseScopeValidationProvider,
+						temporaryExpenseValidator);
 	}
 
 	@Test
@@ -87,7 +91,9 @@ class TemporaryExpenseConversionServiceTest {
 		when(temporaryExpenseRepository.findByTempExpenseMetaId(metaId))
 				.thenReturn(List.of(tempExpense));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(fileRepository.findById(fileId))
 				.thenReturn(
 						Optional.of(
@@ -158,7 +164,9 @@ class TemporaryExpenseConversionServiceTest {
 		when(temporaryExpenseRepository.findByTempExpenseMetaId(metaId))
 				.thenReturn(List.of(tempExpense));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.KRW));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.KRW, CountryCode.KR));
 		when(fileRepository.findById(30L))
 				.thenReturn(
 						Optional.of(

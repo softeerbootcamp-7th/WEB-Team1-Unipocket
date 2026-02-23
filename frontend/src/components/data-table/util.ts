@@ -1,6 +1,6 @@
 import type { Expense } from '@/api/expenses/type';
 import type { Card } from '@/api/users/type';
-import { CASH } from '@/constants/method';
+import { CASH } from '@/constants/column';
 
 const getCardNumberFromExpense = (original: Expense, cards: Card[]): string => {
   if (!original?.paymentMethod || original.paymentMethod.isCash) return CASH;

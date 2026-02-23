@@ -29,7 +29,9 @@ export const useInlineExpenseUpdate = () => {
       baseCurrencyAmount: original.baseCurrencyAmount,
       memo: original.memo || '',
       travelId: original.travel?.travelId || null,
-      userCardId: original.paymentMethod.isCash ? null : 0,
+      userCardId: original.paymentMethod.isCash
+        ? null
+        : original.paymentMethod.card?.userCardId,
       [field]: value, // 변경된 필드만 덮어쓰기
       ...extraUpdates, // 전달된 null 값이 기존 값을 덮어씌움
     };

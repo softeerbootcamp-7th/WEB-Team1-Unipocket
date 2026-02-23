@@ -58,7 +58,9 @@ const UpdateActionBar = () => {
         baseCurrencyAmount: original.baseCurrencyAmount,
         memo: original.memo || '',
         travelId: original.travel?.travelId || null,
-        userCardId: original.paymentMethod.isCash ? null : 0,
+        userCardId: original.paymentMethod.isCash
+          ? null
+          : original.paymentMethod.card?.userCardId,
       };
 
       return { ...basePayload, [field]: value };

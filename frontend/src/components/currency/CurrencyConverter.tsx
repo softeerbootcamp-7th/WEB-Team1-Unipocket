@@ -1,4 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
 
@@ -101,6 +102,17 @@ const CurrencyConverter = ({
 
   const setActionReady = modalContext?.setActionReady;
 
+  const handleCurrencySelect = (id: number) => {
+    const selected = currencyOptions.find((o) => o.id === id);
+
+    if (selected?.name === baseCurrencyName) {
+      toast.error('기준 통화와 동일한 통화는 선택할 수 없습니다.');
+      return;
+    }
+
+    setLocalCurrencyType(id);
+  };
+
   useEffect(() => {
     setActionReady?.(isValid);
   }, [isValid, setActionReady]);
@@ -138,7 +150,7 @@ const CurrencyConverter = ({
           <div className="flex w-25 pt-7">
             <DropDown
               selectedId={localCurrencyType}
-              onSelect={setLocalCurrencyType}
+              onSelect={handleCurrencySelect}
               options={currencyOptions}
               size="lg"
               itemWidth="w-25"

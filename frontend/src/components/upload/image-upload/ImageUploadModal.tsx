@@ -21,12 +21,14 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
     startParsing,
     parseSnackbar,
     closeParseSnackbar,
+    clearItems,
   } = useImageUpload(accountBookId);
 
   const handleStartParsing = () => {
     void startParsing().then((isStarted) => {
       if (isStarted) {
         onClose();
+        clearItems();
       }
     });
   };

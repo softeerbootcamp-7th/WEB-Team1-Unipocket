@@ -260,6 +260,15 @@ export const useImageUpload = (accountBookId: number) => {
     items.length > 0 &&
     items.every((item) => item.status === UPLOAD_STATUS.UPLOADED);
 
+  const clearItems = () => {
+    itemsRef.current.forEach((item) => {
+      if (item.url) URL.revokeObjectURL(item.url);
+    });
+
+    setItems([]);
+    metaIdRef.current = undefined;
+  };
+
   return {
     items,
     startParsing,
@@ -268,5 +277,6 @@ export const useImageUpload = (accountBookId: number) => {
     isAllUploaded,
     parseSnackbar,
     closeParseSnackbar,
+    clearItems,
   };
 };

@@ -2,10 +2,8 @@ import { useState } from 'react';
 
 import Switch from '@/components/common/Switch';
 import PageHeader from '@/components/layout/PageHeader';
-import ReportCategory from '@/components/report-page/category/ReportCategory';
-import ReportMonthly from '@/components/report-page/monthly/ReportMonthly';
-import ReportMyself from '@/components/report-page/myself/ReportMyself';
-import ReportProvider from '@/components/report-page/ReportProvider';
+import ReportControlSection from '@/components/report-page/ReportControlSection';
+import ReportSection from '@/components/report-page/ReportSection';
 
 import {
   canGoToMonth,
@@ -64,59 +62,28 @@ const ReportPage = () => {
   return (
     <div className="flex min-w-283 flex-col gap-8 px-30 pt-8">
       <PageHeader {...PAGE_TITLE.REPORT} />
-      <div className="flex min-w-283 flex-col gap-4.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-[21.5px]">
-            <span className="title3-medium text-label-normal min-w-34">
-              {year}년 {month}월
-            </span>
-            <div className="flex gap-3.5">
-              <Icons.ChevronBack
-                className={getNavButtonClass(canGoPrev)}
-                onClick={() => canGoPrev && handleMonthChange(-1)}
-              />
-              <Icons.ChevronForward
-                className={getNavButtonClass(canGoNext)}
-                onClick={() => canGoNext && handleMonthChange(1)}
-              />
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <span className="body1-normal-medium text-label-alternative">
-              현지통화로 보기
-            </span>
-            <Switch
-              checked={currencyType === 'LOCAL'}
-              onChange={(checked) =>
-                setCurrencyType(checked ? 'LOCAL' : 'BASE')
-              }
-            />
-          </div>
-        </div>
+      <div className="flex flex-col gap-4.5">
+        <ReportControlSection
+          year={year}
+          month={month}
+          canGoPrev={canGoPrev}
+          canGoNext={canGoNext}
+          onMonthChange={handleMonthChange}
+          currencyType={currencyType}
+          onCurrencyChange={(checked) =>
+            setCurrencyType(checked ? 'LOCAL' : 'BASE')
+          }
+        />
 
         {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
         {data && (
-          <div
+          <ReportSection
             key={`${year}-${month}`}
-            className="flex w-full min-w-283 gap-3.5"
-          >
-            <ReportProvider
-              currencyType={currencyType}
-              onCurrencyTypeChange={setCurrencyType}
-            >
-              <div className="flex w-113 flex-col justify-between">
-                <ReportMonthly data={data.compareWithAverage} />
-                <ReportMyself
-                  data={data.compareWithLastMonth}
-                  isCurrentMonth={isCurrentMonth}
-                />
-              </div>
-
-              <div className="flex-1">
-                <ReportCategory data={data.compareByCategory} />
-              </div>
-            </ReportProvider>
-          </div>
+            data={data}
+            currencyType={currencyType}
+            onCurrencyTypeChange={setCurrencyType}
+            isCurrentMonth={isCurrentMonth}
+          />
         )}
       </div>
     </div>

@@ -6,13 +6,15 @@ import Divider from '@/components/common/Divider';
 import DropDown from '@/components/common/dropdown/Dropdown';
 import TextInput from '@/components/common/TextInput';
 import useCurrencyConverter from '@/components/currency/useCurrencyConverter';
+import useCurrencyInfo, {
+  currencyOptions,
+} from '@/components/currency/useCurrencyInfo';
 import { ModalContext } from '@/components/modal/useModalContext';
 
 import { useGetExchangeRateQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
 import countryData from '@/data/country/countryData.json';
 import type { CurrencyCode } from '@/data/country/currencyCode';
-import { getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 export type CurrencyValues = {
@@ -21,19 +23,7 @@ export type CurrencyValues = {
   baseAmount: number;
 };
 
-type CurrencyOption = {
-  id: number;
-  name: string;
-  sign: string;
-};
-
-const currencyOptions: CurrencyOption[] = Object.values(countryData).map(
-  (country, index) => ({
-    id: index + 1,
-    name: country.currencyName,
-    sign: country.currencySign,
-  }),
-);
+const toNumber = (s: string) => parseFloat(s.replace(/,/g, ''));
 
 interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
@@ -76,30 +66,23 @@ const CurrencyConverter = ({
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
-  const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
+  const { localCountryCode } = useRequiredAccountBook();
   const [localCurrencyType, setLocalCurrencyType] = useState(() => {
     const idx = Object.keys(countryData).indexOf(localCountryCode);
     return idx >= 0 ? idx + 1 : 1;
   });
 
-  const baseCountryInfo = getCountryInfo(baseCountryCode);
-  const baseCurrencyName = baseCountryInfo?.currencyName;
-  const baseCurrencySign = baseCountryInfo?.currencySign;
+  const {
+    localCurrencyName,
+    localCurrencySign,
+    baseCurrencyName,
+    baseCurrencySign,
+  } = useCurrencyInfo(showCurrencyDropdown, localCurrencyType);
 
-  // dropdown 선택값 우선, 없으면 store의 localCountryCode 기반
-  const localCountryInfoFromStore = getCountryInfo(localCountryCode);
-  const localCurrencyOption = currencyOptions.find(
-    (o) => o.id === localCurrencyType,
+  const occurredAt = useMemo(
+    () => rateUpdatedAt?.toISOString() ?? new Date().toISOString(),
+    [rateUpdatedAt],
   );
-  const localCurrencyName = showCurrencyDropdown
-    ? localCurrencyOption?.name
-    : localCountryInfoFromStore?.currencyName;
-  const localCurrencySign = showCurrencyDropdown
-    ? localCurrencyOption?.sign
-    : localCountryInfoFromStore?.currencySign;
-
-  const todayIso = useMemo(() => new Date().toISOString(), []);
-  const occurredAt = rateUpdatedAt ? rateUpdatedAt.toISOString() : todayIso;
   const { data: exchangeRateData, isPending: isRateLoading } =
     useGetExchangeRateQuery(
       occurredAt,
@@ -125,7 +108,6 @@ const CurrencyConverter = ({
 
   useEffect(() => {
     if (!onValuesChange || !isValid || !localCurrencyName) return;
-    const toNumber = (s: string) => parseFloat(s.replace(/,/g, ''));
     onValuesChange({
       localAmount: toNumber(localCurrency),
       localCurrencyCode: localCurrencyName as CurrencyCode,

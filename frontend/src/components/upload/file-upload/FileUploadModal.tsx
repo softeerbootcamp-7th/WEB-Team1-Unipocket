@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 import Modal from '@/components/modal/Modal';
+import FileResultModal from '@/components/upload/file-upload/FileResultModal';
 import FileUploadContent from '@/components/upload/file-upload/FileUploadContent';
 import { useFileUpload } from '@/components/upload/file-upload/useFileUpload';
-import ImageResultModal from '@/components/upload/image-upload/ImageResultModal'; // 임시로 연결 (파일 따로 구현 예정)
 
 import { Icons } from '@/assets';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
@@ -74,7 +74,7 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
       </Modal>
 
       {resultMetaId !== undefined && isResultModalOpen && (
-        <ImageResultModal
+        <FileResultModal
           isOpen={isResultModalOpen}
           accountBookId={accountBookId}
           metaId={resultMetaId}

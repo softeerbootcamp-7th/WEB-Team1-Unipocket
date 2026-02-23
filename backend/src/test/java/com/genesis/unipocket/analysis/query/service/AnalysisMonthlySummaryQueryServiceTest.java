@@ -13,11 +13,11 @@ import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricT
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountCount;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.query.persistence.repository.AnalysisQueryRepository;
 import com.genesis.unipocket.analysis.query.persistence.response.AnalysisOverviewRes;

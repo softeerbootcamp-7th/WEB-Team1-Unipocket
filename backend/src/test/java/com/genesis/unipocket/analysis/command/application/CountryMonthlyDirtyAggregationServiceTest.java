@@ -6,10 +6,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountAmountCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryLocalCurrencyGroupRow;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.LocalCurrencyGroupRow;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.AccountAmountCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryLocalCurrencyGroupRow;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.LocalCurrencyGroupRow;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.analysis.command.persistence.repository.support;
+package com.genesis.unipocket.analysis.command.persistence.repository;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;

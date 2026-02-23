@@ -15,10 +15,14 @@ public final class TemporaryExpenseTaskSupport {
 	}
 
 	public static String resolveClientErrorMessage(Exception e, ErrorCode fallbackCode) {
+		return resolveErrorCode(e, fallbackCode).getMessage();
+	}
+
+	public static ErrorCode resolveErrorCode(Exception e, ErrorCode fallbackCode) {
 		if (e instanceof BusinessException businessException) {
-			return businessException.getCode().getMessage();
+			return businessException.getCode();
 		}
-		return fallbackCode.getMessage();
+		return fallbackCode;
 	}
 
 	public static RuntimeException rethrow(Exception e) {

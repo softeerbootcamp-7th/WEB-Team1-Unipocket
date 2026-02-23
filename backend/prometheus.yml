@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 10s # 10초 주기로 메트릭 수집
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: "spring-boot-app"
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      # Docker Compose 환경에서 스프링 부트 서비스 이름이 'app'이고 포트가 8080일 경우
+      - targets: ["app:8080"]

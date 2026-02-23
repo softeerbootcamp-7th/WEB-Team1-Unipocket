@@ -21,7 +21,7 @@ const ReportCategory = ({ data }: ReportCategoryProps) => {
 
   return (
     <ReportContainer title="월별 지출 비교">
-      <ReportContent className="h-162.5 w-full gap-7">
+      <ReportContent className="h-fit w-full gap-3">
         <h3 className="heading1-bold text-label-normal">
           나랑 같은 국가의 교환학생보다{' '}
           <span className="text-primary-strong">{category}</span> 소비가 유독{' '}

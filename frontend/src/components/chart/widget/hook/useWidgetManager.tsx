@@ -12,7 +12,7 @@ import {
   useWidgetLayoutQuery,
 } from '@/api/widget/query';
 
-const WIDGET_MAX_SLOT_BREAKPOINT = 1500;
+const WIDGET_MAX_SLOT_BREAKPOINT = 1600;
 const MIN_WIDGET_SLOTS = 4;
 const MAX_WIDGET_SLOTS = 5;
 

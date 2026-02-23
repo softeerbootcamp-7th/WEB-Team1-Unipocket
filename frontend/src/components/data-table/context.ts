@@ -3,6 +3,8 @@ import type { Table } from '@tanstack/react-table';
 
 import type { TableUIAction, TableUIState } from '@/components/data-table/type';
 
+import type { ExpenseSearchFilter } from '@/api/expenses/type';
+
 export interface DataTableContextType<TData> {
   table: Table<TData>;
   tableState: TableUIState;
@@ -20,4 +22,22 @@ export const useDataTable = <TData>() => {
   }
 
   return context as DataTableContextType<TData>;
+};
+
+interface DataTableFilterContextType {
+  filter: ExpenseSearchFilter;
+  updateFilter: (newFilter: Partial<ExpenseSearchFilter>) => void;
+}
+
+export const DataTableFilterContext =
+  createContext<DataTableFilterContextType | null>(null);
+
+export const useDataTableFilter = () => {
+  const context = useContext(DataTableFilterContext);
+  if (!context) {
+    throw new Error(
+      'useDataTableFilter must be used within a DataTableFilterProvider',
+    );
+  }
+  return context;
 };

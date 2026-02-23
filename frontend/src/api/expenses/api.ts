@@ -86,24 +86,16 @@ const getExpenses = (
   accountBookId: number | string,
   filter?: ExpenseSearchFilter,
 ): Promise<GetExpensesResponse> => {
-  const params: Record<string, string> = {};
+  const params: Record<string, string | string[]> = {};
 
   if (filter) {
     if (filter.startDate) params.startDate = filter.startDate;
     if (filter.endDate) params.endDate = filter.endDate;
     if (filter.merchantName) params.merchantName = filter.merchantName;
-    if (filter.category !== undefined && filter.category !== null) {
-      params.category = filter.category.toString();
+    if (filter.category && filter.category.length > 0) {
+      params.category = filter.category.map((id) => id.toString());
     }
-    if (filter.travelId !== undefined && filter.travelId !== null) {
-      params.travelId = filter.travelId.toString();
-    }
-    if (filter.minAmount !== undefined && filter.minAmount !== null) {
-      params.minAmount = filter.minAmount.toString();
-    }
-    if (filter.maxAmount !== undefined && filter.maxAmount !== null) {
-      params.maxAmount = filter.maxAmount.toString();
-    }
+    if (filter.travelId) params.travelId = filter.travelId.toString();
     if (filter.page !== undefined) {
       params.page = filter.page.toString();
     }
@@ -113,7 +105,11 @@ const getExpenses = (
     if (filter.sort && filter.sort.length > 0) {
       params.sort = filter.sort.join(',');
     }
+    if (filter.cardNumber && filter.cardNumber.length > 0) {
+      params.cardNumber = filter.cardNumber;
+    }
   }
+
   return customFetch({
     endpoint: ENDPOINTS.EXPENSES.BASE(accountBookId),
     params: Object.keys(params).length > 0 ? params : undefined,
@@ -122,7 +118,6 @@ const getExpenses = (
     },
   });
 };
-
 const getExpenseFileUrl = (
   accountBookId: number | string,
   expenseId: number | string,

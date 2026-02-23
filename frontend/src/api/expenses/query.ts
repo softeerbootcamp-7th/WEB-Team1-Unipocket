@@ -22,7 +22,33 @@ import type {
   ExpenseSearchFilter,
   UpdateExpenseRequest,
 } from '@/api/expenses/type';
+import { widgetKeys } from '@/api/widget/query';
 import { queryClient } from '@/main';
+
+export const expenseKeys = {
+  all: ['expenses'] as const,
+  lists: (accountBookId: number | string) =>
+    [...expenseKeys.all, 'list', accountBookId] as const,
+  list: (accountBookId: number | string, filter?: ExpenseSearchFilter) =>
+    [...expenseKeys.lists(accountBookId), filter] as const,
+  details: (accountBookId: number | string) =>
+    [...expenseKeys.all, 'detail', accountBookId] as const,
+  detail: (accountBookId: number | string, expenseId: number | string) =>
+    [...expenseKeys.details(accountBookId), expenseId] as const,
+  fileUrls: (accountBookId: number | string) =>
+    [...expenseKeys.all, 'fileUrl', accountBookId] as const,
+  fileUrl: (accountBookId: number | string, expenseId: number | string) =>
+    [...expenseKeys.fileUrls(accountBookId), expenseId] as const,
+  merchants: (accountBookId: number | string, query: string, limit?: number) =>
+    [...expenseKeys.all, 'merchants', accountBookId, query, limit] as const,
+};
+
+const invalidateRelatedQueries = (accountBookId: number | string) => {
+  queryClient.invalidateQueries({ queryKey: expenseKeys.lists(accountBookId) });
+  queryClient.invalidateQueries({
+    queryKey: widgetKeys.allDetails(accountBookId),
+  });
+};
 
 /** 지출 상세 Query Options */
 const expenseDetailQueryOptions = (
@@ -30,7 +56,7 @@ const expenseDetailQueryOptions = (
   expenseId: number | string,
 ) =>
   queryOptions({
-    queryKey: ['expenses', 'detail', accountBookId, expenseId],
+    queryKey: expenseKeys.detail(accountBookId, expenseId),
     queryFn: () => getExpenseDetail(accountBookId, expenseId),
   });
 
@@ -53,16 +79,18 @@ export const useUpdateExpenseMutation = () =>
       data: UpdateExpenseRequest;
     }) => updateExpense(accountBookId, expenseId, data),
     onSuccess: (_, variables) => {
+      invalidateRelatedQueries(variables.accountBookId);
       queryClient.invalidateQueries({
-        queryKey: ['expenses', 'list', variables.accountBookId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          'expenses',
-          'detail',
+        queryKey: expenseKeys.detail(
           variables.accountBookId,
           variables.expenseId,
-        ],
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: expenseKeys.detail(
+          variables.accountBookId,
+          variables.expenseId,
+        ),
       });
       toast.success('지출 내역이 수정되었어요.');
     },
@@ -82,9 +110,7 @@ export const useBulkUpdateExpensesMutation = () =>
       data: BulkUpdateExpenseRequest;
     }) => bulkUpdateExpenses(accountBookId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['expenses', 'list', variables.accountBookId],
-      });
+      invalidateRelatedQueries(variables.accountBookId);
       toast.success('지출 내역이 일괄 수정되었어요.');
     },
     onError: () => {
@@ -103,16 +129,12 @@ export const useDeleteExpenseMutation = () =>
       expenseId: number | string;
     }) => deleteExpense(accountBookId, expenseId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['expenses', 'list', variables.accountBookId],
-      });
+      invalidateRelatedQueries(variables.accountBookId);
       queryClient.removeQueries({
-        queryKey: [
-          'expenses',
-          'detail',
+        queryKey: expenseKeys.detail(
           variables.accountBookId,
           variables.expenseId,
-        ],
+        ),
       });
       toast.success('지출 내역이 삭제되었어요.');
     },
@@ -132,9 +154,7 @@ export const useCreateManualExpenseMutation = () =>
       data: CreateManualExpenseRequest;
     }) => createManualExpense(accountBookId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ['expenses', 'list', variables.accountBookId],
-      });
+      invalidateRelatedQueries(variables.accountBookId);
       toast.success('지출 내역이 생성되었어요.');
     },
     onError: () => {
@@ -148,7 +168,7 @@ const expensesQueryOptions = (
   filter?: ExpenseSearchFilter,
 ) =>
   queryOptions({
-    queryKey: ['expenses', 'list', accountBookId, filter],
+    queryKey: expenseKeys.list(accountBookId, filter),
     queryFn: () => getExpenses(accountBookId, filter),
   });
 
@@ -170,7 +190,7 @@ const expenseFileUrlQueryOptions = (
   expenseId: number | string,
 ) =>
   queryOptions({
-    queryKey: ['expenses', 'fileUrl', accountBookId, expenseId],
+    queryKey: expenseKeys.fileUrl(accountBookId, expenseId),
     queryFn: () => getExpenseFileUrl(accountBookId, expenseId),
   });
 
@@ -181,7 +201,7 @@ export const useSearchMerchantNamesQuery = (
   limit?: number,
 ) =>
   useQuery({
-    queryKey: ['expenses', 'merchants', accountBookId, query, limit],
+    queryKey: expenseKeys.merchants(accountBookId, query, limit),
     queryFn: () => searchMerchantNames(accountBookId, query, limit),
     enabled: query.length > 0,
   });

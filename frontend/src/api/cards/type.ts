@@ -14,3 +14,5 @@ export interface CreateCardRequest {
 export interface UpdateCardNicknameRequest {
   nickname: string;
 }
+
+export type CardCompanies = number[];

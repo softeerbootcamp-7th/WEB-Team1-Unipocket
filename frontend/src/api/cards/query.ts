@@ -4,12 +4,20 @@ import { toast } from 'sonner';
 import {
   createCard,
   deleteCard,
+  getCardCompanies,
   getCards,
   updateCardNickname,
 } from '@/api/cards/api';
 import { queryClient } from '@/main';
 
 import type { CreateCardRequest, UpdateCardNicknameRequest } from './type';
+
+export const useCardCompaniesSuspenseQuery = () =>
+  useSuspenseQuery<Awaited<ReturnType<typeof getCardCompanies>>>({
+    queryKey: ['cards', 'companies'],
+    queryFn: getCardCompanies,
+    staleTime: Infinity,
+  });
 
 export const useCardsSuspenseQuery = () =>
   useSuspenseQuery<Awaited<ReturnType<typeof getCards>>>({

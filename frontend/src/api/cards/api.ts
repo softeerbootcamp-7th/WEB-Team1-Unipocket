@@ -3,6 +3,7 @@ import { ENDPOINTS } from '@/api/config/endpoint';
 
 import type {
   Card,
+  CardCompanies,
   CreateCardRequest,
   UpdateCardNicknameRequest,
 } from './type';
@@ -44,6 +45,15 @@ export const updateCardNickname = (
     options: {
       method: 'PATCH',
       body: JSON.stringify(data),
+    },
+  });
+};
+
+export const getCardCompanies = (): Promise<CardCompanies> => {
+  return customFetch({
+    endpoint: ENDPOINTS.USERS.CARD_COMPANIES,
+    options: {
+      method: 'GET',
     },
   });
 };

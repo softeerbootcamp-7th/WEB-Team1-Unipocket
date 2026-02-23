@@ -8,6 +8,7 @@ import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
 import { columns } from '@/components/home-page/columns';
 import { getData } from '@/components/landing-page/dummy';
+import TabImage from '@/components/upload/image-upload/TabImage';
 
 import type { Expense } from '@/api/expenses/type';
 import { LandingImages } from '@/assets';
@@ -19,8 +20,22 @@ const ImageResultContent = () => {
       <div className="px-4.25">
         <TabProvider variant="underline" defaultValue="sample1">
           <TabList>
-            <TabTrigger value="sample1">Sample1.png</TabTrigger>
-            <TabTrigger value="sample2">Sample2.png</TabTrigger>
+            <TabTrigger value="sample1">
+              <TabImage
+                thumbnailUrl={LandingImages.DemoReceipt1}
+                fileName={'IMG_1234dfsd.jpg'}
+                successCount={3}
+                warningCount={4}
+              />
+            </TabTrigger>
+            <TabTrigger value="sample2">
+              <TabImage
+                thumbnailUrl={LandingImages.DemoReceipt1}
+                fileName={'IMG_1234dfsd.jpg'}
+                successCount={1}
+                warningCount={0}
+              />
+            </TabTrigger>
           </TabList>
           <div className="h-10" />
           <TabContent value="sample1">

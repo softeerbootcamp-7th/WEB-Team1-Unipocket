@@ -138,15 +138,18 @@ const useGetExchangeRateQuery = (
   occurredAt: string,
   baseCurrencyCode: CurrencyCode,
   localCurrencyCode: CurrencyCode,
-) =>
-  useQuery({
+) => {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isToday = occurredAt.startsWith(todayStr);
+  return useQuery({
     queryKey: ['exchangeRate', occurredAt, baseCurrencyCode, localCurrencyCode],
     queryFn: () =>
       getExchangeRate(occurredAt, baseCurrencyCode, localCurrencyCode),
     enabled: !!occurredAt && !!baseCurrencyCode && !!localCurrencyCode,
-    staleTime: 1000 * 60 * 10, // 10분
+    staleTime: isToday ? 1000 * 60 * 30 : Infinity,
     placeholderData: (previousData) => previousData,
   });
+};
 
 export {
   accountBookDetailQueryOptions,

@@ -289,5 +289,5 @@ UniPocket 팀은 프로젝트 기간 동안
 ## 🏗 프로젝트 아키텍처
 
 <p align="center">
-  <img src="architecture.png" width="750" />
+  <img src="architecture.png" width="700" />
 </p>

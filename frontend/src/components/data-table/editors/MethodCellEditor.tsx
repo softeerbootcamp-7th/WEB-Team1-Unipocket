@@ -3,8 +3,13 @@ import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnch
 import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
 import { MethodSelectorContent } from '@/components/data-table/selectors/MethodSelectorContent';
 import type { ActiveCellState } from '@/components/data-table/type';
+import {
+  getCardNumberFromExpense,
+  resolveUserCardId,
+} from '@/components/data-table/util';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 
+import type { Expense } from '@/api/expenses/type';
 import { useGetCardsQuery } from '@/api/users/query';
 
 const MethodCellEditor = () => {
@@ -26,19 +31,23 @@ const MethodCellEditorContent = ({
 }: {
   methodCell: ActiveCellState;
 }) => {
-  const { dispatch } = useDataTable();
+  const { dispatch, table } = useDataTable();
   const { updateInline } = useInlineExpenseUpdate();
   const { data: cards = [] } = useGetCardsQuery();
+
+  const original = table.getRow(methodCell.rowId)?.original as Expense;
+
+  const initialCardNumber = getCardNumberFromExpense(original, cards);
 
   const closeEditor = () =>
     dispatch({ type: 'SET_METHOD_CELL', payload: null });
 
   const handleSelect = (cardNumber: string) => {
-    if (cardNumber !== methodCell.value) {
-      // cardNumber를 기반으로 원본 객체에서 userCardId를 찾아 업데이트 요청
-      const card = cards.find((c) => c.cardNumber === cardNumber);
-      if (card && 'userCardId' in card) {
-        updateInline(methodCell.rowId, 'userCardId', card.userCardId as number);
+    if (cardNumber !== initialCardNumber) {
+      const userCardId = resolveUserCardId(cardNumber, cards);
+
+      if (userCardId !== undefined) {
+        updateInline(methodCell.rowId, 'userCardId', userCardId);
       }
     }
     closeEditor();
@@ -51,7 +60,7 @@ const MethodCellEditorContent = ({
       </PopoverTrigger>
 
       <MethodSelectorContent
-        initialCardNumber={methodCell.value as string}
+        initialCardNumber={initialCardNumber}
         onMethodSelect={handleSelect}
         onInteractOutside={closeEditor}
       />

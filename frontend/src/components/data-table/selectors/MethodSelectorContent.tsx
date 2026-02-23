@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { PopoverContentProps } from '@radix-ui/react-popover';
 
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -8,9 +7,10 @@ import { DataTableOptionList } from '@/components/data-table/DataTableOptionList
 import { PopoverContent } from '@/components/ui/popover';
 
 import { useGetCardsQuery } from '@/api/users/query';
+import { CASH } from '@/constants/method';
 
 interface MethodSelectorContentProps extends PopoverContentProps {
-  initialCardNumber?: string;
+  initialCardNumber: string | null;
   onMethodSelect: (cardNumber: string) => void;
   onInteractOutside?: () => void;
 }
@@ -25,30 +25,26 @@ export const MethodSelectorContent = ({
   ...props
 }: MethodSelectorContentProps) => {
   const { data: cards = [] } = useGetCardsQuery();
-  const options = cards.map((card) => card.cardNumber);
+  const options = [CASH, ...cards.map((card) => card.cardNumber)];
 
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(
-    initialCardNumber ?? null,
-  );
+  const currentMethod = initialCardNumber;
 
   const getNickName = (cardNumber: string) => {
+    if (cardNumber === CASH) return CASH;
     const card = cards.find((c) => c.cardNumber === cardNumber);
     return card?.nickName || cardNumber;
   };
 
   const initialIndex = Math.max(
     0,
-    initialCardNumber ? options.indexOf(initialCardNumber) : 0,
+    currentMethod !== null ? options.indexOf(currentMethod) : 0,
   );
 
   const { activeIndex, setActiveIndex, handleKeyDown } =
     useKeyboardNavigation<string>({
       items: options,
       initialActiveIndex: initialIndex,
-      onSelect: (selectedId) => {
-        setSelectedMethod(selectedId);
-        onMethodSelect(selectedId);
-      },
+      onSelect: onMethodSelect,
     });
 
   return (
@@ -64,11 +60,8 @@ export const MethodSelectorContent = ({
         items={options}
         activeIndex={activeIndex}
         setActiveIndex={setActiveIndex}
-        isSelected={(item) => selectedMethod === item}
-        onSelect={(selectedId) => {
-          setSelectedMethod(selectedId);
-          onMethodSelect(selectedId);
-        }}
+        isSelected={(item) => currentMethod === item}
+        onSelect={onMethodSelect}
         renderItem={(item) => <Chip label={getNickName(item)} />}
       />
     </PopoverContent>

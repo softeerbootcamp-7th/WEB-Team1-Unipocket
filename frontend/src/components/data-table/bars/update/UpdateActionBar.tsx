@@ -44,7 +44,7 @@ const UpdateActionBar = () => {
     K extends keyof Omit<BulkUpdateExpenseItem, 'expenseId'>,
   >(
     field: K,
-    value: NonNullable<BulkUpdateExpenseItem[K]>,
+    value: BulkUpdateExpenseItem[K],
   ) => {
     const items: BulkUpdateExpenseItem[] = selectedRows.map((row) => {
       const original = row.original as Expense;

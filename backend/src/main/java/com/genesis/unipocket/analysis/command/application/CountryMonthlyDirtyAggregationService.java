@@ -5,10 +5,7 @@ import com.genesis.unipocket.accountbook.command.persistence.repository.AccountB
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyCategoryAggregateEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
@@ -23,6 +20,9 @@ import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBat
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.analysis.common.util.QuantileUtil;

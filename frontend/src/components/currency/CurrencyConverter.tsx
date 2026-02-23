@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
 
@@ -8,6 +8,7 @@ import TextInput from '@/components/common/TextInput';
 import useCurrencyConverter from '@/components/currency/useCurrencyConverter';
 import { ModalContext } from '@/components/modal/useModalContext';
 
+import { useGetExchangeRateQuery } from '@/api/account-books/query';
 import { Icons } from '@/assets';
 import countryData from '@/data/country/countryData.json';
 import type { CurrencyCode } from '@/data/country/currencyCode';
@@ -33,11 +34,6 @@ const currencyOptions: CurrencyOption[] = Object.values(countryData).map(
     sign: country.currencySign,
   }),
 );
-
-const DEFAULT_LOCAL_CURRENCY_TYPE = 13; // USD. 실제값으로 변경 필요
-
-// 환율 고정 (API 연동 후 선택 가능하도록 변경 예정)
-const RATE = 1464; // USD -> KRW
 
 interface CurrencyConverterProps {
   showCurrencyDropdown?: boolean;
@@ -80,6 +76,38 @@ const CurrencyConverter = ({
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
+  const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
+  const [localCurrencyType, setLocalCurrencyType] = useState(() => {
+    const idx = Object.keys(countryData).indexOf(localCountryCode);
+    return idx >= 0 ? idx + 1 : 1;
+  });
+
+  const baseCountryInfo = getCountryInfo(baseCountryCode);
+  const baseCurrencyName = baseCountryInfo?.currencyName;
+  const baseCurrencySign = baseCountryInfo?.currencySign;
+
+  // dropdown 선택값 우선, 없으면 store의 localCountryCode 기반
+  const localCountryInfoFromStore = getCountryInfo(localCountryCode);
+  const localCurrencyOption = currencyOptions.find(
+    (o) => o.id === localCurrencyType,
+  );
+  const localCurrencyName = showCurrencyDropdown
+    ? localCurrencyOption?.name
+    : localCountryInfoFromStore?.currencyName;
+  const localCurrencySign = showCurrencyDropdown
+    ? localCurrencyOption?.sign
+    : localCountryInfoFromStore?.currencySign;
+
+  const todayIso = useMemo(() => new Date().toISOString(), []);
+  const occurredAt = rateUpdatedAt ? rateUpdatedAt.toISOString() : todayIso;
+  const { data: exchangeRateData, isPending: isRateLoading } =
+    useGetExchangeRateQuery(
+      occurredAt,
+      localCurrencyName as CurrencyCode,
+      baseCurrencyName as CurrencyCode,
+    );
+  const rate = exchangeRateData?.exchangeRate ?? 1;
+
   const {
     localCurrency,
     baseCurrency,
@@ -87,23 +115,7 @@ const CurrencyConverter = ({
     baseError,
     handleCurrencyChange,
     isValid,
-  } = useCurrencyConverter(RATE);
-  const [localCurrencyType, setLocalCurrencyType] = useState(
-    DEFAULT_LOCAL_CURRENCY_TYPE,
-  );
-
-  const localCurrencyName = currencyOptions.find(
-    (o) => o.id === localCurrencyType,
-  )?.name;
-  const localCurrencySign = currencyOptions.find(
-    (o) => o.id === localCurrencyType,
-  )?.sign;
-
-  const baseCountryInfo = getCountryInfo(
-    useRequiredAccountBook().baseCountryCode,
-  );
-  const baseCurrencyName = baseCountryInfo?.currencyName;
-  const baseCurrencySign = baseCountryInfo?.currencySign;
+  } = useCurrencyConverter(rate);
 
   useEffect(() => {
     if (modalContext) {
@@ -162,7 +174,9 @@ const CurrencyConverter = ({
           <Icons.Swap className="text-label-neutral h-4 w-4" />
           <div className="flex flex-col gap-1">
             <p className="label1-normal-medium text-label-normal">
-              {localCurrencyName} 1 = {baseCurrencyName} {RATE.toLocaleString()}
+              {isRateLoading
+                ? '환율 불러오는 중...'
+                : `${localCurrencyName} 1 = ${baseCurrencyName} ${rate.toLocaleString()}`}
             </p>
             <p className="label1-normal-medium text-label-alternative">
               자동 환율 적용 중 ({rateDate} 기준)

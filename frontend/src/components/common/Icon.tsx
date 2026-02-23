@@ -29,16 +29,17 @@ const Icon = ({
   const IconComponent = Icons[iconName];
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
       className={clsx(
         color,
         'hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
         `w-[${width}px] h-[${height}px]`,
       )}
-      onClick={onClick}
     >
       <IconComponent width={width} height={height} />
-    </div>
+    </button>
   );
 };
 

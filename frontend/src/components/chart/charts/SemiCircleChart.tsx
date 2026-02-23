@@ -76,7 +76,7 @@ const SemiCircleChart = ({
         <path
           d={dPath}
           fill="none"
-          stroke="var(--color-fill-strong)"
+          stroke="var(--color-fill-normal)"
           strokeWidth={strokeWidth}
           strokeLinecap="butt"
           strokeDasharray={trackDashArray}

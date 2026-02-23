@@ -69,6 +69,44 @@ public class AnalysisQueryRepository {
 				.getResultList();
 	}
 
+	public Stream<Object[]> getMySpendEventsWithCurrency(
+			Long accountBookId, OffsetDateTime start, OffsetDateTime end) {
+		return em.createQuery(
+						"SELECT e.occurredAt, e.exchangeInfo.localCurrencyAmount,"
+								+ " e.exchangeInfo.localCurrencyCode"
+								+ " FROM ExpenseEntity e"
+								+ " WHERE e.accountBookId = :abId"
+								+ " AND e.occurredAt >= :start"
+								+ " AND e.occurredAt < :end"
+								+ " AND e.category <> :income"
+								+ " ORDER BY e.occurredAt ASC",
+						Object[].class)
+				.setParameter("abId", accountBookId)
+				.setParameter("start", start)
+				.setParameter("end", end)
+				.setParameter("income", Category.INCOME)
+				.getResultStream();
+	}
+
+	public List<Object[]> getMyCategorySpentGroupedByCurrency(
+			Long accountBookId, OffsetDateTime start, OffsetDateTime end) {
+		return em.createQuery(
+						"SELECT e.category, e.exchangeInfo.localCurrencyCode,"
+								+ " SUM(e.exchangeInfo.localCurrencyAmount)"
+								+ " FROM ExpenseEntity e"
+								+ " WHERE e.accountBookId = :abId"
+								+ " AND e.occurredAt >= :start"
+								+ " AND e.occurredAt < :end"
+								+ " AND e.category <> :income"
+								+ " GROUP BY e.category, e.exchangeInfo.localCurrencyCode",
+						Object[].class)
+				.setParameter("abId", accountBookId)
+				.setParameter("start", start)
+				.setParameter("end", end)
+				.setParameter("income", Category.INCOME)
+				.getResultList();
+	}
+
 	private String amountJpql(CurrencyType type) {
 		return type == CurrencyType.BASE
 				? "COALESCE(e.exchangeInfo.baseCurrencyAmount,"

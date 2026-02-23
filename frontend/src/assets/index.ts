@@ -1,6 +1,6 @@
-import Google from '@/assets/authLogos/google.svg';
-import Guest from '@/assets/authLogos/guest.svg';
-import Kakao from '@/assets/authLogos/kakao.svg';
+import Google from '@/assets/auth-logos/google.svg';
+import Guest from '@/assets/auth-logos/guest.svg';
+import Kakao from '@/assets/auth-logos/kakao.svg';
 
 export const AuthLogos = {
   Google,
@@ -45,12 +45,14 @@ import Logo from '@/assets/Icons/logo.svg';
 import LogoText from '@/assets/Icons/logo-text.svg';
 import Phone from '@/assets/Icons/phone.svg';
 import Refresh from '@/assets/Icons/refresh.svg';
+import Search from '@/assets/Icons/search.svg';
 import Swap from '@/assets/Icons/swap.svg';
 import SwapVertical from '@/assets/Icons/swap-vertical.svg';
 import Trash from '@/assets/Icons/trash.svg';
 import Travel from '@/assets/Icons/travel.svg';
 import Update from '@/assets/Icons/update.svg';
 import UploadFile from '@/assets/Icons/upload-file.svg';
+import Warning from '@/assets/Icons/warning.svg';
 
 export const Icons = {
   Add,
@@ -80,10 +82,12 @@ export const Icons = {
   Camera,
   FileBox,
   Edit,
+  Search,
   Swap,
   LogoText,
   UploadFile,
   Information,
+  Warning,
 } as const;
 
 export type IconName = keyof typeof Icons;

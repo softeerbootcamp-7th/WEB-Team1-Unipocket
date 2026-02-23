@@ -275,6 +275,58 @@ class ExpenseCommandServiceTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 생성 - merchantName 40자 초과면 EXPENSE_INVALID_MERCHANT_NAME 예외")
+	void createExpense_tooLongMerchant_throwsInvalidInput() {
+		String tooLongMerchantName = "a".repeat(41);
+		ExpenseCreateCommand command =
+				new ExpenseCreateCommand(
+						7L,
+						tooLongMerchantName,
+						Category.FOOD,
+						null,
+						OffsetDateTime.now(),
+						new BigDecimal("1000.00"),
+						null,
+						CurrencyCode.KRW,
+						CurrencyCode.KRW,
+						"memo",
+						null);
+
+		assertThatThrownBy(() -> expenseService.createExpenseManual(command))
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
+	}
+
+	@Test
+	@DisplayName("지출내역 수정 - merchantName 40자 초과면 EXPENSE_INVALID_MERCHANT_NAME 예외")
+	void updateExpense_tooLongMerchant_throwsInvalidInput() {
+		Long expenseId = 1L;
+		Long accountBookId = 7L;
+		ExpenseEntity expenseEntity = mock(ExpenseEntity.class);
+		when(expenseEntity.getAccountBookId()).thenReturn(accountBookId);
+		when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expenseEntity));
+
+		ExpenseUpdateCommand command =
+				new ExpenseUpdateCommand(
+						expenseId,
+						accountBookId,
+						"a".repeat(41),
+						Category.FOOD,
+						null,
+						"메모",
+						OffsetDateTime.now(),
+						new BigDecimal("1000.00"),
+						null,
+						CurrencyCode.KRW,
+						null,
+						CurrencyCode.KRW);
+
+		assertThatThrownBy(() -> expenseService.updateExpense(command))
+				.isInstanceOf(BusinessException.class)
+				.hasFieldOrPropertyWithValue("code", ErrorCode.EXPENSE_INVALID_MERCHANT_NAME);
+	}
+
+	@Test
 	@DisplayName("지출내역 수정 - 동일 통화에서 local/base 불일치면 EXPENSE_SAME_CURRENCY_AMOUNT_MISMATCH 예외")
 	void updateExpense_sameCurrencyAmountMismatch_throwsInvalidInput() {
 		Long expenseId = 1L;

@@ -21,16 +21,22 @@ import com.genesis.unipocket.analysis.command.persistence.repository.support.Ana
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountCategoryAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountPairCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryLocalCurrencyGroupRow;
+import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.LocalCurrencyGroupRow;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
+import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.analysis.common.util.QuantileUtil;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
+import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -67,6 +73,7 @@ public class CountryMonthlyDirtyAggregationService {
 	private final PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	private final AnalysisBatchProperties properties;
 	private final PlatformTransactionManager transactionManager;
+	private final ExchangeRateService exchangeRateService;
 
 	public void processCountryDirtyRows(CountryCode countryCode) {
 		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
@@ -158,22 +165,133 @@ public class CountryMonthlyDirtyAggregationService {
 		List<CategoryAmountPairCount> rawCategoryRows =
 				aggregationRepository.aggregateAccountBookMonthlyRawByCategory(
 						dirty.getAccountBookId(), startUtc, endUtc);
+
+		CurrencyCode accountBookLocalCurrency = accountBook.getLocalCountryCode().getCurrencyCode();
+		OffsetDateTime refDateTime = monthStart.atStartOfDay().atOffset(ZoneOffset.UTC);
+
+		List<LocalCurrencyGroupRow> localCurrencyGroups =
+				aggregationRepository.aggregateLocalAmountGroupedByCurrency(
+						dirty.getAccountBookId(), startUtc, endUtc);
+		BigDecimal correctedLocalTotal =
+				computeCorrectedLocalAmount(
+						localCurrencyGroups, accountBookLocalCurrency, refDateTime);
+
+		List<CategoryLocalCurrencyGroupRow> categoryLocalCurrencyGroups =
+				aggregationRepository.aggregateLocalAmountGroupedByCurrencyAndCategory(
+						dirty.getAccountBookId(), startUtc, endUtc);
+		List<CategoryAmountPairCount> correctedCategoryRows =
+				computeCorrectedCategoryRows(
+						rawCategoryRows,
+						categoryLocalCurrencyGroups,
+						accountBookLocalCurrency,
+						refDateTime);
+
+		AmountPairCount correctedAmountCount =
+				new AmountPairCount(
+						correctedLocalTotal,
+						rawAmountCount.totalBaseAmount(),
+						rawAmountCount.expenseCount());
+
 		upsertMonthlyMetrics(
 				dirty.getAccountBookId(),
 				dirty.getCountryCode(),
 				monthStart,
-				rawAmountCount,
+				correctedAmountCount,
 				AnalysisQualityType.CLEANED);
 		upsertMonthlyCategoryMetrics(
 				dirty.getAccountBookId(),
 				dirty.getCountryCode(),
 				monthStart,
-				rawCategoryRows,
+				correctedCategoryRows,
 				AnalysisQualityType.CLEANED);
 
 		finalizeDirtyRun(dirtyId, claimTime);
 		return new PairMonthKey(
 				accountBook.getLocalCountryCode(), accountBook.getBaseCountryCode(), monthStart);
+	}
+
+	private BigDecimal computeCorrectedLocalAmount(
+			List<LocalCurrencyGroupRow> groups,
+			CurrencyCode targetCurrency,
+			OffsetDateTime refDateTime) {
+		BigDecimal total = BigDecimal.ZERO;
+		for (LocalCurrencyGroupRow group : groups) {
+			if (group.localCurrencyCode() == null) {
+				continue;
+			}
+			CurrencyCode from = parseCurrencyCode(group.localCurrencyCode());
+			if (from == null) {
+				continue;
+			}
+			BigDecimal amount = group.localAmountSum();
+			if (from == targetCurrency) {
+				total = total.add(amount);
+			} else {
+				total =
+						total.add(
+								exchangeRateService.convertAmount(
+										amount, from, targetCurrency, refDateTime));
+			}
+		}
+		return total;
+	}
+
+	private List<CategoryAmountPairCount> computeCorrectedCategoryRows(
+			List<CategoryAmountPairCount> rawCategoryRows,
+			List<CategoryLocalCurrencyGroupRow> currencyByCategoryRows,
+			CurrencyCode targetCurrency,
+			OffsetDateTime refDateTime) {
+		Map<Integer, BigDecimal> correctedLocalByCategory = new HashMap<>();
+		for (CategoryLocalCurrencyGroupRow row : currencyByCategoryRows) {
+			if (row.localCurrencyCode() == null) {
+				continue;
+			}
+			Integer ordinal = CategoryOrdinalParser.parse(row.categoryValue());
+			if (ordinal == null) {
+				continue;
+			}
+			CurrencyCode from = parseCurrencyCode(row.localCurrencyCode());
+			if (from == null) {
+				continue;
+			}
+			BigDecimal amount = row.localAmountSum();
+			BigDecimal converted =
+					from == targetCurrency
+							? amount
+							: exchangeRateService.convertAmount(
+									amount, from, targetCurrency, refDateTime);
+			correctedLocalByCategory.merge(ordinal, converted, BigDecimal::add);
+		}
+		return rawCategoryRows.stream()
+				.map(
+						raw ->
+								new CategoryAmountPairCount(
+										raw.categoryOrdinal(),
+										correctedLocalByCategory.getOrDefault(
+												raw.categoryOrdinal(), BigDecimal.ZERO),
+										raw.totalBaseAmount(),
+										raw.expenseCount()))
+				.toList();
+	}
+
+	private CurrencyCode parseCurrencyCode(String code) {
+		if (code == null) {
+			return null;
+		}
+		try {
+			int ordinal = Integer.parseInt(code);
+			CurrencyCode[] values = CurrencyCode.values();
+			if (ordinal >= 0 && ordinal < values.length) {
+				return values[ordinal];
+			}
+			return null;
+		} catch (NumberFormatException e) {
+			try {
+				return CurrencyCode.valueOf(code);
+			} catch (IllegalArgumentException ex) {
+				return null;
+			}
+		}
 	}
 
 	private void finalizeDirtyRun(Long dirtyId, LocalDateTime claimTime) {

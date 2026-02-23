@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import { CategoryChip } from '@/components/common/Chip';
+import CurrencyBadge from '@/components/currency/CurrencyBadge';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { type CategoryId } from '@/types/category';
 
 import type { Expense } from '@/api/expenses/type';
+import type { CurrencyCode } from '@/data/country/currencyCode';
+import { formatCurrency } from '@/lib/country';
 
 export const columns: ColumnDef<Expense>[] = [
   {
@@ -58,7 +61,13 @@ export const columns: ColumnDef<Expense>[] = [
   {
     accessorKey: 'localCurrencyCode',
     header: () => <>현지 통화</>,
-    cell: ({ row }) => <> {row.getValue('localCurrencyCode')}</>,
+    cell: ({ row }) => (
+      <>
+        <CurrencyBadge
+          currencyCode={row.getValue('localCurrencyCode') as CurrencyCode}
+        />
+      </>
+    ),
   },
   {
     accessorKey: 'localCurrencyAmount',
@@ -67,33 +76,31 @@ export const columns: ColumnDef<Expense>[] = [
     },
     header: () => <>현지 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('localCurrencyAmount'));
-      const formatted = new Intl.NumberFormat('ko-KR', {
-        style: 'currency',
-        currency: 'KRW',
-      }).format(amount);
-      return <>{formatted}</>;
+      const amount = row.original.localCurrencyAmount;
+      const code = row.original.localCurrencyCode;
+      return <>{formatCurrency(amount, code)}</>;
     },
   },
   {
     accessorKey: 'baseCurrencyAmount',
-    meta: {
-      cellEditor: 'amount',
-    },
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('baseCurrencyAmount'));
-      const formatted = new Intl.NumberFormat('ko-KR', {
-        style: 'currency',
-        currency: 'KRW',
-      }).format(amount);
-      return <>{formatted}</>;
+      const amount = row.original.baseCurrencyAmount;
+      const code = row.original.baseCurrencyCode;
+      return <>{formatCurrency(amount, code)}</>;
     },
   },
   {
     accessorKey: 'exchangeRate',
     header: () => <>환율</>,
-    cell: ({ row }) => <> {row.getValue('exchangeRate')}</>,
+    cell: ({ row }) => {
+      const rate = parseFloat(row.getValue('exchangeRate'));
+
+      const formatted = new Intl.NumberFormat('ko-KR', {
+        maximumFractionDigits: 0,
+      }).format(rate);
+      return <> {formatted}</>;
+    },
   },
   {
     id: 'paymentMethod',

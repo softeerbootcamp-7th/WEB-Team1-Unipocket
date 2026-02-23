@@ -2,8 +2,8 @@ package com.genesis.unipocket.tempexpense.query.facade;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
-import com.genesis.unipocket.tempexpense.query.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.service.TemporaryExpenseQueryService;

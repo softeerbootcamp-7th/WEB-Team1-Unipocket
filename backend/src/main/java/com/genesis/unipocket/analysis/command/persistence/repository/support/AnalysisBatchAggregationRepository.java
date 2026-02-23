@@ -70,6 +70,27 @@ public class AnalysisBatchAggregationRepository {
 		return rows.stream().map(this::toCategoryAmountPairCount).toList();
 	}
 
+	public AmountPairCount aggregateTravelRaw(Long accountBookId, Long travelId) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+								SELECT
+									COALESCE(SUM(e.local_currency_amount), 0),
+									COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
+									COUNT(*)
+								FROM expenses e
+								WHERE e.account_book_id = :accountBookId
+									AND e.travel_id = :travelId
+									AND (e.category IS NULL OR e.category <> :incomeCategory)
+								""")
+								.setParameter("accountBookId", accountBookId)
+								.setParameter("travelId", travelId)
+								.setParameter("incomeCategory", Category.INCOME.ordinal())
+								.getSingleResult();
+		return toAmountPairCount(row);
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<ExpenseRow> findExpenseRowsByAccountBook(
 			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
@@ -313,4 +334,106 @@ public class AnalysisBatchAggregationRepository {
 			LocalDateTime occurredAtUtc,
 			String localCountryCode,
 			String baseCountryCode) {}
+
+	public record LocalCurrencyGroupRow(
+			String localCurrencyCode, BigDecimal localAmountSum, long expenseCount) {}
+
+	public record CategoryLocalCurrencyGroupRow(
+			Object categoryValue,
+			String localCurrencyCode,
+			BigDecimal localAmountSum,
+			long expenseCount) {}
+
+	@SuppressWarnings("unchecked")
+	public List<LocalCurrencyGroupRow> aggregateLocalAmountGroupedByCurrency(
+			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+						SELECT
+							e.local_currency_code,
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.occurred_at >= :startUtc
+							AND e.occurred_at < :endUtc
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						GROUP BY e.local_currency_code
+						""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("startUtc", startUtc)
+						.setParameter("endUtc", endUtc)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
+						.getResultList();
+		return rows.stream().map(this::toLocalCurrencyGroupRow).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CategoryLocalCurrencyGroupRow> aggregateLocalAmountGroupedByCurrencyAndCategory(
+			Long accountBookId, LocalDateTime startUtc, LocalDateTime endUtc) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+						SELECT
+							e.category,
+							e.local_currency_code,
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COUNT(e.expense_id)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.occurred_at >= :startUtc
+							AND e.occurred_at < :endUtc
+							AND e.category IS NOT NULL
+							AND e.category <> :incomeCategory
+						GROUP BY e.category, e.local_currency_code
+						""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("startUtc", startUtc)
+						.setParameter("endUtc", endUtc)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
+						.getResultList();
+		return rows.stream().map(this::toCategoryLocalCurrencyGroupRow).toList();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LocalCurrencyGroupRow> aggregateTravelLocalAmountGroupedByCurrency(
+			Long accountBookId, Long travelId) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+						SELECT
+							e.local_currency_code,
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.travel_id = :travelId
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						GROUP BY e.local_currency_code
+						""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("travelId", travelId)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
+						.getResultList();
+		return rows.stream().map(this::toLocalCurrencyGroupRow).toList();
+	}
+
+	private LocalCurrencyGroupRow toLocalCurrencyGroupRow(Object[] row) {
+		String localCurrencyCode = row[0] == null ? null : row[0].toString();
+		BigDecimal localAmountSum =
+				row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString());
+		long expenseCount = row[2] == null ? 0L : ((Number) row[2]).longValue();
+		return new LocalCurrencyGroupRow(localCurrencyCode, localAmountSum, expenseCount);
+	}
+
+	private CategoryLocalCurrencyGroupRow toCategoryLocalCurrencyGroupRow(Object[] row) {
+		Object categoryValue = row[0];
+		String localCurrencyCode = row[1] == null ? null : row[1].toString();
+		BigDecimal localAmountSum =
+				row[2] == null ? BigDecimal.ZERO : new BigDecimal(row[2].toString());
+		long expenseCount = row[3] == null ? 0L : ((Number) row[3]).longValue();
+		return new CategoryLocalCurrencyGroupRow(
+				categoryValue, localCurrencyCode, localAmountSum, expenseCount);
+	}
 }

@@ -2,59 +2,60 @@ import { useState } from 'react';
 
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 
+import { useDataTableFilter } from '@/components/data-table/context';
 import HighlightText from '@/components/data-table/filters/HighlightText';
 import RecentSearchList from '@/components/data-table/filters/RecentSearchList';
 
-import { DataTableSearchFilter } from '../DataTableFilter';
+import { useSearchMerchantNamesQuery } from '@/api/expenses/query';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
-// 임시 데이터
-const MOCK_MERCHANTS = [
-  'Trip.com',
-  'Traee',
-  'Traveler',
-  'Travee',
-  'dtryx',
-  'Expedia',
-  'Airbnb',
-  'Coles',
-  'Woolworths',
-];
+import { DataTableSearchFilter } from '../DataTableFilter';
 
 const STORAGE_KEY = 'recent_merchant_searches';
 
 const MerchantFilter = () => {
-  const [selectedMerchants, setSelectedMerchants] = useState<string[]>([]);
-  // 1. 훅 사용으로 로직 대체
+  const { accountBookId } = useRequiredAccountBook();
+  const { filter, updateFilter } = useDataTableFilter();
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const { data } = useSearchMerchantNamesQuery(accountBookId, searchTerm);
+
+  const merchantOptions = data?.merchantNames || [];
+
+  const selectedMerchants = filter.merchantName || [];
+
   const { recentSearches, addRecentSearch, removeRecentSearch } =
     useRecentSearches(STORAGE_KEY);
 
-  // 선택 토글 헬퍼 함수
+  const handleMerchantChange = (selected: string[]) => {
+    updateFilter({
+      merchantName: selected.length > 0 ? selected : undefined,
+    });
+  };
+
   const handleToggle = (keyword: string) => {
     if (selectedMerchants.includes(keyword)) {
-      setSelectedMerchants((prev) => prev.filter((item) => item !== keyword));
+      handleMerchantChange(
+        selectedMerchants.filter((item) => item !== keyword),
+      );
     } else {
-      setSelectedMerchants((prev) => [...prev, keyword]);
+      handleMerchantChange([...selectedMerchants, keyword]);
     }
   };
 
   return (
     <DataTableSearchFilter<string>
       title="거래처"
-      options={MOCK_MERCHANTS}
+      options={merchantOptions}
       selectedOptions={selectedMerchants}
-      setSelectedOptions={setSelectedMerchants}
-      // 1. 검색어 변경 감지 및 저장 (선택적이므로 여기서 저장 로직 수행)
-      onInputChange={() => {
-        // 타이핑 할 때마다
-        // api 호출 작업 예정
-      }}
+      setSelectedOptions={handleMerchantChange}
+      onInputChange={(term) => setSearchTerm(term)}
       onSelect={(term) => addRecentSearch(term)}
       onSelectMultiple={(terms) => addRecentSearch(terms)}
-      // 2. 리스트 아이템 렌더링 (하이라이팅 적용)
       renderOption={(merchant, searchTerm) => (
         <HighlightText text={merchant} highlight={searchTerm} />
       )}
-      // 3. 검색어가 없을 때: 최근 검색어 목록 표시
       renderEmptyState={() => (
         <RecentSearchList
           title="최근 검색어"

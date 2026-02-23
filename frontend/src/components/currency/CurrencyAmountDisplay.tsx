@@ -1,5 +1,5 @@
 import type { CountryCode } from '@/data/country/countryCode';
-import { formatCurrencyAmount, getCountryInfo } from '@/lib/country';
+import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 import { cn } from '@/lib/utils';
 
 const SIZE_VARIANTS = {
@@ -98,7 +98,7 @@ const CurrencyAmountDisplay = ({
   );
   const fractionDigits = isZeroDecimal ? 0 : 2;
 
-  const formattedString = formatCurrencyAmount(
+  const formattedString = formatAmountByCountry(
     amount,
     countryCode,
     fractionDigits,

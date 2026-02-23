@@ -1,14 +1,13 @@
 package com.genesis.unipocket.expense.query.presentation.request;
 
 import com.genesis.unipocket.global.common.enums.Category;
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public record ExpenseSearchFilter(
 		OffsetDateTime startDate,
 		OffsetDateTime endDate,
-		Category category,
-		BigDecimal minAmount,
-		BigDecimal maxAmount,
-		String merchantName,
+		List<String> cardFourDigits, // OR
+		List<Category> category, // OR
+		List<String> merchantName, // OR
 		Long travelId) {}

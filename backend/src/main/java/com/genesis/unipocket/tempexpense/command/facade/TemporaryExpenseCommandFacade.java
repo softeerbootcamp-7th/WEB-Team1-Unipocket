@@ -1,16 +1,16 @@
 package com.genesis.unipocket.tempexpense.command.facade;
 
 import com.genesis.unipocket.tempexpense.command.application.FileUploadService;
-import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseBulkUpdateService;
+import com.genesis.unipocket.tempexpense.command.application.TempExpenseFileService;
 import com.genesis.unipocket.tempexpense.command.application.TemporaryExpenseConversionService;
 import com.genesis.unipocket.tempexpense.command.application.parsing.TemporaryExpenseParsingService;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
-import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookOwnershipValidator;
 import com.genesis.unipocket.tempexpense.command.presentation.request.PresignedUrlRequest.UploadType;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateRequest;
 import com.genesis.unipocket.tempexpense.command.presentation.response.TemporaryExpenseMetaBulkUpdateResponse;
+import com.genesis.unipocket.tempexpense.common.facade.port.AccountBookOwnershipValidator;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -23,7 +23,7 @@ public class TemporaryExpenseCommandFacade {
 	private final FileUploadService fileUploadService;
 	private final TemporaryExpenseParsingService temporaryExpenseParsingService;
 	private final TemporaryExpenseConversionService temporaryExpenseConversionService;
-	private final TemporaryExpenseBulkUpdateService temporaryExpenseBulkUpdateService;
+	private final TempExpenseFileService tempExpenseFileService;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
 	public FileUploadResult createPresignedUrl(
@@ -68,7 +68,7 @@ public class TemporaryExpenseCommandFacade {
 		validateOwnership(accountBookId, userId);
 
 		return TemporaryExpenseMetaBulkUpdateResponse.from(
-				temporaryExpenseBulkUpdateService.updateByFile(
+				tempExpenseFileService.updateByFile(
 						accountBookId, tempExpenseMetaId, fileId, request));
 	}
 
@@ -79,7 +79,7 @@ public class TemporaryExpenseCommandFacade {
 			Long tempExpenseId,
 			UUID userId) {
 		validateOwnership(accountBookId, userId);
-		temporaryExpenseBulkUpdateService.deleteByFile(
+		tempExpenseFileService.deleteByFile(
 				accountBookId, tempExpenseMetaId, fileId, tempExpenseId);
 	}
 

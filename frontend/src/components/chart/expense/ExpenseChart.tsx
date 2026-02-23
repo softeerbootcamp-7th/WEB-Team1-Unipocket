@@ -45,13 +45,15 @@ const ExpenseChart = ({
       : transformCurrencyChartData(currencyData);
   }, [isMethod, paymentData, currencyData]);
 
-  const showSkeleton = isPreview || isLoading || chartData.length === 0;
+  const showSkeleton = isPreview || isLoading;
+  const isEmpty = !showSkeleton && chartData.length === 0;
 
   return (
     <ChartContainer className="w-67" isPreview={isPreview}>
       <ChartHeader title={EXPENSE_TITLE_BY_MODE[mode]} />
       <ChartContent
         isPreview={showSkeleton}
+        isEmpty={isEmpty}
         skeleton={<ExpenseChartSkeleton />}
       >
         <ExpenseChartView data={chartData} />

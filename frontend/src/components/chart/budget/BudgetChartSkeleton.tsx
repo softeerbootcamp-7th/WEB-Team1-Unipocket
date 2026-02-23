@@ -13,7 +13,7 @@ const BudgetChartSkeleton = () => {
 
       <SemiCircleChart
         value={80}
-        color="var(--color-cool-neutral-90)"
+        color="var(--color-fill-strong)"
         animate={false}
       >
         <div className="text-label-neutral flex flex-col items-center justify-end gap-3 pb-1">

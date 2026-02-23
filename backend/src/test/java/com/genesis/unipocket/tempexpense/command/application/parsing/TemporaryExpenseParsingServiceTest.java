@@ -25,11 +25,11 @@ import com.genesis.unipocket.tempexpense.command.facade.provide.TemporaryExpense
 import com.genesis.unipocket.tempexpense.command.persistence.entity.File;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TempExpenseMeta;
 import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExpense;
+import com.genesis.unipocket.tempexpense.command.persistence.entity.tempexpense.TempExpenseStatusPolicy;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
-import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -60,12 +60,13 @@ class TemporaryExpenseParsingServiceTest {
 	void setUp() {
 		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
 				new TemporaryExpensePersistenceService(
-						temporaryExpenseRepository, new TemporaryExpenseValidator());
+						temporaryExpenseRepository,
+						new TempExpenseStatusPolicy(),
+						exchangeRateProvider);
 		service =
 				new TemporaryExpenseParsingService(
 						fileRepository,
 						accountBookRateInfoProvider,
-						exchangeRateProvider,
 						fieldParser,
 						temporaryExpenseParseClient,
 						temporaryExpensePersistenceService,
@@ -75,8 +76,8 @@ class TemporaryExpenseParsingServiceTest {
 	}
 
 	@Test
-	@DisplayName("파싱 시 카테고리 숫자/별칭을 변환하고 환율 조회는 키별 1회만 수행")
-	void parseBatchSingleFile_mapsCategoryAndDeduplicatesExchangeRateLookup() {
+	@DisplayName("파싱 시 카테고리 숫자/별칭을 변환하고 환율은 항목별로 조회한다")
+	void parseBatchSingleFile_mapsCategoryAndLooksUpExchangeRatePerItem() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-1.jpg";
 		File file =
@@ -135,7 +136,7 @@ class TemporaryExpenseParsingServiceTest {
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
 		service.parseBatchFiles(meta, List.of(file), "task-single-1");
-		verify(exchangeRateProvider, times(1))
+		verify(exchangeRateProvider, times(2))
 				.getExchangeRate(
 						CurrencyCode.JPY,
 						CurrencyCode.KRW,
@@ -316,15 +317,18 @@ class TemporaryExpenseParsingServiceTest {
 	@Test
 	@DisplayName("startParseAsync는 s3Keys가 null이어도 NPE 없이 메타 전체 파일을 대상으로 시작한다")
 	void startParseAsync_acceptsNullS3Keys() {
+		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
+				new TemporaryExpensePersistenceService(
+						temporaryExpenseRepository,
+						new TempExpenseStatusPolicy(),
+						exchangeRateProvider);
 		TemporaryExpenseParsingService asyncStartOnlyService =
 				new TemporaryExpenseParsingService(
 						fileRepository,
 						accountBookRateInfoProvider,
-						exchangeRateProvider,
 						fieldParser,
 						temporaryExpenseParseClient,
-						new TemporaryExpensePersistenceService(
-								temporaryExpenseRepository, new TemporaryExpenseValidator()),
+						temporaryExpensePersistenceService,
 						progressPublisher,
 						temporaryExpenseScopeValidator,
 						runnable -> {});

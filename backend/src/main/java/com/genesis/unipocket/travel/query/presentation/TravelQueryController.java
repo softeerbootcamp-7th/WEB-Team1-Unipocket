@@ -3,7 +3,9 @@ package com.genesis.unipocket.travel.query.presentation;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.travel.query.persistence.response.TravelDetailQueryResponse;
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
+import com.genesis.unipocket.travel.query.presentation.response.TravelAmountResponse;
 import com.genesis.unipocket.travel.query.presentation.response.TravelImageViewUrlResponse;
+import com.genesis.unipocket.travel.query.service.TravelAmountQueryService;
 import com.genesis.unipocket.travel.query.service.TravelQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TravelQueryController {
 
 	private final TravelQueryService travelQueryService;
+	private final TravelAmountQueryService travelAmountQueryService;
 
 	@Operation(summary = "여행 탐색 API", description = "account-bookId 하위의 여행 폴더-메타데이터들을 조회합니다.")
 	@GetMapping
@@ -38,6 +41,15 @@ public class TravelQueryController {
 			@PathVariable Long accountBookId, @PathVariable Long travelId, @LoginUser UUID userId) {
 		return ResponseEntity.ok(
 				travelQueryService.getTravelDetail(accountBookId, travelId, userId));
+	}
+
+	@Operation(summary = "여행 지출 총액 조회", description = "여행의 전체 지출 총액을 로컬/기준 통화로 조회합니다.")
+	@GetMapping("/{travelId}/amount")
+	public ResponseEntity<TravelAmountResponse> getTravelAmount(
+			@PathVariable Long accountBookId, @PathVariable Long travelId, @LoginUser UUID userId) {
+		return ResponseEntity.ok(
+				travelAmountQueryService.getTravelAmount(
+						accountBookId, travelId, userId.toString()));
 	}
 
 	@Operation(

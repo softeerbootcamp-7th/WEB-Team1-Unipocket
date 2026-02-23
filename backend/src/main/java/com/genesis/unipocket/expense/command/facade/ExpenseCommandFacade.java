@@ -1,17 +1,19 @@
 package com.genesis.unipocket.expense.command.facade;
 
-import com.genesis.unipocket.expense.command.application.ExpenseCommandContextService;
+import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
 import com.genesis.unipocket.expense.command.application.command.ExpenseUpdateCommand;
 import com.genesis.unipocket.expense.command.application.result.ExpenseResult;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookInfoFetchService;
-import com.genesis.unipocket.expense.command.facade.port.AccountBookOwnershipValidator;
+import com.genesis.unipocket.expense.command.facade.port.AccountBookFetchService;
 import com.genesis.unipocket.expense.command.facade.port.dto.AccountBookInfo;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateItemRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseBulkUpdateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseManualCreateRequest;
 import com.genesis.unipocket.expense.command.presentation.request.ExpenseUpdateRequest;
+import com.genesis.unipocket.expense.common.facade.port.UserCardFetchService;
+import com.genesis.unipocket.expense.common.facade.port.dto.UserCardInfo;
+import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -26,21 +28,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExpenseCommandFacade {
 
 	private final ExpenseCommandService expenseService;
-	private final ExpenseCommandContextService expenseCommandContextService;
-	private final AccountBookInfoFetchService accountBookInfoFetchService;
-	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
+	private final UserCardFetchService userCardFetchService;
+	private final AccountBookFetchService accountBookFetchService;
+	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
+	private final ExpenseOwnershipValidator expenseOwnershipValidator;
 
 	@Transactional
 	public ExpenseResult createExpenseManual(
 			ExpenseManualCreateRequest request, Long accountBookId, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
+
+		expenseOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
 
 		AccountBookInfo accountBookInfo =
-				accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString());
+				accountBookFetchService.getAccountBook(accountBookId, userId.toString());
+
 		CurrencyCode localCurrencyCode =
-				expenseCommandContextService.resolveLocalCurrencyCode(
-						request.localCurrencyCode(),
-						accountBookInfo.localCountryCode().getCurrencyCode());
+				request.localCurrencyCode() != null
+						? request.localCurrencyCode()
+						: accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		OffsetDateTime occurredAt = request.occurredAt().atOffset(ZoneOffset.UTC);
 
@@ -59,20 +64,22 @@ public class ExpenseCommandFacade {
 						request.travelId());
 
 		ExpenseResult result = expenseService.createExpenseManual(command);
-		return expenseCommandContextService.enrichWithCardInfo(result);
+
+		analysisMonthlyDirtyMarkerService.markDirty(result.accountBookId(), result.occurredAt());
+		return enrichWithCardInfoIfPresent(result);
 	}
 
 	@Transactional
 	public ExpenseResult updateExpense(
 			Long expenseId, Long accountBookId, UUID userId, ExpenseUpdateRequest request) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
+		expenseOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
 
 		AccountBookInfo accountBookInfo =
-				accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString());
+				accountBookFetchService.getAccountBook(accountBookId, userId.toString());
 		CurrencyCode localCurrencyCode =
-				expenseCommandContextService.resolveLocalCurrencyCode(
-						request.localCurrencyCode(),
-						accountBookInfo.localCountryCode().getCurrencyCode());
+				request.localCurrencyCode() != null
+						? request.localCurrencyCode()
+						: accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		OffsetDateTime occurredAt = request.occurredAt().atOffset(ZoneOffset.UTC);
 
@@ -91,17 +98,16 @@ public class ExpenseCommandFacade {
 						request.travelId(),
 						baseCurrencyCode);
 
-		ExpenseResult result = expenseService.updateExpense(command);
-		return expenseCommandContextService.enrichWithCardInfo(result);
+		return checkAndEnsureCard(command);
 	}
 
 	@Transactional
 	public List<ExpenseResult> updateExpensesBulk(
 			Long accountBookId, UUID userId, ExpenseBulkUpdateRequest request) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
+		expenseOwnershipValidator.validateOwnership(accountBookId, String.valueOf(userId));
 
 		AccountBookInfo accountBookInfo =
-				accountBookInfoFetchService.getAccountBook(accountBookId, userId.toString());
+				accountBookFetchService.getAccountBook(accountBookId, userId.toString());
 		CurrencyCode accountBookLocalCurrencyCode =
 				accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
@@ -123,8 +129,9 @@ public class ExpenseCommandFacade {
 			CurrencyCode accountBookLocalCurrencyCode,
 			CurrencyCode baseCurrencyCode) {
 		CurrencyCode localCurrencyCode =
-				expenseCommandContextService.resolveLocalCurrencyCode(
-						item.localCurrencyCode(), accountBookLocalCurrencyCode);
+				item.localCurrencyCode() != null
+						? item.localCurrencyCode()
+						: accountBookLocalCurrencyCode;
 		OffsetDateTime occurredAt = item.occurredAt().atOffset(ZoneOffset.UTC);
 
 		ExpenseUpdateCommand command =
@@ -142,13 +149,29 @@ public class ExpenseCommandFacade {
 						item.travelId(),
 						baseCurrencyCode);
 
+		return checkAndEnsureCard(command);
+	}
+
+	private ExpenseResult checkAndEnsureCard(ExpenseUpdateCommand command) {
 		ExpenseResult result = expenseService.updateExpense(command);
-		return expenseCommandContextService.enrichWithCardInfo(result);
+		return enrichWithCardInfoIfPresent(result);
+	}
+
+	private ExpenseResult enrichWithCardInfoIfPresent(ExpenseResult result) {
+		if (result.userCardId() == null) {
+			return result;
+		}
+
+		UserCardInfo cardInfo = userCardFetchService.getUserCard(result.userCardId()).orElse(null);
+		if (cardInfo == null) {
+			return result;
+		}
+		return result.withCardInfo(cardInfo);
 	}
 
 	@Transactional
 	public void deleteExpense(Long expenseId, Long accountBookId, UUID userId) {
-		accountBookOwnershipValidator.validateOwnership(accountBookId, userId.toString());
+		expenseOwnershipValidator.validateOwnership(accountBookId, userId.toString());
 		expenseService.deleteExpense(expenseId, accountBookId);
 	}
 }

@@ -23,7 +23,7 @@ export const buildLinePath = (
   maxValue: number,
   maxDay: number,
 ) => {
-  const stepX = width / (maxDay - 1);
+  const stepX = maxDay > 1 ? width / (maxDay - 1) : 0;
 
   return buildLineSegments(data, stepX, height, maxValue);
 };
@@ -35,7 +35,7 @@ export const buildAreaPath = (
   maxValue: number,
   maxDay: number,
 ) => {
-  const stepX = width / (maxDay - 1);
+  const stepX = maxDay > 1 ? width / (maxDay - 1) : 0;
   const linePath = buildLineSegments(data, stepX, height, maxValue);
 
   const lastIndex = data.length - 1;

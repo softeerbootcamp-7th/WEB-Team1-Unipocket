@@ -12,7 +12,7 @@ export const useInlineExpenseUpdate = () => {
   const updateInline = <K extends keyof UpdateExpenseRequest>(
     rowId: string,
     field: K,
-    value: NonNullable<UpdateExpenseRequest[K]>,
+    value: UpdateExpenseRequest[K],
     extraUpdates?: Record<string, null | undefined>, //  반대쪽 금액 null 처리를 위해 추가
   ) => {
     const row = table.getRow(rowId);

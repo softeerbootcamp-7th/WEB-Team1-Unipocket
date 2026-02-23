@@ -46,7 +46,9 @@ const Chip = ({
         className,
       )}
     >
-      <span className={clsx('caption2-bold', textClassName)}>{label}</span>
+      <span className={clsx('caption2-bold shrink-0', textClassName)}>
+        {label}
+      </span>
 
       {onRemove && (
         <button

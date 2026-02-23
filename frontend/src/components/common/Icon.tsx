@@ -7,6 +7,7 @@ interface IconProps {
   height?: number;
   color?: string;
   iconName: IconName;
+  ariaLabel?: string;
   onClick?: () => void;
 }
 
@@ -24,21 +25,24 @@ const Icon = ({
   height = 24,
   color = 'text-label-alternative',
   iconName,
+  ariaLabel,
   onClick,
 }: IconProps) => {
   const IconComponent = Icons[iconName];
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel ?? `${iconName} 버튼`}
       className={clsx(
         color,
-        'hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
+        'hover:bg-fill-normal flex items-center justify-center rounded-lg transition-opacity',
         `w-[${width}px] h-[${height}px]`,
       )}
-      onClick={onClick}
     >
       <IconComponent width={width} height={height} />
-    </div>
+    </button>
   );
 };
 

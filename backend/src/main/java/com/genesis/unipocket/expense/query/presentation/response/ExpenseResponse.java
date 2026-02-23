@@ -30,7 +30,7 @@ public record ExpenseResponse(
 		String cardNumber,
 		String fileLink) {
 
-	public record CardResponse(Integer company, String label, String lastDigits) {}
+	public record CardResponse(Long userCardId, Integer company, String label, String lastDigits) {}
 
 	public record PaymentMethodResponse(boolean isCash, CardResponse card) {}
 
@@ -48,6 +48,7 @@ public record ExpenseResponse(
 						? new PaymentMethodResponse(
 								false,
 								new CardResponse(
+										row.userCardId(),
 										row.cardCompany() != null
 												? row.cardCompany().ordinal()
 												: null,

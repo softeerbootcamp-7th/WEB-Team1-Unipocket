@@ -76,7 +76,7 @@ export default function UploadResultModal({
           >
             {title}
           </h2>
-          <span className="body1-normal-medium text-gray-500">
+          <span className="body1-normal-medium text-label-alternative">
             수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
             수정해주세요.
           </span>

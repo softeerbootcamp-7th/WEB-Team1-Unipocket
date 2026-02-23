@@ -1,12 +1,9 @@
-import {
-  SettingSection,
-  SettingTitle,
-} from '@/components/setting-page/SettingLayout';
+import { SettingSection } from '@/components/setting-page/SettingLayout';
 
 const AccountManagement = () => {
   return (
     <SettingSection>
-      <SettingTitle disabled>계정 삭제</SettingTitle>
+      <p className="heading2-bold text-label-assistive w-50">계정 삭제</p>
     </SettingSection>
   );
 };

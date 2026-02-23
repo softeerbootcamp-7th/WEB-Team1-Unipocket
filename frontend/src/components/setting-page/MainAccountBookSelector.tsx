@@ -1,8 +1,5 @@
 import Dropdown from '@/components/common/dropdown/Dropdown';
-import {
-  SettingSection,
-  SettingTitle,
-} from '@/components/setting-page/SettingLayout';
+import { SettingSection } from '@/components/setting-page/SettingLayout';
 
 import {
   useGetAccountBooksQuery,
@@ -31,18 +28,23 @@ const MainAccountBookSelector = () => {
 
   return (
     <SettingSection>
-      <SettingTitle>메인 가계부 설정</SettingTitle>
+      <p className="heading2-bold text-label-normal w-50 shrink-0">
+        메인 가계부 설정
+      </p>
       {accountBookOptions.length === 0 ? (
         <p className="body2-normal-regular text-label-assistive">
           아직 가계부가 없어요.
         </p>
       ) : (
-        <Dropdown
-          itemWidth="w-full"
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          options={accountBookOptions}
-        />
+        <div className="rounded-modal-8 bg-background-normal">
+          <Dropdown
+            size="md"
+            itemWidth="w-60"
+            selectedId={selectedId}
+            onSelect={handleSelect}
+            options={accountBookOptions}
+          />
+        </div>
       )}
     </SettingSection>
   );
@@ -50,7 +52,7 @@ const MainAccountBookSelector = () => {
 
 const MainAccountBookSkeleton = () => (
   <SettingSection>
-    <SettingTitle>메인 가계부 설정</SettingTitle>
+    <p className="heading2-bold text-label-normal w-50">메인 가계부 설정</p>
     <Dropdown
       selectedId={0}
       onSelect={() => {}}

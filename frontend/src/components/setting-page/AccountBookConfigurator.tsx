@@ -13,7 +13,6 @@ import AccountBookPeriodModal from '@/components/setting-page/modal/AccountBookP
 import {
   SettingRow,
   SettingSection,
-  SettingTitle,
 } from '@/components/setting-page/SettingLayout';
 
 import {
@@ -27,7 +26,10 @@ import type {
   GetAccountBookDetailResponse,
   GetAccountBooksResponse,
 } from '@/api/account-books/type';
+import { Icons } from '@/assets';
 import type { CountryCode } from '@/data/country/countryCode';
+
+import Chip from '../common/Chip';
 
 const ConfiguratorSkeleton = () => (
   <div className="h-32 w-full animate-pulse rounded-md bg-black/10" />
@@ -61,24 +63,26 @@ const AccountBookConfigurator = () => {
 
   return (
     <SettingSection>
-      <SettingTitle>가계부 설정</SettingTitle>
+      <p className="heading2-bold text-label-normal w-50">가계부 설정</p>
       <TabProvider
         value={activeAccountBookId}
         onValueChange={setActiveAccountBookId}
       >
-        <div className="border-line-normal-neutral flex flex-wrap items-end gap-4 border-b">
+        <div className="flex flex-wrap items-end gap-5">
           <TabList>
             {accountBooks.map((book) => (
               <TabTrigger
                 key={book.accountBookId}
                 value={String(book.accountBookId)}
               >
-                <span className="body2-normal-medium flex items-center gap-1">
+                <span className="headline1-bold text-label-normal flex items-center justify-center gap-3 px-3.5 pt-3">
                   {book.title}
                   {book.isMain && (
-                    <span className="caption1-regular bg-primary-normal rounded-full px-1.5 py-0.5 text-white">
-                      메인
-                    </span>
+                    <Chip
+                      label="메인"
+                      bgClassName="bg-primary-normal/8"
+                      textClassName="text-primary-normal"
+                    />
                   )}
                 </span>
               </TabTrigger>
@@ -86,9 +90,9 @@ const AccountBookConfigurator = () => {
           </TabList>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="body2-normal-regular text-label-assistive pb-3.5"
+            className="headline1-bold text-label-assistive flex items-center justify-center gap-3.5 px-2.5 pb-3.5"
           >
-            + 새 가계부 추가
+            <Icons.Add className="size-4" />새 가계부 추가
           </button>
         </div>
 
@@ -143,13 +147,14 @@ const AccountBookSettingsForm = ({
 
   return (
     <>
-      <div className="flex flex-col">
-        <SettingRow
-          label="이름 수정"
-          value={detail.title}
-          onEdit={() => setNameModalOpen(true)}
-        />
-        {/* <SettingRow
+      <div className="flex flex-col items-start gap-5">
+        <div className="border-line-normal-normal flex flex-col items-start gap-2 border-y px-4 py-4.5">
+          <SettingRow
+            label="이름 수정"
+            value={detail.title}
+            onEdit={() => setNameModalOpen(true)}
+          />
+          {/* <SettingRow
           label="기준 통화 변경"
           value={currencyDisplay}
           onEdit={() => setCurrencyModalOpen(true)}
@@ -159,24 +164,24 @@ const AccountBookSettingsForm = ({
           value={countryDisplay}
           onEdit={() => setCountryModalOpen(true)}
         /> */}
-        <SettingRow
-          label="카드 연동 기간 변경"
-          value={periodDisplay}
-          onEdit={() => setPeriodModalOpen(true)}
-        />
-        <button
-          onClick={() => setDeleteModalOpen(true)}
-          className="body2-normal-regular text-status-negative py-3 text-left"
-        >
-          {detail.title} 삭제
-        </button>
-        <p className="caption1-regular text-label-assistive mt-2">
+          <SettingRow
+            label="카드 연동 기간 변경"
+            value={periodDisplay}
+            onEdit={() => setPeriodModalOpen(true)}
+          />
+          <button
+            onClick={() => setDeleteModalOpen(true)}
+            className="body1-normal-bold text-status-negative py-2.5 text-left"
+          >
+            {detail.title} 삭제
+          </button>
+        </div>
+
+        <p className="body2-normal-regular text-label-assistive">
           * 한 가계부 안에, 지출 내역, 기준 통화 설정, 국가 설정, 카드 연동 기간
           정보가 포함되어 있어요.
-        </p>
-        <p className="caption1-regular text-label-assistive">
-          * 두 번째 교환학생을 가거나 가계부를 분리하고 싶다면, 새로운 가계부를
-          추가해주세요.
+          <br />* 두 번째 교환학생을 가거나 가계부를 분리하고 싶다면, 새로운
+          가계부를 추가해주세요.
         </p>
       </div>
 

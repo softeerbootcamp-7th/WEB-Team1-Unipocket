@@ -3,10 +3,7 @@ import { useState } from 'react';
 import CardCreateModal from '@/components/setting-page/modal/CardCreateModal';
 import CardDeleteModal from '@/components/setting-page/modal/CardDeleteModal';
 import CardNicknameModal from '@/components/setting-page/modal/CardNicknameModal';
-import {
-  SettingSection,
-  SettingTitle,
-} from '@/components/setting-page/SettingLayout';
+import { SettingSection } from '@/components/setting-page/SettingLayout';
 
 import {
   useCardsSuspenseQuery,
@@ -17,6 +14,8 @@ import {
 import type { Card } from '@/api/cards/type';
 import { Cards, Icons } from '@/assets';
 
+import Icon from '../common/Icon';
+
 interface LinkedCardItemProps {
   card: Card;
   onEdit: (card: Card) => void;
@@ -24,35 +23,40 @@ interface LinkedCardItemProps {
 }
 const LinkedCardItem = ({ card, onEdit, onDelete }: LinkedCardItemProps) => {
   return (
-    <div className="flex items-center justify-between border-b border-gray-100 py-3 last:border-0">
-      <div className="flex items-center gap-4">
-        <div className="h-10 w-16 overflow-hidden rounded-md border border-gray-200 bg-white">
-          <Cards.Default className="h-full w-full object-cover" />
+    <div className="flex w-131.5 items-center justify-between px-px py-3">
+      <div className="flex items-center gap-5.5">
+        <div className="rounded-modal-4 border-line-normal-normal bg-background-normal h-12.25 w-19.5 border">
+          <Cards.Default className="text-cool-neutral-70 size-full" />
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-semibold text-gray-900">
-            {card.cardCompany}
+        <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-2">
+            <span className="headline1-medium text-label-normal">
+              {card.cardCompany}
+            </span>
+            <span className="headline1-medium text-label-alternative">
+              ({card.cardNumber})
+            </span>
+          </div>
+          <span className="bg-line-normal-normal h-5 w-px"></span>
+          <span className="headline1-medium text-label-alternative">
+            {card.nickName}
           </span>
-          <span className="text-gray-400">({card.cardNumber})</span>
-          <span className="mx-1 text-gray-300">|</span>
-          <span className="text-gray-500">{card.nickName}</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          className="rounded-full p-2 transition-colors hover:bg-gray-100"
+      <div className="flex items-center gap-3.5 px-1.5 py-1">
+        <Icon
+          iconName="Update"
+          className="h-5 w-5 text-gray-400"
           onClick={() => onEdit(card)}
-        >
-          <Icons.Update className="h-5 w-5 text-gray-400" />
-        </button>
-        <button
-          className="rounded-full p-2 text-red-400 transition-colors hover:bg-gray-100"
+        />
+
+        <Icon
+          iconName="Trash"
+          className="h-5 w-5 text-red-400"
           onClick={() => onDelete(card)}
-        >
-          <Icons.Trash className="h-5 w-5" />
-        </button>
+        />
       </div>
     </div>
   );
@@ -93,7 +97,9 @@ const LinkedCardList = () => {
 
   return (
     <SettingSection>
-      <SettingTitle>국내카드 연동 목록</SettingTitle>
+      <p className="heading2-bold text-label-normal w-50 shrink-0">
+        국내카드 연동 목록
+      </p>
       <div className="flex flex-col">
         {cards.length === 0 ? (
           <p className="body2-normal-regular text-label-assistive">
@@ -111,13 +117,15 @@ const LinkedCardList = () => {
         )}
 
         <button
-          className="flex items-center gap-4 py-3"
+          className="flex cursor-pointer items-center gap-4 py-3"
           onClick={() => setCreateModalOpen(true)}
         >
-          <div className="flex h-10 w-16 items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50">
-            <span className="text-xl text-gray-400">+</span>
+          <div className="rounded-modal-4 border-label-assistive flex h-12.25 w-19.5 items-center justify-center border">
+            <Icons.Add className="text-label-assistive size-6" />
           </div>
-          <span className="text-sm text-gray-500">새 카드 추가</span>
+          <span className="headline1-medium text-label-alternative">
+            새 카드 추가
+          </span>
         </button>
       </div>
 

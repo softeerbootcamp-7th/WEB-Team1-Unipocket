@@ -19,6 +19,12 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/travels/${travelId}`, // 여행 상세 조회 (GET), 여행 수정 (PUT), 여행 부분 수정 (PATCH), 여행 삭제 (DELETE)
     WIDGETS: (accountBookId: number | string, travelId: number | string) =>
       `account-books/${accountBookId}/travels/${travelId}/widgets`, // 위젯 순서 수정 (PUT)
+    PRESIGNED_URL: (accountBookId: number | string) =>
+      `account-books/${accountBookId}/travels/images/presigned-url`, // 이미지 Presigned URL 발급 (POST)
+    IMAGE_URL: (accountBookId: number | string) =>
+      `account-books/${accountBookId}/travels/image-url`, // 이미지 URL 조회 (GET)
+    AMOUNT: (accountBookId: number | string, travelId: number | string) =>
+      `account-books/${accountBookId}/travels/${travelId}/amount`, // 여행 금액 조회 (GET)
   },
   TEMPORARY_EXPENSES: {
     METAS: (accountBookId: number | string) =>

@@ -14,9 +14,8 @@ export const useTravelModal = () => {
     type: 'NONE',
   });
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  const closeModal = () => setIsOpen(false);
+  const isOpen = activeModal.type !== 'NONE';
+  const closeModal = () => setActiveModal({ type: 'NONE' });
 
   return {
     activeModal,
@@ -24,27 +23,21 @@ export const useTravelModal = () => {
     closeModal,
     openCreateName: () => {
       setActiveModal({ type: 'CREATE_NAME' });
-      setIsOpen(true);
     },
     openCreateDate: (travelName: string) => {
       setActiveModal({ type: 'CREATE_DATE', travelName });
-      setIsOpen(true);
     },
     openEditName: (travelId: number, defaultName: string) => {
       setActiveModal({ type: 'EDIT_NAME', travelId, defaultName });
-      setIsOpen(true);
     },
     openEditDate: (travelId: number, startDate: string, endDate: string) => {
       setActiveModal({ type: 'EDIT_DATE', travelId, startDate, endDate });
-      setIsOpen(true);
     },
     openDelete: (travelId: number) => {
       setActiveModal({ type: 'DELETE', travelId });
-      setIsOpen(true);
     },
     openEditThumbnail: (travelId: number, imageKey: string | null) => {
       setActiveModal({ type: 'EDIT_THUMBNAIL', travelId, imageKey });
-      setIsOpen(true);
     },
   };
 };

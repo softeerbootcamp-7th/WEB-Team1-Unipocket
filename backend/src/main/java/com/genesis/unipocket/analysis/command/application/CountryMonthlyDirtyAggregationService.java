@@ -76,7 +76,13 @@ public class CountryMonthlyDirtyAggregationService {
 	private final ExchangeRateService exchangeRateService;
 
 	public void processCountryDirtyRows(CountryCode countryCode) {
-		LocalDateTime batchStartUtc = LocalDateTime.now(ZoneOffset.UTC);
+		ZoneId countryZone = CountryCodeTimezoneMapper.getZoneId(countryCode);
+		LocalDateTime batchStartUtc =
+				LocalDate.now(countryZone)
+						.atTime(properties.getRunHour(), properties.getRunMinute())
+						.atZone(countryZone)
+						.withZoneSameInstant(ZoneOffset.UTC)
+						.toLocalDateTime();
 		TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
 		Set<PairMonthKey> affectedPairMonths = new LinkedHashSet<>();
 

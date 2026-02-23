@@ -96,13 +96,24 @@ public final class AnalysisFixtureFactory {
 			CountryCode countryCode,
 			Long accountBookId,
 			LocalDate monthStart) {
+		return savePendingDirtyWithEventAt(
+				dirtyRepository,
+				countryCode,
+				accountBookId,
+				monthStart,
+				LocalDateTime.of(2026, 1, 15, 0, 0));
+	}
+
+	public static AnalysisMonthlyDirtyEntity savePendingDirtyWithEventAt(
+			AnalysisMonthlyDirtyRepository dirtyRepository,
+			CountryCode countryCode,
+			Long accountBookId,
+			LocalDate monthStart,
+			LocalDateTime lastEventAtUtc) {
 		AnalysisMonthlyDirtyEntity entity =
 				AnalysisMonthlyDirtyEntity.create(
-						countryCode,
-						accountBookId,
-						monthStart,
-						LocalDateTime.of(2026, 1, 15, 0, 0));
-		entity.markPendingFromEvent(LocalDateTime.of(2026, 1, 15, 0, 0));
+						countryCode, accountBookId, monthStart, lastEventAtUtc);
+		entity.markPendingFromEvent(lastEventAtUtc);
 		return dirtyRepository.save(entity);
 	}
 

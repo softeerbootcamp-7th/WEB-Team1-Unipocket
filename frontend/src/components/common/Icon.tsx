@@ -34,7 +34,7 @@ const Icon = ({
     <button
       type="button"
       onClick={onClick}
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? `${iconName} 버튼`}
       className={clsx(
         color,
         'hover:bg-fill-normal flex items-center justify-center rounded-lg transition-opacity',

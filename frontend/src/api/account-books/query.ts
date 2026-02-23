@@ -14,6 +14,7 @@ import {
   getAccountBookDetail,
   getAccountBooks,
   getAnalysis,
+  getExchangeRate,
   updateAccountBook,
   updateAccountBookBudget,
 } from '@/api/account-books/api';
@@ -22,6 +23,7 @@ import type {
   GetAnalysisResponse,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 import { queryClient } from '@/main';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
@@ -132,6 +134,23 @@ const useUpdateAccountBookBudgetMutation = () => {
   });
 };
 
+const useGetExchangeRateQuery = (
+  occurredAt: string,
+  baseCurrencyCode: CurrencyCode,
+  localCurrencyCode: CurrencyCode,
+) => {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isToday = occurredAt.startsWith(todayStr);
+  return useQuery({
+    queryKey: ['exchangeRate', occurredAt, baseCurrencyCode, localCurrencyCode],
+    queryFn: () =>
+      getExchangeRate(occurredAt, baseCurrencyCode, localCurrencyCode),
+    enabled: !!occurredAt && !!baseCurrencyCode && !!localCurrencyCode,
+    staleTime: isToday ? 1000 * 60 * 30 : Infinity,
+    placeholderData: (previousData) => previousData,
+  });
+};
+
 export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
@@ -140,6 +159,7 @@ export {
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
   useGetAccountBooksQuery,
+  useGetExchangeRateQuery,
   useUpdateAccountBookBudgetMutation,
   useUpdateAccountBookMutation,
 };

@@ -1,38 +1,20 @@
+// components/data-table/editors/shared/CategoryCellEditor.tsx
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
 import { CategorySelectorContent } from '@/components/data-table/selectors/CategorySelectorContent';
-import type { ActiveCellState } from '@/components/data-table/type';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 
 import type { CategoryId } from '@/types/category';
 
 interface CategoryCellEditorProps {
-  onUpdate: (rowId: string, categoryId: CategoryId) => void;
+  onUpdate: (rowId: string, newCategoryId: CategoryId) => void;
 }
 
 const CategoryCellEditor = ({ onUpdate }: CategoryCellEditorProps) => {
-  const { tableState } = useDataTable();
+  const { tableState, dispatch } = useDataTable();
   const { categoryCell } = tableState;
 
   if (!categoryCell) return null;
-
-  return (
-    <CategoryCellEditorContent
-      key={`${categoryCell.rowId}-${categoryCell.columnId}`}
-      categoryCell={categoryCell}
-      onUpdate={onUpdate}
-    />
-  );
-};
-
-const CategoryCellEditorContent = ({
-  categoryCell,
-  onUpdate,
-}: {
-  categoryCell: ActiveCellState;
-  onUpdate: (rowId: string, categoryId: CategoryId) => void;
-}) => {
-  const { dispatch } = useDataTable();
 
   const closeEditor = () =>
     dispatch({ type: 'SET_CATEGORY_CELL', payload: null });
@@ -49,8 +31,6 @@ const CategoryCellEditorContent = ({
       <PopoverTrigger asChild>
         <CellEditorAnchor rect={categoryCell.rect} style={{ opacity: 0 }} />
       </PopoverTrigger>
-
-      {/* 공통 Content 활용 (align, sideOffset 기본값 사용) */}
       <CategorySelectorContent
         initialCategoryId={categoryCell.value as CategoryId}
         onCategorySelect={handleSelect}

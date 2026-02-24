@@ -3,11 +3,11 @@ import { useParams } from '@tanstack/react-router';
 import Button from '@/components/common/Button';
 import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
 import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
-import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
-import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
-import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
-import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
-import TravelCellEditor from '@/components/data-table/editors/TravelCellEditor';
+import ExpenseAmountCellEditor from '@/components/data-table/editors/expense/ExpenseAmountCellEditor';
+import ExpenseCategoryCellEditor from '@/components/data-table/editors/expense/ExpenseCategoryCellEditor';
+import ExpenseMethodCellEditor from '@/components/data-table/editors/expense/ExpenseMethodCellEditor';
+import ExpenseTextCellEditor from '@/components/data-table/editors/expense/ExpenseTextCellEditor';
+import TravelCellEditor from '@/components/data-table/editors/expense/TravelCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
@@ -40,10 +40,10 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
       columns={expenseColumns}
     >
       <UpdateActionBar />
-      <TextCellEditor />
-      <CategoryCellEditor />
-      <AmountCellEditor />
-      <MethodCellEditor />
+      <ExpenseTextCellEditor />
+      <ExpenseCategoryCellEditor />
+      <ExpenseAmountCellEditor />
+      <ExpenseMethodCellEditor />
       <TravelCellEditor />
     </BaseExpenseTable>
   );

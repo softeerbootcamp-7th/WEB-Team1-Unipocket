@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
-import TempUpdateActionBar from '@/components/data-table/bars/update/TempUpdateActionBar'; // 새로 만든 바
+import TempUpdateActionBar from '@/components/data-table/bars/update/TempUpdateActionBar';
 import { getTempExpenseColumns } from '@/components/data-table/columns/tempExpenseColumns';
-import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
-import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
-import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
-import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
+import TempAmountCellEditor from '@/components/data-table/editors/temp-expense/TempAmountCellEditor';
+import TempCategoryCellEditor from '@/components/data-table/editors/temp-expense/TempCategoryCellEditor';
+import TempMethodCellEditor from '@/components/data-table/editors/temp-expense/TempMethodCellEditor';
+import TempTextCellEditor from '@/components/data-table/editors/temp-expense/TempTextCellEditor';
 import { getTempExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
@@ -47,10 +47,10 @@ const ImageResultTable = ({ data }: ImageResultTableProps) => {
       >
         <TempUpdateActionBar />
 
-        <TextCellEditor />
-        <CategoryCellEditor />
-        <AmountCellEditor />
-        <MethodCellEditor />
+        <TempTextCellEditor />
+        <TempCategoryCellEditor />
+        <TempAmountCellEditor />
+        <TempMethodCellEditor />
       </BaseExpenseTable>
     </div>
   );

@@ -2,13 +2,26 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
-import { useInlineExpenseUpdate } from '@/components/data-table/editors/expense/useInlineExpenseUpdate';
 import type { ActiveCellState } from '@/components/data-table/type';
 
-import type { Expense } from '@/api/expenses/type';
 import { REGEX } from '@/constants/regex';
+import type { CurrencyCode } from '@/data/country/currencyCode';
 
-const AmountCellEditor = () => {
+// 제네릭 TData 적용
+interface AmountCellEditorProps<TData> {
+  onUpdate: (
+    rowId: string,
+    field: 'localCurrencyAmount' | 'baseCurrencyAmount',
+    value: number,
+    oppositeField: 'localCurrencyAmount' | 'baseCurrencyAmount',
+  ) => void;
+  getCurrencyCode: (original: TData, isLocal: boolean) => CurrencyCode | null;
+}
+
+const AmountCellEditor = <TData,>({
+  onUpdate,
+  getCurrencyCode,
+}: AmountCellEditorProps<TData>) => {
   const { tableState } = useDataTable();
   const { amountCell } = tableState;
 
@@ -18,18 +31,21 @@ const AmountCellEditor = () => {
     <AmountCellEditorContent
       key={`${amountCell.rowId}-${amountCell.columnId}`}
       amountCell={amountCell}
+      onUpdate={onUpdate}
+      getCurrencyCode={getCurrencyCode}
     />
   );
 };
 
-const AmountCellEditorContent = ({
+const AmountCellEditorContent = <TData,>({
   amountCell,
+  onUpdate,
+  getCurrencyCode,
 }: {
   amountCell: ActiveCellState;
-}) => {
+} & AmountCellEditorProps<TData>) => {
   const { table, dispatch } = useDataTable();
-  const { updateInline } = useInlineExpenseUpdate();
-  const [value, setValue] = useState(String(amountCell.value));
+  const [value, setValue] = useState(String(amountCell.value || ''));
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,16 +54,15 @@ const AmountCellEditorContent = ({
   }, []);
 
   const handleSave = () => {
-    if (value !== String(amountCell.value)) {
-      // 현재 열이 현지 금액인지 기준 금액인지 판별
+    if (value !== String(amountCell.value || '')) {
       const isLocal = amountCell.columnId === 'localCurrencyAmount';
       const field = isLocal ? 'localCurrencyAmount' : 'baseCurrencyAmount';
       const oppositeField = isLocal
         ? 'baseCurrencyAmount'
         : 'localCurrencyAmount';
-      updateInline(amountCell.rowId, field, Number(value), {
-        [oppositeField]: null,
-      });
+
+      // 부모 Wrapper에게 반대 필드의 이름을 그대로 넘겨줍니다.
+      onUpdate(amountCell.rowId, field, Number(value), oppositeField);
     }
     dispatch({ type: 'SET_AMOUNT_CELL', payload: null });
   };
@@ -55,12 +70,12 @@ const AmountCellEditorContent = ({
   const currencySymbol = useMemo(() => {
     try {
       const row = table.getRow(amountCell.rowId);
-      const original = row.original as Expense;
+      const isLocal = amountCell.columnId === 'localCurrencyAmount';
 
-      const currencyCode =
-        amountCell.columnId === 'baseCurrencyAmount'
-          ? original.baseCurrencyCode
-          : original.localCurrencyCode;
+      // TData로 타입 단언 (안전함)
+      const currencyCode = getCurrencyCode(row.original as TData, isLocal);
+
+      if (!currencyCode) return '$';
 
       const parts = new Intl.NumberFormat('ko-KR', {
         style: 'currency',
@@ -70,13 +85,12 @@ const AmountCellEditorContent = ({
 
       return parts.find((part) => part.type === 'currency')?.value || '$';
     } catch {
-      return '$'; // fallback
+      return '$';
     }
-  }, [table, amountCell.rowId, amountCell.columnId]);
+  }, [table, amountCell.rowId, amountCell.columnId, getCurrencyCode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const numericValue = e.target.value.replace(REGEX.NON_NUMERIC, '');
-    setValue(numericValue);
+    setValue(e.target.value.replace(REGEX.NON_NUMERIC, ''));
   };
 
   return (

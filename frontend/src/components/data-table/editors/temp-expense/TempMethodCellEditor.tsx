@@ -15,7 +15,6 @@ const TempMethodCellEditor = () => {
 
   const handleUpdate = (rowId: string, cardNumber: string) => {
     const newValue = cardNumber === CASH ? null : cardNumber;
-    console.log('🚀 [업데이트 로직] 서버로 보낼 newValue:', newValue);
     updateInline(rowId, 'cardLastFourDigits', newValue);
   };
 

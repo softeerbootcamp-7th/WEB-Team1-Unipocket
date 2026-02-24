@@ -46,23 +46,12 @@ const MethodCellEditorContent = <TData,>({
   const closeEditor = () =>
     dispatch({ type: 'SET_METHOD_CELL', payload: null });
 
-const handleSelect = (cardNumber: string) => {
-  // 💡 트랩 1: 사용자가 클릭한 값과 기존 값 비교
-  console.log(
-    '👀 [에디터] 방금 클릭한 카드:',
-    cardNumber,
-    '| 기존 카드:',
-    initialCardNumber,
-  );
-
-  if (cardNumber !== initialCardNumber) {
-    console.log('✅ [에디터] 값이 달라서 onUpdate를 호출합니다!');
-    onUpdate(methodCell.rowId, cardNumber, original);
-  } else {
-    console.log('❌ [에디터] 값이 같다고 판단하여 업데이트를 건너뜁니다!');
-  }
-  closeEditor();
-};
+  const handleSelect = (cardNumber: string) => {
+    if (cardNumber !== initialCardNumber) {
+      onUpdate(methodCell.rowId, cardNumber, original);
+    }
+    closeEditor();
+  };
   return (
     <Popover open={true} onOpenChange={(open) => !open && closeEditor()}>
       <PopoverTrigger asChild>

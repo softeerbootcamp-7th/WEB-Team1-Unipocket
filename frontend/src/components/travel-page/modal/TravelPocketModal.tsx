@@ -1,11 +1,6 @@
-import { useEffect, useState } from 'react';
-
-import { useEnterKey } from '@/hooks/useKeyboardEvent';
-
 import type { ModalProps } from '@/components/modal/Modal';
-import Modal from '@/components/modal/Modal';
-import TextContext from '@/components/modal/TextModal/TextContext';
-import TextInputContent from '@/components/modal/TextModal/TextInputContent';
+import TextConfirmModal from '@/components/modal/TextModal/TextConfirmModal';
+import TextInputModal from '@/components/modal/TextModal/TextInputModal';
 
 import { ERROR_MESSAGE } from '@/constants/message';
 import { REGEX } from '@/constants/regex';
@@ -37,29 +32,20 @@ export const TRAVEL_POCKET_MODAL_TEXT = {
   },
 } as const;
 
+const validatePocketName = (val: string) => {
+  if (val.length > 15) return ERROR_MESSAGE.LENGTH15;
+  if (val.length > 0 && !REGEX.COMMON_TEXT.test(val))
+    return ERROR_MESSAGE.INVALID_CHAR;
+  return undefined;
+};
+
 const TravelPocketModal = ({
   mode,
   initialName = '',
+  isOpen,
   onClose,
   onAction,
-  ...modalProps
 }: TravelPocketModalProps) => {
-  const [pocketName, setPocketName] = useState(initialName);
-
-  useEffect(() => {
-    if (modalProps.isOpen) {
-      setPocketName(initialName);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalProps.isOpen]);
-
-  const validatePocketName = (val: string) => {
-    if (val.length > 15) return ERROR_MESSAGE.LENGTH15;
-    if (val.length > 0 && !REGEX.COMMON_TEXT.test(val))
-      return ERROR_MESSAGE.INVALID_CHAR;
-    return undefined;
-  };
-
   const text =
     mode === 'create'
       ? TRAVEL_POCKET_MODAL_TEXT.CREATE
@@ -67,46 +53,30 @@ const TravelPocketModal = ({
         ? TRAVEL_POCKET_MODAL_TEXT.EDIT
         : TRAVEL_POCKET_MODAL_TEXT.DELETE;
 
-  const isCreate = mode === 'create';
-  const isEdit = mode === 'edit';
-  const isDelete = mode === 'delete';
-
-  const handleAction = async () => {
-    if (isCreate) {
-      console.log('생성 API 호출:', pocketName);
-    } else if (isEdit) {
-      console.log('수정 API 호출:', pocketName);
-    } else if (isDelete) {
-      console.log('삭제 API 호출:', pocketName);
-    }
-
-    onAction?.(pocketName);
-  };
-
-  useEnterKey(modalProps.isOpen, handleAction, isDelete);
+  if (mode === 'delete') {
+    return (
+      <TextConfirmModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onAction={() => onAction?.('')}
+        title={text.TITLE}
+        description={text.DESCRIPTION}
+        confirmButton={{ label: text.CONFIRM, variant: 'danger' }}
+      />
+    );
+  }
 
   return (
-    <Modal
-      {...modalProps}
+    <TextInputModal
+      isOpen={isOpen}
       onClose={onClose}
-      onAction={handleAction}
-      confirmButton={{
-        label: text.CONFIRM,
-        variant: isDelete ? 'danger' : 'solid',
-      }}
-    >
-      {isCreate || isEdit ? (
-        <TextInputContent
-          value={pocketName}
-          onChange={setPocketName}
-          title={text.TITLE}
-          description={text.DESCRIPTION}
-          validate={validatePocketName}
-        />
-      ) : (
-        <TextContext title={text.TITLE} description={text.DESCRIPTION} />
-      )}
-    </Modal>
+      onAction={(name) => onAction?.(name)}
+      title={text.TITLE}
+      description={text.DESCRIPTION}
+      initialValue={initialName}
+      validate={validatePocketName}
+      confirmButton={{ label: text.CONFIRM, variant: 'solid' }}
+    />
   );
 };
 

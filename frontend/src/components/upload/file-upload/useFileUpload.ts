@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import type { SnackbarStatus } from '@/components/common/Snackbar';
 import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 
 import { ENDPOINTS } from '@/api/config/endpoint';
@@ -9,10 +10,20 @@ import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 export const useFileUpload = (accountBookId: number) => {
   const [item, setItem] = useState<UploadItem | null>(null);
   const [isParsing, setIsParsing] = useState(false);
+  const [parseSnackbar, setParseSnackbar] = useState<{
+    isOpen: boolean;
+    status: SnackbarStatus;
+    description?: string;
+  }>({
+    isOpen: false,
+    status: 'default',
+  });
+  const [parsedMetaId, setParsedMetaId] = useState<number | undefined>(
+    undefined,
+  );
   const itemRef = useRef<UploadItem | null>(null);
   const metaIdRef = useRef<number | undefined>(undefined);
   const eventSourceRef = useRef<EventSource | null>(null);
-  const parsedMetaIdRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     itemRef.current = item;
@@ -36,7 +47,7 @@ export const useFileUpload = (accountBookId: number) => {
     eventSourceRef.current = null;
   };
 
-  const connectSSE = (taskId: string) => {
+  const connectSSE = (taskId: string, metaId: number) => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
     if (!baseUrl) return;
 
@@ -55,15 +66,25 @@ export const useFileUpload = (accountBookId: number) => {
       if (typeof progress !== 'number') return;
 
       const normalizedProgress = Math.max(0, Math.min(100, progress));
-      if (normalizedProgress < 100) return;
 
-      setItem((prev) =>
-        prev?.taskId === taskId
-          ? { ...prev, status: UPLOAD_STATUS.PARSED }
-          : prev,
-      );
-      setIsParsing(false);
-      closeEventSource();
+      if (normalizedProgress >= 100) {
+        setIsParsing(false);
+        setParsedMetaId(metaId);
+        setParseSnackbar({
+          isOpen: true,
+          status: 'success',
+          description: '100%',
+        });
+        closeEventSource();
+        return;
+      }
+
+      setParseSnackbar((prev) => ({
+        ...prev,
+        isOpen: true,
+        status: 'loading',
+        description: `${normalizedProgress}%`,
+      }));
     };
 
     eventSource.addEventListener('progress', (event) => {
@@ -77,6 +98,7 @@ export const useFileUpload = (accountBookId: number) => {
             : prev,
         );
         setIsParsing(false);
+        setParseSnackbar({ isOpen: false, status: 'default' });
         toast.error(
           '분석 진행 상태를 가져오는 중 문제가 발생했어요. 다시 시도해주세요.',
         );
@@ -91,6 +113,7 @@ export const useFileUpload = (accountBookId: number) => {
           : prev,
       );
       setIsParsing(false);
+      setParseSnackbar({ isOpen: false, status: 'default' });
       toast.error('분석 중 연결이 끊어졌어요. 다시 시도해주세요.');
       closeEventSource();
     };
@@ -153,7 +176,7 @@ export const useFileUpload = (accountBookId: number) => {
       !metaIdRef.current ||
       isParsing
     ) {
-      return;
+      return false;
     }
 
     setIsParsing(true);
@@ -167,20 +190,37 @@ export const useFileUpload = (accountBookId: number) => {
         s3Keys: [current.s3Key],
       });
 
-      parsedMetaIdRef.current = metaIdRef.current;
       setItem((prev) =>
         prev
           ? { ...prev, status: UPLOAD_STATUS.PARSING, taskId: parse.taskId }
           : prev,
       );
-      connectSSE(parse.taskId);
+      setParseSnackbar({
+        isOpen: true,
+        status: 'loading',
+        description: '0%',
+      });
+      connectSSE(parse.taskId, metaIdRef.current);
+      return true;
     } catch {
       setItem((prev) =>
         prev ? { ...prev, status: UPLOAD_STATUS.ERROR } : prev,
       );
       setIsParsing(false);
       toast.error('파일 분석 요청에 실패했어요.');
+      return false;
     }
+  };
+
+  const closeParseSnackbar = () => {
+    setParseSnackbar({ isOpen: false, status: 'default' });
+  };
+
+  const clearItemAfterParseStart = () => {
+    if (itemRef.current?.url) {
+      URL.revokeObjectURL(itemRef.current.url);
+    }
+    setItem(null);
   };
 
   const removeItem = () => {
@@ -190,8 +230,9 @@ export const useFileUpload = (accountBookId: number) => {
     }
     setItem(null);
     metaIdRef.current = undefined;
-    parsedMetaIdRef.current = undefined;
+    setParsedMetaId(undefined);
     setIsParsing(false);
+    setParseSnackbar({ isOpen: false, status: 'default' });
   };
 
   const clearItem = () => {
@@ -201,15 +242,12 @@ export const useFileUpload = (accountBookId: number) => {
     }
     setItem(null);
     metaIdRef.current = undefined;
-    parsedMetaIdRef.current = undefined;
+    setParsedMetaId(undefined);
     setIsParsing(false);
+    setParseSnackbar({ isOpen: false, status: 'default' });
   };
 
-  const isReady =
-    item !== null &&
-    (item.status === UPLOAD_STATUS.UPLOADED ||
-      item.status === UPLOAD_STATUS.PARSED);
-  const isParsed = item?.status === UPLOAD_STATUS.PARSED;
+  const isReady = item !== null && item.status === UPLOAD_STATUS.UPLOADED;
 
   return {
     item,
@@ -218,8 +256,10 @@ export const useFileUpload = (accountBookId: number) => {
     isReady,
     startParsing,
     isParsing,
-    isParsed,
-    parsedMetaId: parsedMetaIdRef.current,
+    parseSnackbar,
+    closeParseSnackbar,
+    parsedMetaId,
+    clearItemAfterParseStart,
     clearItem,
   };
 };

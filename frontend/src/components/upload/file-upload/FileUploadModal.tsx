@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
+import Snackbar from '@/components/common/Snackbar';
 import Modal from '@/components/modal/Modal';
 import FileResultModal from '@/components/upload/file-upload/FileResultModal';
 import FileUploadContent from '@/components/upload/file-upload/FileUploadContent';
 import { useFileUpload } from '@/components/upload/file-upload/useFileUpload';
 
-import { Icons } from '@/assets';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 interface FileUploadModalProps {
@@ -26,9 +26,10 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
     removeItem,
     isReady,
     startParsing,
-    isParsing,
-    isParsed,
+    parseSnackbar,
+    closeParseSnackbar,
     parsedMetaId,
+    clearItemAfterParseStart,
     clearItem,
   } = useFileUpload(accountBookId);
 
@@ -38,15 +39,11 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
   };
 
   const handleStartParsing = async () => {
-    if (isParsed && parsedMetaId !== undefined) {
-      setResultMetaId(parsedMetaId);
+    const isStarted = await startParsing();
+    if (isStarted) {
       onClose();
-      setIsResultModalOpen(true);
-      clearItem();
-      return;
+      clearItemAfterParseStart();
     }
-
-    await startParsing();
   };
 
   return (
@@ -58,16 +55,7 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
           void handleStartParsing();
         }}
         className="px-8 pb-4"
-        confirmButton={{
-          label: (
-            <span className="flex items-center gap-1.5">
-              <span>결과 확인</span>
-              {isParsing && (
-                <Icons.Loading className="size-4 animate-spin text-white" />
-              )}
-            </span>
-          ),
-        }}
+        confirmButton={{ label: '결과 확인' }}
       >
         <FileUploadContent
           item={item}
@@ -76,6 +64,23 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
           isReady={isReady}
         />
       </Modal>
+
+      {parseSnackbar.isOpen && (
+        <Snackbar
+          status={parseSnackbar.status}
+          description={parseSnackbar.description}
+          onAction={() => {
+            closeParseSnackbar();
+            if (
+              parseSnackbar.status === 'success' &&
+              parsedMetaId !== undefined
+            ) {
+              setResultMetaId(parsedMetaId);
+              setIsResultModalOpen(true);
+            }
+          }}
+        />
+      )}
 
       {resultMetaId !== undefined && isResultModalOpen && (
         <FileResultModal

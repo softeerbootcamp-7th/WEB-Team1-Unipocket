@@ -21,7 +21,7 @@ interface PaymentMethod {
   isCash: boolean;
   card: {
     userCardId: number;
-    company: CardId;
+    company: CardId | null;
     label: string;
     lastDigits: string;
   } | null;

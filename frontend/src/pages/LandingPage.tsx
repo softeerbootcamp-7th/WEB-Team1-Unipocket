@@ -52,7 +52,7 @@ const HomeSection = () => {
               로그인
             </Button>
           </Link>
-          <Link to="/" hash="demo">
+          <Link to="/" hash="preview">
             <Button variant="outlined" size="lg">
               서비스 미리보기
             </Button>

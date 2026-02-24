@@ -3,7 +3,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { CategoryChip } from '@/components/common/Chip';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
-import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import type { Expense } from '@/api/expenses/type';
@@ -35,12 +34,9 @@ export const columns: ColumnDef<Expense>[] = [
     meta: {
       cellEditor: 'text',
     },
-    cell: ({ row, table }) => (
+    cell: ({ row }) => (
       <div className="relative flex items-center">
         <span>{row.original.merchantName}</span>
-        <div className="absolute right-0 z-10">
-          <SidePanelButton row={row} table={table} />
-        </div>
       </div>
     ),
   },

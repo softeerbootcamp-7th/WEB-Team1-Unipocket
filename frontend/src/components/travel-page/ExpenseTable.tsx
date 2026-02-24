@@ -6,7 +6,6 @@ import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEdit
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
-import TableSidePanel from '@/components/side-panel/TableSidePanel';
 
 interface ExpenseTableProps {
   onOpenBottomSheet: () => void;
@@ -38,7 +37,6 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
       <UpdateActionBar />
       <TextCellEditor />
       <CategoryCellEditor />
-      <TableSidePanel />
     </BaseExpenseTable>
   );
 };

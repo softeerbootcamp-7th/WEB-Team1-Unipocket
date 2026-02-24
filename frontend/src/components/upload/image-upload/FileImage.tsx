@@ -28,15 +28,15 @@ const FileImage = ({
   // preview
   if (variant === 'preview') {
     return (
-      <div className="border-line-normal-neutral aspect-400/533 w-full max-w-100 rounded-2xl border">
+      <div className="border-line-normal-neutral h-133.25 w-full max-w-100 rounded-2xl border">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={fileName}
-            className="h-full w-full rounded-2xl object-cover"
+            className="bg-fill-disable h-full w-full rounded-2xl object-contain"
           />
         ) : (
-          <div className="h-full w-full animate-pulse rounded-2xl bg-gray-200" />
+          <div className="bg-fill-disable h-full w-full animate-pulse rounded-2xl" />
         )}
       </div>
     );
@@ -53,7 +53,7 @@ const FileImage = ({
             className="h-full w-full rounded-sm object-cover"
           />
         ) : (
-          <div className="h-full w-full animate-pulse rounded-sm bg-gray-200" />
+          <div className="bg-fill-disable h-full w-full animate-pulse rounded-sm" />
         )}
       </div>
 

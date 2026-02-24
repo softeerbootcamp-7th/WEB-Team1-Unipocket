@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -8,41 +9,31 @@ import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
 import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
+import { resolveUserCardId } from '@/components/data-table/util';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
-import type { SidePanelFormValues } from '@/components/side-panel/type';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';
 import { useSidePanelValues } from '@/components/side-panel/useSidePanelValues';
 import ValueContainer from '@/components/side-panel/ValueContainer';
-import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
-import type { Expense } from '@/api/expenses/type';
+import { useCreateManualExpenseMutation } from '@/api/expenses/query';
+import type { CreateManualExpenseRequest } from '@/api/expenses/type';
+import { useGetCardsQuery } from '@/api/users/query';
+import { NONE_TRAVEL } from '@/constants/column';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
-const uploadTitleMap: Record<
-  Exclude<UploadEntryType, 'manual' | null>,
-  string
-> = {
-  file: '파일',
-  image: '사진',
-};
-
-interface SidePanelUIProps {
-  mode?: UploadEntryType;
+interface SidePanelProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<Expense>;
-  onSubmit?: (values: SidePanelFormValues) => void;
 }
 
-const SidePanelUI = ({
-  mode,
-  isOpen,
-  onClose,
-  initialData,
-  onSubmit,
-}: SidePanelUIProps) => {
+const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
+
+  const { mutate } = useCreateManualExpenseMutation();
+  const accountBookId = useRequiredAccountBook().accountBookId;
+  const { data: cards = [] } = useGetCardsQuery();
 
   const {
     title,
@@ -53,8 +44,14 @@ const SidePanelUI = ({
     setSelectedDateTime,
     isDateTimePickerOpen,
     setIsDateTimePickerOpen,
+    selectedCategory,
+    setSelectedCategory,
+    selectedCardNumber,
+    setSelectedCardNumber,
+    selectedTravelId,
+    setSelectedTravelId,
     resetForm,
-  } = useSidePanelForm(initialData);
+  } = useSidePanelForm();
 
   const [currencyValues, setCurrencyValues] = useState<CurrencyValues | null>(
     null,
@@ -62,9 +59,17 @@ const SidePanelUI = ({
   const [resetKey, setResetKey] = useState(0);
 
   const valueItems = useSidePanelValues({
-    initialData,
     selectedDateTime,
     onDateTimeClick: () => setIsDateTimePickerOpen((prev) => !prev),
+    selectedCategory,
+    onCategorySelect: setSelectedCategory,
+    selectedCardNumber,
+    onCardNumberSelect: setSelectedCardNumber,
+    onCardNumberClear: () => setSelectedCardNumber(null),
+    selectedTravelId,
+    onTravelSelect: setSelectedTravelId,
+    onTravelClear: () => setSelectedTravelId(null),
+    allowDeselect: true,
   });
 
   const handleReset = () => {
@@ -74,21 +79,47 @@ const SidePanelUI = ({
   };
 
   const handleSubmit = () => {
-    if (!onSubmit || !selectedDateTime || !currencyValues || !title) return;
+    if (!title) {
+      toast.error('거래처를 입력해 주세요.');
+      return;
+    }
 
-    onSubmit({
+    if (!currencyValues) {
+      toast.error('금액을 입력해 주세요.');
+      return;
+    }
+
+    const userCardId =
+      selectedCardNumber != null
+        ? (resolveUserCardId(selectedCardNumber, cards) ?? undefined)
+        : undefined;
+
+    const travelId =
+      selectedTravelId != null && selectedTravelId !== NONE_TRAVEL
+        ? Number(selectedTravelId)
+        : undefined;
+
+    const request: CreateManualExpenseRequest = {
       merchantName: title,
-      category: initialData?.category ?? 1, // @TODO: 실제 선택 상태로 교체
-      userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태로 교체
-      occurredAt: selectedDateTime,
-      localCurrencyAmount: currencyValues.localAmount,
-      localCurrencyCode: currencyValues.localCurrencyCode,
-      baseCurrencyAmount: currencyValues.baseAmount,
+      category: selectedCategory,
+      userCardId,
+      occurredAt: selectedDateTime.toISOString(),
+      localCurrencyAmount: currencyValues!.localAmount,
+      localCurrencyCode: currencyValues!.localCurrencyCode,
+      baseCurrencyAmount: currencyValues!.baseAmount,
       memo,
-      travelId: initialData?.travel?.travelId ?? undefined, // @TODO: 실제 선택 상태로 교체
-    });
+      travelId,
+    };
 
-    handleReset();
+    mutate(
+      { accountBookId, data: request },
+      {
+        onSuccess: () => {
+          onClose();
+          handleReset();
+        },
+      },
+    );
   };
 
   useLayoutEffect(() => {
@@ -102,6 +133,7 @@ const SidePanelUI = ({
     () => {
       if (!isOpen) return;
       onClose();
+      handleReset();
       setIsDateTimePickerOpen(false); // 다른 행 열면 달력은 무조건 닫히게
     },
     {
@@ -129,17 +161,16 @@ const SidePanelUI = ({
           iconName="ChevronForward"
           width={24}
           height={24}
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            handleReset();
+          }}
         />
         <div className="flex items-center gap-2">
           <Button variant="solid" onClick={handleSubmit}>
             저장
           </Button>
-          {mode === 'manual' ? (
-            <Button onClick={handleReset}>초기화</Button>
-          ) : (
-            <Button>삭제</Button>
-          )}
+          <Button onClick={handleReset}>초기화</Button>
         </div>
       </div>
       <div className="flex flex-col gap-10 px-5">
@@ -185,21 +216,8 @@ const SidePanelUI = ({
           title="메모"
           placeholder="메모를 입력해 주세요."
         />
-        {mode && mode !== 'manual' && (
-          <>
-            <Divider style="thin" />
-            <div className="flex flex-col gap-2">
-              <p className="label1-normal-bold text-label-neutral">
-                {uploadTitleMap[mode]}
-              </p>
-              {/* @TODO: 파일 또는 이미지 미리보기 컴포넌트 추가 예정 */}
-              {mode === 'file' && <p>파일 미리보기</p>}
-              {mode === 'image' && <p>사진 미리보기</p>}
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
 };
-export default SidePanelUI;
+export default SidePanel;

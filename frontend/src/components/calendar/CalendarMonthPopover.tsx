@@ -93,11 +93,13 @@ const CalendarMonthView = ({
 interface CalendarMonthPopoverProps {
   date: Date;
   onDateChange: (date: Date) => void;
+  modal?: boolean;
 }
 
 const CalendarMonthPopover = ({
   date,
   onDateChange,
+  modal = true,
 }: CalendarMonthPopoverProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -107,7 +109,7 @@ const CalendarMonthPopover = ({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen} modal={modal}>
       <PopoverTrigger asChild>
         <button className="text-label-normal headline1-bold flex cursor-pointer items-center gap-1.5 text-center">
           {date.getFullYear()}년 {date.getMonth() + 1}월

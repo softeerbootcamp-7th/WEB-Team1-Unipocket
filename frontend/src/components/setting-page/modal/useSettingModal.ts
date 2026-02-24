@@ -36,7 +36,9 @@ export type SettingModalState =
       accountBookId: number;
       baseCountryCode: CountryCode;
       localCountryCode: CountryCode;
-    };
+    }
+  | { type: 'CREATE_ACCOUNT_BOOK_LOCALE' }
+  | { type: 'CREATE_ACCOUNT_BOOK_DATE'; localCountryCode: CountryCode };
 
 export const useSettingModal = () => {
   const [activeModal, setActiveModal] = useState<SettingModalState>({
@@ -116,6 +118,12 @@ export const useSettingModal = () => {
         baseCountryCode,
         localCountryCode,
       });
+    },
+    openCreateAccountBook: () => {
+      setActiveModal({ type: 'CREATE_ACCOUNT_BOOK_LOCALE' });
+    },
+    openCreateAccountBookDate: (localCountryCode: CountryCode) => {
+      setActiveModal({ type: 'CREATE_ACCOUNT_BOOK_DATE', localCountryCode });
     },
   };
 };

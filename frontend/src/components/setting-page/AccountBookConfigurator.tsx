@@ -14,15 +14,12 @@ import {
   SettingSection,
   SettingTitle,
 } from '@/components/setting-page/SettingLayout';
-import AccountBookCreateModal from '@/components/setting-page/temp-modal/AccountBookCreateModal';
 
 import {
   useAccountBookDetailQuery,
-  useCreateAccountBookMutation,
   useGetAccountBooksQuery,
 } from '@/api/account-books/query';
 import { Icons } from '@/assets';
-import type { CountryCode } from '@/data/country/countryCode';
 
 import Chip from '../common/Chip';
 
@@ -37,7 +34,9 @@ type AccountBookModalOpeners = Pick<
   | 'openEditAccountBookPeriod'
   | 'openEditBaseCurrency'
   | 'openEditLocalCurrency'
->;
+> & {
+  openCreateAccountBook: () => void;
+};
 
 const AccountBookConfigurator = ({
   openEditAccountBookName,
@@ -45,21 +44,9 @@ const AccountBookConfigurator = ({
   openEditAccountBookPeriod,
   openEditBaseCurrency,
   openEditLocalCurrency,
+  openCreateAccountBook,
 }: AccountBookModalOpeners) => {
   const { data: accountBooks } = useGetAccountBooksQuery();
-  const createAccountBookMutation = useCreateAccountBookMutation();
-
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-
-  const handleCreateAccountBook = (data: {
-    localCountryCode: CountryCode;
-    startDate: string;
-    endDate: string;
-  }) => {
-    createAccountBookMutation.mutate(data, {
-      onSuccess: () => setCreateModalOpen(false),
-    });
-  };
 
   const [activeAccountBookId, setActiveAccountBookId] = useState(
     accountBooks[0].accountBookId.toString(),
@@ -97,7 +84,7 @@ const AccountBookConfigurator = ({
             ))}
           </TabList>
           <button
-            onClick={() => setCreateModalOpen(true)}
+            onClick={openCreateAccountBook}
             className="headline1-bold text-label-assistive flex items-center justify-center gap-3.5 px-2.5 pb-3.5"
           >
             <Icons.Add className="size-4" />새 가계부 추가
@@ -119,14 +106,6 @@ const AccountBookConfigurator = ({
           )}
         </TabContent>
       </TabProvider>
-
-      {isCreateModalOpen && (
-        <AccountBookCreateModal
-          isSubmitting={createAccountBookMutation.isPending}
-          onClose={() => setCreateModalOpen(false)}
-          onSubmit={handleCreateAccountBook}
-        />
-      )}
     </SettingSection>
   );
 };

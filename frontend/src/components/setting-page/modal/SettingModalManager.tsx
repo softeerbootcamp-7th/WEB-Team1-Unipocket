@@ -1,7 +1,3 @@
-import { AnimatePresence, motion } from 'framer-motion';
-
-import { useEscapeKey } from '@/hooks/useKeyboardEvent';
-
 import LocaleSelectModal from '@/components/modal/LocaleSelectModal/LocaleSelectModal';
 import SelectDateModal from '@/components/modal/SelectDateModal';
 import TextConfirmModal from '@/components/modal/TextModal/TextConfirmModal';
@@ -10,6 +6,7 @@ import { SETTING_MODAL_TEXT } from '@/components/setting-page/modal/messsage';
 import type { SettingModalState } from '@/components/setting-page/modal/useSettingModal';
 
 import {
+  useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
   useUpdateAccountBookMutation,
 } from '@/api/account-books/query';
@@ -18,26 +15,25 @@ import {
   useUpdateCardNicknameMutation,
 } from '@/api/cards/query';
 import { ERROR_MESSAGE } from '@/constants/message';
+import type { CountryCode } from '@/data/country/countryCode';
 import { formatDateToString, parseStringToDate } from '@/lib/utils';
 
 interface SettingModalManagerProps {
   activeModal: SettingModalState;
   closeModal: () => void;
+  openCreateAccountBookDate: (localCountryCode: CountryCode) => void;
 }
 
 const SettingModalManager = ({
   activeModal,
   closeModal,
+  openCreateAccountBookDate,
 }: SettingModalManagerProps) => {
+  const createAccountBookMutation = useCreateAccountBookMutation();
   const updateAccountBookMutation = useUpdateAccountBookMutation();
   const deleteAccountBookMutation = useDeleteAccountBookMutation();
   const updateCardNicknameMutation = useUpdateCardNicknameMutation();
   const deleteCardMutation = useDeleteCardMutation();
-
-  const isCurrencyModalOpen =
-    activeModal.type === 'EDIT_BASE_CURRENCY' ||
-    activeModal.type === 'EDIT_LOCAL_CURRENCY';
-  useEscapeKey(isCurrencyModalOpen, closeModal);
 
   return (
     <>
@@ -192,45 +188,72 @@ const SettingModalManager = ({
       />
 
       {/* ── 통화/국가 선택 모달 ── */}
-      <AnimatePresence>
-        {(activeModal.type === 'EDIT_BASE_CURRENCY' ||
-          activeModal.type === 'EDIT_LOCAL_CURRENCY') && (
-          <motion.div
-            className="bg-dimmer-strong z-overlay fixed inset-0 box-border flex h-dvh w-full justify-center pt-12"
-            onClick={closeModal}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <LocaleSelectModal
-                mode={
-                  activeModal.type === 'EDIT_BASE_CURRENCY' ? 'BASE' : 'LOCAL'
-                }
-                baseCountryCode={activeModal.baseCountryCode}
-                localCountryCode={activeModal.localCountryCode}
-                onSelect={(code) => {
-                  const data =
-                    activeModal.type === 'EDIT_BASE_CURRENCY'
-                      ? { baseCountryCode: code }
-                      : { localCountryCode: code };
-                  updateAccountBookMutation.mutate(
-                    { accountBookId: activeModal.accountBookId, data },
-                    { onSuccess: closeModal },
-                  );
-                }}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <LocaleSelectModal
+        isOpen={
+          activeModal.type === 'EDIT_BASE_CURRENCY' ||
+          activeModal.type === 'EDIT_LOCAL_CURRENCY'
+        }
+        onClose={closeModal}
+        mode={activeModal.type === 'EDIT_BASE_CURRENCY' ? 'BASE' : 'LOCAL'}
+        baseCountryCode={
+          activeModal.type === 'EDIT_BASE_CURRENCY' ||
+          activeModal.type === 'EDIT_LOCAL_CURRENCY'
+            ? activeModal.baseCountryCode
+            : null
+        }
+        localCountryCode={
+          activeModal.type === 'EDIT_BASE_CURRENCY' ||
+          activeModal.type === 'EDIT_LOCAL_CURRENCY'
+            ? activeModal.localCountryCode
+            : null
+        }
+        onSelect={(code) => {
+          if (
+            activeModal.type === 'EDIT_BASE_CURRENCY' ||
+            activeModal.type === 'EDIT_LOCAL_CURRENCY'
+          ) {
+            const data =
+              activeModal.type === 'EDIT_BASE_CURRENCY'
+                ? { baseCountryCode: code }
+                : { localCountryCode: code };
+            updateAccountBookMutation.mutate(
+              { accountBookId: activeModal.accountBookId, data },
+              { onSuccess: closeModal },
+            );
+          }
+        }}
+      />
+
+      {/* ── 가계부 생성 모달 (국가 선택 → 기간 선택) ── */}
+      <LocaleSelectModal
+        isOpen={activeModal.type === 'CREATE_ACCOUNT_BOOK_LOCALE'}
+        onClose={closeModal}
+        mode="INIT"
+        baseCountryCode={null}
+        localCountryCode={null}
+        onSelect={openCreateAccountBookDate}
+      />
+
+      <SelectDateModal
+        isOpen={activeModal.type === 'CREATE_ACCOUNT_BOOK_DATE'}
+        onClose={closeModal}
+        onConfirm={(dateRange) => {
+          if (
+            activeModal.type === 'CREATE_ACCOUNT_BOOK_DATE' &&
+            dateRange.startDate &&
+            dateRange.endDate
+          ) {
+            createAccountBookMutation.mutate(
+              {
+                localCountryCode: activeModal.localCountryCode,
+                startDate: formatDateToString(dateRange.startDate),
+                endDate: formatDateToString(dateRange.endDate),
+              },
+              { onSuccess: closeModal },
+            );
+          }
+        }}
+      />
     </>
   );
 };

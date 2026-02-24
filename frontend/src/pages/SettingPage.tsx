@@ -25,6 +25,8 @@ const SettingPage = () => {
     openEditAccountBookPeriod,
     openEditBaseCurrency,
     openEditLocalCurrency,
+    openCreateAccountBook,
+    openCreateAccountBookDate,
   } = useSettingModal();
 
   return (
@@ -45,12 +47,17 @@ const SettingPage = () => {
             openEditAccountBookPeriod={openEditAccountBookPeriod}
             openEditBaseCurrency={openEditBaseCurrency}
             openEditLocalCurrency={openEditLocalCurrency}
+            openCreateAccountBook={openCreateAccountBook}
           />
         </Suspense>
         <AccountManagement openDeleteAccount={openDeleteAccount} />
       </div>
 
-      <SettingModalManager activeModal={activeModal} closeModal={closeModal} />
+      <SettingModalManager
+        activeModal={activeModal}
+        closeModal={closeModal}
+        openCreateAccountBookDate={openCreateAccountBookDate}
+      />
     </div>
   );
 };

@@ -26,6 +26,7 @@ const ImageResultModal = ({
     confirmMetaMutation.mutate(metaId, {
       onSuccess: () => {
         onConfirm?.();
+        onClose();
       },
     });
   };

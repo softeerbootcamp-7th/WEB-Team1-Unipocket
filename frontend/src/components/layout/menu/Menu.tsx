@@ -30,7 +30,7 @@ const Menu = () => {
               <MenuItem
                 logo={<Icon className="size-5" />}
                 label={label}
-                isActive={pathname === to}
+                isActive={pathname === to || pathname.startsWith(to + '/')}
               />
             </Link>
           ))}

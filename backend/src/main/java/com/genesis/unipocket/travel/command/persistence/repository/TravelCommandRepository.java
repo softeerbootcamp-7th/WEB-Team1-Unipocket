@@ -11,4 +11,6 @@ public interface TravelCommandRepository extends JpaRepository<Travel, Long> {
 	List<Travel> findAllByIdInAndAccountBookId(Collection<Long> ids, Long accountBookId);
 
 	boolean existsByIdAndAccountBookId(Long travelId, Long accountBookId);
+
+	int countByAccountBookId(Long accountBookId);
 }

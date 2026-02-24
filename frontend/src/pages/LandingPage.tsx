@@ -54,7 +54,7 @@ const HomeSection = () => {
           </Link>
           <Link to="/" hash="demo">
             <Button variant="outlined" size="lg">
-              데모 체험하기
+              서비스 미리보기
             </Button>
           </Link>
         </div>

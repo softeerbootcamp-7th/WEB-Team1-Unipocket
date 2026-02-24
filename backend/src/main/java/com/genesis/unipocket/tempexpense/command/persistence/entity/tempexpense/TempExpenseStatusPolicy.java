@@ -15,8 +15,7 @@ public class TempExpenseStatusPolicy {
 				content.hasRequired()
 						&& amount.getLocalCurrencyCode() != null
 						&& amount.getLocalCurrencyAmount() != null
-						&& amount.getLocalCurrencyAmount().signum() > 0
-						&& amount.getBaseCurrencyCode() != null;
+						&& amount.getLocalCurrencyAmount().signum() > 0;
 		if (!hasRequiredFields) {
 			return TemporaryExpenseStatus.INCOMPLETE;
 		}

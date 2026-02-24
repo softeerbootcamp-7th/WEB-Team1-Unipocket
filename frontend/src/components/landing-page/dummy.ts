@@ -1,201 +1,158 @@
 import type { TempExpense } from '@/api/temporary-expenses/type';
 
-// export interface Travel {
-//   id: number;
-//   name: string;
-//   imageUrl: string;
-// }
-
-// export interface Budget {
-//   id: number;
-//   name: string;
-//   countryCode: string;
-// }
-
-// interface Company {
-//   name: string;
-//   iconUrl: string;
-// }
-
-// interface Card {
-//   company: Company;
-//   label: string;
-//   lastDigits: string;
-// }
-
-// export interface PaymentMethod {
-//   isCash: boolean;
-//   card: Card | null;
-// }
-
-// export interface Expense {
-//   expenseId: number;
-//   occurredAt: string; // ISO 8601 형식의 날짜 문자열
-//   merchantName: string; // 거래처
-//   categoryCode: CategoryType; // 카테고리
-//   localCurrencyCode: string; // 현지통화
-//   localCurrencyAmount: number; // 현지금액
-//   standardCurrency: string; // 기준통화
-//   standardAmount: number; // 기준금액
-//   exchangeRate: number; // 환율
-//   paymentMethod: PaymentMethod; // 결제수단
-//   travel: Travel;
-//   memo: string | null;
-//   file: string;
-// }
-
-export const TEMP_EXPENSE_DUMMY: TempExpense[] = [
-  {
-    tempExpenseId: 415,
-    tempExpenseMetaId: 95,
-    fileId: 158,
-    merchantName: 'Walmart',
-    category: 6,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 11.72,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 13109.87,
-    memo: null,
-    occurredAt: '2021-08-12T11:36:18',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 416,
-    tempExpenseMetaId: 95,
-    fileId: 158,
-    merchantName: 'Walmart',
-    category: 6,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 2.96,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 3311.03,
-    memo: null,
-    occurredAt: '2021-08-12T11:36:18',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 417,
-    tempExpenseMetaId: 95,
-    fileId: 158,
-    merchantName: 'Walmart',
-    category: 6,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 3.98,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 4451.99,
-    memo: null,
-    occurredAt: '2021-08-12T11:36:18',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 418,
-    tempExpenseMetaId: 95,
-    fileId: 158,
-    merchantName: 'Walmart',
-    category: 6,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 2.44,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 2729.36,
-    memo: null,
-    occurredAt: '2021-08-12T11:36:18',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 419,
-    tempExpenseMetaId: 95,
-    fileId: 158,
-    merchantName: 'Walmart',
-    category: 6,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 11.72,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 13109.87,
-    memo: null,
-    occurredAt: '2021-08-12T11:36:18',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-];
-
-export const TEMP_EXPENSE_DUMMY_2: TempExpense[] = [
-  {
-    tempExpenseId: 556,
-    tempExpenseMetaId: 132,
-    fileId: 203,
-    merchantName: 'Lyft',
-    category: 3,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 8.99,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 11952.29,
-    memo: null,
-    occurredAt: '2025-01-06T12:00:00',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 557,
-    tempExpenseMetaId: 132,
-    fileId: 203,
-    merchantName: 'IN-N-OUT LINQ',
-    category: 2,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 4.34,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 5796.89,
-    memo: null,
-    occurredAt: '2025-01-03T12:00:00',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 558,
-    tempExpenseMetaId: 132,
-    fileId: 203,
-    merchantName: 'PANDA EXPRESS',
-    category: 2,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 9.0,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 12052.62,
-    memo: null,
-    occurredAt: '2025-01-01T12:00:00',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 559,
-    tempExpenseMetaId: 132,
-    fileId: 203,
-    merchantName: 'PARK MGM-EATALY QSR BA',
-    category: 2,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 5.85,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 7834.2,
-    memo: null,
-    occurredAt: '2025-01-01T12:00:00',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
-  {
-    tempExpenseId: 560,
-    tempExpenseMetaId: 132,
-    fileId: 203,
-    merchantName: 'SPIRIT AIR VISA',
-    category: 3,
-    localCountryCode: 'USD',
-    localCurrencyAmount: 120.16,
-    baseCountryCode: 'KRW',
-    baseCurrencyAmount: 161415.73,
-    memo: null,
-    occurredAt: '2024-12-31T12:00:00',
-    status: 'NORMAL',
-    cardLastFourDigits: '',
-  },
+export const TEMP_EXPENSE_DUMMY: TempExpense[][] = [
+  [
+    {
+      tempExpenseId: 415,
+      tempExpenseMetaId: 95,
+      fileId: 158,
+      merchantName: 'Walmart',
+      category: 6,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 11.72,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 13109.87,
+      memo: null,
+      occurredAt: '2021-08-12T11:36:18',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 416,
+      tempExpenseMetaId: 95,
+      fileId: 158,
+      merchantName: 'Walmart',
+      category: 6,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 2.96,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 3311.03,
+      memo: null,
+      occurredAt: '2021-08-12T11:36:18',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 417,
+      tempExpenseMetaId: 95,
+      fileId: 158,
+      merchantName: 'Walmart',
+      category: 6,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 3.98,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 4451.99,
+      memo: null,
+      occurredAt: '2021-08-12T11:36:18',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 418,
+      tempExpenseMetaId: 95,
+      fileId: 158,
+      merchantName: 'Walmart',
+      category: 6,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 2.44,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 2729.36,
+      memo: null,
+      occurredAt: '2021-08-12T11:36:18',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 419,
+      tempExpenseMetaId: 95,
+      fileId: 158,
+      merchantName: 'Walmart',
+      category: 6,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 11.72,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 13109.87,
+      memo: null,
+      occurredAt: '2021-08-12T11:36:18',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+  ],
+  [
+    {
+      tempExpenseId: 556,
+      tempExpenseMetaId: 132,
+      fileId: 203,
+      merchantName: 'Lyft',
+      category: 3,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 8.99,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 11952.29,
+      memo: null,
+      occurredAt: '2025-01-06T12:00:00',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 557,
+      tempExpenseMetaId: 132,
+      fileId: 203,
+      merchantName: 'IN-N-OUT LINQ',
+      category: 2,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 4.34,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 5796.89,
+      memo: null,
+      occurredAt: '2025-01-03T12:00:00',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 558,
+      tempExpenseMetaId: 132,
+      fileId: 203,
+      merchantName: 'PANDA EXPRESS',
+      category: 2,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 9.0,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 12052.62,
+      memo: null,
+      occurredAt: '2025-01-01T12:00:00',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 559,
+      tempExpenseMetaId: 132,
+      fileId: 203,
+      merchantName: 'PARK MGM-EATALY QSR BA',
+      category: 2,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 5.85,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 7834.2,
+      memo: null,
+      occurredAt: '2025-01-01T12:00:00',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+    {
+      tempExpenseId: 560,
+      tempExpenseMetaId: 132,
+      fileId: 203,
+      merchantName: 'SPIRIT AIR VISA',
+      category: 3,
+      localCountryCode: 'USD',
+      localCurrencyAmount: 120.16,
+      baseCountryCode: 'KRW',
+      baseCurrencyAmount: 161415.73,
+      memo: null,
+      occurredAt: '2024-12-31T12:00:00',
+      status: 'NORMAL',
+      cardLastFourDigits: '',
+    },
+  ],
 ];

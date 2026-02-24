@@ -7,10 +7,7 @@ import {
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import {
-  TEMP_EXPENSE_DUMMY,
-  TEMP_EXPENSE_DUMMY_2,
-} from '@/components/landing-page/dummy';
+import { TEMP_EXPENSE_DUMMY } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
 import LandingExpenseTable from '@/components/landing-page/LandingExpenseTable';
@@ -182,7 +179,7 @@ const PreviewSection = () => {
                   />
                 </div>
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 pb-4">
-                  <LandingExpenseTable data={TEMP_EXPENSE_DUMMY} />
+                  <LandingExpenseTable data={TEMP_EXPENSE_DUMMY[0]} />
                 </div>
               </div>
             </TabContent>
@@ -195,7 +192,7 @@ const PreviewSection = () => {
                   />
                 </div>
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 pb-4">
-                  <LandingExpenseTable data={TEMP_EXPENSE_DUMMY_2} />
+                  <LandingExpenseTable data={TEMP_EXPENSE_DUMMY[1]} />
                 </div>
               </div>
             </TabContent>

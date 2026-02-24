@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { expenseKeys } from '@/api/expenses/query';
 import {
   bulkUpdateTempExpenses,
   confirmMeta,
@@ -23,6 +24,7 @@ import type {
   GetPresignedUrlRequest,
   StartParseRequest,
 } from '@/api/temporary-expenses/type';
+import { widgetKeys } from '@/api/widget/query';
 import { queryClient } from '@/main';
 
 export const temporaryExpenseKeys = {
@@ -154,6 +156,12 @@ const useConfirmMetaMutation = (accountBookId: number) =>
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metas(accountBookId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: expenseKeys.lists(accountBookId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: widgetKeys.allDetails(accountBookId),
       });
       toast.success('임시지출이 확정됐어요.');
     },

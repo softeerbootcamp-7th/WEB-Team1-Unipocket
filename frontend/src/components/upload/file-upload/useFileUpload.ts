@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
+import { useParseSSE } from '@/components/upload/useParseSSE';
 
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 
@@ -10,6 +11,15 @@ export const useFileUpload = (accountBookId: number) => {
   const [isParsing, setIsParsing] = useState(false);
   const itemRef = useRef<UploadItem | null>(null);
   const metaIdRef = useRef<number | undefined>(undefined);
+
+  const {
+    parseSnackbar,
+    parsedMetaId,
+    connect,
+    disconnectAll,
+    closeParseSnackbar,
+    resetParseState,
+  } = useParseSSE(accountBookId);
 
   useEffect(() => {
     itemRef.current = item;
@@ -80,7 +90,7 @@ export const useFileUpload = (accountBookId: number) => {
       !metaIdRef.current ||
       isParsing
     ) {
-      return undefined;
+      return false;
     }
 
     setIsParsing(true);
@@ -96,34 +106,51 @@ export const useFileUpload = (accountBookId: number) => {
 
       setItem((prev) =>
         prev
-          ? { ...prev, status: UPLOAD_STATUS.PARSED, taskId: parse.taskId }
+          ? { ...prev, status: UPLOAD_STATUS.PARSING, taskId: parse.taskId }
           : prev,
       );
-      return metaIdRef.current;
+      connect(parse.taskId, metaIdRef.current, {
+        onComplete: () => setIsParsing(false),
+        onError: () => {
+          setItem((prev) =>
+            prev?.taskId === parse.taskId
+              ? { ...prev, status: UPLOAD_STATUS.ERROR }
+              : prev,
+          );
+          setIsParsing(false);
+        },
+      });
+      return true;
     } catch {
       setItem((prev) =>
         prev ? { ...prev, status: UPLOAD_STATUS.ERROR } : prev,
       );
-      toast.error('파일 분석 요청에 실패했어요.');
-      return undefined;
-    } finally {
       setIsParsing(false);
+      toast.error('파일 분석 요청에 실패했어요.');
+      return false;
     }
   };
 
-  const removeItem = () => {
-    if (item?.url) {
-      URL.revokeObjectURL(item.url);
+  const clearItemAfterParseStart = () => {
+    if (itemRef.current?.url) {
+      URL.revokeObjectURL(itemRef.current.url);
     }
+    setItem(null);
+  };
+
+  const removeItem = () => {
+    disconnectAll();
+    resetParseState();
+    if (item?.url) URL.revokeObjectURL(item.url);
     setItem(null);
     metaIdRef.current = undefined;
     setIsParsing(false);
   };
 
   const clearItem = () => {
-    if (itemRef.current?.url) {
-      URL.revokeObjectURL(itemRef.current.url);
-    }
+    disconnectAll();
+    resetParseState();
+    if (itemRef.current?.url) URL.revokeObjectURL(itemRef.current.url);
     setItem(null);
     metaIdRef.current = undefined;
     setIsParsing(false);
@@ -138,6 +165,10 @@ export const useFileUpload = (accountBookId: number) => {
     isReady,
     startParsing,
     isParsing,
+    parseSnackbar,
+    closeParseSnackbar,
+    parsedMetaId,
+    clearItemAfterParseStart,
     clearItem,
   };
 };

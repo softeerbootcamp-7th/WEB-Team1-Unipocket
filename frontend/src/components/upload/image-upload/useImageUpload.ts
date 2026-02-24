@@ -172,10 +172,14 @@ export const useImageUpload = (accountBookId: number) => {
     itemsRef.current.forEach((item) => {
       if (item.url) URL.revokeObjectURL(item.url);
     });
-    disconnectAll();
-    resetParseState();
     setItems([]);
     metaIdRef.current = undefined;
+  };
+
+  const resetAll = () => {
+    clearItems();
+    disconnectAll();
+    resetParseState();
   };
 
   return {
@@ -187,6 +191,7 @@ export const useImageUpload = (accountBookId: number) => {
     parseSnackbar,
     closeParseSnackbar,
     clearItems,
+    resetAll,
     parsedMetaId,
   };
 };

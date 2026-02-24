@@ -4,11 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
-import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.AccountAmountCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
@@ -29,29 +26,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.PlatformTransactionManager;
 
 @Tag("stress")
 @ExtendWith(MockitoExtension.class)
 class CountryMonthlyDirtyAggregationServiceStressTest {
 
-	@Mock private AnalysisMonthlyDirtyRepository monthlyDirtyRepository;
 	@Mock private AnalysisBatchAggregationRepository aggregationRepository;
 	@Mock private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
 	@Mock private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
 	@Mock private AnalysisBatchProperties properties;
-	@Mock private PlatformTransactionManager transactionManager;
-	@Mock private AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
 
-	@Mock
-	private AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
-
-	@Mock
-	private com.genesis.unipocket.accountbook.command.persistence.repository
-					.AccountBookCommandRepository
-			accountBookRepository;
-
-	@InjectMocks private CountryMonthlyDirtyAggregationService service;
+	@InjectMocks private PairMonthlyAggregateRefresher pairRefresher;
 
 	@BeforeEach
 	void setUp() {}
@@ -69,7 +54,6 @@ class CountryMonthlyDirtyAggregationServiceStressTest {
 	}
 
 	private void runStressTest(int recordCount) throws Exception {
-		// Given
 		List<AccountAmountCount> largeDataSet = createMockRows(recordCount);
 
 		given(properties.getPeerMinSampleSize()).willReturn(10);
@@ -91,12 +75,12 @@ class CountryMonthlyDirtyAggregationServiceStressTest {
 										any(), any(), any(), any(), any()))
 				.willReturn(Optional.empty());
 
-		// When
+		PairMonthKey key = new PairMonthKey(CountryCode.KR, CountryCode.US, LocalDate.now());
+
 		long startTime = System.currentTimeMillis();
-		invokeRefreshPairMonthlyAggregatesByCurrency();
+		invokeRefreshByCurrency(key);
 		long endTime = System.currentTimeMillis();
 
-		// Then
 		System.out.printf(
 				"Stress Test (N=%d): Execution time = %d ms%n", recordCount, (endTime - startTime));
 	}
@@ -111,24 +95,15 @@ class CountryMonthlyDirtyAggregationServiceStressTest {
 		return rows;
 	}
 
-	private void invokeRefreshPairMonthlyAggregatesByCurrency() throws Exception {
-		Class<?> pairMonthKeyClass =
-				Class.forName(
-						"com.genesis.unipocket.analysis.command.application.CountryMonthlyDirtyAggregationService$PairMonthKey");
-		var constructor =
-				pairMonthKeyClass.getDeclaredConstructor(
-						CountryCode.class, CountryCode.class, LocalDate.class);
-		constructor.setAccessible(true);
-		Object key = constructor.newInstance(CountryCode.KR, CountryCode.US, LocalDate.now());
-
+	private void invokeRefreshByCurrency(PairMonthKey key) throws Exception {
 		Method method =
-				CountryMonthlyDirtyAggregationService.class.getDeclaredMethod(
-						"refreshPairMonthlyAggregatesByCurrency",
-						pairMonthKeyClass,
+				PairMonthlyAggregateRefresher.class.getDeclaredMethod(
+						"refreshByCurrency",
+						PairMonthKey.class,
 						CurrencyType.class,
 						AnalysisMetricType.class);
 		method.setAccessible(true);
-
-		method.invoke(service, key, CurrencyType.LOCAL, AnalysisMetricType.TOTAL_LOCAL_AMOUNT);
+		method.invoke(
+				pairRefresher, key, CurrencyType.LOCAL, AnalysisMetricType.TOTAL_LOCAL_AMOUNT);
 	}
 }

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.widget.query.service;
+package com.genesis.unipocket.widget.query.application;
 
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -13,6 +13,7 @@ import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import com.genesis.unipocket.widget.common.enums.Period;
 import com.genesis.unipocket.widget.common.validate.UserAccountBookValidator;
 import com.genesis.unipocket.widget.common.validate.UserTravelValidator;
+import com.genesis.unipocket.widget.query.application.PeriodRangeUtil.PeriodSlot;
 import com.genesis.unipocket.widget.query.persistence.WidgetQueryRepository;
 import com.genesis.unipocket.widget.query.persistence.response.BudgetWidgetResponse;
 import com.genesis.unipocket.widget.query.persistence.response.CategoryWidgetResponse;
@@ -24,7 +25,6 @@ import com.genesis.unipocket.widget.query.persistence.response.PaymentWidgetResp
 import com.genesis.unipocket.widget.query.persistence.response.PaymentWidgetResponse.PaymentItem;
 import com.genesis.unipocket.widget.query.persistence.response.PeriodWidgetResponse;
 import com.genesis.unipocket.widget.query.persistence.response.PeriodWidgetResponse.PeriodItem;
-import com.genesis.unipocket.widget.query.service.PeriodRangeUtil.PeriodSlot;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;

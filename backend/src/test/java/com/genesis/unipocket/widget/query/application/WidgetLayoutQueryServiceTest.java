@@ -1,4 +1,4 @@
-package com.genesis.unipocket.widget.query.service;
+package com.genesis.unipocket.widget.query.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;

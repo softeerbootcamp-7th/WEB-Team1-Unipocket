@@ -1,4 +1,4 @@
-package com.genesis.unipocket.user.query.service.port;
+package com.genesis.unipocket.user.query.application.port;
 
 import java.util.UUID;
 

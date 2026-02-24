@@ -1,4 +1,4 @@
-package com.genesis.unipocket.travel.query.service;
+package com.genesis.unipocket.travel.query.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

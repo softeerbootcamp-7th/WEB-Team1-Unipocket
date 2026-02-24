@@ -1,12 +1,12 @@
-package com.genesis.unipocket.user.query.service;
+package com.genesis.unipocket.user.query.application;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.user.common.enums.CardCompany;
+import com.genesis.unipocket.user.query.application.port.AccountBookCountService;
 import com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
-import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

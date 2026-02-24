@@ -1,4 +1,4 @@
-package com.genesis.unipocket.widget.query.service;
+package com.genesis.unipocket.widget.query.application;
 
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.widget.common.enums.CurrencyType;

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class TravelCommandService {
 
+	private static final int MAX_TRAVEL_COUNT_BY_ACCOUNT_BOOK = 10;
 	private final TravelCommandRepository travelRepository;
 	private final TravelWidgetJpaRepository travelWidgetJpaRepository;
 	private final MediaObjectStorage mediaObjectStorage;
@@ -28,6 +29,12 @@ public class TravelCommandService {
 	@Transactional
 	public CreateTravelResult createTravel(CreateTravelCommand command) {
 		validateImageKey(command.imageKey());
+
+		int count = travelRepository.countByAccountBookId(command.accountBookId());
+
+		if (count >= MAX_TRAVEL_COUNT_BY_ACCOUNT_BOOK) {
+			throw new BusinessException(ErrorCode.TRAVEL_COUNT_EXCEEDED);
+		}
 
 		Travel travel =
 				Travel.builder()

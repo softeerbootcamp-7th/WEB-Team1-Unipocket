@@ -173,6 +173,38 @@ class AccountBookCommandControllerTest {
 	}
 
 	@Test
+	@DisplayName("가계부 부분 수정 성공 - isMain만 전달")
+	void updateAccountBook_PartialSuccess_IsMainOnly() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String accessToken = "valid_token";
+		Long accountBookId = 3L;
+		String requestBody = "{\"isMain\":true}";
+
+		mockAuthentication(accessToken, userId);
+		AccountBookResponse response =
+				new AccountBookResponse(
+						accountBookId,
+						"기존 제목",
+						CountryCode.JP,
+						CountryCode.KR,
+						LocalDate.of(2026, 2, 1),
+						LocalDate.of(2026, 2, 28));
+		given(
+						accountBookCommandFacade.updateAccountBook(
+								eq(userId), eq(accountBookId), any(AccountBookUpdateRequest.class)))
+				.willReturn(response);
+
+		mockMvc.perform(
+						patch("/account-books/{accountBookId}", accountBookId)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(requestBody)
+								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
+				.andExpect(jsonPath("$.title").value("기존 제목"));
+	}
+
+	@Test
 	@DisplayName("가계부 생성 실패 - 필수값 누락")
 	void createAccountBook_Fail_WhenMissingRequiredField() throws Exception {
 		UUID userId = UUID.randomUUID();

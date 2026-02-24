@@ -92,14 +92,16 @@ export const Icons = {
 
 export type IconName = keyof typeof Icons;
 
-import DemoReceipt1 from '@/assets/images/landing/demo-receipt.png';
+import DemoBank from '@/assets/images/landing/demo-bank.jpeg';
+import DemoReceipt from '@/assets/images/landing/demo-receipt.png';
 import FeaturePreview1 from '@/assets/images/landing/feature-1.png';
 import FeaturePreview3 from '@/assets/images/landing/feature-3.png';
 import FeaturePreview4 from '@/assets/images/landing/feature-4.png';
 import HomePreview from '@/assets/images/landing/home-preview.png';
 
 export const LandingImages = {
-  DemoReceipt1,
+  DemoBank,
+  DemoReceipt,
   FeaturePreview1,
   FeaturePreview3,
   FeaturePreview4,

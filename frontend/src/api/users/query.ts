@@ -71,6 +71,7 @@ const useDeleteUserMutation = () =>
     onSuccess: () => {
       queryClient.clear();
       toast.success('회원 탈퇴가 완료되었어요.');
+      window.location.href = '/';
     },
     onError: () => {
       toast.error('회원 탈퇴에 실패했어요.');

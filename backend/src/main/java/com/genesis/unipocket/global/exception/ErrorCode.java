@@ -113,6 +113,7 @@ public enum ErrorCode {
 			HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_IMAGE_KEY", "유효하지 않은 여행 이미지 키입니다."),
 	TRAVEL_IMAGE_NOT_FOUND(
 			HttpStatus.NOT_FOUND, "404_TRAVEL_IMAGE_NOT_FOUND", "여행 이미지를 찾을 수 없습니다."),
+	TRAVEL_INVALID_BUDGET(HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_BUDGET", "예산은 0 이상이어야 합니다."),
 	// Expense Errors
 	EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "404_EXPENSE_NOT_FOUND", "지출 내역을 찾을 수 없습니다."),
 	EXPENSE_UNAUTHORIZED_ACCESS(
@@ -187,6 +188,8 @@ public enum ErrorCode {
 				"400_ACCOUNT_BOOK_CREATE_VALIDATION_FAILED";
 		public static final String ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED =
 				"400_ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED";
+		public static final String TRAVEL_UPDATE_VALIDATION_FAILED =
+				"400_TRAVEL_UPDATE_VALIDATION_FAILED";
 	}
 
 	private final HttpStatus status;

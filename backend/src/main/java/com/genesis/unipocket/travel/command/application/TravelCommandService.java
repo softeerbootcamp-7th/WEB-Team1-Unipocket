@@ -8,9 +8,11 @@ import com.genesis.unipocket.travel.command.application.command.CreateTravelComm
 import com.genesis.unipocket.travel.command.application.command.PatchTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.UpdateTravelCommand;
 import com.genesis.unipocket.travel.command.application.result.CreateTravelResult;
+import com.genesis.unipocket.travel.command.application.result.TravelBudgetUpdateResult;
 import com.genesis.unipocket.travel.command.persistence.entity.Travel;
 import com.genesis.unipocket.travel.command.persistence.repository.TravelCommandRepository;
 import com.genesis.unipocket.widget.command.persistence.repository.TravelWidgetJpaRepository;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,6 +104,23 @@ public class TravelCommandService {
 		} else if (command.endDate() != null) {
 			travel.updatePeriod(travel.getStartDate(), command.endDate());
 		}
+	}
+
+	@Transactional
+	public TravelBudgetUpdateResult updateTravelBudget(
+			Long accountBookId, Long travelId, BigDecimal budget) {
+		Travel travel =
+				travelRepository
+						.findById(travelId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
+
+		if (!travel.getAccountBookId().equals(accountBookId)) {
+			throw new BusinessException(ErrorCode.TRAVEL_NOT_IN_ACCOUNT_BOOK);
+		}
+
+		travel.updateBudget(budget);
+		return new TravelBudgetUpdateResult(
+				travel.getId(), travel.getBudget(), travel.getBudgetCreatedAt());
 	}
 
 	private void validateImageKey(String imageKey) {

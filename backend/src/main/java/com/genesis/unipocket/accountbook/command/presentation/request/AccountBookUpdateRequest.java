@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.EqualsAndHashCode;
@@ -23,7 +25,8 @@ public class AccountBookUpdateRequest {
 	private static final int MAX_BUDGET_INTEGER_DIGITS = 17;
 	private static final int MAX_BUDGET_FRACTION_DIGITS = 2;
 
-	private String title;
+	@NotBlank @Size(max = 30) private String title;
+
 	private CountryCode localCountryCode;
 	private CountryCode baseCountryCode;
 	private BigDecimal budget;

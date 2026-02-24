@@ -1,8 +1,8 @@
 package com.genesis.unipocket.analysis.query.presentation;
 
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
+import com.genesis.unipocket.analysis.query.application.AnalysisMonthlySummaryQueryService;
 import com.genesis.unipocket.analysis.query.persistence.response.AnalysisOverviewRes;
-import com.genesis.unipocket.analysis.query.service.AnalysisMonthlySummaryQueryService;
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

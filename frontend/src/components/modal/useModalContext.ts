@@ -8,6 +8,7 @@ import {
 // 1. Context 정의 (자식 컴포넌트에서 setActionReady를 쓰기 위함)
 interface ModalContextType {
   setActionReady: Dispatch<SetStateAction<boolean>>;
+  onAction: () => void;
 }
 
 export const ModalContext = createContext<ModalContextType | null>(null);

@@ -6,14 +6,14 @@ import com.genesis.unipocket.TestcontainersConfiguration;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyAggregateEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.support.AnalysisFixtureFactory;
 import com.genesis.unipocket.exchange.common.persistence.repository.ExchangeRateRepository;
@@ -33,11 +33,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test-it")
 @Import(TestcontainersConfiguration.class)
+@TestPropertySource(properties = "analysis.batch.peer-min-sample-size=2")
 @Transactional
 @Tag("integration")
 class CountryMonthlyDirtyAggregationServiceIntegrationTest {

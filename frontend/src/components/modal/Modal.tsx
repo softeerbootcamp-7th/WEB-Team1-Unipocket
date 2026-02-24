@@ -1,13 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { type ReactNode, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
+
+import { useEscapeKey } from '@/hooks/useKeyboardEvent';
 
 import Button, { type ButtonProps } from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
 import { ModalContext } from '@/components/modal/useModalContext';
 
 export interface ModalButton {
-  label?: string;
+  label?: ReactNode;
   variant?: NonNullable<ButtonProps['variant']>;
 }
 
@@ -38,11 +40,16 @@ const Modal = ({
 }: ModalProps) => {
   // 모달의 확인 버튼 활성화 여부 (기본값 true: 단순 알림 모달 등을 위해)
   const [isActionReady, setActionReady] = useState(true);
-  const contextValue = useMemo(() => ({ setActionReady }), []);
+  const contextValue = useMemo(
+    () => ({ setActionReady, onAction }),
+    [onAction],
+  );
 
   // null 여부로 버튼 표시 여부 결정 (undefined는 기본값 적용, null은 버튼 숨김)
   const showCancel = cancelButton !== null;
   const showConfirm = confirmButton !== null;
+
+  useEscapeKey(isOpen, onClose);
 
   const { label: cancelLabel = '취소', variant: cancelVariant = 'outlined' } =
     cancelButton ?? {};

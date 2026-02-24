@@ -6,10 +6,10 @@ interface FolderCardProps {
   travelPlaceName: string;
   startDate: string;
   endDate: string;
-  localCountryCode: CountryCode;
-  localCountryAmount: number;
-  baseCountryCode: CountryCode;
-  baseCountryAmount: number;
+  localCountryCode?: CountryCode;
+  localCountryAmount?: number;
+  baseCountryCode?: CountryCode;
+  baseCountryAmount?: number;
   imageKey: string | null;
   onContextMenu?: (e: React.MouseEvent) => void;
 }
@@ -79,20 +79,24 @@ const FolderCard = ({
             clipPath="url(#folderShapeClip)"
           />
         </svg>
-        <div className="absolute right-5.5 bottom-6 flex flex-col items-end gap-1">
-          <CurrencyAmountDisplay
-            countryCode={localCountryCode}
-            amount={localCountryAmount}
-            size={'folder_sm'}
-            variant="muted"
-          />
-          <CurrencyAmountDisplay
-            countryCode={baseCountryCode}
-            amount={baseCountryAmount}
-            size={'folder_lg'}
-            variant="inverse"
-          />
-        </div>
+
+        {/* @TODO: 금액 필드 추가되면 undefined 삭제 필요 */}
+        {localCountryCode !== undefined && baseCountryCode !== undefined && (
+          <div className="absolute right-5.5 bottom-6 flex flex-col items-end gap-1">
+            <CurrencyAmountDisplay
+              countryCode={localCountryCode}
+              amount={localCountryAmount ?? 0}
+              size={'folder_sm'}
+              variant="muted"
+            />
+            <CurrencyAmountDisplay
+              countryCode={baseCountryCode}
+              amount={baseCountryAmount ?? 0}
+              size={'folder_lg'}
+              variant="inverse"
+            />
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-1.5 text-center">
         <h3 className="body1-normal-bold text-label-normal">

@@ -192,6 +192,87 @@ class TemporaryExpenseSseIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Gemini 429 발생 시 SSE는 error 이벤트로 429 정보를 전달하고 성공분은 유지한다")
+	void parseStatusStream_emitsRateLimitErrorAndKeepsPartialSuccess() throws Exception {
+		String secondS3Key = "temp-expenses/" + accountBookId + "/integration-sse-image-2.png";
+		fileRepository.save(
+				File.builder()
+						.tempExpenseMetaId(tempExpenseMetaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(secondS3Key)
+						.build());
+
+		when(tempExpenseMediaProvider.issueGetPath(anyString(), any()))
+				.thenReturn("https://example.com/test-receipt.png");
+		when(geminiService.parseReceiptImage(anyString(), anyString()))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								true,
+								List.of(
+										new GeminiService.ParsedExpenseItem(
+												"SSE First Success",
+												"FOOD",
+												new BigDecimal("12.00"),
+												"USD",
+												null,
+												null,
+												LocalDateTime.of(2026, 2, 16, 12, 30),
+												"1234",
+												"A-100",
+												"integration test")),
+								null))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(false, List.of(), "rate limit", 429));
+		when(exchangeRateService.getExchangeRate(any(), any(), any()))
+				.thenReturn(new BigDecimal("1300.00"));
+
+		String parseBody =
+				objectMapper.writeValueAsString(new ParseRequest(tempExpenseMetaId, null));
+		MvcResult parseResult =
+				mockMvc.perform(
+								post(
+												"/account-books/{accountBookId}/temporary-expenses/parse",
+												accountBookId)
+										.with(jwtTestHelper.withJwtAuth(userId))
+										.contentType(MediaType.APPLICATION_JSON)
+										.content(parseBody))
+						.andReturn();
+
+		assertThat(parseResult.getResponse().getStatus()).isEqualTo(202);
+		String taskId =
+				objectMapper
+						.readTree(parseResult.getResponse().getContentAsString())
+						.path("taskId")
+						.asText();
+		assertThat(taskId).isNotBlank();
+
+		MvcResult sseResult =
+				mockMvc.perform(
+								get(
+												"/account-books/{accountBookId}/temporary-expenses/parse-status/{taskId}",
+												accountBookId,
+												taskId)
+										.with(jwtTestHelper.withJwtAuth(userId)))
+						.andReturn();
+
+		if (sseResult.getRequest().isAsyncStarted()) {
+			sseResult = mockMvc.perform(asyncDispatch(sseResult)).andReturn();
+		}
+
+		assertThat(sseResult.getResponse().getStatus()).isEqualTo(200);
+		String sseBody = sseResult.getResponse().getContentAsString();
+		assertThat(sseBody).contains("event:error");
+		assertThat(sseBody).contains("\"code\":\"429_TEMP_EXPENSE_PARSE_RATE_LIMIT\"");
+		assertThat(sseBody).contains("\"status\":429");
+		assertThat(sseBody).contains("TEMP_EXPENSE_PARSE_RESULT");
+		assertThat(sseBody).contains(s3Key);
+		assertThat(sseBody).contains(secondS3Key);
+
+		assertThat(temporaryExpenseRepository.findByTempExpenseMetaId(tempExpenseMetaId))
+				.hasSize(1);
+	}
+
+	@Test
 	@DisplayName("SSE 스트림은 진행/완료 상태가 없으면 404를 반환한다")
 	void parseStatusStream_returnsNotFoundWhenTaskMissing() throws Exception {
 		MvcResult result =

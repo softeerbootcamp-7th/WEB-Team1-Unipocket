@@ -247,7 +247,7 @@ UniPocket 팀은 프로젝트 기간 동안
   - 오늘 할 일
 - 돌아가면서 각자의 진행 상황을 공유하고 논의하는 시간을 가졌습니다.
 
-🔗 **[데일리 스크럼 기록 바로가기](https://www.notion.so/bside/2ee22020273580d69a76dde3b9b5b337)**
+🔗 **[데일리 스크럼 기록 바로가기](https://exciting-wildebeest-b2c.notion.site/31075590436c812a9bb3c888d7a78c04?source=copy_link)**
 
 ### 🔁 데일리 회고
 
@@ -258,7 +258,7 @@ UniPocket 팀은 프로젝트 기간 동안
   - 팀/프로세스 관련 인사이트
 - 돌아가면서 발표하며 팀 전체의 방향성을 점검했습니다.
 
-🔗 **[회고 기록 바로가기](https://www.notion.so/bside/2ed22020273580cf8291e0b677324930)**
+🔗 **[회고 기록 바로가기](https://exciting-wildebeest-b2c.notion.site/31075590436c8170b20bf1d877d3850a?source=copy_link)**
 
 ---
 
@@ -289,5 +289,5 @@ UniPocket 팀은 프로젝트 기간 동안
 ## 🏗 프로젝트 아키텍처
 
 <p align="center">
-  <img src="architecture.png" width="750" />
+  <img src="architecture.png" width="700" />
 </p>

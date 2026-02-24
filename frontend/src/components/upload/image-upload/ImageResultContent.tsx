@@ -1,0 +1,163 @@
+import type { ColumnDef } from '@tanstack/react-table';
+
+import {
+  TabContent,
+  TabList,
+  TabProvider,
+  TabTrigger,
+} from '@/components/common/Tab';
+import { DataTable } from '@/components/data-table/DataTable';
+import DataTableProvider from '@/components/data-table/DataTableProvider';
+import FileImage from '@/components/upload/image-upload/FileImage';
+
+import { CATEGORIES } from '@/types/category';
+
+import type {
+  TempExpense,
+  TempExpenseFile,
+} from '@/api/temporary-expenses/type';
+
+// @TODO: 테이블 정리
+// 테이블은 upload/UploadResultTable.tsx 로 두고 이미지, 파일에서 공통으로 사용해도 될 것 같아요
+// 테이블의 전체 width 지정할 수 있도록 해주세요!
+const tempExpenseColumns: ColumnDef<TempExpense>[] = [
+  {
+    accessorKey: 'occurredAt',
+    header: () => <>날짜</>,
+    cell: ({ row }) =>
+      new Date(row.original.occurredAt).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }),
+  },
+  {
+    accessorKey: 'merchantName',
+    header: () => <>거래처</>,
+  },
+  {
+    accessorKey: 'category',
+    header: () => <>카테고리</>,
+    cell: ({ row }) => CATEGORIES[row.original.category]?.name ?? '-',
+  },
+  {
+    id: 'localAmount',
+    header: () => <>현지 금액</>,
+    cell: ({ row }) =>
+      `${row.original.localCurrencyAmount.toLocaleString()} ${row.original.localCountryCode}`,
+  },
+  {
+    id: 'baseAmount',
+    header: () => <>원화 금액</>,
+    cell: ({ row }) =>
+      `${row.original.baseCurrencyAmount.toLocaleString()} ${row.original.baseCountryCode}`,
+  },
+  {
+    accessorKey: 'status',
+    header: () => <>상태</>,
+  },
+];
+
+interface ImageResultContentProps {
+  accountBookId: number;
+  metaId: number;
+  files: TempExpenseFile[];
+}
+
+const ImageResultContent = ({
+  accountBookId,
+  metaId,
+  files,
+}: ImageResultContentProps) => {
+  if (files.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <span className="body1-normal-medium text-label-alternative">
+          파일을 불러오는 중이에요.
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="px-4.25">
+        <TabProvider variant="underline" defaultValue={String(files[0].fileId)}>
+          <TabList>
+            {files.map((file) => {
+              const { successCount, warningCount } = file.expenses.reduce(
+                (acc, e) => {
+                  if (e.status === 'NORMAL') {
+                    acc.successCount++;
+                  } else {
+                    acc.warningCount++;
+                  }
+                  return acc;
+                },
+                { successCount: 0, warningCount: 0 },
+              );
+              const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
+
+              return (
+                <TabTrigger
+                  key={file.fileId}
+                  value={String(file.fileId)}
+                  className="w-full"
+                >
+                  <FileImage
+                    accountBookId={accountBookId}
+                    metaId={metaId}
+                    fileId={file.fileId}
+                    fileName={fileName}
+                    successCount={successCount}
+                    warningCount={warningCount}
+                    hasIssue={warningCount > 0}
+                    variant="tab"
+                  />
+                </TabTrigger>
+              );
+            })}
+          </TabList>
+          <div className="h-10" />
+          {files.map((file) => {
+            const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
+
+            return (
+              <TabContent key={file.fileId} value={String(file.fileId)}>
+                <div className="flex flex-col gap-4.5 lg:flex-row">
+                  <FileImage
+                    accountBookId={accountBookId}
+                    metaId={metaId}
+                    fileId={file.fileId}
+                    fileName={fileName}
+                    variant="preview"
+                  />
+                  <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
+                    <DataTableProvider
+                      columns={tempExpenseColumns}
+                      data={file.expenses}
+                    >
+                      <DataTable<TempExpense>
+                        enableGroupSelection={false}
+                        groupBy={(row) =>
+                          new Date(row.occurredAt).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          })
+                        }
+                        blankFallbackText="지출 내역이 없습니다"
+                      />
+                    </DataTableProvider>
+                  </div>
+                </div>
+              </TabContent>
+            );
+          })}
+        </TabProvider>
+      </div>
+    </div>
+  );
+};
+
+export default ImageResultContent;

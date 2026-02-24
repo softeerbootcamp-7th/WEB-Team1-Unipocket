@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
@@ -91,7 +92,9 @@ class TemporaryExpenseCommandServiceTest {
 										.accountBookId(accountBookId)
 										.build()));
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(temporaryExpenseRepository.save(any(TemporaryExpense.class)))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 

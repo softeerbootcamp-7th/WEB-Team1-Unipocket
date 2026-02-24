@@ -1,7 +1,7 @@
 package com.genesis.unipocket.analysis.command.persistence.repository;
 
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,12 +50,14 @@ public interface AnalysisMonthlyDirtyRepository
 			WHERE d.countryCode = :countryCode
 				AND d.status IN :statuses
 				AND (d.nextRetryAtUtc IS NULL OR d.nextRetryAtUtc <= :nowUtc)
+				AND d.lastEventAtUtc <= :batchStartUtc
 			ORDER BY d.targetYearMonth ASC, d.id ASC
 			""")
 	List<Long> findDispatchableIdsByCountryCode(
 			@Param("countryCode") CountryCode countryCode,
 			@Param("statuses") Collection<AnalysisBatchJobStatus> statuses,
 			@Param("nowUtc") LocalDateTime nowUtc,
+			@Param("batchStartUtc") LocalDateTime batchStartUtc,
 			Pageable pageable);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)

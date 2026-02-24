@@ -1,0 +1,26 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/models/.+:generateContent"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "candidates": [
+        {
+          "content": {
+            "parts": [
+              {
+                "text": "{\"items\":[{\"merchantName\":\"K6 Test Store\",\"category\":\"FOOD\",\"localAmount\":12000,\"localCurrency\":\"JPY\",\"baseAmount\":null,\"baseCurrency\":null,\"occurredAt\":\"2026-02-22T12:00:00\",\"cardLastFourDigits\":\"1234\",\"approvalNumber\":\"APPROVAL-001\",\"memo\":\"wiremock-stub\"}]}"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

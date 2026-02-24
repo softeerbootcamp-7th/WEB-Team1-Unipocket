@@ -1,12 +1,13 @@
-import clsx from 'clsx';
-
 import { type IconName, Icons } from '@/assets';
+import { cn } from '@/lib/utils';
 
 interface IconProps {
   width?: number;
   height?: number;
   color?: string;
   iconName: IconName;
+  ariaLabel?: string;
+  className?: string;
   onClick?: () => void;
 }
 
@@ -24,21 +25,26 @@ const Icon = ({
   height = 24,
   color = 'text-label-alternative',
   iconName,
+  ariaLabel,
+  className,
   onClick,
 }: IconProps) => {
   const IconComponent = Icons[iconName];
 
   return (
-    <div
-      className={clsx(
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel ?? `${iconName} 버튼`}
+      className={cn(
         color,
         'hover:bg-fill-normal flex cursor-pointer items-center justify-center rounded-lg transition-opacity',
         `w-[${width}px] h-[${height}px]`,
+        className,
       )}
-      onClick={onClick}
     >
       <IconComponent width={width} height={height} />
-    </div>
+    </button>
   );
 };
 

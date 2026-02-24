@@ -5,24 +5,24 @@ import com.genesis.unipocket.accountbook.command.persistence.repository.AccountB
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyCategoryAggregateEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.AccountAmountCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.AccountCategoryAmountCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.AmountPairCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryLocalCurrencyGroupRow;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.LocalCurrencyGroupRow;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountAmountCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AccountCategoryAmountCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.AmountPairCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.CategoryLocalCurrencyGroupRow;
-import com.genesis.unipocket.analysis.command.persistence.repository.support.AnalysisBatchAggregationRepository.LocalCurrencyGroupRow;
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.analysis.common.util.CategoryOrdinalParser;
 import com.genesis.unipocket.analysis.common.util.QuantileUtil;
@@ -76,48 +76,61 @@ public class CountryMonthlyDirtyAggregationService {
 	private final ExchangeRateService exchangeRateService;
 
 	public void processCountryDirtyRows(CountryCode countryCode) {
-		LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
-		List<Long> candidateIds =
-				monthlyDirtyRepository.findDispatchableIdsByCountryCode(
-						countryCode,
-						CLAIMABLE_STATUSES,
-						nowUtc,
-						PageRequest.of(0, properties.getDispatchBatchSize()));
-		if (candidateIds.isEmpty()) {
-			return;
-		}
-
+		ZoneId countryZone = CountryCodeTimezoneMapper.getZoneId(countryCode);
+		LocalDateTime batchStartUtc =
+				LocalDate.now(countryZone)
+						.atTime(properties.getRunHour(), properties.getRunMinute())
+						.atZone(countryZone)
+						.withZoneSameInstant(ZoneOffset.UTC)
+						.toLocalDateTime();
 		TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
 		Set<PairMonthKey> affectedPairMonths = new LinkedHashSet<>();
-		for (Long dirtyId : candidateIds) {
-			LocalDateTime claimTime = LocalDateTime.now(ZoneOffset.UTC);
-			Boolean claimed =
-					txTemplate.execute(
-							status -> {
-								int updated =
-										monthlyDirtyRepository.claimDirty(
-												dirtyId,
-												AnalysisBatchJobStatus.RUNNING,
-												CLAIMABLE_STATUSES,
-												claimTime,
-												claimTime.plusMinutes(
-														properties.getLeaseMinutes()));
-								return updated == 1;
-							});
 
-			if (!Boolean.TRUE.equals(claimed)) {
-				continue;
+		int maxLoops = properties.getMaxLoopsPerBatch();
+		int loopCount = 0;
+		while (loopCount++ < maxLoops) {
+			LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
+			List<Long> candidateIds =
+					monthlyDirtyRepository.findDispatchableIdsByCountryCode(
+							countryCode,
+							CLAIMABLE_STATUSES,
+							nowUtc,
+							batchStartUtc,
+							PageRequest.of(0, properties.getDispatchBatchSize()));
+			if (candidateIds.isEmpty()) {
+				break;
 			}
 
-			try {
-				PairMonthKey affectedKey =
-						txTemplate.execute(status -> processOneDirtyRow(dirtyId, claimTime));
-				if (affectedKey != null) {
-					affectedPairMonths.add(affectedKey);
+			for (Long dirtyId : candidateIds) {
+				LocalDateTime claimTime = LocalDateTime.now(ZoneOffset.UTC);
+				Boolean claimed =
+						txTemplate.execute(
+								status -> {
+									int updated =
+											monthlyDirtyRepository.claimDirty(
+													dirtyId,
+													AnalysisBatchJobStatus.RUNNING,
+													CLAIMABLE_STATUSES,
+													claimTime,
+													claimTime.plusMinutes(
+															properties.getLeaseMinutes()));
+									return updated == 1;
+								});
+
+				if (!Boolean.TRUE.equals(claimed)) {
+					continue;
 				}
-			} catch (Exception e) {
-				log.error("Failed to process monthly dirty row. dirtyId={}", dirtyId, e);
-				txTemplate.executeWithoutResult(status -> markFailure(dirtyId, e));
+
+				try {
+					PairMonthKey affectedKey =
+							txTemplate.execute(status -> processOneDirtyRow(dirtyId, claimTime));
+					if (affectedKey != null) {
+						affectedPairMonths.add(affectedKey);
+					}
+				} catch (Exception e) {
+					log.error("Failed to process monthly dirty row. dirtyId={}", dirtyId, e);
+					txTemplate.executeWithoutResult(status -> markFailure(dirtyId, e));
+				}
 			}
 		}
 
@@ -427,7 +440,7 @@ public class CountryMonthlyDirtyAggregationService {
 						currencyType);
 		pairMonthlyCategoryAggregateRepository.flush();
 
-		if (monthlyRows.isEmpty()) {
+		if (monthlyRows.isEmpty() || monthlyRows.size() < properties.getPeerMinSampleSize()) {
 			pairMonthlyAggregateRepository
 					.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
 							pairMonthKey.localCountryCode(),

@@ -3,7 +3,6 @@ package com.genesis.unipocket.expense.query.persistence.repository;
 import com.genesis.unipocket.expense.command.persistence.entity.QExpenseEntity;
 import com.genesis.unipocket.expense.query.persistence.response.ExpenseOneShotRow;
 import com.genesis.unipocket.expense.query.presentation.request.ExpenseSearchFilter;
-import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -31,8 +30,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class ExpenseQueryDslRepository {
-
-	private static final BigDecimal NEGATIVE_ONE = BigDecimal.valueOf(-1L);
 
 	private final JPAQueryFactory queryFactory;
 
@@ -65,7 +62,7 @@ public class ExpenseQueryDslRepository {
 		QTravel travel = QTravel.travel;
 		QUserCardEntity userCard = QUserCardEntity.userCardEntity;
 
-		BooleanBuilder predicate = buildPredicate(accountBookId, filter, expense);
+		BooleanBuilder predicate = buildPredicate(accountBookId, filter, expense, userCard);
 		OrderSpecifier<?>[] orderSpecifiers = toOrderSpecifiers(pageable.getSort(), expense);
 
 		List<ExpenseOneShotRow> content =
@@ -88,6 +85,8 @@ public class ExpenseQueryDslRepository {
 				queryFactory
 						.select(expense.expenseId.count())
 						.from(expense)
+						.leftJoin(userCard)
+						.on(userCard.userCardId.eq(expense.userCardId))
 						.where(predicate)
 						.fetchOne();
 
@@ -110,7 +109,10 @@ public class ExpenseQueryDslRepository {
 	}
 
 	private BooleanBuilder buildPredicate(
-			Long accountBookId, ExpenseSearchFilter filter, QExpenseEntity expense) {
+			Long accountBookId,
+			ExpenseSearchFilter filter,
+			QExpenseEntity expense,
+			QUserCardEntity userCard) {
 		BooleanBuilder predicate = new BooleanBuilder(expense.accountBookId.eq(accountBookId));
 
 		if (filter == null) {
@@ -129,8 +131,14 @@ public class ExpenseQueryDslRepository {
 		if (hasValues(filter.category())) {
 			predicate.and(expense.category.in(filter.category()));
 		}
-		if (hasValues(filter.cardFourDigits())) {
-			predicate.and(expense.cardNumber.in(filter.cardFourDigits()));
+		if (hasValues(filter.cardNumber())) {
+			predicate.and(userCard.cardNumber.in(filter.cardNumber()));
+		}
+		if (filter.isCash() != null) {
+			predicate.and(
+					Boolean.TRUE.equals(filter.isCash())
+							? expense.userCardId.isNull()
+							: expense.userCardId.isNotNull());
 		}
 		if (hasValues(filter.merchantName())) {
 			BooleanBuilder merchantOr = new BooleanBuilder();
@@ -150,12 +158,6 @@ public class ExpenseQueryDslRepository {
 	}
 
 	private OrderSpecifier<?>[] toOrderSpecifiers(Sort sort, QExpenseEntity expense) {
-		NumberExpression<BigDecimal> signedDisplayBaseAmount =
-				new CaseBuilder()
-						.when(expense.category.eq(Category.INCOME))
-						.then(displayBaseAmountExpression(expense))
-						.otherwise(displayBaseAmountExpression(expense).multiply(NEGATIVE_ONE));
-
 		List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
 		if (sort != null && sort.isSorted()) {
@@ -168,8 +170,8 @@ public class ExpenseQueryDslRepository {
 					case "baseCurrencyAmount" ->
 							orderSpecifiers.add(
 									asc
-											? signedDisplayBaseAmount.asc()
-											: signedDisplayBaseAmount.desc());
+											? displayBaseAmountExpression(expense).asc()
+											: displayBaseAmountExpression(expense).desc());
 					default -> throw new BusinessException(ErrorCode.EXPENSE_INVALID_SORT);
 				}
 			}

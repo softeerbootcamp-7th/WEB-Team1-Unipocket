@@ -1,13 +1,13 @@
 import type { ColumnDef } from '@tanstack/react-table';
 
 import { CategoryChip } from '@/components/common/Chip';
+import CurrencyBadge from '@/components/currency/CurrencyBadge';
 import PaymentMethodDisplay from '@/components/expense/PaymentMethodDisplay';
 import SidePanelButton from '@/components/side-panel/SidePanelButton';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { type CategoryId } from '@/types/category';
-
 import type { Expense } from '@/api/expenses/type';
+import { formatCurrency } from '@/lib/country';
 
 export const columns: ColumnDef<Expense>[] = [
   {
@@ -37,7 +37,7 @@ export const columns: ColumnDef<Expense>[] = [
     },
     cell: ({ row, table }) => (
       <div className="relative flex items-center">
-        <span>{row.getValue('merchantName')}</span>
+        <span>{row.original.merchantName}</span>
         <div className="absolute right-0 z-10">
           <SidePanelButton row={row} table={table} />
         </div>
@@ -51,14 +51,18 @@ export const columns: ColumnDef<Expense>[] = [
     },
     header: () => <>카테고리</>,
     cell: ({ row }) => {
-      const categoryId = row.getValue('category') as CategoryId;
+      const categoryId = row.original.category;
       return <CategoryChip categoryId={categoryId} />;
     },
   },
   {
     accessorKey: 'localCurrencyCode',
     header: () => <>현지 통화</>,
-    cell: ({ row }) => <> {row.getValue('localCurrencyCode')}</>,
+    cell: ({ row }) => (
+      <>
+        <CurrencyBadge currencyCode={row.original.localCurrencyCode} />
+      </>
+    ),
   },
   {
     accessorKey: 'localCurrencyAmount',
@@ -67,12 +71,9 @@ export const columns: ColumnDef<Expense>[] = [
     },
     header: () => <>현지 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('localCurrencyAmount'));
-      const formatted = new Intl.NumberFormat('ko-KR', {
-        style: 'currency',
-        currency: 'KRW',
-      }).format(amount);
-      return <>{formatted}</>;
+      const amount = row.original.localCurrencyAmount;
+      const code = row.original.localCurrencyCode;
+      return <>{formatCurrency(amount, code)}</>;
     },
   },
   {
@@ -82,21 +83,22 @@ export const columns: ColumnDef<Expense>[] = [
     },
     header: () => <>기준 금액</>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('baseCurrencyAmount'));
-      const formatted = new Intl.NumberFormat('ko-KR', {
-        style: 'currency',
-        currency: 'KRW',
-      }).format(amount);
-      return <>{formatted}</>;
+      const amount = row.original.baseCurrencyAmount;
+      const code = row.original.baseCurrencyCode;
+      return <>{formatCurrency(amount, code)}</>;
     },
   },
   {
     accessorKey: 'exchangeRate',
     header: () => <>환율</>,
-    cell: ({ row }) => <> {row.getValue('exchangeRate')}</>,
+    cell: ({ row }) => {
+      const amount = row.original.exchangeRate;
+      const code = row.original.baseCurrencyCode;
+      return <>{formatCurrency(amount, code)}</>;
+    },
   },
   {
-    id: 'paymentMethod',
+    accessorKey: 'paymentMethod',
     header: () => <>결제 수단</>,
     meta: {
       cellEditor: 'method',
@@ -107,11 +109,21 @@ export const columns: ColumnDef<Expense>[] = [
     },
   },
   {
-    id: 'travel',
+    accessorKey: 'travel',
     meta: {
-      cellEditor: 'text',
+      cellEditor: 'travel',
     },
     header: () => <>여행</>,
-    cell: ({ row }) => <> {row.original.travel?.name || '-'}</>,
+    cell: ({ row }) => {
+      const travelName = row.original.travel?.name || '-';
+      return (
+        <div
+          className="w-10 truncate text-left lg:w-20"
+          title={travelName !== '-' ? travelName : undefined}
+        >
+          {travelName}
+        </div>
+      );
+    },
   },
 ];

@@ -35,7 +35,7 @@ const AccountBookSelector = () => {
       options={accountBookOptions}
       selectedId={accountBook.accountBookId}
       onSelect={handleOnSelect}
-      itemWidth="w-fit"
+      itemWidth="w-60"
     />
   );
 };

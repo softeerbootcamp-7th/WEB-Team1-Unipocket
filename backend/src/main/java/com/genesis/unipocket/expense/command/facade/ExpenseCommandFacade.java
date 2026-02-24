@@ -15,6 +15,8 @@ import com.genesis.unipocket.expense.common.facade.port.UserCardFetchService;
 import com.genesis.unipocket.expense.common.facade.port.dto.UserCardInfo;
 import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -48,6 +50,7 @@ public class ExpenseCommandFacade {
 						: accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		OffsetDateTime occurredAt = request.occurredAt().atOffset(ZoneOffset.UTC);
+		validateUserCardOwnershipIfPresent(request.userCardId(), userId);
 
 		ExpenseCreateCommand command =
 				new ExpenseCreateCommand(
@@ -82,6 +85,7 @@ public class ExpenseCommandFacade {
 						: accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		OffsetDateTime occurredAt = request.occurredAt().atOffset(ZoneOffset.UTC);
+		validateUserCardOwnershipIfPresent(request.userCardId(), userId);
 
 		ExpenseUpdateCommand command =
 				new ExpenseUpdateCommand(
@@ -117,6 +121,7 @@ public class ExpenseCommandFacade {
 						item ->
 								updateExpenseItem(
 										accountBookId,
+										userId,
 										item,
 										accountBookLocalCurrencyCode,
 										baseCurrencyCode))
@@ -125,6 +130,7 @@ public class ExpenseCommandFacade {
 
 	private ExpenseResult updateExpenseItem(
 			Long accountBookId,
+			UUID userId,
 			ExpenseBulkUpdateItemRequest item,
 			CurrencyCode accountBookLocalCurrencyCode,
 			CurrencyCode baseCurrencyCode) {
@@ -133,6 +139,7 @@ public class ExpenseCommandFacade {
 						? item.localCurrencyCode()
 						: accountBookLocalCurrencyCode;
 		OffsetDateTime occurredAt = item.occurredAt().atOffset(ZoneOffset.UTC);
+		validateUserCardOwnershipIfPresent(item.userCardId(), userId);
 
 		ExpenseUpdateCommand command =
 				new ExpenseUpdateCommand(
@@ -167,6 +174,24 @@ public class ExpenseCommandFacade {
 			return result;
 		}
 		return result.withCardInfo(cardInfo);
+	}
+
+	private void validateUserCardOwnershipIfPresent(Long userCardId, UUID userId) {
+		if (userCardId == null) {
+			return;
+		}
+
+		boolean owned =
+				userCardFetchService.getUserCardOwnedBy(userCardId, userId.toString()).isPresent();
+		if (owned) {
+			return;
+		}
+
+		if (userCardFetchService.getUserCard(userCardId).isEmpty()) {
+			throw new BusinessException(ErrorCode.CARD_NOT_FOUND);
+		}
+
+		throw new BusinessException(ErrorCode.CARD_NOT_OWNED);
 	}
 
 	@Transactional

@@ -3,7 +3,7 @@ import type { CategoryId } from '@/types/category';
 import type { PaymentMethod } from '@/api/expenses/type';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 
-export type UploadType = 'IMAGE' | 'FILE';
+export type UploadType = 'IMAGE' | 'DOCS';
 
 export interface GetPresignedUrlRequest {
   fileName: string;

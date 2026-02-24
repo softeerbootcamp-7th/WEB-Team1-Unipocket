@@ -6,8 +6,8 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 public record ExpenseResponse(
@@ -18,7 +18,7 @@ public record ExpenseResponse(
 		BigDecimal exchangeRate,
 		Category category,
 		PaymentMethodResponse paymentMethod,
-		Instant occurredAt,
+		OffsetDateTime occurredAt,
 		OffsetDateTime updatedAt,
 		String localCurrencyAmount,
 		CurrencyCode localCurrencyCode,
@@ -30,13 +30,13 @@ public record ExpenseResponse(
 		String cardNumber,
 		String fileLink) {
 
-	public record CardResponse(Integer company, String label, String lastDigits) {}
+	public record CardResponse(Long userCardId, Integer company, String label, String lastDigits) {}
 
 	public record PaymentMethodResponse(boolean isCash, CardResponse card) {}
 
 	public record Travel(Long travelId, String name, String imageKey) {}
 
-	public static ExpenseResponse from(ExpenseOneShotRow row) {
+	public static ExpenseResponse from(ExpenseOneShotRow row, ZoneId localZoneId) {
 		return new ExpenseResponse(
 				row.expenseId(),
 				row.accountBookId(),
@@ -48,13 +48,14 @@ public record ExpenseResponse(
 						? new PaymentMethodResponse(
 								false,
 								new CardResponse(
+										row.userCardId(),
 										row.cardCompany() != null
 												? row.cardCompany().ordinal()
 												: null,
 										row.cardLabel(),
 										row.cardLastDigits()))
 						: new PaymentMethodResponse(true, null),
-				row.occurredAt().toInstant(),
+				row.occurredAt().atZoneSameInstant(localZoneId).toOffsetDateTime(),
 				row.updatedAt() != null ? row.updatedAt().atOffset(ZoneOffset.UTC) : null,
 				AmountFormatters.toAmountString(row.localCurrencyAmount()),
 				row.localCurrencyCode(),

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
+import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
 import type { ActiveCellState } from '@/components/data-table/type';
 
 const TextCellEditor = () => {
@@ -22,14 +23,17 @@ const TextCellEditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   const { dispatch } = useDataTable();
   const [value, setValue] = useState(String(textCell.value));
   const inputRef = useRef<HTMLInputElement>(null);
+  const { updateInline } = useInlineExpenseUpdate();
 
-  // 자동 포커스 처리만 남깁니다.
   useEffect(() => {
     inputRef.current?.focus();
     inputRef.current?.select();
   }, []);
 
   const handleSave = () => {
+    if (value.trim() !== '' && value !== String(textCell.value)) {
+      updateInline(textCell.rowId, 'merchantName', value);
+    }
     dispatch({ type: 'SET_TEXT_CELL', payload: null });
   };
 

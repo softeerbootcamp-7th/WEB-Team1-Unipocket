@@ -1,7 +1,6 @@
 package com.genesis.unipocket.tempexpense.command.application.parsing;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -15,7 +14,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.global.common.enums.Category;
+import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.tempexpense.command.application.result.ParseStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
@@ -94,7 +95,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -177,7 +180,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("JPY"), any())).thenReturn(CurrencyCode.JPY);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -232,7 +237,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(eq("KRW"), any())).thenReturn(CurrencyCode.KRW);
@@ -301,7 +308,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.JPY));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.JPY, CountryCode.JP));
 		when(temporaryExpenseParseClient.parse(any(File.class)))
 				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
 		when(temporaryExpenseRepository.saveAll(anyList()))
@@ -385,7 +394,9 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
@@ -430,8 +441,8 @@ class TemporaryExpenseParsingServiceTest {
 	}
 
 	@Test
-	@DisplayName("Gemini 429 응답이면 배치 파싱을 즉시 실패 처리한다")
-	void parseBatchFiles_failsFastOnGeminiRateLimit() {
+	@DisplayName("Gemini 429 응답은 파일 실패로 집계되고 배치 종료 시 error 요약을 발행한다")
+	void parseBatchFiles_aggregatesRateLimitFailuresAndPublishesSummaryError() {
 		Long accountBookId = 1L;
 		File first =
 				File.builder()
@@ -454,18 +465,195 @@ class TemporaryExpenseParsingServiceTest {
 						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
-				.thenReturn(new AccountBookRateInfo(CurrencyCode.KRW, CurrencyCode.USD));
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
 		when(temporaryExpenseParseClient.parse(first))
 				.thenReturn(
 						new GeminiService.GeminiParseResponse(
 								false, List.of(), "too many requests", 429));
+		when(temporaryExpenseParseClient.parse(second))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								false, List.of(), "too many requests", 429));
 
-		assertThatThrownBy(() -> service.parseBatchFiles(meta, List.of(first, second), "task-429"))
-				.isInstanceOf(RuntimeException.class);
+		service.parseBatchFiles(meta, List.of(first, second), "task-429");
 
 		verify(temporaryExpenseParseClient, times(1)).parse(first);
-		verify(temporaryExpenseParseClient, never()).parse(second);
-		verify(progressPublisher).publishError(eq("task-429"), anyString());
+		verify(temporaryExpenseParseClient, times(1)).parse(second);
+		ArgumentCaptor<String> summaryCaptor = ArgumentCaptor.forClass(String.class);
+		verify(progressPublisher)
+				.publishError(
+						eq("task-429"),
+						eq(ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT),
+						summaryCaptor.capture());
 		verify(progressPublisher, never()).complete(eq("task-429"));
+		assertThat(summaryCaptor.getValue()).contains("success=0");
+		assertThat(summaryCaptor.getValue()).contains("temp/first.jpg");
+		assertThat(summaryCaptor.getValue()).contains("temp/second.jpg");
+	}
+
+	@Test
+	@DisplayName("여러 파일 파싱 중 후속 파일이 429로 실패해도 이전 성공 파일은 저장된다")
+	void parseBatchFiles_persistsSuccessfulFilesBeforeRateLimitFailure() {
+		Long accountBookId = 1L;
+		File first =
+				File.builder()
+						.fileId(10L)
+						.tempExpenseMetaId(210L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/first-success.jpg")
+						.build();
+		File second =
+				File.builder()
+						.fileId(11L)
+						.tempExpenseMetaId(210L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/second-rate-limit.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(210L)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
+		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
+		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
+		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
+		when(exchangeRateProvider.getExchangeRate(
+						eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any()))
+				.thenReturn(new BigDecimal("1300"));
+		when(temporaryExpenseRepository.saveAll(anyList()))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		when(temporaryExpenseParseClient.parse(first))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								true,
+								List.of(
+										new GeminiService.ParsedExpenseItem(
+												"First Success",
+												"FOOD",
+												new BigDecimal("10.00"),
+												"USD",
+												null,
+												null,
+												LocalDateTime.of(2026, 2, 20, 9, 0),
+												null,
+												null,
+												null)),
+								null));
+		when(temporaryExpenseParseClient.parse(second))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								false, List.of(), "too many requests", 429));
+
+		service.parseBatchFiles(meta, List.of(first, second), "task-partial-429");
+
+		verify(temporaryExpenseParseClient, times(1)).parse(first);
+		verify(temporaryExpenseParseClient, times(1)).parse(second);
+		ArgumentCaptor<String> summaryCaptor = ArgumentCaptor.forClass(String.class);
+		verify(progressPublisher)
+				.publishError(
+						eq("task-partial-429"),
+						eq(ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT),
+						summaryCaptor.capture());
+		verify(progressPublisher, never()).complete(eq("task-partial-429"));
+		verify(temporaryExpenseRepository, times(1)).saveAll(anyList());
+		assertThat(summaryCaptor.getValue()).contains("success=1");
+		assertThat(summaryCaptor.getValue()).contains("temp/first-success.jpg");
+		assertThat(summaryCaptor.getValue()).contains("temp/second-rate-limit.jpg");
+	}
+
+	@Test
+	@DisplayName("파일별 progress 이벤트는 성공/429 실패 코드를 구조화해 발행한다")
+	void parseBatchFiles_publishesStructuredProgressCodeForSuccessAndRateLimit() {
+		Long accountBookId = 1L;
+		File first =
+				File.builder()
+						.fileId(21L)
+						.tempExpenseMetaId(220L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/first.jpg")
+						.build();
+		File second =
+				File.builder()
+						.fileId(22L)
+						.tempExpenseMetaId(220L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/second.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(220L)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
+		when(temporaryExpenseParseClient.parse(first))
+				.thenReturn(new GeminiService.GeminiParseResponse(true, List.of(), null));
+		when(temporaryExpenseParseClient.parse(second))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(false, List.of(), "rate limit", 429));
+
+		service.parseBatchFiles(meta, List.of(first, second), "task-progress-rate-limit");
+
+		verify(progressPublisher)
+				.publishProgress(
+						eq("task-progress-rate-limit"),
+						eq(50),
+						eq("SUCCESS: temp/first.jpg"),
+						eq("SUCCESS"),
+						eq("temp/first.jpg"));
+		verify(progressPublisher)
+				.publishProgress(
+						eq("task-progress-rate-limit"),
+						eq(100),
+						eq("FAILED: temp/second.jpg (429_TEMP_EXPENSE_PARSE_RATE_LIMIT)"),
+						eq("FAILED_TOO_MANY_REQUEST"),
+						eq("temp/second.jpg"));
+	}
+
+	@Test
+	@DisplayName("파일별 progress 이벤트는 일반 실패를 INTERNAL_SERVER_ERROR 코드로 발행한다")
+	void parseBatchFiles_publishesStructuredProgressCodeForInternalFailure() {
+		Long accountBookId = 1L;
+		File file =
+				File.builder()
+						.fileId(23L)
+						.tempExpenseMetaId(230L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/internal.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(230L)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
+		when(temporaryExpenseParseClient.parse(file))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(false, List.of(), "internal", 500));
+
+		service.parseBatchFiles(meta, List.of(file), "task-progress-internal");
+
+		verify(progressPublisher)
+				.publishProgress(
+						eq("task-progress-internal"),
+						eq(100),
+						eq("FAILED: temp/internal.jpg (500_TEMP_EXPENSE_PARSE_FAILED)"),
+						eq("INTERNAL_SERVER_ERROR"),
+						eq("temp/internal.jpg"));
 	}
 }

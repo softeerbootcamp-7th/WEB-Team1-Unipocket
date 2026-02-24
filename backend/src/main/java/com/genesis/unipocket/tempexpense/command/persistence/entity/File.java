@@ -1,5 +1,6 @@
 package com.genesis.unipocket.tempexpense.command.persistence.entity;
 
+import com.genesis.unipocket.tempexpense.common.util.TempExpenseFileNameResolver;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,17 @@ public class File {
 
 	@Column(name = "s3_key", nullable = false)
 	private String s3Key;
+
+	@Column(name = "file_name")
+	private String fileName;
+
+	public String getFileName() {
+		String resolvedFileName = TempExpenseFileNameResolver.resolveOrFallback(fileName, s3Key);
+		if (!resolvedFileName.equals(fileName)) {
+			fileName = resolvedFileName;
+		}
+		return resolvedFileName;
+	}
 
 	public enum FileType {
 		IMAGE,

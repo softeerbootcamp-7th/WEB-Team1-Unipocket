@@ -1,10 +1,9 @@
-import { useFilteredExpenses } from '@/hooks/useFilteredExpenses';
-
-import ImportToFolderBar from '@/components/data-table/bars/ImportToFolderBar';
+import ImportToFolderBar from '@/components/data-table/bars/import/ImportToFolderBar';
+import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
 const ImportExpenseTable = () => {
-  const { data, filter, updateFilter } = useFilteredExpenses();
+  const { data, filter, updateFilter, totalPages } = useFilteredExpenses();
 
   return (
     <BaseExpenseTable
@@ -12,6 +11,7 @@ const ImportExpenseTable = () => {
       filter={filter}
       updateFilter={updateFilter}
       blankFallbackText="여행 지출 내역을 추가해주세요"
+      totalPages={totalPages}
     >
       <ImportToFolderBar />
     </BaseExpenseTable>

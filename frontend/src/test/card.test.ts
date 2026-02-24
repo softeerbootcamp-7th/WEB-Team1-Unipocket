@@ -248,12 +248,12 @@ describe('카드 관리 API 테스트', () => {
       // Given: 수정할 카드 정보
       const cardId = 1;
       const updateRequest: UpdateCardNicknameRequest = {
-        nickName: '수정된 별명',
+        nickname: '수정된 별명',
       };
 
       const mockUpdatedCard: Card = {
         userCardId: cardId,
-        nickName: updateRequest.nickName,
+        nickName: updateRequest.nickname,
         cardNumber: '1433',
         cardCompany: 'SHINHAN',
       };
@@ -290,7 +290,7 @@ describe('카드 관리 API 테스트', () => {
 
         // When: 별명 수정
         const result = await updateCardNickname(update.cardId, {
-          nickName: update.nickName,
+          nickname: update.nickName,
         });
 
         // Then: 수정된 별명 검증
@@ -305,7 +305,7 @@ describe('카드 관리 API 테스트', () => {
       // Given: 빈 별명 요청
       const cardId = 1;
       const invalidRequest: UpdateCardNicknameRequest = {
-        nickName: '',
+        nickname: '',
       };
 
       const error = new Error('카드 별명 수정에 실패했어요.');
@@ -321,7 +321,7 @@ describe('카드 관리 API 테스트', () => {
       // Given: 존재하지 않는 카드 ID
       const nonExistentCardId = 9999;
       const updateRequest: UpdateCardNicknameRequest = {
-        nickName: '새로운 별명',
+        nickname: '새로운 별명',
       };
 
       const error = new Error('카드 별명 수정에 실패했어요.');
@@ -344,12 +344,12 @@ describe('카드 관리 API 테스트', () => {
       };
 
       const updateRequest: UpdateCardNicknameRequest = {
-        nickName: '새 별명',
+        nickname: '새 별명',
       };
 
       const updatedCard: Card = {
         ...originalCard,
-        nickName: updateRequest.nickName,
+        nickName: updateRequest.nickname,
       };
 
       vi.mocked(updateCardNickname).mockResolvedValue(updatedCard);
@@ -391,12 +391,12 @@ describe('카드 관리 API 테스트', () => {
 
       // Step 3: 카드 별명 수정
       const updateRequest: UpdateCardNicknameRequest = {
-        nickName: '수정된 테스트 카드',
+        nickname: '수정된 테스트 카드',
       };
 
       const updatedCard: Card = {
         ...createdCard,
-        nickName: updateRequest.nickName,
+        nickName: updateRequest.nickname,
       };
 
       vi.mocked(updateCardNickname).mockResolvedValue(updatedCard);

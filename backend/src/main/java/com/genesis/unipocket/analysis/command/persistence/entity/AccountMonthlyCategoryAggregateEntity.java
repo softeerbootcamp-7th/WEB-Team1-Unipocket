@@ -1,5 +1,6 @@
 package com.genesis.unipocket.analysis.command.persistence.entity;
 
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.global.common.entity.BaseEntity;
 import com.genesis.unipocket.global.common.enums.Category;

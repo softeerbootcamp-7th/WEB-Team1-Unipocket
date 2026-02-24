@@ -14,8 +14,11 @@ import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepos
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -52,6 +55,7 @@ class ExpenseControllerIntegrationTest {
 
 	@Autowired private AccountBookCommandRepository accountBookRepository;
 	@Autowired private UserCommandRepository userRepository;
+	@Autowired private UserCardCommandRepository userCardRepository;
 
 	@Autowired private JwtTestHelper jwtTestHelper;
 
@@ -227,6 +231,96 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("지출내역 수기 작성 - 다른 사용자 카드 사용 시 403")
+	void 수기지출_다른사용자카드_검증실패() throws Exception {
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("other-user@unipocket.com")
+								.name("other-user")
+								.mainBucketId(1L)
+								.build());
+		UserCardEntity otherUserCard =
+				userCardRepository.save(
+						UserCardEntity.builder()
+								.user(otherUser)
+								.nickName("타인카드")
+								.cardNumber("9999")
+								.cardCompany(CardCompany.SAMSUNG)
+								.build());
+
+		String body =
+				"""
+				{
+				"merchantName": "스타벅스",
+				"category": 2,
+				"userCardId": %d,
+				"occurredAt": "2026-02-04T12:30:00Z",
+				"localCurrencyAmount": 10000.0,
+				"localCurrencyCode": "KRW",
+				"memo": "아메리카노"
+				}
+				"""
+						.formatted(otherUserCard.getUserCardId());
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("403_CARD_NOT_OWNED"));
+	}
+
+	@Test
+	@DisplayName("지출내역 수정 - 다른 사용자 카드 사용 시 403")
+	void 지출내역_수정_다른사용자카드_검증실패() throws Exception {
+		Long expenseId = createTestExpense();
+
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("other-user2@unipocket.com")
+								.name("other-user2")
+								.mainBucketId(1L)
+								.build());
+		UserCardEntity otherUserCard =
+				userCardRepository.save(
+						UserCardEntity.builder()
+								.user(otherUser)
+								.nickName("타인카드2")
+								.cardNumber("8888")
+								.cardCompany(CardCompany.KB)
+								.build());
+
+		String updateBody =
+				"""
+				{
+				"merchantName": "스타벅스 수정",
+				"category": 2,
+				"userCardId": %d,
+				"occurredAt": "2026-02-04T12:30:00Z",
+				"localCurrencyAmount": 15000.0,
+				"localCurrencyCode": "KRW",
+				"memo": "수정된 메모",
+				"travelId": null
+				}
+				"""
+						.formatted(otherUserCard.getUserCardId());
+
+		mockMvc.perform(
+						put(
+										"/account-books/{accountBookId}/expenses/{expenseId}",
+										accountBookId,
+										expenseId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(updateBody))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("403_CARD_NOT_OWNED"));
+	}
+
+	@Test
 	@DisplayName("지출내역 일괄 수정 - 성공")
 	void 지출내역_일괄수정_성공() throws Exception {
 		Long expenseId1 = createTestExpense();
@@ -274,6 +368,56 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.items.length()").value(2))
 				.andExpect(jsonPath("$.items[0].displayMerchantName").value("일괄수정-1"))
 				.andExpect(jsonPath("$.items[1].displayMerchantName").value("일괄수정-2"));
+	}
+
+	@Test
+	@DisplayName("지출내역 일괄 수정 - 다른 사용자 카드 사용 시 403")
+	void 지출내역_일괄수정_다른사용자카드_검증실패() throws Exception {
+		Long expenseId = createTestExpense();
+
+		UserEntity otherUser =
+				userRepository.save(
+						UserEntity.builder()
+								.email("other-user3@unipocket.com")
+								.name("other-user3")
+								.mainBucketId(1L)
+								.build());
+		UserCardEntity otherUserCard =
+				userCardRepository.save(
+						UserCardEntity.builder()
+								.user(otherUser)
+								.nickName("타인카드3")
+								.cardNumber("7777")
+								.cardCompany(CardCompany.HANA)
+								.build());
+
+		String updateBody =
+				"""
+				{
+				"items": [
+					{
+					"expenseId": %d,
+					"merchantName": "일괄수정-실패",
+					"category": 2,
+					"userCardId": %d,
+					"occurredAt": "2026-02-04T12:30:00Z",
+					"localCurrencyAmount": 11111.0,
+					"localCurrencyCode": "KRW",
+					"memo": "bulk-fail",
+					"travelId": null
+					}
+				]
+				}
+				"""
+						.formatted(expenseId, otherUserCard.getUserCardId());
+
+		mockMvc.perform(
+						put("/account-books/{accountBookId}/expenses/bulk", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(updateBody))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("403_CARD_NOT_OWNED"));
 	}
 
 	@Test
@@ -328,6 +472,62 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(2))
 				.andExpect(jsonPath("$.totalCount").value(2));
+	}
+
+	@Test
+	@DisplayName("지출내역 필터링 - 카드 4자리 필터는 입력 카드 기준(OR)으로만 조회")
+	void 지출내역_카드4자리_유저카드기준_필터링_성공() throws Exception {
+		// given
+		UserCardEntity matchedCard = createUserCard("매칭카드", "1234");
+		UserCardEntity unmatchedCard = createUserCard("비매칭카드", "5678");
+
+		createTestExpenseWithUserCard(
+				"매칭 결제", 2, "2026-02-04T12:00:00", 10000.0, matchedCard.getUserCardId());
+		createTestExpenseWithUserCard(
+				"비매칭 결제", 2, "2026-02-04T13:00:00", 12000.0, unmatchedCard.getUserCardId());
+		createTestExpenseWithDetails("현금 결제", 2, "2026-02-04T14:00:00", 9000.0, null);
+
+		// when & then - user_card.card_number=1234인 내역만 조회
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "occurredAt,desc")
+								.param("cardNumber", "1234"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses").isArray())
+				.andExpect(jsonPath("$.expenses.length()").value(1))
+				.andExpect(jsonPath("$.totalCount").value(1))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("매칭 결제"))
+				.andExpect(
+						jsonPath("$.expenses[0].paymentMethod.card.userCardId")
+								.value(matchedCard.getUserCardId()))
+				.andExpect(jsonPath("$.expenses[0].paymentMethod.card.lastDigits").value("1234"));
+	}
+
+	@Test
+	@DisplayName("지출내역 필터링 - 현금만 조회")
+	void 지출내역_현금필터링_성공() throws Exception {
+		// given
+		UserCardEntity card = createUserCard("체크카드", "1234");
+		createTestExpenseWithUserCard(
+				"카드 결제", 2, "2026-02-04T12:00:00", 10000.0, card.getUserCardId());
+		createTestExpenseWithDetails("현금 결제", 2, "2026-02-04T13:00:00", 9000.0, null);
+
+		// when & then
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "occurredAt,desc")
+								.param("isCash", "true"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses.length()").value(1))
+				.andExpect(jsonPath("$.totalCount").value(1))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("현금 결제"))
+				.andExpect(jsonPath("$.expenses[0].paymentMethod.isCash").value(true));
 	}
 
 	@Test
@@ -398,7 +598,7 @@ class ExpenseControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("지출내역 정렬 - 금액순 정렬 시 지출은 음수, 수입은 양수로 판정")
+	@DisplayName("지출내역 정렬 - 금액 내림차순은 절댓값 기준 단순 정렬")
 	void 지출내역_금액정렬시_소비수입_분리_성공() throws Exception {
 		// given
 		createTestExpenseWithDetails("소비-중간", 2, "2026-02-04T12:00:00", 30000.0, null);
@@ -418,13 +618,13 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses[0].category").value(9))
 				.andExpect(jsonPath("$.expenses[0].merchantName").value("수입-큼"))
 				.andExpect(jsonPath("$.expenses[1].category").value(2))
-				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-중간"))
 				.andExpect(jsonPath("$.expenses[2].category").value(2))
-				.andExpect(jsonPath("$.expenses[2].merchantName").value("소비-중간"));
+				.andExpect(jsonPath("$.expenses[2].merchantName").value("소비-작음"));
 	}
 
 	@Test
-	@DisplayName("지출내역 정렬 - 금액 오름차순 정렬 시 지출 우선 후 수입")
+	@DisplayName("지출내역 정렬 - 금액 오름차순은 절댓값 기준 단순 정렬")
 	void 지출내역_금액오름차순_정렬_성공() throws Exception {
 		// given
 		createTestExpenseWithDetails("소비-중간", 2, "2026-02-04T12:00:00", 30000.0, null);
@@ -442,11 +642,34 @@ class ExpenseControllerIntegrationTest {
 				.andExpect(jsonPath("$.expenses").isArray())
 				.andExpect(jsonPath("$.expenses.length()").value(3))
 				.andExpect(jsonPath("$.expenses[0].category").value(2))
-				.andExpect(jsonPath("$.expenses[0].merchantName").value("소비-중간"))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("소비-작음"))
 				.andExpect(jsonPath("$.expenses[1].category").value(2))
-				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-작음"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("소비-중간"))
 				.andExpect(jsonPath("$.expenses[2].category").value(9))
 				.andExpect(jsonPath("$.expenses[2].merchantName").value("수입-큼"));
+	}
+
+	@Test
+	@DisplayName("지출내역 정렬 - 발생일 오름차순 정렬 성공")
+	void 지출내역_발생일오름차순_정렬_성공() throws Exception {
+		// given
+		createTestExpenseWithDetails("가장늦은지출", 2, "2026-02-04T14:00:00", 10000.0, null);
+		createTestExpenseWithDetails("가장이른지출", 2, "2026-02-04T12:00:00", 10000.0, null);
+		createTestExpenseWithDetails("중간지출", 2, "2026-02-04T13:00:00", 10000.0, null);
+
+		// when & then
+		mockMvc.perform(
+						get("/account-books/{accountBookId}/expenses", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.param("page", "0")
+								.param("size", "20")
+								.param("sort", "occurredAt,asc"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.expenses").isArray())
+				.andExpect(jsonPath("$.expenses.length()").value(3))
+				.andExpect(jsonPath("$.expenses[0].merchantName").value("가장이른지출"))
+				.andExpect(jsonPath("$.expenses[1].merchantName").value("중간지출"))
+				.andExpect(jsonPath("$.expenses[2].merchantName").value("가장늦은지출"));
 	}
 
 	@Test
@@ -716,5 +939,52 @@ class ExpenseControllerIntegrationTest {
 				.findAll()
 				.get(expenseRepository.findAll().size() - 1)
 				.getExpenseId();
+	}
+
+	private Long createTestExpenseWithUserCard(
+			String merchantName,
+			Integer category,
+			String occurredAt,
+			Double amount,
+			Long userCardId)
+			throws Exception {
+		String userCardIdJson = userCardId != null ? String.valueOf(userCardId) : "null";
+		String body =
+				String.format(
+						"""
+			{
+			"merchantName": "%s",
+			"category": %d,
+			"userCardId": %s,
+			"occurredAt": "%sZ",
+			"localCurrencyAmount": %.1f,
+			"localCurrencyCode": "KRW",
+			"memo": "테스트"
+			}
+			""",
+						merchantName, category, userCardIdJson, occurredAt, amount);
+
+		mockMvc.perform(
+						post("/account-books/{accountBookId}/expenses/manual", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isCreated());
+
+		return expenseRepository
+				.findAll()
+				.get(expenseRepository.findAll().size() - 1)
+				.getExpenseId();
+	}
+
+	private UserCardEntity createUserCard(String nickName, String cardNumber) {
+		UserEntity user = userRepository.findById(userId).orElseThrow();
+		return userCardRepository.save(
+				UserCardEntity.builder()
+						.user(user)
+						.nickName(nickName)
+						.cardNumber(cardNumber)
+						.cardCompany(CardCompany.HYUNDAI)
+						.build());
 	}
 }

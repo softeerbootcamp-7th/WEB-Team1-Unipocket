@@ -3,15 +3,15 @@ package com.genesis.unipocket.analysis.support;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisBatchJobStatus;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMetricType;
 import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisMonthlyDirtyEntity;
-import com.genesis.unipocket.analysis.command.persistence.entity.AnalysisQualityType;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
@@ -96,13 +96,24 @@ public final class AnalysisFixtureFactory {
 			CountryCode countryCode,
 			Long accountBookId,
 			LocalDate monthStart) {
+		return savePendingDirtyWithEventAt(
+				dirtyRepository,
+				countryCode,
+				accountBookId,
+				monthStart,
+				LocalDateTime.of(2026, 1, 15, 0, 0));
+	}
+
+	public static AnalysisMonthlyDirtyEntity savePendingDirtyWithEventAt(
+			AnalysisMonthlyDirtyRepository dirtyRepository,
+			CountryCode countryCode,
+			Long accountBookId,
+			LocalDate monthStart,
+			LocalDateTime lastEventAtUtc) {
 		AnalysisMonthlyDirtyEntity entity =
 				AnalysisMonthlyDirtyEntity.create(
-						countryCode,
-						accountBookId,
-						monthStart,
-						LocalDateTime.of(2026, 1, 15, 0, 0));
-		entity.markPendingFromEvent(LocalDateTime.of(2026, 1, 15, 0, 0));
+						countryCode, accountBookId, monthStart, lastEventAtUtc);
+		entity.markPendingFromEvent(lastEventAtUtc);
 		return dirtyRepository.save(entity);
 	}
 

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { getTempExpenseColumns } from '@/components/data-table/columns/tempExpenseColumns';
+import { getTempExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
 import type { TempExpense } from '@/api/temporary-expenses/type';
@@ -15,16 +16,7 @@ const FileResultTable = ({ data }: FileResultTableProps) => {
   const dummyUpdateFilter = () => {};
   const totalPages = Math.ceil(data.length / DEFAULT_PAGE_SIZE);
 
-  // TempExpense 전용 그룹핑 로직
-  const groupBy = (row: TempExpense) => {
-    if (!row.occurredAt) return 'UNCLASSIFIED'; // null인 경우 특수 키 반환
-
-    return new Date(row.occurredAt).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-  };
+  const groupBy = getTempExpenseGroupKey;
 
   const groupDisplay = (groupKey: string) => {
     if (groupKey === 'UNCLASSIFIED')

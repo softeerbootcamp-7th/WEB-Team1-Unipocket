@@ -96,7 +96,6 @@ class TemporaryExpenseQueryServiceTest {
 										null,
 										null,
 										null,
-										null,
 										TemporaryExpenseStatus.NORMAL,
 										null),
 								new TemporaryExpenseItemRow(
@@ -104,7 +103,6 @@ class TemporaryExpenseQueryServiceTest {
 										10L,
 										101L,
 										"B",
-										null,
 										null,
 										null,
 										null,

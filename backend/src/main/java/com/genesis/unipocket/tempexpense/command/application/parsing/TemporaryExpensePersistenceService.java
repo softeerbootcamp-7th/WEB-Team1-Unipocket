@@ -64,7 +64,6 @@ public class TemporaryExpensePersistenceService {
 							.baseCountryCode(amountInfo.getBaseCurrencyCode())
 							.baseCurrencyAmount(amountInfo.getBaseCurrencyAmount())
 							.exchangeRate(amountInfo.getExchangeRate())
-							.paymentsMethod("카드")
 							.memo(contentInfo.getMemo())
 							.occurredAt(contentInfo.getOccurredAt())
 							.status(status)

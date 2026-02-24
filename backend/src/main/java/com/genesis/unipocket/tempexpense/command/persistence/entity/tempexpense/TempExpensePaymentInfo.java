@@ -10,30 +10,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TempExpensePaymentInfo {
 
-	private String paymentsMethod;
 	private String cardLastFourDigits;
 	private String approvalNumber;
 
-	private TempExpensePaymentInfo(
-			String paymentsMethod, String cardLastFourDigits, String approvalNumber) {
-		this.paymentsMethod = paymentsMethod;
+	private TempExpensePaymentInfo(String cardLastFourDigits, String approvalNumber) {
 		this.cardLastFourDigits = cardLastFourDigits;
 		this.approvalNumber = approvalNumber;
 	}
 
-	public static TempExpensePaymentInfo of(
-			String paymentsMethod, String cardLastFourDigits, String approvalNumber) {
-		return new TempExpensePaymentInfo(paymentsMethod, cardLastFourDigits, approvalNumber);
+	public static TempExpensePaymentInfo of(String cardLastFourDigits, String approvalNumber) {
+		return new TempExpensePaymentInfo(cardLastFourDigits, approvalNumber);
 	}
 
 	public static TempExpensePaymentInfo empty() {
-		return new TempExpensePaymentInfo(null, null, null);
+		return new TempExpensePaymentInfo(null, null);
 	}
 
-	public TempExpensePaymentInfo merge(
-			String paymentsMethod, String cardLastFourDigits, String approvalNumber) {
+	public TempExpensePaymentInfo merge(String cardLastFourDigits, String approvalNumber) {
 		return new TempExpensePaymentInfo(
-				paymentsMethod != null ? paymentsMethod : this.paymentsMethod,
 				cardLastFourDigits != null ? cardLastFourDigits : this.cardLastFourDigits,
 				approvalNumber != null ? approvalNumber : this.approvalNumber);
 	}

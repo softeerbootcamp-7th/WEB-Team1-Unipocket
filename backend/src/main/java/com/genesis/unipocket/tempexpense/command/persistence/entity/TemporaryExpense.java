@@ -61,7 +61,6 @@ public class TemporaryExpense {
 
 	@Embedded
 	@AttributeOverrides({
-		@AttributeOverride(name = "paymentsMethod", column = @Column(name = "payments_method")),
 		@AttributeOverride(
 				name = "cardLastFourDigits",
 				column = @Column(name = "card_last_four_digits", length = 4)),
@@ -92,8 +91,7 @@ public class TemporaryExpense {
 						patch.baseCurrencyAmount(),
 						patch.exchangeRate());
 		this.paymentInfo =
-				this.paymentInfo.merge(
-						patch.paymentsMethod(), patch.cardLastFourDigits(), patch.approvalNumber());
+				this.paymentInfo.merge(patch.cardLastFourDigits(), patch.approvalNumber());
 		this.status = statusPolicy.resolve(this.contentInfo, this.amountInfo);
 	}
 
@@ -146,10 +144,6 @@ public class TemporaryExpense {
 		return amountInfo != null ? amountInfo.getExchangeRate() : null;
 	}
 
-	public String getPaymentsMethod() {
-		return paymentInfo != null ? paymentInfo.getPaymentsMethod() : null;
-	}
-
 	public String getCardLastFourDigits() {
 		return paymentInfo != null ? paymentInfo.getCardLastFourDigits() : null;
 	}
@@ -174,7 +168,6 @@ public class TemporaryExpense {
 		private CurrencyCode baseCountryCode;
 		private BigDecimal baseCurrencyAmount;
 		private BigDecimal exchangeRate;
-		private String paymentsMethod;
 		private String memo;
 		private LocalDateTime occurredAt;
 		private TemporaryExpenseStatus status;
@@ -231,11 +224,6 @@ public class TemporaryExpense {
 			return this;
 		}
 
-		public LegacyBuilder paymentsMethod(String paymentsMethod) {
-			this.paymentsMethod = paymentsMethod;
-			return this;
-		}
-
 		public LegacyBuilder memo(String memo) {
 			this.memo = memo;
 			return this;
@@ -277,8 +265,7 @@ public class TemporaryExpense {
 							this.baseCurrencyAmount,
 							this.exchangeRate);
 			entity.paymentInfo =
-					TempExpensePaymentInfo.of(
-							this.paymentsMethod, this.cardLastFourDigits, this.approvalNumber);
+					TempExpensePaymentInfo.of(this.cardLastFourDigits, this.approvalNumber);
 			entity.status = this.status;
 			return entity;
 		}

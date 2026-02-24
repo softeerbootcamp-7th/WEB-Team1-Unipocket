@@ -29,6 +29,9 @@ export const widgetKeys = {
   allDetails: (accountBookId: number | string | undefined) =>
     [...widgetKeys.all, 'detail', accountBookId] as const,
 
+  detailType: (accountBookId: number | undefined, widgetType: WidgetType) =>
+    [...widgetKeys.allDetails(accountBookId), widgetType] as const,
+
   detail: (
     accountBookId: number | undefined,
     widgetType: WidgetType,
@@ -36,8 +39,7 @@ export const widgetKeys = {
     period?: PeriodType,
   ) =>
     [
-      ...widgetKeys.allDetails(accountBookId),
-      widgetType,
+      ...widgetKeys.detailType(accountBookId, widgetType),
       { currencyType, period },
     ] as const,
 

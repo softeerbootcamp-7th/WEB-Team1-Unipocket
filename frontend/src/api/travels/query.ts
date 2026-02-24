@@ -61,6 +61,12 @@ export const travelKeys = {
     travelId: number | string | undefined,
   ) => [...travelKeys.all, 'widget', accountBookId, travelId] as const,
 
+  widgetByType: (
+    accountBookId: number | string | undefined,
+    travelId: number | string | undefined,
+    widgetType: WidgetType,
+  ) => [...travelKeys.allWidgets(accountBookId, travelId), widgetType] as const,
+
   widget: (
     accountBookId: number | string | undefined,
     travelId: number | string | undefined,
@@ -69,11 +75,7 @@ export const travelKeys = {
     period?: PeriodType,
   ) =>
     [
-      ...travelKeys.all,
-      'widget',
-      accountBookId,
-      travelId,
-      widgetType,
+      ...travelKeys.widgetByType(accountBookId, travelId, widgetType),
       { currencyType, period },
     ] as const,
 };
@@ -292,7 +294,7 @@ export const useUpdateTravelBudgetMutation = () => {
     },
     onSuccess: (_, { travelId }) => {
       queryClient.invalidateQueries({
-        queryKey: travelKeys.widget(accountBookId, travelId, 'BUDGET'),
+        queryKey: travelKeys.widgetByType(accountBookId, travelId, 'BUDGET'),
       });
       toast.success('예산이 저장되었어요.');
     },

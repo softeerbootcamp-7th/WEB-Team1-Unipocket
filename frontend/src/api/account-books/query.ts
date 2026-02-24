@@ -125,7 +125,7 @@ const useUpdateAccountBookBudgetMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: widgetKeys.detail(accountBookId, 'BUDGET'),
+        queryKey: widgetKeys.detailType(accountBookId, 'BUDGET'),
       });
       toast.success('예산이 저장되었어요.');
     },

@@ -4,6 +4,7 @@ import { useWidgetContext } from '@/components/chart/widget/WidgetContext';
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
+import ExpenseCard from '@/components/home-page/ExpenseCard';
 
 import { useGetTravelDetailQuery } from '@/api/travels/query';
 import { formatDateToDot, formatTripDuration } from '@/lib/utils';
@@ -16,6 +17,13 @@ const TravelDetailHeader = () => {
       <TripSummary />
       <Divider style="vertical" className="h-15" />
       {/* @TODO 총 지출 API 연동 필요 */}
+      <ExpenseCard
+        label="총 지출 (mock)"
+        baseCountryCode="KR"
+        baseCountryAmount={1402432}
+        localCountryCode="US"
+        localCountryAmount={12232}
+      />
       <div className="flex-1" />
       <Button
         variant={isWidgetEditMode ? 'solid' : 'outlined'}

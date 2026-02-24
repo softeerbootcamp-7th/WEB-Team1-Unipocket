@@ -59,7 +59,7 @@ export const useSidePanelValues = ({
     if (selectedTravelId === null) return <EmptyValue />;
     if (selectedTravelId === NONE_TRAVEL) return <Chip label="-" />;
     const travel = travels.find((t) => t.travelId === selectedTravelId);
-    return <Chip label={travel?.travelPlaceName ?? '알 수 없는 여행'} />;
+    return <Chip label={travel?.travelPlaceName ?? '-'} />;
   };
 
   return [

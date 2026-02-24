@@ -111,7 +111,7 @@ const LocaleSelectModal = ({
   const { title, subTitle } =
     MODAL_TEXT[mode === 'LOCAL' && isInitPath ? 'LOCAL_INIT' : mode];
   return (
-    <div className="rounded-modal-20 bg-background-normal flex flex-col items-center gap-12 px-7.5 py-13">
+    <div className="rounded-t-modal-20 bg-background-normal flex h-full flex-col items-center gap-12 px-7.5 py-13">
       {/* text section */}
       <div className="flex flex-col items-center gap-1.5 text-center">
         <span className="text-label-normal title3-semibold">{title}</span>

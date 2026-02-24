@@ -6,8 +6,10 @@ import {
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import { AccountBookSettingsForm } from '@/components/setting-page/AccountBookSettingsForm';
-import AccountBookCreateModal from '@/components/setting-page/modal/AccountBookCreateModal';
+import {
+  AccountBookSettingsForm,
+  type AccountBookSettingsFormProps,
+} from '@/components/setting-page/AccountBookSettingsForm';
 import {
   SettingSection,
   SettingTitle,
@@ -15,11 +17,9 @@ import {
 
 import {
   useAccountBookDetailQuery,
-  useCreateAccountBookMutation,
   useGetAccountBooksQuery,
 } from '@/api/account-books/query';
 import { Icons } from '@/assets';
-import type { CountryCode } from '@/data/country/countryCode';
 
 import Chip from '../common/Chip';
 
@@ -27,21 +27,26 @@ const ConfiguratorSkeleton = () => (
   <div className="h-32 w-full animate-pulse rounded-md bg-black/10" />
 );
 
-const AccountBookConfigurator = () => {
+type AccountBookModalOpeners = Pick<
+  AccountBookSettingsFormProps,
+  | 'openEditAccountBookName'
+  | 'openDeleteAccountBook'
+  | 'openEditAccountBookPeriod'
+  | 'openEditBaseCurrency'
+  | 'openEditLocalCurrency'
+> & {
+  openCreateAccountBook: () => void;
+};
+
+const AccountBookConfigurator = ({
+  openEditAccountBookName,
+  openDeleteAccountBook,
+  openEditAccountBookPeriod,
+  openEditBaseCurrency,
+  openEditLocalCurrency,
+  openCreateAccountBook,
+}: AccountBookModalOpeners) => {
   const { data: accountBooks } = useGetAccountBooksQuery();
-  const createAccountBookMutation = useCreateAccountBookMutation();
-
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-
-  const handleCreateAccountBook = (data: {
-    localCountryCode: CountryCode;
-    startDate: string;
-    endDate: string;
-  }) => {
-    createAccountBookMutation.mutate(data, {
-      onSuccess: () => setCreateModalOpen(false),
-    });
-  };
 
   const [activeAccountBookId, setActiveAccountBookId] = useState(
     accountBooks[0].accountBookId.toString(),
@@ -79,7 +84,7 @@ const AccountBookConfigurator = () => {
             ))}
           </TabList>
           <button
-            onClick={() => setCreateModalOpen(true)}
+            onClick={openCreateAccountBook}
             className="headline1-bold text-label-assistive flex items-center justify-center gap-3.5 px-2.5 pb-3.5"
           >
             <Icons.Add className="size-4" />새 가계부 추가
@@ -92,18 +97,15 @@ const AccountBookConfigurator = () => {
               key={accountBookDetail.accountBookId}
               detail={accountBookDetail}
               accountBooks={accountBooks}
+              openEditAccountBookName={openEditAccountBookName}
+              openDeleteAccountBook={openDeleteAccountBook}
+              openEditAccountBookPeriod={openEditAccountBookPeriod}
+              openEditBaseCurrency={openEditBaseCurrency}
+              openEditLocalCurrency={openEditLocalCurrency}
             />
           )}
         </TabContent>
       </TabProvider>
-
-      {isCreateModalOpen && (
-        <AccountBookCreateModal
-          isSubmitting={createAccountBookMutation.isPending}
-          onClose={() => setCreateModalOpen(false)}
-          onSubmit={handleCreateAccountBook}
-        />
-      )}
     </SettingSection>
   );
 };

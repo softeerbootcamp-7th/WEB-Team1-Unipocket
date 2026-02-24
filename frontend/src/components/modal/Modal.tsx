@@ -2,7 +2,7 @@ import React, { type ReactNode, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
-import { useEscapeKey } from '@/hooks/useKeyboardEvent';
+import { useEnterKey, useEscapeKey } from '@/hooks/useKeyboardEvent';
 
 import Button, { type ButtonProps } from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
@@ -50,6 +50,7 @@ const Modal = ({
   const showConfirm = confirmButton !== null;
 
   useEscapeKey(isOpen, onClose);
+  useEnterKey(isOpen, onAction, isActionReady);
 
   const { label: cancelLabel = '취소', variant: cancelVariant = 'outlined' } =
     cancelButton ?? {};

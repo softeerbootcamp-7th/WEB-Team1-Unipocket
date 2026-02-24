@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Expense } from '@/api/expenses/type';
 import { formatCurrency } from '@/lib/country';
 
-export const columns: ColumnDef<Expense>[] = [
+export const expenseColumns: ColumnDef<Expense>[] = [
   {
     id: 'select',
     header: ({ table }) => (

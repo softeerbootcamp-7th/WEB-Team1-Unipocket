@@ -6,26 +6,21 @@ interface PaymentMethodDisplayProps {
 }
 
 const PaymentMethodDisplay = ({ paymentMethod }: PaymentMethodDisplayProps) => {
-  // 현금인 경우
   if (paymentMethod.isCash) {
     return <span className="label1-normal-medium text-label-normal">현금</span>;
   }
 
-  // 카드 정보가 없는 경우
   if (!paymentMethod.card) {
     return <span className="label1-normal-medium text-label-normal">-</span>;
   }
 
-  // 카드인 경우
   const { company, label, lastDigits } = paymentMethod.card;
-  const cardInfo = CARDS[company];
+  // company가 null이나 undefined일 경우를 안전하게 처리
+  const cardInfo = company ? CARDS[company] : undefined;
   const Logo = cardInfo?.logo;
 
   return (
-    <div
-      className="flex items-center gap-1.5"
-      title={`${label} ${lastDigits}`} // 마우스 오버 시 전체 정보 표시
-    >
+    <div className="flex items-center gap-1.5" title={`${label} ${lastDigits}`}>
       {Logo && <img src={Logo} alt="카드 로고" className="size-5 shrink-0" />}
 
       <span className="label1-normal-medium text-label-normal truncate">

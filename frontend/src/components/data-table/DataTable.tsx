@@ -14,7 +14,7 @@ import {
 
 interface DataTableProps<TData> {
   groupBy?: (row: TData) => string;
-  groupDisplay?: (groupKey: string) => string; // 다른 groupKey로도
+  groupDisplay?: (groupKey: string) => string;
   enableGroupSelection?: boolean;
   blankFallbackText?: string;
 }
@@ -46,8 +46,6 @@ const DataTable = <TData,>({
       cell: Cell<TData, unknown>,
       currentTarget: EventTarget & HTMLTableCellElement,
     ) => {
-      const editorType = cell.column.columnDef.meta?.cellEditor;
-
       const columnId = cell.column.id;
       if (columnId === 'select') return;
 
@@ -58,6 +56,20 @@ const DataTable = <TData,>({
         rect,
         value: cell.getValue(),
       };
+
+      const original = cell.row.original;
+      const hasIssue =
+        typeof original === 'object' &&
+        original !== null &&
+        'status' in original &&
+        (original as Record<string, unknown>).status !== 'NORMAL';
+
+      if (hasIssue) {
+        dispatch({ type: 'SET_WARNING_CELL', payload });
+        return;
+      }
+
+      const editorType = cell.column.columnDef.meta?.cellEditor;
 
       switch (editorType) {
         case 'text':
@@ -148,29 +160,38 @@ const DataTable = <TData,>({
                 </TableRow>
 
                 {/* 실제 데이터 행들 */}
-                {dateRows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          onClick={(e) =>
-                            handleCellClick(cell, e.currentTarget)
-                          }
-                          className="cursor-pointer"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
+                {dateRows.map((row) => {
+                  const original = row.original;
+                  const hasIssue =
+                    typeof original === 'object' &&
+                    original !== null &&
+                    'status' in original &&
+                    (original as Record<string, unknown>).status !== 'NORMAL';
+                  return (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className={hasIssue ? 'bg-red-50 hover:bg-red-100' : ''}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            onClick={(e) =>
+                              handleCellClick(cell, e.currentTarget)
+                            }
+                            className="cursor-pointer"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
               </React.Fragment>
             );
           })

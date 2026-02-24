@@ -2,8 +2,12 @@ import { useParams } from '@tanstack/react-router';
 
 import Button from '@/components/common/Button';
 import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
+import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
+import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
+import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
+import TravelCellEditor from '@/components/data-table/editors/TravelCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
@@ -33,10 +37,14 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
         </Button>
       }
       totalPages={totalPages}
+      columns={expenseColumns}
     >
       <UpdateActionBar />
       <TextCellEditor />
       <CategoryCellEditor />
+      <AmountCellEditor />
+      <MethodCellEditor />
+      <TravelCellEditor />
     </BaseExpenseTable>
   );
 };

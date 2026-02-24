@@ -1,67 +1,52 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
 
-import Button from '@/components/common/Button';
-import Divider from '@/components/common/Divider';
-import ExpenseCard from '@/components/home-page/ExpenseCard';
+import WidgetList from '@/components/chart/widget/components/WidgetList';
+import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
+import { useTravelWidgetManager } from '@/components/chart/widget/hook/useTravelWidgetManager';
+import { WidgetContext } from '@/components/chart/widget/WidgetContext';
 import BottomSheet from '@/components/layout/BottomSheet';
+import ExpandableSheet from '@/components/layout/ExpandableSheet';
 import ExpenseTable from '@/components/travel-page/ExpenseTable';
 import ImportExpenseTable from '@/components/travel-page/ImportExpenseTable';
-
-import { Icons } from '@/assets';
-
-const TripSummary = () => {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2.5">
-        <Link to="/travel">
-          <Icons.ChevronBack className="text-label-normal size-6" />
-        </Link>
-        <span className="heading2-bold text-label-normal">뉴욕 보스턴</span>
-      </div>
-      <div className="flex gap-1.5">
-        <span className="body1-normal-medium text-label-normal">
-          2026.01.21 - 2026.01.26
-        </span>
-        <span className="body1-normal-medium text-label-alternative">
-          5박 6일
-        </span>
-      </div>
-    </div>
-  );
-};
+import TravelDetailHeader from '@/components/travel-page/TravelDetailHeader';
 
 const TravelDetailPage = () => {
+  const { travelId } = useParams({ from: '/_app/travel/$travelId' });
+  const widgetManager = useTravelWidgetManager(travelId);
+  const { isWidgetEditMode } = widgetManager;
+
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   return (
-    <div className="flex h-full flex-col px-4 pt-8 xl:px-30">
-      <div className="mb-10 flex items-end gap-4">
-        <TripSummary />
-        <Divider style="vertical" className="h-15" />
-        <ExpenseCard
-          label="총 지출"
-          baseCountryCode="KR"
-          baseCountryAmount={1402432}
-          localCountryCode="US"
-          localCountryAmount={12232}
-        />
-        <div className="flex-1" />
-        <Button variant="outlined" size="md">
-          위젯 편집하기
-        </Button>
-      </div>
+    <WidgetContext.Provider value={widgetManager}>
+      <div className="flex h-full flex-col gap-10 px-4 pt-8 xl:px-30">
+        <TravelDetailHeader />
 
-      <div className="bg-background-normal rounded-modal-16 flex-1 rounded-b-none px-2 py-4 shadow">
-        <ExpenseTable onOpenBottomSheet={() => setBottomSheetOpen(true)} />
+        <WidgetList />
+
+        <div className="relative min-h-0 flex-1">
+          {isWidgetEditMode ? (
+            <ExpandableSheet collapsedHeight="100%" isExpandable={false}>
+              <WidgetPicker />
+            </ExpandableSheet>
+          ) : (
+            <div className="bg-background-normal rounded-modal-16 flex-1 rounded-b-none px-2 py-4 shadow">
+              <ExpenseTable
+                onOpenBottomSheet={() => setBottomSheetOpen(true)}
+              />
+            </div>
+          )}
+        </div>
+
+        <BottomSheet
+          isOpen={isBottomSheetOpen}
+          onClose={() => setBottomSheetOpen(false)}
+        >
+          <ImportExpenseTable />
+        </BottomSheet>
       </div>
-      <BottomSheet
-        isOpen={isBottomSheetOpen}
-        onClose={() => setBottomSheetOpen(false)}
-      >
-        <ImportExpenseTable />
-      </BottomSheet>
-    </div>
+    </WidgetContext.Provider>
   );
 };
 

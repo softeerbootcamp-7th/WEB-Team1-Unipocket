@@ -1,62 +1,13 @@
-import type { ColumnDef } from '@tanstack/react-table';
-
 import {
   TabContent,
   TabList,
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import { DataTable } from '@/components/data-table/DataTable';
-import DataTableProvider from '@/components/data-table/DataTableProvider';
 import FileImage from '@/components/upload/image-upload/FileImage';
+import ImageResultTable from '@/components/upload/image-upload/ImageResultTable';
 
-import { CATEGORIES } from '@/types/category';
-
-import type {
-  TempExpense,
-  TempExpenseFile,
-} from '@/api/temporary-expenses/type';
-
-// @TODO: 테이블 정리
-// 테이블은 upload/UploadResultTable.tsx 로 두고 이미지, 파일에서 공통으로 사용해도 될 것 같아요
-// 테이블의 전체 width 지정할 수 있도록 해주세요!
-const tempExpenseColumns: ColumnDef<TempExpense>[] = [
-  {
-    accessorKey: 'occurredAt',
-    header: () => <>날짜</>,
-    cell: ({ row }) =>
-      new Date(row.original.occurredAt).toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      }),
-  },
-  {
-    accessorKey: 'merchantName',
-    header: () => <>거래처</>,
-  },
-  {
-    accessorKey: 'category',
-    header: () => <>카테고리</>,
-    cell: ({ row }) => CATEGORIES[row.original.category]?.name ?? '-',
-  },
-  {
-    id: 'localAmount',
-    header: () => <>현지 금액</>,
-    cell: ({ row }) =>
-      `${row.original.localCurrencyAmount.toLocaleString()} ${row.original.localCountryCode}`,
-  },
-  {
-    id: 'baseAmount',
-    header: () => <>원화 금액</>,
-    cell: ({ row }) =>
-      `${row.original.baseCurrencyAmount.toLocaleString()} ${row.original.baseCountryCode}`,
-  },
-  {
-    accessorKey: 'status',
-    header: () => <>상태</>,
-  },
-];
+import type { TempExpenseFile } from '@/api/temporary-expenses/type';
 
 interface ImageResultContentProps {
   accountBookId: number;
@@ -132,24 +83,7 @@ const ImageResultContent = ({
                     fileName={fileName}
                     variant="preview"
                   />
-                  <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
-                    <DataTableProvider
-                      columns={tempExpenseColumns}
-                      data={file.expenses}
-                    >
-                      <DataTable<TempExpense>
-                        enableGroupSelection={false}
-                        groupBy={(row) =>
-                          new Date(row.occurredAt).toLocaleDateString('ko-KR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })
-                        }
-                        blankFallbackText="지출 내역이 없습니다"
-                      />
-                    </DataTableProvider>
-                  </div>
+                  <ImageResultTable data={file.expenses} />
                 </div>
               </TabContent>
             );

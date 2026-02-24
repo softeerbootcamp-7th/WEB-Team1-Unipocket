@@ -276,6 +276,46 @@ class AccountBookControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("가계부 수정 - 부분 필드(isMain)만 PATCH 가능")
+	void 가계부_수정_부분필드_isMain만_PATCH() throws Exception {
+		Long firstId = createAccountBook();
+		Long secondId = createAccountBook();
+
+		AccountBookEntity before = accountBookRepository.findById(secondId).orElseThrow();
+		String beforeTitle = before.getTitle();
+		CountryCode beforeLocalCountryCode = before.getLocalCountryCode();
+		CountryCode beforeBaseCountryCode = before.getBaseCountryCode();
+		LocalDate beforeStartDate = before.getStartDate();
+		LocalDate beforeEndDate = before.getEndDate();
+
+		assertThat(userRepository.findById(userId).orElseThrow().getMainBucketId())
+				.isEqualTo(firstId);
+
+		String body = """
+			{
+				"isMain": true
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", secondId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accountBookId").value(secondId));
+
+		AccountBookEntity updated = accountBookRepository.findById(secondId).orElseThrow();
+		assertThat(userRepository.findById(userId).orElseThrow().getMainBucketId())
+				.isEqualTo(secondId);
+		assertThat(updated.getTitle()).isEqualTo(beforeTitle);
+		assertThat(updated.getLocalCountryCode()).isEqualTo(beforeLocalCountryCode);
+		assertThat(updated.getBaseCountryCode()).isEqualTo(beforeBaseCountryCode);
+		assertThat(updated.getStartDate()).isEqualTo(beforeStartDate);
+		assertThat(updated.getEndDate()).isEqualTo(beforeEndDate);
+	}
+
+	@Test
 	@DisplayName("가계부 수정 - 부분 필드(title)만 PATCH 가능")
 	void 가계부_수정_부분필드_title만_PATCH() throws Exception {
 		Long accountBookId = createAccountBook();
@@ -363,7 +403,7 @@ class AccountBookControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("수정 시 빈 제목 - 400 (@NotBlank 위반)")
+	@DisplayName("수정 시 빈 제목 - 400 (필드가 들어오면 공백 불가)")
 	void 수정시_빈_제목_400() throws Exception {
 		Long accountBookId = createAccountBook();
 
@@ -384,6 +424,31 @@ class AccountBookControllerIntegrationTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.content(body))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("수정 시 title null - 400 (필드가 들어오면 null 불가)")
+	void 수정시_title_null_400() throws Exception {
+		Long accountBookId = createAccountBook();
+
+		String body = """
+			{
+				"title": null
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", accountBookId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value(ErrorCode.INVALID_INPUT_VALUE.getCode()))
+				.andExpect(
+						jsonPath("$.message")
+								.value(
+										ErrorCode.CodeLiterals
+												.ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED));
 	}
 
 	@Test

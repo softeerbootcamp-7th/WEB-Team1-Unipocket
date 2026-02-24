@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,11 +20,11 @@ import lombok.NoArgsConstructor;
 public class AccountBookUpdateRequest {
 
 	public static final String CODE = ErrorCode.CodeLiterals.ACCOUNT_BOOK_UPDATE_VALIDATION_FAILED;
-	private static final int MAX_TITLE_LENGTH = 255;
+	private static final int MAX_TITLE_LENGTH = 30;
 	private static final int MAX_BUDGET_INTEGER_DIGITS = 17;
 	private static final int MAX_BUDGET_FRACTION_DIGITS = 2;
 
-	@NotBlank @Size(max = 30) private String title;
+	@Size(max = 30, message = CODE) private String title;
 
 	private CountryCode localCountryCode;
 	private CountryCode baseCountryCode;

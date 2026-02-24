@@ -6,10 +6,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.genesis.unipocket.analysis.command.config.AnalysisBatchProperties;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.AccountAmountCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryAmountPairCount;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.CategoryLocalCurrencyGroupRow;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository.LocalCurrencyGroupRow;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -30,51 +33,49 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CountryMonthlyDirtyAggregationServiceTest {
 
-	@Mock private AnalysisBatchProperties properties;
+	// MonthlyAmountCorrectionCalculator 의존
 	@Mock private ExchangeRateService exchangeRateService;
+	@InjectMocks private MonthlyAmountCorrectionCalculator correctionCalculator;
 
-	@InjectMocks private CountryMonthlyDirtyAggregationService service;
+	// PairMonthlyAggregateRefresher 의존
+	@Mock private AnalysisBatchProperties properties;
+	@Mock private AnalysisBatchAggregationRepository aggregationRepository;
+	@Mock private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	@Mock private PairMonthlyCategoryAggregateRepository pairMonthlyCategoryAggregateRepository;
+	@InjectMocks private PairMonthlyAggregateRefresher pairRefresher;
 
 	private static final OffsetDateTime REF_DATE_TIME =
 			OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
 	@BeforeEach
-	void setUp() {
-		// Default mock behavior if needed
-	}
+	void setUp() {}
 
-	// ─── computePairIqrBounds (기존 테스트) ──────────────────────────────────
+	// ─── computePairIqrBounds ────────────────────────────────────────────────
 
 	@Test
 	@DisplayName("Should return null bounds when sample size is less than configured minimum")
 	void computePairIqrBounds_insufficientSamples_returnsNull() throws Exception {
-		// Given
 		int minSampleSize = 10;
 		given(properties.getPeerMinSampleSize()).willReturn(minSampleSize);
 
 		List<AccountAmountCount> rows = createMockRows(minSampleSize - 1);
 
-		// When
 		Object result = invokeComputePairIqrBounds(rows);
 
-		// Then
 		assertThat(result).isNull();
 	}
 
 	@Test
 	@DisplayName("Should return valid bounds when sample size meets configured minimum")
 	void computePairIqrBounds_sufficientSamples_returnsBounds() throws Exception {
-		// Given
 		int minSampleSize = 10;
 		given(properties.getPeerMinSampleSize()).willReturn(minSampleSize);
 		given(properties.getOutlierIqrMultiplier()).willReturn(1.5);
 
 		List<AccountAmountCount> rows = createMockRows(minSampleSize);
 
-		// When
 		Object result = invokeComputePairIqrBounds(rows);
 
-		// Then
 		assertThat(result).isNotNull();
 	}
 
@@ -82,24 +83,21 @@ class CountryMonthlyDirtyAggregationServiceTest {
 
 	@Test
 	@DisplayName("동일 통화인 경우 환율 변환 없이 그대로 합산")
-	void computeCorrectedLocalAmount_sameCurrency_sumsDirectly() throws Exception {
-		// Given
+	void computeCorrectedLocalAmount_sameCurrency_sumsDirectly() {
 		CurrencyCode target = CurrencyCode.USD;
 		List<LocalCurrencyGroupRow> groups =
 				List.of(new LocalCurrencyGroupRow("USD", new BigDecimal("150.00"), 2L));
 
-		// When
-		BigDecimal result = invokeComputeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
+		BigDecimal result =
+				correctionCalculator.computeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
 
-		// Then
 		assertThat(result).isEqualByComparingTo("150.00");
 		verifyNoInteractions(exchangeRateService);
 	}
 
 	@Test
 	@DisplayName("다른 통화인 경우 환율 변환 후 합산")
-	void computeCorrectedLocalAmount_differentCurrency_convertsAndSums() throws Exception {
-		// Given
+	void computeCorrectedLocalAmount_differentCurrency_convertsAndSums() {
 		CurrencyCode target = CurrencyCode.USD;
 		given(
 						exchangeRateService.convertAmount(
@@ -114,11 +112,10 @@ class CountryMonthlyDirtyAggregationServiceTest {
 						new LocalCurrencyGroupRow("USD", new BigDecimal("100.00"), 1L),
 						new LocalCurrencyGroupRow("JPY", new BigDecimal("10000.00"), 1L));
 
-		// When
-		BigDecimal result = invokeComputeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
+		BigDecimal result =
+				correctionCalculator.computeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
 
-		// Then
-		assertThat(result).isEqualByComparingTo("170.00"); // 100 + 70
+		assertThat(result).isEqualByComparingTo("170.00");
 		verify(exchangeRateService)
 				.convertAmount(
 						new BigDecimal("10000.00"),
@@ -129,9 +126,7 @@ class CountryMonthlyDirtyAggregationServiceTest {
 
 	@Test
 	@DisplayName("여러 통화 혼합 시 각각 변환 후 합산")
-	void computeCorrectedLocalAmount_multipleDifferentCurrencies_convertsEachAndSums()
-			throws Exception {
-		// Given
+	void computeCorrectedLocalAmount_multipleDifferentCurrencies_convertsEachAndSums() {
 		CurrencyCode target = CurrencyCode.KRW;
 		given(
 						exchangeRateService.convertAmount(
@@ -154,27 +149,24 @@ class CountryMonthlyDirtyAggregationServiceTest {
 						new LocalCurrencyGroupRow("USD", new BigDecimal("100.00"), 1L),
 						new LocalCurrencyGroupRow("JPY", new BigDecimal("10000.00"), 1L));
 
-		// When
-		BigDecimal result = invokeComputeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
+		BigDecimal result =
+				correctionCalculator.computeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
 
-		// Then
-		assertThat(result).isEqualByComparingTo("280000.00"); // 50000 + 140000 + 90000
+		assertThat(result).isEqualByComparingTo("280000.00");
 	}
 
 	@Test
 	@DisplayName("localCurrencyCode가 null인 항목은 건너뜀")
-	void computeCorrectedLocalAmount_nullCurrencyCode_skipsEntry() throws Exception {
-		// Given
+	void computeCorrectedLocalAmount_nullCurrencyCode_skipsEntry() {
 		CurrencyCode target = CurrencyCode.USD;
 		List<LocalCurrencyGroupRow> groups =
 				List.of(
 						new LocalCurrencyGroupRow(null, new BigDecimal("999.00"), 1L),
 						new LocalCurrencyGroupRow("USD", new BigDecimal("100.00"), 1L));
 
-		// When
-		BigDecimal result = invokeComputeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
+		BigDecimal result =
+				correctionCalculator.computeCorrectedLocalAmount(groups, target, REF_DATE_TIME);
 
-		// Then
 		assertThat(result).isEqualByComparingTo("100.00");
 		verifyNoInteractions(exchangeRateService);
 	}
@@ -183,8 +175,7 @@ class CountryMonthlyDirtyAggregationServiceTest {
 
 	@Test
 	@DisplayName("카테고리 내 동일 통화 — base는 그대로, local은 변환 없이 교체")
-	void computeCorrectedCategoryRows_sameCurrency_keepsBaseAndReplacesLocal() throws Exception {
-		// Given
+	void computeCorrectedCategoryRows_sameCurrency_keepsBaseAndReplacesLocal() {
 		CurrencyCode target = CurrencyCode.USD;
 		int foodOrdinal = Category.FOOD.ordinal();
 
@@ -192,8 +183,8 @@ class CountryMonthlyDirtyAggregationServiceTest {
 				List.of(
 						new CategoryAmountPairCount(
 								foodOrdinal,
-								new BigDecimal("999.00"), // 기존 잘못된 local (교체될 값)
-								new BigDecimal("70.00"), // base — 변경 없어야 함
+								new BigDecimal("999.00"),
+								new BigDecimal("70.00"),
 								1L));
 
 		List<CategoryLocalCurrencyGroupRow> currencyRows =
@@ -201,21 +192,19 @@ class CountryMonthlyDirtyAggregationServiceTest {
 						new CategoryLocalCurrencyGroupRow(
 								foodOrdinal, "USD", new BigDecimal("100.00"), 1L));
 
-		// When
 		List<CategoryAmountPairCount> result =
-				invokeComputeCorrectedCategoryRows(rawRows, currencyRows, target, REF_DATE_TIME);
+				correctionCalculator.computeCorrectedCategoryRows(
+						rawRows, currencyRows, target, REF_DATE_TIME);
 
-		// Then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).totalLocalAmount()).isEqualByComparingTo("100.00");
-		assertThat(result.get(0).totalBaseAmount()).isEqualByComparingTo("70.00"); // base 불변
+		assertThat(result.get(0).totalBaseAmount()).isEqualByComparingTo("70.00");
 		verifyNoInteractions(exchangeRateService);
 	}
 
 	@Test
 	@DisplayName("카테고리 내 다른 통화 — 환율 변환 후 local 교체, base는 불변")
-	void computeCorrectedCategoryRows_differentCurrency_convertsLocalKeepsBase() throws Exception {
-		// Given
+	void computeCorrectedCategoryRows_differentCurrency_convertsLocalKeepsBase() {
 		CurrencyCode target = CurrencyCode.USD;
 		int foodOrdinal = Category.FOOD.ordinal();
 
@@ -231,8 +220,8 @@ class CountryMonthlyDirtyAggregationServiceTest {
 				List.of(
 						new CategoryAmountPairCount(
 								foodOrdinal,
-								new BigDecimal("10000.00"), // 잘못된 raw local
-								new BigDecimal("67.00"), // base — 변경 없어야 함
+								new BigDecimal("10000.00"),
+								new BigDecimal("67.00"),
 								1L));
 
 		List<CategoryLocalCurrencyGroupRow> currencyRows =
@@ -240,11 +229,10 @@ class CountryMonthlyDirtyAggregationServiceTest {
 						new CategoryLocalCurrencyGroupRow(
 								foodOrdinal, "JPY", new BigDecimal("10000.00"), 1L));
 
-		// When
 		List<CategoryAmountPairCount> result =
-				invokeComputeCorrectedCategoryRows(rawRows, currencyRows, target, REF_DATE_TIME);
+				correctionCalculator.computeCorrectedCategoryRows(
+						rawRows, currencyRows, target, REF_DATE_TIME);
 
-		// Then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).totalLocalAmount()).isEqualByComparingTo("70.00");
 		assertThat(result.get(0).totalBaseAmount()).isEqualByComparingTo("67.00");
@@ -252,8 +240,7 @@ class CountryMonthlyDirtyAggregationServiceTest {
 
 	@Test
 	@DisplayName("카테고리 내 혼합 통화 — 각 통화를 변환 후 합산한 local 반영")
-	void computeCorrectedCategoryRows_mixedCurrenciesInCategory_mergesCorrectly() throws Exception {
-		// Given
+	void computeCorrectedCategoryRows_mixedCurrenciesInCategory_mergesCorrectly() {
 		CurrencyCode target = CurrencyCode.USD;
 		int foodOrdinal = Category.FOOD.ordinal();
 
@@ -273,7 +260,6 @@ class CountryMonthlyDirtyAggregationServiceTest {
 								new BigDecimal("120.00"),
 								2L));
 
-		// 같은 카테고리 내 USD + JPY 혼합
 		List<CategoryLocalCurrencyGroupRow> currencyRows =
 				List.of(
 						new CategoryLocalCurrencyGroupRow(
@@ -281,11 +267,10 @@ class CountryMonthlyDirtyAggregationServiceTest {
 						new CategoryLocalCurrencyGroupRow(
 								foodOrdinal, "JPY", new BigDecimal("10000.00"), 1L));
 
-		// When
 		List<CategoryAmountPairCount> result =
-				invokeComputeCorrectedCategoryRows(rawRows, currencyRows, target, REF_DATE_TIME);
+				correctionCalculator.computeCorrectedCategoryRows(
+						rawRows, currencyRows, target, REF_DATE_TIME);
 
-		// Then
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).totalLocalAmount()).isEqualByComparingTo("120.00"); // 50 + 70
 		assertThat(result.get(0).totalBaseAmount()).isEqualByComparingTo("120.00"); // base 불변
@@ -316,42 +301,9 @@ class CountryMonthlyDirtyAggregationServiceTest {
 
 	private Object invokeComputePairIqrBounds(List<AccountAmountCount> rows) throws Exception {
 		Method method =
-				CountryMonthlyDirtyAggregationService.class.getDeclaredMethod(
-						"computePairIqrBounds", List.class);
+				PairMonthlyAggregateRefresher.class.getDeclaredMethod(
+						"computeIqrBounds", List.class);
 		method.setAccessible(true);
-		return method.invoke(service, rows);
-	}
-
-	@SuppressWarnings("unchecked")
-	private BigDecimal invokeComputeCorrectedLocalAmount(
-			List<LocalCurrencyGroupRow> groups, CurrencyCode target, OffsetDateTime refDateTime)
-			throws Exception {
-		Method method =
-				CountryMonthlyDirtyAggregationService.class.getDeclaredMethod(
-						"computeCorrectedLocalAmount",
-						List.class,
-						CurrencyCode.class,
-						OffsetDateTime.class);
-		method.setAccessible(true);
-		return (BigDecimal) method.invoke(service, groups, target, refDateTime);
-	}
-
-	@SuppressWarnings("unchecked")
-	private List<CategoryAmountPairCount> invokeComputeCorrectedCategoryRows(
-			List<CategoryAmountPairCount> rawRows,
-			List<CategoryLocalCurrencyGroupRow> currencyRows,
-			CurrencyCode target,
-			OffsetDateTime refDateTime)
-			throws Exception {
-		Method method =
-				CountryMonthlyDirtyAggregationService.class.getDeclaredMethod(
-						"computeCorrectedCategoryRows",
-						List.class,
-						List.class,
-						CurrencyCode.class,
-						OffsetDateTime.class);
-		method.setAccessible(true);
-		return (List<CategoryAmountPairCount>)
-				method.invoke(service, rawRows, currencyRows, target, refDateTime);
+		return method.invoke(pairRefresher, rows);
 	}
 }

@@ -1,7 +1,7 @@
 import Icon from '@/components/common/Icon';
 
 import type { Card } from '@/api/cards/type';
-import { Cards } from '@/assets';
+import { getCardInfo } from '@/data/card/cardCode';
 
 interface LinkedCardItemProps {
   card: Card;
@@ -10,17 +10,24 @@ interface LinkedCardItemProps {
 }
 
 const LinkedCardItem = ({ card, onEdit, onDelete }: LinkedCardItemProps) => {
+  const cardInfo = getCardInfo(card.cardCompany);
+
   return (
     <div className="flex w-131.5 items-center justify-between px-px py-3">
       <div className="flex items-center gap-5.5">
-        <div className="rounded-modal-4 border-line-normal-normal bg-background-normal h-12.25 w-19.5 border">
+        {/* <div className="rounded-modal-4 border-line-normal-normal bg-background-normal h-12.25 w-19.5 border">
           <Cards.Default className="text-cool-neutral-70 size-full" />
-        </div>
+        </div> */}
+        <img
+          src={cardInfo.logo}
+          alt={cardInfo.code}
+          className="size-8 object-contain"
+        />
 
         <div className="flex items-center gap-3.5">
           <div className="flex items-center gap-2">
             <span className="headline1-medium text-label-normal">
-              {card.cardCompany}
+              {cardInfo?.code ?? card.cardCompany}
             </span>
             <span className="headline1-medium text-label-alternative">
               ({card.cardNumber})

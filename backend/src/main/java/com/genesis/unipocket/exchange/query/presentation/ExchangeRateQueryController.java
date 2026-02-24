@@ -1,6 +1,6 @@
 package com.genesis.unipocket.exchange.query.presentation;
 
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.exchange.query.presentation.response.ExchangeRateQuoteResponse;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import io.swagger.v3.oas.annotations.Operation;

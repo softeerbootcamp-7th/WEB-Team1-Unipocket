@@ -11,6 +11,7 @@ import {
   useUpdateWidgetLayoutMutation,
   useWidgetLayoutQuery,
 } from '@/api/widget/query';
+import type { UpdateWidgetLayoutRequest } from '@/api/widget/type';
 
 const WIDGET_MAX_SLOT_BREAKPOINT = 1600;
 const MIN_WIDGET_SLOTS = 4;
@@ -32,6 +33,7 @@ const useWidgetCRUD = (
   maxWidgets: number,
   initialData: WidgetItem[] | undefined,
   isWidgetEditMode: boolean,
+  allowedWidgetTypes: readonly WidgetType[],
 ) => {
   const [addedWidgets, setAddedWidgets] = useState<WidgetItem[]>(
     initialData ?? [],
@@ -77,14 +79,15 @@ const useWidgetCRUD = (
   // 추가 가능한 위젯 타입 목록
   const availableWidgets = useMemo(() => {
     const addedTypes = new Set(addedWidgets.map((w) => w.widgetType));
+
     // 삭제 이력 없는 위젯 (WIDGET_TYPES 원래 순서)
-    const initialAvailableWidgets = WIDGET_TYPES.filter(
+    const initialAvailableWidgets = allowedWidgetTypes.filter(
       (type) => !addedTypes.has(type) && !removedWidgets.includes(type),
     );
     // 삭제 이력 있는 위젯 (삭제된 순서 유지)
     const removed = removedWidgets.filter((type) => !addedTypes.has(type));
     return [...initialAvailableWidgets, ...removed];
-  }, [addedWidgets, removedWidgets]);
+  }, [addedWidgets, removedWidgets, allowedWidgetTypes]);
 
   // 특정 위치(targetOrder)에 위젯 삽입
   const handleInsertWidget = useCallback(
@@ -179,13 +182,20 @@ const getMaxWidgets = () => {
     : MIN_WIDGET_SLOTS;
 };
 
-// 조합 레이어
-export const useWidgetManager = () => {
+interface WidgetManagerCoreOptions {
+  layoutData: WidgetItem[] | undefined;
+  saveLayout: (payload: UpdateWidgetLayoutRequest) => void;
+  allowedWidgetTypes: readonly WidgetType[];
+}
+
+// layout 조회/저장 로직을 외부에서 주입받는 공통 코어
+export const useWidgetManagerCore = ({
+  layoutData,
+  saveLayout,
+  allowedWidgetTypes,
+}: WidgetManagerCoreOptions) => {
   const [isWidgetEditMode, setIsWidgetEditMode] = useState(false);
   const [maxWidgets, setMaxWidgets] = useState(getMaxWidgets());
-
-  const { data: layoutData } = useWidgetLayoutQuery();
-  const { mutate: saveLayout } = useUpdateWidgetLayoutMutation();
 
   useEffect(() => {
     const updateLayout = () => {
@@ -206,7 +216,12 @@ export const useWidgetManager = () => {
     handleInsertWidget,
     handleMoveWidget,
     handleRemoveWidget,
-  } = useWidgetCRUD(maxWidgets, layoutData, isWidgetEditMode);
+  } = useWidgetCRUD(
+    maxWidgets,
+    layoutData,
+    isWidgetEditMode,
+    allowedWidgetTypes,
+  );
 
   const toggleEditMode = useCallback(() => {
     if (isWidgetEditMode) {
@@ -259,5 +274,20 @@ export const useWidgetManager = () => {
     handleRemoveWidget,
     listDropZone,
     pickerDropZone,
+  };
+};
+
+// 조합 레이어
+export const useWidgetManager = () => {
+  const { data: layoutData } = useWidgetLayoutQuery();
+  const { mutate: saveLayout } = useUpdateWidgetLayoutMutation();
+
+  return {
+    travelId: undefined,
+    ...useWidgetManagerCore({
+      layoutData,
+      saveLayout,
+      allowedWidgetTypes: WIDGET_TYPES,
+    }),
   };
 };

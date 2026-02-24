@@ -1,10 +1,13 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
 import com.genesis.unipocket.tempexpense.command.application.result.FileUploadResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.TempExpenseMediaAccessService;
@@ -102,5 +105,65 @@ class FileUploadServiceTest {
 						accountBookId, null, "image/png", UploadType.IMAGE, metaId);
 
 		assertThat(result.fileName()).isEqualTo("unknown_file.png");
+	}
+
+	@Test
+	@DisplayName("문서 업로드는 xls mimeType을 허용한다")
+	void createPresignedUrl_docsXls_acceptsMimeType() {
+		Long accountBookId = 2L;
+		Long metaId = 20L;
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(metaId)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(temporaryExpenseScopeValidationProvider.validateMetaScope(accountBookId, metaId))
+				.thenReturn(meta);
+		when(fileRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of());
+		when(tempExpenseMediaAccessService.issueUploadPath(
+						accountBookId, "application/vnd.ms-excel"))
+				.thenReturn(
+						new PresignedUrlResult("put-url", "backend/temp-expenses/2/statement.xls"));
+		when(fileRepository.save(any(File.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		fileUploadService.createPresignedUrl(
+				accountBookId,
+				"statement.xls",
+				"application/vnd.ms-excel",
+				UploadType.DOCS,
+				metaId);
+
+		ArgumentCaptor<File> captor = ArgumentCaptor.forClass(File.class);
+		verify(fileRepository).save(captor.capture());
+		assertThat(captor.getValue().getFileType()).isEqualTo(File.FileType.EXCEL);
+	}
+
+	@Test
+	@DisplayName("문서 업로드는 generic mimeType이면 거부한다")
+	void createPresignedUrl_docsRejectsGenericMimeType() {
+		Long accountBookId = 3L;
+		Long metaId = 30L;
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(metaId)
+						.accountBookId(accountBookId)
+						.build();
+
+		when(temporaryExpenseScopeValidationProvider.validateMetaScope(accountBookId, metaId))
+				.thenReturn(meta);
+
+		assertThatThrownBy(
+						() ->
+								fileUploadService.createPresignedUrl(
+										accountBookId,
+										"statement.xlsx",
+										"application/octet-stream",
+										UploadType.DOCS,
+										metaId))
+				.isInstanceOf(BusinessException.class)
+				.extracting("code")
+				.isEqualTo(ErrorCode.UNSUPPORTED_MEDIA_TYPE);
 	}
 }

@@ -40,6 +40,13 @@ public enum MediaContentType {
 			return Optional.empty();
 		}
 		String normalized = mimeType.trim().toLowerCase(Locale.ROOT);
-		return Arrays.stream(values()).filter(type -> type.mimeType.equals(normalized)).findFirst();
+		int parameterDelimiter = normalized.indexOf(';');
+		if (parameterDelimiter >= 0) {
+			normalized = normalized.substring(0, parameterDelimiter).trim();
+		}
+		final String targetMimeType = normalized;
+		return Arrays.stream(values())
+				.filter(type -> type.mimeType.equals(targetMimeType))
+				.findFirst();
 	}
 }

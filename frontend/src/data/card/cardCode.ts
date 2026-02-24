@@ -57,3 +57,6 @@ export const CARDS = {
 
 export type CardId = keyof typeof CARDS;
 export type CardCode = (typeof CARDS)[CardId]['code'];
+
+export const getCardInfo = (id: string | number) =>
+  CARDS[Number(id) as CardId] ?? null;

@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

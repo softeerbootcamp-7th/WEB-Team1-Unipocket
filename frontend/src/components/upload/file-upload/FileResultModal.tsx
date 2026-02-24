@@ -1,6 +1,7 @@
 import UploadResultModal from '@/components/upload/UploadResultModal';
 
 import { useGetMetaFilesQuery } from '@/api/temporary-expenses/query';
+import { useConfirmMetaMutation } from '@/api/temporary-expenses/query';
 
 import FileResultContent from './FileResultContent';
 
@@ -20,6 +21,16 @@ const FileResultModal = ({
   onConfirm,
 }: FileResultModalProps) => {
   const { data } = useGetMetaFilesQuery(accountBookId, metaId);
+  const confirmMetaMutation = useConfirmMetaMutation(accountBookId);
+
+  const handleConfirm = () => {
+    confirmMetaMutation.mutate(metaId, {
+      onSuccess: () => {
+        onConfirm?.();
+        onClose();
+      },
+    });
+  };
 
   // 첫 번째 파일만 표시 (단건 파일 업로드)
   const file = data?.files?.[0] ?? null;
@@ -30,7 +41,7 @@ const FileResultModal = ({
       isOpen={isOpen}
       expenseCount={expenseCount}
       onClose={onClose}
-      onConfirm={onConfirm}
+      onConfirm={handleConfirm}
     >
       <FileResultContent file={file} />
     </UploadResultModal>

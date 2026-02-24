@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import Button from '@/components/common/Button';
-import ManualCreatePanel from '@/components/side-panel/ManualCreatePanel';
+import SidePanel from '@/components/side-panel/SidePanel';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import FileUploadModal from '@/components/upload/file-upload/FileUploadModal';
 import ImageUploadModal from '@/components/upload/image-upload/ImageUploadModal';
@@ -39,10 +39,7 @@ const UploadMenu = () => {
         isOpen={activeEntry === 'file'}
         onClose={handleCloseEntry}
       />
-      <ManualCreatePanel
-        isOpen={activeEntry === 'manual'}
-        onClose={handleCloseEntry}
-      />
+      <SidePanel isOpen={activeEntry === 'manual'} onClose={handleCloseEntry} />
     </>
   );
 };

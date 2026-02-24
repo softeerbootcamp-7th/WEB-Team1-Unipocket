@@ -1,7 +1,7 @@
 package com.genesis.unipocket.accountbook.query.facade.provide;
 
 import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
-import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
+import com.genesis.unipocket.user.query.application.port.AccountBookCountService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

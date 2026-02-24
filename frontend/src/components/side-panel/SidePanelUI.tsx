@@ -131,6 +131,7 @@ const SidePanelUI = ({
     () => {
       if (!isOpen) return;
       onClose();
+      handleReset();
       setIsDateTimePickerOpen(false); // 다른 행 열면 달력은 무조건 닫히게
     },
     {

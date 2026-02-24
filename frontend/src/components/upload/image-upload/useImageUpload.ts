@@ -131,6 +131,14 @@ export const useImageUpload = (accountBookId: number) => {
                 : item,
             ),
           ),
+        onFileFailed: (fileKey) =>
+          setItems((prev) =>
+            prev.map((item) =>
+              item.s3Key === fileKey
+                ? { ...item, status: UPLOAD_STATUS.ERROR }
+                : item,
+            ),
+          ),
         onComplete: () =>
           setItems((prev) =>
             prev.map((item) =>

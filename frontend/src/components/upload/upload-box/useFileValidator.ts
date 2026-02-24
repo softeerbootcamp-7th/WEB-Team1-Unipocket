@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 type UploadPolicy = {
-  message?: string;
+  message: string;
   accept: string;
   multiple: boolean;
   maxCount: number;
@@ -17,12 +17,6 @@ export const uploadPolicy = {
     multiple: true,
     maxCount: 3,
     maxTotalSize: 5 * 1024 * 1024,
-  },
-  landingImage: {
-    accept: 'image/jpeg,image/png,image/jpg',
-    multiple: true,
-    maxCount: 3,
-    maxTotalSize: 20 * 1024 * 1024,
   },
   file: {
     message:

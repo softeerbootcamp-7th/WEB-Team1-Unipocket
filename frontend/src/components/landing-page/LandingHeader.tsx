@@ -19,7 +19,7 @@ const LandingHeader = () => {
     () => [
       { id: 'home', label: '홈' },
       { id: 'features', label: '기능' },
-      { id: 'demo', label: '체험하기' },
+      { id: 'preview', label: '미리보기' },
     ],
     [],
   );

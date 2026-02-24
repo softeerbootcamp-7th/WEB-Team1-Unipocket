@@ -23,7 +23,7 @@ const LandingPage = () => {
     <main className="-mt-14.25">
       <HomeSection />
       <FeatureSection />
-      <DemoSection />
+      <PreviewSection />
     </main>
   );
 };
@@ -155,10 +155,10 @@ const FeatureSection = () => {
   );
 };
 
-const DemoSection = () => {
+const PreviewSection = () => {
   const data = getData();
   return (
-    <section id="demo" className="flex flex-col p-10 lg:px-60 lg:py-32.75">
+    <section id="preview" className="flex flex-col p-10 lg:px-60 lg:py-32.75">
       <h2 className="title1-medium mb-4 text-center">
         지출 내역을 올려보고 기능을 체험해보세요!
       </h2>

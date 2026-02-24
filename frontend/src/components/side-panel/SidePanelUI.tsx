@@ -79,8 +79,11 @@ const SidePanelUI = ({
     onCategorySelect: setSelectedCategory,
     selectedCardNumber,
     onCardNumberSelect: setSelectedCardNumber,
+    onCardNumberClear: () => setSelectedCardNumber(null),
     selectedTravelId,
     onTravelSelect: setSelectedTravelId,
+    onTravelClear: () => setSelectedTravelId(null),
+    allowDeselect: mode === 'manual',
   });
 
   const handleReset = () => {

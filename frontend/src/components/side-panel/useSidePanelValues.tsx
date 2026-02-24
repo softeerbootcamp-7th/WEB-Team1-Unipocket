@@ -21,8 +21,11 @@ interface UseSidePanelValuesParams {
   onCategorySelect: (id: CategoryId) => void;
   selectedCardNumber: string | null;
   onCardNumberSelect: (cardNumber: string) => void;
+  onCardNumberClear?: () => void;
   selectedTravelId: number | string | null;
   onTravelSelect: (travelId: number | string) => void;
+  onTravelClear?: () => void;
+  allowDeselect?: boolean;
 }
 
 export const useSidePanelValues = ({
@@ -32,8 +35,11 @@ export const useSidePanelValues = ({
   onCategorySelect,
   selectedCardNumber,
   onCardNumberSelect,
+  onCardNumberClear,
   selectedTravelId,
   onTravelSelect,
+  onTravelClear,
+  allowDeselect = false,
 }: UseSidePanelValuesParams): ValueItemProps[] => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isMethodOpen, setIsMethodOpen] = useState(false);
@@ -97,7 +103,11 @@ export const useSidePanelValues = ({
         <MethodSelectorContent
           initialCardNumber={selectedCardNumber}
           onMethodSelect={(cardNumber) => {
-            onCardNumberSelect(cardNumber);
+            if (allowDeselect && cardNumber === selectedCardNumber) {
+              onCardNumberClear?.();
+            } else {
+              onCardNumberSelect(cardNumber);
+            }
             setIsMethodOpen(false);
           }}
           onInteractOutside={() => setIsMethodOpen(false)}
@@ -114,7 +124,11 @@ export const useSidePanelValues = ({
         <TravelSelectorContent
           initialTravelId={selectedTravelId ?? NONE_TRAVEL}
           onTravelSelect={(travelId) => {
-            onTravelSelect(travelId);
+            if (allowDeselect && travelId === selectedTravelId) {
+              onTravelClear?.();
+            } else {
+              onTravelSelect(travelId);
+            }
             setIsTravelOpen(false);
           }}
           onInteractOutside={() => setIsTravelOpen(false)}

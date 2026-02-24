@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -93,7 +94,18 @@ const SidePanelUI = ({
   };
 
   const handleSubmit = () => {
-    if (!onSubmit || !selectedDateTime || !currencyValues || !title) return;
+    if (!onSubmit) return;
+
+    const missing: string[] = [];
+    if (!title) missing.push('거래처');
+    if (!selectedDateTime) missing.push('일시');
+    if (!selectedCategory) missing.push('카테고리');
+    if (!currencyValues) missing.push('금액');
+
+    if (missing.length > 0) {
+      toast.error(`${missing.join(', ')}을(를) 입력해 주세요.`);
+      return;
+    }
 
     const userCardId =
       selectedCardNumber != null
@@ -109,10 +121,10 @@ const SidePanelUI = ({
       merchantName: title,
       category: selectedCategory ?? 1,
       userCardId,
-      occurredAt: selectedDateTime,
-      localCurrencyAmount: currencyValues.localAmount,
-      localCurrencyCode: currencyValues.localCurrencyCode,
-      baseCurrencyAmount: currencyValues.baseAmount,
+      occurredAt: selectedDateTime!,
+      localCurrencyAmount: currencyValues!.localAmount,
+      localCurrencyCode: currencyValues!.localCurrencyCode,
+      baseCurrencyAmount: currencyValues!.baseAmount,
       memo,
       travelId,
     });

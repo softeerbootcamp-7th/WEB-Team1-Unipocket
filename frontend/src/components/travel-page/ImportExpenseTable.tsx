@@ -6,7 +6,11 @@ import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
 import type { Expense } from '@/api/expenses/type';
 
-const ImportExpenseTable = () => {
+interface ImportExpenseTableProps {
+  onClose: () => void;
+}
+
+const ImportExpenseTable = ({ onClose }: ImportExpenseTableProps) => {
   const { data, filter, updateFilter, totalPages } = useFilteredExpenses();
 
   const currentSort = filter.sort?.[0] || 'occurredAt,desc';
@@ -27,7 +31,7 @@ const ImportExpenseTable = () => {
       groupBy={groupBy}
       groupDisplay={groupDisplay}
     >
-      <ImportToFolderBar />
+      <ImportToFolderBar onSuccess={onClose} />
     </BaseExpenseTable>
   );
 };

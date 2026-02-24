@@ -53,7 +53,7 @@ const TravelDetailPage = () => {
           onClose={() => setBottomSheetOpen(false)}
         >
           <Suspense fallback={<Skeleton className="h-100 w-full" />}>
-            <ImportExpenseTable />
+            <ImportExpenseTable onClose={() => setBottomSheetOpen(false)} />
           </Suspense>
         </BottomSheet>
       </div>

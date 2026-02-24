@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AccountBookAmountQueryService {
 
 	private static final AnalysisQualityType QUALITY_TYPE = AnalysisQualityType.CLEANED;
@@ -40,6 +39,7 @@ public class AccountBookAmountQueryService {
 	private final AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	private final ExchangeRateService exchangeRateService;
 
+	@Transactional
 	public AccountBookAmountResponse getAccountBookAmount(String userId, Long accountBookId) {
 		AccountBookDetailResponse accountBook = getAccessibleAccountBook(userId, accountBookId);
 		CountryCode localCountryCode = accountBook.localCountryCode();

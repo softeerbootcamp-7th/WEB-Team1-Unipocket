@@ -10,6 +10,7 @@ interface ExpenseCardProps {
   localCountryAmount: number; // 현지금액
   baseCountryCode: CountryCode; // 기준통화
   baseCountryAmount: number; // 기준금액
+  isInfo?: boolean;
 }
 
 const ExpenseCard = ({
@@ -18,12 +19,13 @@ const ExpenseCard = ({
   localCountryAmount,
   baseCountryCode,
   baseCountryAmount,
+  isInfo = false,
 }: ExpenseCardProps) => {
   return (
     <section className="flex flex-col gap-2">
       <div className="text-label-alternative flex items-center gap-1.5">
         <span className="body2-normal-medium">{label}</span>
-        <Icons.Information className="size-4" />
+        {isInfo && <Icons.Information className="size-4 cursor-pointer" />}
       </div>
       <div className="flex items-end gap-3">
         <CurrencyAmountDisplay

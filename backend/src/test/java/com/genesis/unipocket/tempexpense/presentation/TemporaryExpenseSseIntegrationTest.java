@@ -15,7 +15,7 @@ import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookC
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.auth.support.JwtTestHelper;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.infrastructure.gemini.GeminiService;
 import com.genesis.unipocket.media.command.facade.provide.TempExpenseMediaProvider;

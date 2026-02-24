@@ -1,7 +1,7 @@
 package com.genesis.unipocket.exchange.query.facade.provide;
 
 import com.genesis.unipocket.accountbook.query.service.port.ExchangeRateReader;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

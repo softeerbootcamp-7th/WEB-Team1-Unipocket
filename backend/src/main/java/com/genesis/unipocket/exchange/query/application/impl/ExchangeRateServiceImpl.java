@@ -1,8 +1,8 @@
 package com.genesis.unipocket.exchange.query.application.impl;
 
 import com.genesis.unipocket.exchange.common.service.ExchangeRateResolveService;
+import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.exchange.query.application.ExchangeRateQueryService;
-import com.genesis.unipocket.exchange.query.application.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;

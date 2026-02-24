@@ -35,4 +35,19 @@ public class UserLoginProvider implements UserLoginProcessor {
 
 		return LoginResult.of(result.accessToken(), result.refreshToken(), result.expiresIn());
 	}
+
+	@Override
+	public LoginResult reactivate(UserLoginRequest request) {
+		RegisterUserCommand command =
+				RegisterUserCommand.of(
+						request.providerType(),
+						request.providerId(),
+						request.email(),
+						request.name(),
+						request.profileImageUrl());
+
+		LoginOrRegisterResult result = userService.reactivateUser(command);
+
+		return LoginResult.of(result.accessToken(), result.refreshToken(), result.expiresIn());
+	}
 }

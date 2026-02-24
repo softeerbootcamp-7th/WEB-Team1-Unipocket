@@ -51,4 +51,29 @@ public class UserLoginFacade {
 						userInfo.getProfileImageUrl());
 		return userLoginProcessor.loginOrRegister(request);
 	}
+
+	@Transactional
+	public LoginResult reactivate(ProviderType providerType, String code, String state) {
+		// 1. Reactivate State 검증
+		loginStateService.validateReactivateState(state, providerType);
+
+		// 2. Provider Service 조회
+		OAuthProviderService provider = providerFactory.getProvider(providerType);
+
+		// 3. Access Token 발급
+		OAuthTokenResponse tokenResponse = provider.getAccessToken(code);
+
+		// 4. 사용자 정보 조회
+		OAuthUserInfo userInfo = provider.getUserInfo(tokenResponse.getAccessToken());
+
+		// 5. 계정 복구 및 JWT 발급
+		UserLoginRequest request =
+				UserLoginRequest.of(
+						providerType,
+						userInfo.getProviderId(),
+						userInfo.getEmail(),
+						userInfo.getName(),
+						userInfo.getProfileImageUrl());
+		return userLoginProcessor.reactivate(request);
+	}
 }

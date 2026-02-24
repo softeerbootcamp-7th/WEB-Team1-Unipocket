@@ -158,7 +158,10 @@ const SidePanelUI = ({
           iconName="ChevronForward"
           width={24}
           height={24}
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            handleReset();
+          }}
         />
         <div className="flex items-center gap-2">
           <Button variant="solid" onClick={handleSubmit}>

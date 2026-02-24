@@ -10,6 +10,7 @@ import {
 import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
 import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
+import { getExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import { getData } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
@@ -157,6 +158,7 @@ const FeatureSection = () => {
 
 const DemoSection = () => {
   const data = getData();
+  const groupBy = (row: Expense) => getExpenseGroupKey(row, false);
   return (
     <section id="demo" className="flex flex-col p-10 lg:px-60 lg:py-32.75">
       <h2 className="title1-medium mb-4 text-center">
@@ -186,16 +188,7 @@ const DemoSection = () => {
                 </div>
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
                   <DataTableProvider columns={expenseColumns} data={data}>
-                    <DataTable
-                      enableGroupSelection={false}
-                      groupBy={(row: Expense) =>
-                        new Date(row.occurredAt).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                        })
-                      }
-                    />
+                    <DataTable enableGroupSelection={false} groupBy={groupBy} />
                   </DataTableProvider>
                 </div>
               </div>

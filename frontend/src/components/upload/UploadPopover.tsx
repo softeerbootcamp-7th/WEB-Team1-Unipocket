@@ -12,13 +12,6 @@ interface UploadMenuItemProps {
 
 const UPLOAD_MENU_ITEMS = [
   {
-    key: 'mobile',
-    Icon: Icons.Phone,
-    title: '모바일로 업로드',
-    subTitle:
-      '휴대폰에 저장된 결제 자료를 바로 업로드해 지출 내역으로 등록하세요.',
-  },
-  {
     key: 'image',
     Icon: Icons.Camera,
     title: '영수증 / 은행 앱 사진 업로드',
@@ -73,8 +66,6 @@ const UploadPopover = ({ onOpenUpload }: UploadPopoverProps) => {
         return () => onOpenUpload('image');
       case 'file':
         return () => onOpenUpload('file');
-      case 'mobile':
-        return () => console.log('모바일 업로드 클릭');
       case 'manual':
         return () => onOpenUpload('manual');
       default:

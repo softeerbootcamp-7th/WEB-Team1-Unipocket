@@ -167,7 +167,7 @@ const PreviewSection = () => {
           <TabProvider variant="underline" defaultValue="sample1">
             <TabList>
               <TabTrigger value="sample1">Receipt.png</TabTrigger>
-              <TabTrigger value="sample2">Bank.png</TabTrigger>
+              <TabTrigger value="sample2">Bank.jpeg</TabTrigger>
             </TabList>
             <div className="h-7" />
             <TabContent value="sample1">

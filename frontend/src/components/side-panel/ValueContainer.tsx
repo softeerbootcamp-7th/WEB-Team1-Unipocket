@@ -27,6 +27,7 @@ const ValueItem = ({
     <div
       className="label1-normal-medium text-label-normal flex h-8 w-63 cursor-pointer items-center px-1 hover:opacity-70"
       onClick={onClick}
+      data-datetime-label={label === '일시' ? true : undefined}
     >
       {value}
     </div>

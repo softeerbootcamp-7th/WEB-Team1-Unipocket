@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.genesis.unipocket.auth.command.application.AuthService;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
+import com.genesis.unipocket.auth.command.application.OAuthLoginStateService;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.command.facade.UserLoginFacade;
@@ -36,6 +37,7 @@ class AuthCommandControllerTest {
 	@MockitoBean private CookieUtil cookieUtil;
 	@MockitoBean private OAuthAuthorizeFacade authorizeFacade;
 	@MockitoBean private UserLoginFacade loginFacade;
+	@MockitoBean private OAuthLoginStateService loginStateService;
 	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
@@ -175,6 +177,7 @@ class AuthCommandControllerTest {
 						.expiresIn(expiresIn)
 						.build();
 
+		given(loginStateService.isReactivateIntent(state)).willReturn(false);
 		given(loginFacade.login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state)))
 				.willReturn(loginResult);
 

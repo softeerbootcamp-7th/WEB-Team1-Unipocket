@@ -61,7 +61,6 @@ class TemporaryExpenseCommandServiceTest {
 						.localCurrencyAmount(BigDecimal.valueOf(5000))
 						.baseCountryCode(CurrencyCode.KRW)
 						.baseCurrencyAmount(BigDecimal.valueOf(5000))
-						.paymentsMethod("CARD")
 						.occurredAt(LocalDateTime.now())
 						.status(TemporaryExpenseStatus.NORMAL)
 						.build();
@@ -109,7 +108,6 @@ class TemporaryExpenseCommandServiceTest {
 						BigDecimal.valueOf(3000),
 						CurrencyCode.KRW,
 						BigDecimal.valueOf(3000),
-						"CASH",
 						"커피",
 						LocalDateTime.now(),
 						null);
@@ -124,7 +122,6 @@ class TemporaryExpenseCommandServiceTest {
 		// then
 		assertThat(result.merchantName()).isEqualTo("이디야커피");
 		assertThat(result.localCurrencyAmount()).isEqualTo(BigDecimal.valueOf(3000));
-		assertThat(result.paymentsMethod()).isEqualTo("CASH");
 		verify(repository).save(any(TemporaryExpense.class));
 	}
 
@@ -175,7 +172,6 @@ class TemporaryExpenseCommandServiceTest {
 						BigDecimal.valueOf(5000),
 						CurrencyCode.KRW,
 						BigDecimal.valueOf(5000),
-						"CARD",
 						null,
 						LocalDateTime.now(),
 						null);
@@ -207,16 +203,7 @@ class TemporaryExpenseCommandServiceTest {
 		// category가 null → 필수 필드 미비
 		TemporaryExpenseUpdateCommand command =
 				new TemporaryExpenseUpdateCommand(
-						"이디야",
-						null,
-						null,
-						BigDecimal.valueOf(3000),
-						null,
-						null,
-						null,
-						null,
-						null,
-						null);
+						"이디야", null, null, BigDecimal.valueOf(3000), null, null, null, null, null);
 
 		when(repository.findById(tempExpenseId)).thenReturn(Optional.of(incompleteExpense));
 		when(repository.save(any(TemporaryExpense.class)))
@@ -250,7 +237,6 @@ class TemporaryExpenseCommandServiceTest {
 						BigDecimal.valueOf(5000),
 						CurrencyCode.KRW,
 						BigDecimal.valueOf(5000),
-						"CARD",
 						null,
 						LocalDateTime.now(),
 						null);

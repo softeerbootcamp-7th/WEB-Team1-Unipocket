@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TempExpenseAmountInfo {
 
+	private static final BigDecimal AMOUNT_MAX = new BigDecimal("99999999.99");
+
 	@Enumerated(EnumType.STRING)
 	private CurrencyCode localCurrencyCode;
 
@@ -37,10 +39,16 @@ public class TempExpenseAmountInfo {
 			BigDecimal baseCurrencyAmount,
 			BigDecimal exchangeRate) {
 		this.localCurrencyCode = localCurrencyCode;
-		this.localCurrencyAmount = localCurrencyAmount;
+		this.localCurrencyAmount =
+				exceedsDbPrecision(localCurrencyAmount) ? null : localCurrencyAmount;
 		this.baseCurrencyCode = baseCurrencyCode;
-		this.baseCurrencyAmount = baseCurrencyAmount;
+		this.baseCurrencyAmount =
+				exceedsDbPrecision(baseCurrencyAmount) ? null : baseCurrencyAmount;
 		this.exchangeRate = exchangeRate;
+	}
+
+	private static boolean exceedsDbPrecision(BigDecimal amount) {
+		return amount != null && amount.compareTo(AMOUNT_MAX) > 0;
 	}
 
 	public static TempExpenseAmountInfo of(
@@ -85,48 +93,6 @@ public class TempExpenseAmountInfo {
 				localCurrencyAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
 		return new TempExpenseAmountInfo(
 				localCurrencyCode, localCurrencyAmount, baseCurrencyCode, calculated, exchangeRate);
-	}
-
-	public boolean hasRequired() {
-		return localCurrencyCode != null
-				&& localCurrencyAmount != null
-				&& localCurrencyAmount.signum() > 0
-				&& baseCurrencyCode != null
-				&& baseCurrencyAmount != null
-				&& baseCurrencyAmount.signum() > 0;
-	}
-
-	public boolean hasLocalCurrencyCode() {
-		return localCurrencyCode != null;
-	}
-
-	public boolean hasLocalCurrencyAmount() {
-		return localCurrencyAmount != null;
-	}
-
-	public boolean hasPositiveLocalCurrencyAmount() {
-		return localCurrencyAmount != null && localCurrencyAmount.signum() > 0;
-	}
-
-	public boolean hasBaseCurrencyAmount() {
-		return baseCurrencyAmount != null;
-	}
-
-	public boolean hasPositiveBaseCurrencyAmount() {
-		return baseCurrencyAmount != null && baseCurrencyAmount.signum() > 0;
-	}
-
-	public boolean isSameCurrencyAmountMismatch(CurrencyCode resolvedBaseCurrencyCode) {
-		if (resolvedBaseCurrencyCode == null || localCurrencyCode == null) {
-			return false;
-		}
-		if (resolvedBaseCurrencyCode != localCurrencyCode) {
-			return false;
-		}
-		if (localCurrencyAmount == null || baseCurrencyAmount == null) {
-			return false;
-		}
-		return localCurrencyAmount.compareTo(baseCurrencyAmount) != 0;
 	}
 
 	public boolean isAbnormal(BigDecimal thresholdRatio) {

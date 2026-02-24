@@ -6,6 +6,7 @@ import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import TravelCellEditor from '@/components/data-table/editors/TravelCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
+import { getExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import UploadMenu from '@/components/upload/UploadMenu';
 
@@ -17,16 +18,7 @@ const ExpenseTable = () => {
   const currentSort = filter.sort?.[0] || 'occurredAt,desc';
   const isAmountSort = currentSort.startsWith('baseCurrencyAmount');
 
-  // Expense 전용 그룹핑 로직
-  const groupBy = (row: Expense) => {
-    const dateStr = new Date(row.occurredAt).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-
-    return isAmountSort ? `${dateStr}__${row.baseCurrencyAmount}` : dateStr;
-  };
+  const groupBy = (row: Expense) => getExpenseGroupKey(row, isAmountSort);
 
   const groupDisplay = (groupKey: string) => groupKey.split('__')[0];
 

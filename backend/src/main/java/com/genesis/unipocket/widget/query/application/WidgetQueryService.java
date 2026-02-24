@@ -111,10 +111,13 @@ public class WidgetQueryService {
 	}
 
 	private BudgetWidgetResponse getBudgetWidget(WidgetQueryContext context) {
+		BigDecimal budget =
+				context.travelId() != null
+						? widgetQueryRepository.getTravelBudget(context.travelId())
+						: widgetQueryRepository.getBudget(context.accountBookId());
+
 		return BudgetWidgetResponse.builder()
-				.budget(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getBudget(context.accountBookId())))
+				.budget(AmountFormatUtil.format(budget))
 				.baseCountryCode(context.baseCountryCode())
 				.localCountryCode(context.localCountryCode())
 				.baseSpentAmount(

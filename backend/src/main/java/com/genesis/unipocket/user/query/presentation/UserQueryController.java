@@ -1,9 +1,9 @@
 package com.genesis.unipocket.user.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
+import com.genesis.unipocket.user.query.application.UserQueryService;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
-import com.genesis.unipocket.user.query.service.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.genesis.unipocket.widget.query.service;
+package com.genesis.unipocket.widget.query.application;
 
 import com.genesis.unipocket.widget.query.persistence.repository.AccountBookWidgetQueryRepository;
 import com.genesis.unipocket.widget.query.persistence.repository.TravelWidgetQueryRepository;

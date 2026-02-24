@@ -6,7 +6,7 @@ import com.genesis.unipocket.global.infrastructure.MediaContentType;
 import com.genesis.unipocket.media.command.application.MediaObjectStorage;
 import com.genesis.unipocket.media.command.application.MediaPathPrefixManager;
 import com.genesis.unipocket.media.command.application.result.PresignedUrlResult;
-import com.genesis.unipocket.tempexpense.query.service.port.TempExpenseMediaAccessService;
+import com.genesis.unipocket.tempexpense.query.application.port.TempExpenseMediaAccessService;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -26,6 +26,7 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
     parseSnackbar,
     closeParseSnackbar,
     clearItems,
+    resetAll,
     parsedMetaId,
   } = useImageUpload(accountBookId);
 
@@ -40,7 +41,7 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
 
   const handleClose = () => {
     onClose();
-    clearItems();
+    resetAll();
   };
 
   return (

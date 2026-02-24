@@ -1,6 +1,8 @@
 export const ERROR_MESSAGE = {
   LENGTH15: '공백 포함 최대 15자까지 입력 가능합니다.',
+  LENGTH30: '최대 30자까지 입력할 수 있어요.',
   INVALID_CHAR: '허용되지 않는 문자가 포함되어 있습니다.',
+  ACCOUNT_BOOK_NAME_DUPLICATE: '이미 동일한 이름의 가계부가 있어요.',
 } as const;
 
 export const PAGE_TITLE = {

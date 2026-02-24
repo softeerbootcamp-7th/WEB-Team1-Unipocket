@@ -79,14 +79,13 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
   };
 
   const handleSubmit = () => {
-    const missing: string[] = [];
-    if (!title) missing.push('거래처');
-    if (!selectedDateTime) missing.push('일시');
-    if (!selectedCategory) missing.push('카테고리');
-    if (!currencyValues) missing.push('금액');
+    if (!title) {
+      toast.error('거래처를 입력해 주세요.');
+      return;
+    }
 
-    if (missing.length > 0) {
-      toast.error(`${missing.join(', ')}을(를) 입력해 주세요.`);
+    if (!currencyValues) {
+      toast.error('금액을 입력해 주세요.');
       return;
     }
 
@@ -102,9 +101,9 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
 
     const request: CreateManualExpenseRequest = {
       merchantName: title,
-      category: selectedCategory ?? 1,
+      category: selectedCategory,
       userCardId,
-      occurredAt: selectedDateTime!.toISOString(),
+      occurredAt: selectedDateTime.toISOString(),
       localCurrencyAmount: currencyValues!.localAmount,
       localCurrencyCode: currencyValues!.localCurrencyCode,
       baseCurrencyAmount: currencyValues!.baseAmount,

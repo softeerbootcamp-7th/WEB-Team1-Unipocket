@@ -5,18 +5,19 @@ import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
 import { useTravelWidgetManager } from '@/components/chart/widget/hook/useTravelWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
-import ExpenseTableSkeleton from '@/components/expense/ExpenseTableSkeleton';
 import BottomSheet from '@/components/layout/BottomSheet';
 import ExpandableSheet from '@/components/layout/ExpandableSheet';
 import ExpenseTable from '@/components/travel-page/ExpenseTable';
 import ImportExpenseTable from '@/components/travel-page/ImportExpenseTable';
 import TravelDetailHeader from '@/components/travel-page/TravelDetailHeader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const TravelDetailPage = () => {
   const { travelId } = useParams({ from: '/_app/travel/$travelId' });
   const widgetManager = useTravelWidgetManager(travelId);
   const { isWidgetEditMode } = widgetManager;
 
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isBottomSheetOpen, setBottomSheetOpen] = useState(false);
 
   return (
@@ -32,11 +33,18 @@ const TravelDetailPage = () => {
               <WidgetPicker />
             </ExpandableSheet>
           ) : (
-            <div className="bg-background-normal rounded-modal-16 flex-1 rounded-b-none px-2 py-4 shadow">
-              <ExpenseTable
-                onOpenBottomSheet={() => setBottomSheetOpen(true)}
-              />
-            </div>
+            <ExpandableSheet
+              isExpanded={isExpanded}
+              onToggleExpand={setIsExpanded}
+              collapsedHeight="100%"
+              expandedHeight="93vh"
+            >
+              <Suspense fallback={<Skeleton className="h-100 w-full" />}>
+                <ExpenseTable
+                  onOpenBottomSheet={() => setBottomSheetOpen(true)}
+                />
+              </Suspense>
+            </ExpandableSheet>
           )}
         </div>
 
@@ -44,7 +52,7 @@ const TravelDetailPage = () => {
           isOpen={isBottomSheetOpen}
           onClose={() => setBottomSheetOpen(false)}
         >
-          <Suspense fallback={<ExpenseTableSkeleton />}>
+          <Suspense fallback={<Skeleton className="h-100 w-full" />}>
             <ImportExpenseTable />
           </Suspense>
         </BottomSheet>

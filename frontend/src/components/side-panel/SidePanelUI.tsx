@@ -8,6 +8,7 @@ import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
 import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
+import { resolveUserCardId } from '@/components/data-table/util';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import type { SidePanelFormValues } from '@/components/side-panel/type';
@@ -17,6 +18,8 @@ import ValueContainer from '@/components/side-panel/ValueContainer';
 import type { UploadEntryType } from '@/components/upload/UploadMenu';
 
 import type { Expense } from '@/api/expenses/type';
+import { useGetCardsQuery } from '@/api/users/query';
+import { NONE_TRAVEL } from '@/constants/column';
 
 const uploadTitleMap: Record<
   Exclude<UploadEntryType, 'manual' | null>,
@@ -44,6 +47,8 @@ const SidePanelUI = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
+  const { data: cards = [] } = useGetCardsQuery();
+
   const {
     title,
     setTitle,
@@ -53,6 +58,12 @@ const SidePanelUI = ({
     setSelectedDateTime,
     isDateTimePickerOpen,
     setIsDateTimePickerOpen,
+    selectedCategory,
+    setSelectedCategory,
+    selectedCardNumber,
+    setSelectedCardNumber,
+    selectedTravelId,
+    setSelectedTravelId,
     resetForm,
   } = useSidePanelForm(initialData);
 
@@ -62,9 +73,14 @@ const SidePanelUI = ({
   const [resetKey, setResetKey] = useState(0);
 
   const valueItems = useSidePanelValues({
-    initialData,
     selectedDateTime,
     onDateTimeClick: () => setIsDateTimePickerOpen((prev) => !prev),
+    selectedCategory,
+    onCategorySelect: setSelectedCategory,
+    selectedCardNumber,
+    onCardNumberSelect: setSelectedCardNumber,
+    selectedTravelId,
+    onTravelSelect: setSelectedTravelId,
   });
 
   const handleReset = () => {
@@ -76,16 +92,26 @@ const SidePanelUI = ({
   const handleSubmit = () => {
     if (!onSubmit || !selectedDateTime || !currencyValues || !title) return;
 
+    const userCardId =
+      selectedCardNumber != null
+        ? (resolveUserCardId(selectedCardNumber, cards) ?? undefined)
+        : undefined;
+
+    const travelId =
+      selectedTravelId != null && selectedTravelId !== NONE_TRAVEL
+        ? Number(selectedTravelId)
+        : undefined;
+
     onSubmit({
       merchantName: title,
-      category: initialData?.category ?? 1, // @TODO: 실제 선택 상태로 교체
-      userCardId: initialData?.paymentMethod?.isCash ? undefined : 1, // @TODO: 실제 선택 상태로 교체
+      category: selectedCategory ?? 1,
+      userCardId,
       occurredAt: selectedDateTime,
       localCurrencyAmount: currencyValues.localAmount,
       localCurrencyCode: currencyValues.localCurrencyCode,
       baseCurrencyAmount: currencyValues.baseAmount,
       memo,
-      travelId: initialData?.travel?.travelId ?? undefined, // @TODO: 실제 선택 상태로 교체
+      travelId,
     });
 
     handleReset();

@@ -1,11 +1,14 @@
 import { useState } from 'react';
 
+import { getCardNumberFromExpense } from '@/components/data-table/util';
+
 import type { CategoryId } from '@/types/category';
 
 import type { Expense } from '@/api/expenses/type';
-import { CASH } from '@/constants/column';
+import { useGetCardsQuery } from '@/api/users/query';
 
 function useSidePanelForm(initialData?: Partial<Expense>) {
+  const { data: cards = [] } = useGetCardsQuery();
   const [prevId, setPrevId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
@@ -34,9 +37,9 @@ function useSidePanelForm(initialData?: Partial<Expense>) {
     setIsDateTimePickerOpen(false);
     setSelectedCategory(initialData?.category ?? null);
     setSelectedCardNumber(
-      initialData?.paymentMethod?.isCash
-        ? CASH
-        : (initialData?.cardNumber ?? null),
+      initialData?.paymentMethod
+        ? getCardNumberFromExpense(initialData as Expense, cards)
+        : null,
     );
     setSelectedTravelId(initialData?.travel?.travelId ?? null);
   }

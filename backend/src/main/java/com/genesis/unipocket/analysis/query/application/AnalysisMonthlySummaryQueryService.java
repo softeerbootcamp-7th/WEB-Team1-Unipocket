@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AnalysisMonthlySummaryQueryService {
 
 	private final AnalysisQueryRepository analysisQueryRepository;
@@ -32,6 +31,7 @@ public class AnalysisMonthlySummaryQueryService {
 	private final AnalysisPeerComparisonResolver peerComparisonResolver;
 	private final AccountBookOwnershipValidator accountBookOwnershipValidator;
 
+	@Transactional
 	public AnalysisOverviewRes getAnalysisOverview(
 			UUID userId,
 			Long accountBookId,

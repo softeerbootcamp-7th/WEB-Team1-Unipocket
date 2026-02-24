@@ -57,6 +57,32 @@ const DataTable = <TData,>({
         value: cell.getValue(),
       };
 
+      const editorType = cell.column.columnDef.meta?.cellEditor;
+
+      if (editorType) {
+        switch (editorType) {
+          case 'text':
+            dispatch({ type: 'SET_TEXT_CELL', payload });
+            break;
+          case 'category':
+            dispatch({ type: 'SET_CATEGORY_CELL', payload });
+            break;
+          case 'amount':
+            dispatch({ type: 'SET_AMOUNT_CELL', payload });
+            break;
+          case 'method':
+            dispatch({ type: 'SET_METHOD_CELL', payload });
+            break;
+          case 'travel':
+            dispatch({ type: 'SET_TRAVEL_CELL', payload });
+            break;
+          default:
+            break;
+        }
+        return;
+      }
+
+      // 지정된 에디터가 없는 일반 셀을 클릭했는데 이슈가 있는 경우에만 Warning 처리를 합니다.
       const original = cell.row.original;
       const hasIssue =
         typeof original === 'object' &&
@@ -66,29 +92,6 @@ const DataTable = <TData,>({
 
       if (hasIssue) {
         dispatch({ type: 'SET_WARNING_CELL', payload });
-        return;
-      }
-
-      const editorType = cell.column.columnDef.meta?.cellEditor;
-
-      switch (editorType) {
-        case 'text':
-          dispatch({ type: 'SET_TEXT_CELL', payload });
-          break;
-        case 'category':
-          dispatch({ type: 'SET_CATEGORY_CELL', payload });
-          break;
-        case 'amount':
-          dispatch({ type: 'SET_AMOUNT_CELL', payload });
-          break;
-        case 'method':
-          dispatch({ type: 'SET_METHOD_CELL', payload });
-          break;
-        case 'travel':
-          dispatch({ type: 'SET_TRAVEL_CELL', payload });
-          break;
-        default:
-          break;
       }
     },
     [dispatch],

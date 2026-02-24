@@ -81,6 +81,7 @@ export interface TempExpenseFile {
   fileId: number;
   s3Key: string;
   fileType: string;
+  incompleteCount: number;
   expenses: TempExpense[];
 }
 

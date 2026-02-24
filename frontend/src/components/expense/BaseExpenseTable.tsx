@@ -25,6 +25,7 @@ interface BaseExpenseTableProps<TData> {
   hideFilters?: boolean;
   groupBy?: (row: TData) => string;
   groupDisplay?: (groupKey: string) => string;
+  getRowIssue?: (row: TData) => boolean;
 }
 
 const BaseExpenseTable = <TData,>({
@@ -39,6 +40,7 @@ const BaseExpenseTable = <TData,>({
   children,
   groupBy,
   groupDisplay,
+  getRowIssue,
 }: BaseExpenseTableProps<TData>) => {
   return (
     <DataTableProvider columns={columns} data={data}>
@@ -60,6 +62,7 @@ const BaseExpenseTable = <TData,>({
         groupBy={groupBy}
         groupDisplay={groupDisplay}
         blankFallbackText={blankFallbackText}
+        getRowIssue={getRowIssue}
       />
       <DataTablePagination
         page={filter.page ?? 0}

@@ -33,6 +33,8 @@ const ImageResultTable = ({ data }: ImageResultTableProps) => {
     [],
   );
 
+  const getRowIssue = (row: TempExpense) => row.status === 'INCOMPLETE';
+
   return (
     <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
       <BaseExpenseTable
@@ -44,6 +46,7 @@ const ImageResultTable = ({ data }: ImageResultTableProps) => {
         hideFilters={true}
         groupBy={groupBy}
         groupDisplay={groupDisplay}
+        getRowIssue={getRowIssue}
       >
         <TempUpdateActionBar />
 

@@ -12,6 +12,7 @@ interface UploadResultModalProps {
   onClose: () => void;
   onConfirm?: () => void;
   children?: ReactNode;
+  isConfirmDisabled?: boolean;
 }
 
 export default function UploadResultModal({
@@ -20,6 +21,7 @@ export default function UploadResultModal({
   expenseCount,
   onClose,
   onConfirm,
+  isConfirmDisabled = false,
   children,
 }: UploadResultModalProps) {
   useEffect(() => {
@@ -78,7 +80,12 @@ export default function UploadResultModal({
         <Button variant="outlined" size="lg" onClick={onClose}>
           취소
         </Button>
-        <Button variant="solid" size="lg" onClick={onConfirm}>
+        <Button
+          variant="solid"
+          size="lg"
+          onClick={onConfirm}
+          disabled={isConfirmDisabled}
+        >
           지출 내역 적용하기
         </Button>
       </footer>

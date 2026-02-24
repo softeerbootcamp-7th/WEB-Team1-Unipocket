@@ -17,6 +17,7 @@ interface DataTableProps<TData> {
   groupDisplay?: (groupKey: string) => string;
   enableGroupSelection?: boolean;
   blankFallbackText?: string;
+  getRowIssue?: (row: TData) => boolean;
 }
 
 const DataTable = <TData,>({
@@ -24,6 +25,7 @@ const DataTable = <TData,>({
   groupDisplay,
   enableGroupSelection = true,
   blankFallbackText,
+  getRowIssue,
 }: DataTableProps<TData>) => {
   const { table, dispatch } = useDataTable();
   const rows = table.getRowModel().rows as Row<TData>[];
@@ -82,19 +84,13 @@ const DataTable = <TData,>({
         return;
       }
 
-      // 지정된 에디터가 없는 일반 셀을 클릭했는데 이슈가 있는 경우에만 Warning 처리를 합니다.
-      const original = cell.row.original;
-      const hasIssue =
-        typeof original === 'object' &&
-        original !== null &&
-        'status' in original &&
-        (original as Record<string, unknown>).status !== 'NORMAL';
+      const hasIssue = getRowIssue ? getRowIssue(cell.row.original) : false;
 
       if (hasIssue) {
         dispatch({ type: 'SET_WARNING_CELL', payload });
       }
     },
-    [dispatch],
+    [dispatch, getRowIssue],
   );
 
   return (
@@ -164,12 +160,9 @@ const DataTable = <TData,>({
 
                 {/* 실제 데이터 행들 */}
                 {dateRows.map((row) => {
-                  const original = row.original;
-                  const hasIssue =
-                    typeof original === 'object' &&
-                    original !== null &&
-                    'status' in original &&
-                    (original as Record<string, unknown>).status !== 'NORMAL';
+                  const hasIssue = getRowIssue
+                    ? getRowIssue(row.original)
+                    : false;
                   return (
                     <TableRow
                       key={row.id}

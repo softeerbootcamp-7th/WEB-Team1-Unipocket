@@ -28,7 +28,7 @@ const FileImage = ({
   // preview
   if (variant === 'preview') {
     return (
-      <div className="border-line-normal-neutral aspect-400/533 h-133.25 w-full max-w-100 rounded-2xl border">
+      <div className="border-line-normal-neutral h-133.25 w-full max-w-100 rounded-2xl border">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}

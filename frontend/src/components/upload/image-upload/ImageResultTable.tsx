@@ -6,11 +6,11 @@ import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import type { TempExpense } from '@/api/temporary-expenses/type';
 import { DEFAULT_PAGE_SIZE } from '@/constants/column';
 
-interface UploadResultTableProps {
+interface ImageResultTableProps {
   data: TempExpense[];
 }
 
-const UploadResultTable = ({ data }: UploadResultTableProps) => {
+const ImageResultTable = ({ data }: ImageResultTableProps) => {
   const dummyFilter = { page: 0 };
   const dummyUpdateFilter = () => {};
   const totalPages = Math.ceil(data.length / DEFAULT_PAGE_SIZE);
@@ -55,4 +55,4 @@ const UploadResultTable = ({ data }: UploadResultTableProps) => {
   );
 };
 
-export default UploadResultTable;
+export default ImageResultTable;

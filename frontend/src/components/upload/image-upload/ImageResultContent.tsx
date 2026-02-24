@@ -5,7 +5,7 @@ import {
   TabTrigger,
 } from '@/components/common/Tab';
 import FileImage from '@/components/upload/image-upload/FileImage';
-import UploadResultTable from '@/components/upload/UploadResultTable';
+import ImageResultTable from '@/components/upload/image-upload/ImageResultTable';
 
 import type { TempExpenseFile } from '@/api/temporary-expenses/type';
 
@@ -83,7 +83,7 @@ const ImageResultContent = ({
                     fileName={fileName}
                     variant="preview"
                   />
-                  <UploadResultTable data={file.expenses} />
+                  <ImageResultTable data={file.expenses} />
                 </div>
               </TabContent>
             );

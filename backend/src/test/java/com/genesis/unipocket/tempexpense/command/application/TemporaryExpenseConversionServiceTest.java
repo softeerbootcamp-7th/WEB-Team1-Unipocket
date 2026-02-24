@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
+import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
@@ -24,10 +26,13 @@ import com.genesis.unipocket.tempexpense.command.persistence.entity.TemporaryExp
 import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepository;
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
+import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +50,8 @@ class TemporaryExpenseConversionServiceTest {
 	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
 	@Mock private TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidationProvider;
 	@Mock private TemporaryExpenseValidator temporaryExpenseValidator;
+	@Mock private AccountBookCommandRepository accountBookCommandRepository;
+	@Mock private UserCardCommandRepository userCardCommandRepository;
 
 	private TemporaryExpenseConversionService service;
 
@@ -58,7 +65,9 @@ class TemporaryExpenseConversionServiceTest {
 						exchangeRateService,
 						accountBookRateInfoProvider,
 						temporaryExpenseScopeValidationProvider,
-						temporaryExpenseValidator);
+						temporaryExpenseValidator,
+						accountBookCommandRepository,
+						userCardCommandRepository);
 	}
 
 	@Test
@@ -94,6 +103,16 @@ class TemporaryExpenseConversionServiceTest {
 				.thenReturn(
 						new AccountBookRateInfo(
 								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
+		UUID ownerId = UUID.randomUUID();
+		when(accountBookCommandRepository.findById(accountBookId))
+				.thenReturn(
+						Optional.of(
+								AccountBookEntity.builder()
+										.user(UserEntity.reference(ownerId))
+										.title("test")
+										.bucketOrder(1)
+										.build()));
+		when(userCardCommandRepository.findAllByUser_Id(ownerId)).thenReturn(List.of());
 		when(fileRepository.findById(fileId))
 				.thenReturn(
 						Optional.of(
@@ -167,6 +186,16 @@ class TemporaryExpenseConversionServiceTest {
 				.thenReturn(
 						new AccountBookRateInfo(
 								CurrencyCode.KRW, CurrencyCode.KRW, CountryCode.KR));
+		UUID ownerId = UUID.randomUUID();
+		when(accountBookCommandRepository.findById(accountBookId))
+				.thenReturn(
+						Optional.of(
+								AccountBookEntity.builder()
+										.user(UserEntity.reference(ownerId))
+										.title("test")
+										.bucketOrder(1)
+										.build()));
+		when(userCardCommandRepository.findAllByUser_Id(ownerId)).thenReturn(List.of());
 		when(fileRepository.findById(30L))
 				.thenReturn(
 						Optional.of(

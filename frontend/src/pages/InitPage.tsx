@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 
 import { type DateRange } from '@/components/calendar/Calendar';
 import Button from '@/components/common/Button';
-import LocaleSelectModal from '@/components/modal/LocaleSelectModal/LocaleSelectModal';
+import LocaleSelectContent from '@/components/modal/LocaleSelectModal/LocaleSelectContent';
 import { SelectDateContent } from '@/components/modal/SelectDateModal';
 
 import { useCreateAccountBookMutation } from '@/api/account-books/query';
@@ -71,8 +71,8 @@ const InitPage = () => {
   return (
     <div className="box-border flex h-dvh w-full justify-center pt-12">
       {step === 'select-country' && (
-        <LocaleSelectModal
-          mode="LOCAL"
+        <LocaleSelectContent
+          mode="INIT"
           onSelect={handleCountrySelect}
           baseCountryCode="KR"
           localCountryCode={selectedCountry}

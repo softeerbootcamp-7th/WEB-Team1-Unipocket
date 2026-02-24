@@ -52,6 +52,33 @@ export const formatDateWithDay = (date: Date): string => {
 };
 
 /**
+ * 'YYYY-MM-DD' 형식의 문자열을 'YYYY.MM.DD' 형식으로 변환
+ */
+export const formatDateToDot = (dateStr: string): string => {
+  const date = parseStringToDate(dateStr);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}.${month}.${day}`;
+};
+
+/**
+ * 시작일과 종료일 사이의 n박 m일 문자열 반환
+ */
+export const formatTripDuration = (
+  startDate: string,
+  endDate: string,
+): string => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const nights = Math.round(
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  const days = nights + 1;
+  return `${nights}박 ${days}일`;
+};
+
+/**
  * Date 객체를 ISO 8601 UTC 형식(예: 2026-02-07T15:00:00.000Z)으로 변환합니다.
  * @param date 변환할 날짜
  * @param isEndOfDay true면 해당 일의 끝(23:59:59), false면 시작(00:00:00)으로 설정

@@ -9,20 +9,23 @@ const WidgetHeader = () => {
 
   return (
     <div className="flex items-end gap-4">
+      {/* @TODO 총 지출 API 연동 필요 */}
       <ExpenseCard
-        label="총 지출"
+        label="총 지출 (mock)"
         baseCountryCode="KR"
         baseCountryAmount={1402432}
         localCountryCode="US"
         localCountryAmount={12232}
+        isInfo
       />
       <Divider style="vertical" className="h-15" />
       <ExpenseCard
-        label="이번 달 지출"
+        label="이번 달 지출 (mock)"
         baseCountryCode="KR"
         baseCountryAmount={200342}
         localCountryCode="US"
         localCountryAmount={12232}
+        isInfo
       />
       <div className="flex-1" />
       <Button variant={ButtonVariant} size="md" onClick={toggleEditMode}>

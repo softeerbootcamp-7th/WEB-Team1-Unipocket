@@ -142,7 +142,8 @@ export const useImageUpload = (accountBookId: number) => {
         onComplete: () =>
           setItems((prev) =>
             prev.map((item) =>
-              item.taskId === parse.taskId
+              item.taskId === parse.taskId &&
+              item.status !== UPLOAD_STATUS.ERROR
                 ? { ...item, status: UPLOAD_STATUS.PARSED }
                 : item,
             ),

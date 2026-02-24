@@ -87,6 +87,16 @@ public class WidgetQueryRepository {
 		return budget != null ? budget : BigDecimal.ZERO;
 	}
 
+	public BigDecimal getTravelBudget(Long travelId) {
+		BigDecimal budget =
+				em.createQuery(
+								"SELECT t.budget FROM Travel t WHERE t.id = :travelId",
+								BigDecimal.class)
+						.setParameter("travelId", travelId)
+						.getSingleResult();
+		return budget != null ? budget : BigDecimal.ZERO;
+	}
+
 	// ── BUDGET ──────────────────────────────────────────
 
 	public BigDecimal getTotalSpentByAccountBookId(

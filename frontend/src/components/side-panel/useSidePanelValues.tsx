@@ -89,7 +89,6 @@ export const useSidePanelValues = ({
             onCategorySelect(id);
             setIsCategoryOpen(false);
           }}
-          onInteractOutside={() => setIsCategoryOpen(false)}
           className="w-63"
         />
       ),
@@ -110,7 +109,6 @@ export const useSidePanelValues = ({
             }
             setIsMethodOpen(false);
           }}
-          onInteractOutside={() => setIsMethodOpen(false)}
           className="w-63"
         />
       ),
@@ -131,7 +129,6 @@ export const useSidePanelValues = ({
             }
             setIsTravelOpen(false);
           }}
-          onInteractOutside={() => setIsTravelOpen(false)}
           className="w-63"
           showNoneTravel={false}
         />

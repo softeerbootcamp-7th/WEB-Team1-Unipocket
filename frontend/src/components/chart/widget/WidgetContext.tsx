@@ -1,9 +1,12 @@
 import { createContext, useContext } from 'react';
 
+import type { useTravelWidgetManager } from '@/components/chart/widget/hook/useTravelWidgetManager';
 import type { DragData } from '@/components/chart/widget/hook/useWidgetDragAndDrop';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 
-type WidgetManagerReturnType = ReturnType<typeof useWidgetManager>;
+type WidgetManagerReturnType =
+  | ReturnType<typeof useWidgetManager>
+  | ReturnType<typeof useTravelWidgetManager>;
 
 export const WidgetContext = createContext<WidgetManagerReturnType | null>(
   null,

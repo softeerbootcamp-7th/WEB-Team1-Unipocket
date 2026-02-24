@@ -29,48 +29,41 @@ public class ParsingProgressPublisher {
 	private static final String FIELD_ERROR_MESSAGE = "errorMessage";
 
 	private final RedisTemplate<String, String> redisTemplate;
-	private final Map<String, ParsingTaskState> activeTasks = new ConcurrentHashMap<>();
 	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-	@Value("${tempexpense.parse-task.completed-ttl-seconds:600}")
-	private long completedTaskTtlSeconds;
+	@Value(
+			"${tempexpense.parse-task.ttl-seconds:${tempexpense.parse-task.completed-ttl-seconds:600}}")
+	private long taskTtlSeconds;
 
 	public void registerTask(String taskId, Long accountBookId) {
 		redisTemplate.delete(taskKey(taskId));
-		activeTasks.put(
+		saveStateToRedis(
 				taskId,
 				new ParsingTaskState(accountBookId, 0, TaskStatus.ACTIVE, null, null, null));
 	}
 
-	public boolean canAddEmitter(String taskId, Long accountBookId) {
-		ParsingTaskState activeState = activeTasks.get(taskId);
-		return activeState != null && activeState.accountBookId().equals(accountBookId);
-	}
-
 	public boolean addEmitter(String taskId, Long accountBookId, SseEmitter emitter) {
-		if (!canAddEmitter(taskId, accountBookId)) {
-			return false;
-		}
-
-		ParsingTaskState activeState = activeTasks.get(taskId);
-		if (activeState == null) {
+		ParsingTaskState state = readTaskStateFromRedis(taskId);
+		if (state == null
+				|| state.status() != TaskStatus.ACTIVE
+				|| !state.accountBookId().equals(accountBookId)) {
 			return false;
 		}
 
 		emitters.put(taskId, emitter);
-		sendProgress(taskId, emitter, activeState.progress(), null, null, null);
+		sendProgress(taskId, emitter, state.progress(), null, null, null);
 		return true;
 	}
 
 	public boolean replayTerminalIfPresent(String taskId, Long accountBookId, SseEmitter emitter) {
-		ParsingTaskState terminalState = readTaskStateFromRedis(taskId);
-		if (terminalState == null
-				|| terminalState.status() == TaskStatus.ACTIVE
-				|| !terminalState.accountBookId().equals(accountBookId)) {
+		ParsingTaskState state = readTaskStateFromRedis(taskId);
+		if (state == null
+				|| state.status() == TaskStatus.ACTIVE
+				|| !state.accountBookId().equals(accountBookId)) {
 			return false;
 		}
-		sendProgress(taskId, emitter, terminalState.progress(), null, null, null);
-		flushTerminalEvent(taskId, emitter, terminalState);
+		sendProgress(taskId, emitter, state.progress(), null, null, null);
+		flushTerminalEvent(taskId, emitter, state);
 		return true;
 	}
 
@@ -88,13 +81,13 @@ public class ParsingProgressPublisher {
 
 	public void publishProgress(
 			String taskId, int progress, String message, String code, String fileKey) {
-		ParsingTaskState state = activeTasks.get(taskId);
-		if (state == null) {
+		ParsingTaskState state = readTaskStateFromRedis(taskId);
+		if (state == null || state.status() != TaskStatus.ACTIVE) {
 			return;
 		}
 
 		int normalized = clamp(progress);
-		activeTasks.put(
+		saveStateToRedis(
 				taskId,
 				new ParsingTaskState(
 						state.accountBookId(), normalized, TaskStatus.ACTIVE, null, null, null));
@@ -106,25 +99,19 @@ public class ParsingProgressPublisher {
 	}
 
 	public void complete(String taskId) {
-		ParsingTaskState state = activeTasks.get(taskId);
-		if (state == null) {
+		ParsingTaskState state = readTaskStateFromRedis(taskId);
+		if (state == null || state.status() != TaskStatus.ACTIVE) {
 			return;
 		}
 
-		saveTerminalStateToRedis(
-				taskId,
+		ParsingTaskState terminalState =
 				new ParsingTaskState(
-						state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null));
-
-		activeTasks.remove(taskId);
+						state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null);
+		saveStateToRedis(taskId, terminalState);
 
 		SseEmitter emitter = emitters.get(taskId);
 		if (emitter != null) {
-			flushTerminalEvent(
-					taskId,
-					emitter,
-					new ParsingTaskState(
-							state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null));
+			flushTerminalEvent(taskId, emitter, terminalState);
 		}
 	}
 
@@ -142,35 +129,24 @@ public class ParsingProgressPublisher {
 
 	private void publishError(
 			String taskId, String errorCode, Integer errorStatus, String errorMessage) {
-		ParsingTaskState state = activeTasks.get(taskId);
-		if (state == null) {
+		ParsingTaskState state = readTaskStateFromRedis(taskId);
+		if (state == null || state.status() != TaskStatus.ACTIVE) {
 			return;
 		}
 
-		saveTerminalStateToRedis(
-				taskId,
+		ParsingTaskState terminalState =
 				new ParsingTaskState(
 						state.accountBookId(),
 						state.progress(),
 						TaskStatus.ERROR,
 						errorCode,
 						errorStatus,
-						errorMessage));
-
-		activeTasks.remove(taskId);
+						errorMessage);
+		saveStateToRedis(taskId, terminalState);
 
 		SseEmitter emitter = emitters.get(taskId);
 		if (emitter != null) {
-			flushTerminalEvent(
-					taskId,
-					emitter,
-					new ParsingTaskState(
-							state.accountBookId(),
-							state.progress(),
-							TaskStatus.ERROR,
-							errorCode,
-							errorStatus,
-							errorMessage));
+			flushTerminalEvent(taskId, emitter, terminalState);
 		}
 	}
 
@@ -192,12 +168,12 @@ public class ParsingProgressPublisher {
 		Long parsedAccountBookId = Long.valueOf(accountBookId);
 		int progress = parseProgress(progressValue);
 		TaskStatus status = parseStatus(statusValue);
-		Integer errorStatus = parseErrorStatus(errorStatusValue);
+		Integer parsedErrorStatus = parseErrorStatus(errorStatusValue);
 		return new ParsingTaskState(
-				parsedAccountBookId, progress, status, errorCode, errorStatus, errorMessage);
+				parsedAccountBookId, progress, status, errorCode, parsedErrorStatus, errorMessage);
 	}
 
-	private void saveTerminalStateToRedis(String taskId, ParsingTaskState state) {
+	private void saveStateToRedis(String taskId, ParsingTaskState state) {
 		HashOperations<String, String, String> hash = redisTemplate.opsForHash();
 		String key = taskKey(taskId);
 		hash.put(key, FIELD_ACCOUNT_BOOK_ID, String.valueOf(state.accountBookId()));
@@ -218,12 +194,12 @@ public class ParsingProgressPublisher {
 		} else {
 			hash.put(key, FIELD_ERROR_MESSAGE, state.errorMessage());
 		}
-		applyCompletedTtl(key);
+		applyTtl(key);
 	}
 
-	private void applyCompletedTtl(String key) {
-		if (completedTaskTtlSeconds > 0) {
-			redisTemplate.expire(key, completedTaskTtlSeconds, TimeUnit.SECONDS);
+	private void applyTtl(String key) {
+		if (taskTtlSeconds > 0) {
+			redisTemplate.expire(key, taskTtlSeconds, TimeUnit.SECONDS);
 		}
 	}
 
@@ -267,7 +243,6 @@ public class ParsingProgressPublisher {
 		}
 
 		try {
-			// SSE 에러 이벤트는 스트림 이벤트로 전달하고 HTTP 에러 디스패치로 확장하지 않는다.
 			emitter.complete();
 		} finally {
 			emitters.remove(taskId);

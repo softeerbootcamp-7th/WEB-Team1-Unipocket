@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 import { LinkedCardItem } from '@/components/setting-page/LinkedCardItem';
+import CardCreateModal from '@/components/setting-page/modal/CardCreateModal';
 import {
   SettingSection,
   SettingTitle,
 } from '@/components/setting-page/SettingLayout';
-import CardCreateModal from '@/components/setting-page/temp-modal/CardCreateModal';
 
 import { useCardsQuery, useCreateCardMutation } from '@/api/cards/query';
 import { Icons } from '@/assets';
@@ -70,13 +70,11 @@ const LinkedCardList = ({
         </button>
       </div>
 
-      {isCreateModalOpen && (
-        <CardCreateModal
-          isSubmitting={createCardMutation.isPending}
-          onClose={() => setCreateModalOpen(false)}
-          onSubmit={handleCreateCard}
-        />
-      )}
+      <CardCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSubmit={handleCreateCard}
+      />
     </SettingSection>
   );
 };

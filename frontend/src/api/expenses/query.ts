@@ -117,9 +117,10 @@ export const useBulkUpdateExpensesMutation = () =>
     }: {
       accountBookId: number | string;
       data: BulkUpdateExpenseRequest;
+      travelId?: number | string;
     }) => bulkUpdateExpenses(accountBookId, data),
     onSuccess: (_, variables) => {
-      invalidateRelatedQueries(variables.accountBookId);
+      invalidateRelatedQueries(variables.accountBookId, variables.travelId);
       toast.success('지출 내역이 일괄 수정되었어요.');
     },
     onError: () => {

@@ -74,7 +74,7 @@ export interface TempExpense {
   memo: string | null;
   occurredAt: string | null;
   status: 'NORMAL' | 'INCOMPLETE' | 'ABNORMAL';
-  cardLastFourDigits: string | null;
+  cardLastFourDigits: string;
 }
 
 export interface TempExpenseFile {

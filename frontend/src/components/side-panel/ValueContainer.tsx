@@ -25,7 +25,7 @@ const ValueItem = ({
 }: ValueItemProps) => {
   const valueEl = (
     <div
-      className="label1-normal-medium text-label-normal w-63 cursor-pointer px-1 hover:opacity-70"
+      className="label1-normal-medium text-label-normal flex h-8 w-63 cursor-pointer items-center px-1 hover:opacity-70"
       onClick={onClick}
     >
       {value}

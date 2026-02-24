@@ -2,6 +2,7 @@ import ImageResultContent from '@/components/upload/image-upload/ImageResultCont
 import UploadResultModal from '@/components/upload/UploadResultModal';
 
 import { useGetMetaFilesQuery } from '@/api/temporary-expenses/query';
+import { useConfirmMetaMutation } from '@/api/temporary-expenses/query';
 
 interface ImageResultModalProps {
   isOpen: boolean;
@@ -19,6 +20,15 @@ const ImageResultModal = ({
   onConfirm,
 }: ImageResultModalProps) => {
   const { data } = useGetMetaFilesQuery(accountBookId, metaId);
+  const confirmMetaMutation = useConfirmMetaMutation(accountBookId);
+
+  const handleConfirm = () => {
+    confirmMetaMutation.mutate(metaId, {
+      onSuccess: () => {
+        onConfirm?.();
+      },
+    });
+  };
 
   const imageCount = data?.files.length ?? 0;
   const expenseCount =
@@ -30,7 +40,7 @@ const ImageResultModal = ({
       imageCount={imageCount}
       expenseCount={expenseCount}
       onClose={onClose}
-      onConfirm={onConfirm}
+      onConfirm={handleConfirm}
     >
       <ImageResultContent
         accountBookId={accountBookId}

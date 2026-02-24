@@ -175,10 +175,10 @@ const PreviewSection = () => {
                 <div className="bg-background-alternative flex items-center justify-center self-start rounded-2xl border border-gray-200 p-2.5">
                   <img
                     src={LandingImages.DemoReceipt}
-                    className="h-127 rounded-lg object-contain"
+                    className="h-131 rounded-lg object-contain"
                   />
                 </div>
-                <div className="shadow-semantic-subtle h-132 min-w-0 flex-1 overflow-hidden rounded-2xl px-2 pb-4">
+                <div className="shadow-semantic-subtle h-136 min-w-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 px-2 pb-4">
                   <LandingExpenseTable data={TEMP_EXPENSE_DUMMY[0]} />
                 </div>
               </div>
@@ -188,10 +188,10 @@ const PreviewSection = () => {
                 <div className="bg-background-alternative flex items-center justify-center self-start rounded-2xl border border-gray-200 p-2.5">
                   <img
                     src={LandingImages.DemoBank}
-                    className="h-127.5 rounded-lg object-contain"
+                    className="h-131 rounded-lg object-contain"
                   />
                 </div>
-                <div className="shadow-semantic-subtle h-132 min-w-0 flex-1 overflow-hidden rounded-2xl px-2 pb-4">
+                <div className="shadow-semantic-subtle h-136 min-w-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 px-2 pb-4">
                   <LandingExpenseTable data={TEMP_EXPENSE_DUMMY[1]} />
                 </div>
               </div>

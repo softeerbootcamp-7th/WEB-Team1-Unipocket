@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class OAuthLoginStateService {
 
 	private static final String KEY_PREFIX = "oauth:state:";
+	private static final String REACTIVATE_KEY_PREFIX = "oauth:state:reactivate:";
 
 	private final StringRedisTemplate redisTemplate;
 	private final JwtProperties jwtProperties;
@@ -33,6 +34,35 @@ public class OAuthLoginStateService {
 						KEY_PREFIX + state,
 						providerType.name(),
 						jwtProperties.getOauthStateTtlDuration());
+	}
+
+	public void saveReactivateState(String state, ProviderType providerType) {
+		redisTemplate
+				.opsForValue()
+				.set(
+						REACTIVATE_KEY_PREFIX + state,
+						providerType.name(),
+						jwtProperties.getOauthStateTtlDuration());
+	}
+
+	public boolean isReactivateIntent(String state) {
+		return Boolean.TRUE.equals(redisTemplate.hasKey(REACTIVATE_KEY_PREFIX + state));
+	}
+
+	public void validateReactivateState(String state, ProviderType providerType) {
+		if (state == null || state.isBlank()) {
+			throw new OAuthException(ErrorCode.INVALID_OAUTH_STATE);
+		}
+
+		String value = redisTemplate.opsForValue().getAndDelete(REACTIVATE_KEY_PREFIX + state);
+
+		if (value == null) {
+			throw new OAuthException(ErrorCode.INVALID_OAUTH_STATE);
+		}
+
+		if (!value.equals(providerType.name())) {
+			throw new OAuthException(ErrorCode.INVALID_OAUTH_STATE);
+		}
 	}
 
 	public void validateState(String state, ProviderType providerType) {

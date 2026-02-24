@@ -13,7 +13,6 @@ public record TemporaryExpenseUpdateCommand(
 		BigDecimal localCurrencyAmount,
 		CurrencyCode baseCountryCode,
 		BigDecimal baseCurrencyAmount,
-		String paymentsMethod,
 		String memo,
 		LocalDateTime occurredAt,
 		String cardLastFourDigits) {
@@ -27,7 +26,6 @@ public record TemporaryExpenseUpdateCommand(
 				request.localCurrencyAmount(),
 				request.baseCountryCode(),
 				request.baseCurrencyAmount(),
-				request.paymentsMethod(),
 				request.memo(),
 				request.occurredAt(),
 				request.cardLastFourDigits());

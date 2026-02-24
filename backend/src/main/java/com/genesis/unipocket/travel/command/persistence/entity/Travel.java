@@ -9,7 +9,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +43,20 @@ public class Travel extends BaseEntity {
 
 	@Column(nullable = false)
 	private String travelPlaceName;
+
+	@Column(nullable = true, precision = 19, scale = 2)
+	private BigDecimal budget;
+
+	@Column(name = "budget_created_at")
+	private LocalDateTime budgetCreatedAt;
+
+	public void updateBudget(BigDecimal budget) {
+		if (budget != null && budget.compareTo(BigDecimal.ZERO) < 0) {
+			throw new BusinessException(ErrorCode.TRAVEL_INVALID_BUDGET);
+		}
+		this.budget = budget;
+		this.budgetCreatedAt = (budget != null) ? LocalDateTime.now() : null;
+	}
 
 	public void validateDateRange() {
 		if (startDate.isAfter(endDate)) {

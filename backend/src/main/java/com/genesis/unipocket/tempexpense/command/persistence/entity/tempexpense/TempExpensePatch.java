@@ -14,7 +14,6 @@ public record TempExpensePatch(
 		CurrencyCode baseCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		BigDecimal exchangeRate,
-		String paymentsMethod,
 		String memo,
 		LocalDateTime occurredAt,
 		String cardLastFourDigits,
@@ -27,7 +26,6 @@ public record TempExpensePatch(
 				|| baseCurrencyCode != null
 				|| baseCurrencyAmount != null
 				|| exchangeRate != null
-				|| paymentsMethod != null
 				|| memo != null
 				|| occurredAt != null
 				|| cardLastFourDigits != null
@@ -42,7 +40,6 @@ public record TempExpensePatch(
 			CurrencyCode baseCurrencyCode,
 			BigDecimal baseCurrencyAmount,
 			BigDecimal exchangeRate,
-			String paymentsMethod,
 			String memo,
 			LocalDateTime occurredAt,
 			String cardLastFourDigits,
@@ -55,7 +52,6 @@ public record TempExpensePatch(
 				baseCurrencyCode,
 				baseCurrencyAmount,
 				exchangeRate,
-				normalizeBlank(paymentsMethod),
 				memo,
 				occurredAt,
 				normalizeBlank(cardLastFourDigits),
@@ -72,7 +68,6 @@ public record TempExpensePatch(
 				resolvedBaseCurrencyCode,
 				command.baseCurrencyAmount(),
 				null,
-				command.paymentsMethod(),
 				command.memo(),
 				command.occurredAt(),
 				command.cardLastFourDigits(),

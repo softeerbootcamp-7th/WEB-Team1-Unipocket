@@ -37,6 +37,38 @@ public class GeminiService {
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 
+	private static final String FILE_FORMAT_PROMPT =
+			"""
+				{
+					"items": [
+						{
+						"merchantName": "상호명",
+						"category": "one of: FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
+						"localAmount": "해외 현지 결제 금액 (해외 거래: 현지 통화 금액, 국내 거래: 결제 금액. 숫자만)",
+						"localCurrency": "현지 결제 통화 코드 (해외 거래: 현지 통화 USD/JPY/EUR 등, 국내 거래: KRW)",
+						"baseAmount": "자국 통화 환산 금액 (해외 거래에서 카드사가 원화 청구한 금액. 숫자만)",
+						"baseCurrency": "자국 통화 코드 (해외 거래 원화 청구 금액이 있는 경우 KRW 등)",
+						"occurredAt": "결제 일시 (ISO 8601 format: YYYY-MM-DDTHH:mm:ss)",
+						"cardLastFourDigits": "카드 뒷 4자리 (없으면 null)",
+						"approvalNumber": "승인번호 (있는 경우 작성)",
+						"memo": "추가 메모 (없으면 null)"
+						}
+					]
+				}
+
+				Rules:
+				- If multiple items are found, include all in the items array
+				- If information is unclear or missing, use null
+				- Always provide merchantName and localAmount
+				- Default category to "UNCLASSIFIED" if unclear
+				- If payment time is not available, use today's date with 12:00:00
+				- Use JSON null literal for missing values (do NOT use "null" string)
+				- Use JSON number for numeric amounts (do NOT use commas or currency symbols)
+				- Return a single valid JSON object only (no markdown/code fence/explanations)
+				- For foreign credit card statements: the foreign currency amount (해외이용금액) goes in localAmount/localCurrency, and the home currency billed amount (원화 청구금액/금액) goes in baseAmount/baseCurrency
+				- If nothing is parseable, return {"items":[]}
+				""";
+
 	public GeminiService(
 			@Qualifier("geminiRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
 		this.restTemplate = restTemplate;
@@ -86,19 +118,7 @@ public class GeminiService {
 							"generationConfig",
 							Map.of("responseMimeType", "application/json"));
 
-			HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-
-			log.debug("Calling Gemini API: {}", url);
-			ResponseEntity<String> response =
-					restTemplate.postForEntity(url, request, String.class);
-
-			if (!response.getStatusCode().is2xxSuccessful()) {
-				log.error("Gemini API call failed with status: {}", response.getStatusCode());
-				return new GeminiParseResponse(
-						false, List.of(), "API call failed", response.getStatusCode().value());
-			}
-
-			return parseGeminiResponse(response.getBody());
+			return callGeminiApi(url, headers, requestBody);
 
 		} catch (HttpStatusCodeException e) {
 			log.error("Gemini API returned non-2xx status: {}", e.getStatusCode(), e);
@@ -137,19 +157,7 @@ public class GeminiService {
 							"generationConfig",
 							Map.of("responseMimeType", "application/json"));
 
-			HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-
-			log.debug("Calling Gemini API: {}", url);
-			ResponseEntity<String> response =
-					restTemplate.postForEntity(url, request, String.class);
-
-			if (!response.getStatusCode().is2xxSuccessful()) {
-				log.error("Gemini API call failed with status: {}", response.getStatusCode());
-				return new GeminiParseResponse(
-						false, List.of(), "API call failed", response.getStatusCode().value());
-			}
-
-			return parseGeminiResponse(response.getBody());
+			return callGeminiApi(url, headers, requestBody);
 
 		} catch (HttpStatusCodeException e) {
 			log.error("Gemini API returned non-2xx status: {}", e.getStatusCode(), e);
@@ -164,6 +172,22 @@ public class GeminiService {
 		}
 	}
 
+	private GeminiParseResponse callGeminiApi(
+			String url, HttpHeaders headers, Map<String, Object> requestBody) {
+		HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+		log.debug("Calling Gemini API: {}", url);
+		ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+		if (!response.getStatusCode().is2xxSuccessful()) {
+			log.error("Gemini API call failed with status: {}", response.getStatusCode());
+			return new GeminiParseResponse(
+					false, List.of(), "API call failed", response.getStatusCode().value());
+		}
+
+		return parseGeminiResponse(response.getBody());
+	}
+
 	/**
 	 * 문서(CSV/Excel 텍스트) 파싱 프롬프트 생성
 	 */
@@ -172,43 +196,8 @@ public class GeminiService {
 				You are an expert at extracting structured expense data from expense documents.
 
 				Analyze the provided CSV-like text and extract the following information in JSON format:
-
-				{
-				"items": [
-					{
-					"merchantName": "상호명",
-					"category": "one of: FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
-					"localAmount": "현지 결제 금액 (숫자만)",
-					"localCurrency": "현지 통화 코드 (KRW, USD, JPY 등)",
-					"baseAmount": "청구 금액 (있는 경우 작성, 숫자만)",
-					"baseCurrency": "청구 통화 코드 (있는 경우 작성, KRW 등)",
-					"occurredAt": "결제 일시 (ISO 8601 format: YYYY-MM-DDTHH:mm:ss)",
-					"cardLastFourDigits": "카드 뒷 4자리 (없으면 null)",
-					"approvalNumber": "승인번호 (있는 경우 작성)",
-					"memo": "추가 메모 (없으면 null)"
-					}
-				]
-				}
-
-				Rules:
-				- If multiple rows are found, include all transaction rows in items
-				- Ignore subtotal/summary rows such as: total, sum, 합계, 총 n건
-				- Auto-detect headers/columns from the text
-				- For card statements, map intelligently:
-				- merchant/store -> merchantName
-				- transaction date/time -> occurredAt
-				- local/foreign currency amount -> localAmount
-				- local/foreign currency code -> localCurrency
-				- billed amount -> baseAmount
-				- billed/base currency code -> baseCurrency
-				- If both localAmount and baseAmount exist, keep both values
-				- If currency is missing, infer from context or default to KRW
-				- Handle various date formats and convert to ISO 8601
-				- Always use JSON null literal for missing values (do NOT use "null" string)
-				- Always use JSON number for numeric amounts (do NOT use commas or currency symbols)
-				- Return a single valid JSON object only (no markdown/code fence/explanations)
-				- If nothing is parseable, return {"items":[]}
-				""";
+				"""
+				+ FILE_FORMAT_PROMPT;
 	}
 
 	/**
@@ -337,35 +326,8 @@ public class GeminiService {
 				You are an expert at extracting structured expense data from receipt images.
 
 				Analyze the provided receipt image and extract the following information in JSON format:
-
-				{
-				"items": [
-					{
-					"merchantName": "상호명",
-					"category": "one of: FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
-					"localAmount": "결제 금액 (숫자만)",
-					"localCurrency": "통화 코드 (KRW, USD, JPY 등)",
-					"baseAmount": "청구 금액 (있는 경우 작성, 숫자만)",
-					"baseCurrency": "청구 통화 코드 (있는 경우 작성, KRW 등)",
-					"occurredAt": "결제 일시 (ISO 8601 format: YYYY-MM-DDTHH:mm:ss)",
-					"cardLastFourDigits": "카드 뒷 4자리 (없으면 null)",
-					"approvalNumber": "승인번호 (있는 경우 작성)",
-					"memo": "추가 메모 (없으면 null)"
-					}
-				]
-				}
-
-				Rules:
-				- If multiple items are found, include all in the items array
-				- If information is unclear or missing, use null
-				- Always provide merchantName and localAmount
-				- Default category to "UNCLASSIFIED" if unclear
-				- If payment time is not available, use today's date with 12:00:00
-				- Use JSON null literal for missing values (do NOT use "null" string)
-				- Use JSON number for numeric amounts (do NOT use commas or currency symbols)
-				- Return a single valid JSON object only (no markdown/code fence/explanations)
-				- If nothing is parseable, return {"items":[]}
-				""";
+				"""
+				+ FILE_FORMAT_PROMPT;
 	}
 
 	/**

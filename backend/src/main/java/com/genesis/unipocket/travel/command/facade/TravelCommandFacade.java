@@ -8,10 +8,12 @@ import com.genesis.unipocket.travel.command.application.command.CreateTravelComm
 import com.genesis.unipocket.travel.command.application.command.PatchTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.UpdateTravelCommand;
 import com.genesis.unipocket.travel.command.application.result.CreateTravelResult;
+import com.genesis.unipocket.travel.command.application.result.TravelBudgetUpdateResult;
 import com.genesis.unipocket.travel.command.facade.port.TravelDefaultWidgetPort;
 import com.genesis.unipocket.travel.command.facade.port.TravelImageUploadPathIssueService;
 import com.genesis.unipocket.travel.command.facade.port.dto.TravelImageUploadPathInfo;
 import com.genesis.unipocket.travel.common.validate.UserAccountBookValidator;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,13 @@ public class TravelCommandFacade {
 	private void validateTravelOwnership(UUID userId, Long travelId) {
 		Long accountBookId = travelCommandService.getTravel(travelId).getAccountBookId();
 		userAccountBookValidator.validateUserAccountBook(userId.toString(), accountBookId);
+	}
+
+	@Transactional
+	public TravelBudgetUpdateResult updateTravelBudget(
+			Long accountBookId, Long travelId, BigDecimal budget, UUID userId) {
+		userAccountBookValidator.validateUserAccountBook(userId.toString(), accountBookId);
+		return travelCommandService.updateTravelBudget(accountBookId, travelId, budget);
 	}
 
 	public TravelImageUploadPathInfo issueTravelImageUploadPath(

@@ -18,6 +18,7 @@ import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.common.enums.UserStatus;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,34 @@ public class UserCommandService {
 						.findByProviderAndProviderId(providerType, providerId)
 						.map(SocialAuthInfo::userId)
 						.orElseGet(() -> createNewUser(command));
+
+		UserEntity user =
+				userRepository
+						.findById(userId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		if (user.getStatus() == UserStatus.INACTIVE) {
+			throw new BusinessException(ErrorCode.USER_WITHDRAWN);
+		}
+
+		return tokenIssuePort.issueTokens(userId);
+	}
+
+	@Transactional
+	public LoginOrRegisterResult reactivateUser(RegisterUserCommand command) {
+		UUID userId =
+				socialAuthReadPort
+						.findByProviderAndProviderId(command.providerType(), command.providerId())
+						.map(SocialAuthInfo::userId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+		UserEntity user =
+				userRepository
+						.findById(userId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+		if (user.getStatus() == UserStatus.INACTIVE) {
+			user.reactivate();
+		}
 
 		return tokenIssuePort.issueTokens(userId);
 	}
@@ -90,8 +119,7 @@ public class UserCommandService {
 						.findById(command.userId())
 						.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-		socialAuthWritePort.deleteByUserId(user.getId());
-		userRepository.delete(user);
+		user.deactivate();
 	}
 
 	@Transactional

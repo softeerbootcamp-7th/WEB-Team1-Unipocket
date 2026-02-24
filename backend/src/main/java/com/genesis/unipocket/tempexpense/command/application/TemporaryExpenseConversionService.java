@@ -1,5 +1,6 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
+import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
@@ -21,11 +22,18 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepo
 import com.genesis.unipocket.tempexpense.command.persistence.repository.TemporaryExpenseRepository;
 import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertValidationException;
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
+import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
+import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,6 +51,8 @@ public class TemporaryExpenseConversionService {
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
+	private final AccountBookCommandRepository accountBookCommandRepository;
+	private final UserCardCommandRepository userCardCommandRepository;
 
 	@Transactional
 	public ConfirmStartResult startConfirmAsync(Long accountBookId, Long tempExpenseMetaId) {
@@ -58,6 +68,7 @@ public class TemporaryExpenseConversionService {
 		CurrencyCode defaultBaseCurrencyCode = rateInfo.baseCurrencyCode();
 		CurrencyCode defaultLocalCurrencyCode = rateInfo.localCurrencyCode();
 		ZoneId localZoneId = CountryCodeTimezoneMapper.getZoneId(rateInfo.localCountryCode());
+		CardMatchContext cardMatchContext = buildCardMatchContext(accountBookId);
 
 		List<TempExpenseConvertValidationException.Violation> violations = new ArrayList<>();
 		for (TemporaryExpense expense : expenses) {
@@ -80,7 +91,8 @@ public class TemporaryExpenseConversionService {
 					expense,
 					defaultBaseCurrencyCode,
 					defaultLocalCurrencyCode,
-					localZoneId);
+					localZoneId,
+					cardMatchContext);
 		}
 		return new ConfirmStartResult(null, expenses.size());
 	}
@@ -90,7 +102,8 @@ public class TemporaryExpenseConversionService {
 			TemporaryExpense temp,
 			CurrencyCode defaultBaseCurrencyCode,
 			CurrencyCode defaultLocalCurrencyCode,
-			ZoneId localZoneId) {
+			ZoneId localZoneId,
+			CardMatchContext cardMatchContext) {
 		temporaryExpenseValidator.validateConvertible(temp, defaultBaseCurrencyCode);
 
 		File file =
@@ -111,13 +124,14 @@ public class TemporaryExpenseConversionService {
 						defaultBaseCurrencyCode,
 						occurredAtUtc,
 						exchangeRateService);
+		Long matchedUserCardId = resolveUserCardId(cardMatchContext, temp.getCardLastFourDigits());
 
 		ExpenseManualCreateArgs args =
 				new ExpenseManualCreateArgs(
 						accountBookId,
 						temp.getMerchantName(),
 						temp.getCategory(),
-						null,
+						matchedUserCardId,
 						occurredAtUtc,
 						amountInfo.getLocalCurrencyAmount(),
 						conversionAmount.localCurrencyCode(),
@@ -139,6 +153,54 @@ public class TemporaryExpenseConversionService {
 		expenseRepository.save(expense);
 		tempExpenseRepository.delete(temp);
 	}
+
+	private CardMatchContext buildCardMatchContext(Long accountBookId) {
+		var accountBook =
+				accountBookCommandRepository
+						.findById(accountBookId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+		List<UserCardEntity> userCards =
+				userCardCommandRepository.findAllByUser_Id(accountBook.getUser().getId());
+		Map<String, Long> cardIdByLastFourDigits =
+				userCards.stream()
+						.filter(
+								card ->
+										card.getCardNumber() != null
+												&& !card.getCardNumber().isBlank())
+						.collect(
+								Collectors.toMap(
+										UserCardEntity::getCardNumber,
+										UserCardEntity::getUserCardId,
+										(existing, replacement) -> existing));
+		Set<String> duplicateLastFourDigits =
+				userCards.stream()
+						.map(UserCardEntity::getCardNumber)
+						.filter(number -> number != null && !number.isBlank())
+						.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+						.entrySet()
+						.stream()
+						.filter(entry -> entry.getValue() > 1)
+						.map(Map.Entry::getKey)
+						.collect(Collectors.toCollection(HashSet::new));
+		return new CardMatchContext(cardIdByLastFourDigits, duplicateLastFourDigits);
+	}
+
+	private Long resolveUserCardId(CardMatchContext cardMatchContext, String cardLastFourDigits) {
+		if (cardLastFourDigits == null || cardLastFourDigits.isBlank()) {
+			// 카드 4자리가 없으면 현금/기타 결제로 간주 (카드 미연동)
+			return null;
+		}
+		if (cardMatchContext.duplicateLastFourDigits().contains(cardLastFourDigits)) {
+			log.warn(
+					"Skipped temp-expense card auto mapping due to duplicate last four digits: {}",
+					cardLastFourDigits);
+			return null;
+		}
+		return cardMatchContext.cardIdByLastFourDigits().get(cardLastFourDigits);
+	}
+
+	private record CardMatchContext(
+			Map<String, Long> cardIdByLastFourDigits, Set<String> duplicateLastFourDigits) {}
 
 	private ExpenseSource resolveExpenseSource(FileType fileType) {
 		if (fileType == null) {

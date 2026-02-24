@@ -89,6 +89,10 @@ public class UserEntity {
 		this.status = UserStatus.INACTIVE;
 	}
 
+	public void reactivate() {
+		this.status = UserStatus.ACTIVE;
+	}
+
 	public void updateMainBucketId(Long mainBucketId) {
 		this.mainBucketId = mainBucketId;
 	}

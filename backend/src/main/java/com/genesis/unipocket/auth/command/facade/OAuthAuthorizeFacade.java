@@ -33,4 +33,15 @@ public class OAuthAuthorizeFacade {
 
 		return new AuthorizeResult(authorizationUrl, state);
 	}
+
+	@Transactional
+	public AuthorizeResult authorizeReactivate(ProviderType providerType) {
+		String state = UUID.randomUUID().toString();
+		loginStateService.saveReactivateState(state, providerType);
+
+		OAuthProviderService provider = providerFactory.getProvider(providerType);
+		String authorizationUrl = provider.getAuthorizationUrl(state);
+
+		return new AuthorizeResult(authorizationUrl, state);
+	}
 }

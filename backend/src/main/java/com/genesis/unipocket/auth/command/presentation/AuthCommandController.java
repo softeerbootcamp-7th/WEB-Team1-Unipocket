@@ -1,6 +1,7 @@
 package com.genesis.unipocket.auth.command.presentation;
 
 import com.genesis.unipocket.auth.command.application.AuthService;
+import com.genesis.unipocket.auth.command.application.OAuthLoginStateService;
 import com.genesis.unipocket.auth.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.command.facade.UserLoginFacade;
 import com.genesis.unipocket.auth.common.config.JwtProperties;
@@ -49,6 +50,7 @@ public class AuthCommandController {
 	private final CookieUtil cookieUtil;
 	private final OAuthAuthorizeFacade authorizeFacade;
 	private final UserLoginFacade loginFacade;
+	private final OAuthLoginStateService loginStateService;
 	private final JwtProperties jwtProperties;
 
 	@Value("${app.frontend.url}")
@@ -137,6 +139,23 @@ public class AuthCommandController {
 	}
 
 	/**
+	 * 계정 복구 OAuth 인증 시작: 소셜 로그인 페이지로 리다이렉트
+	 */
+	@Operation(
+			summary = "계정 복구 OAuth 인증 시작",
+			description = "탈퇴(INACTIVE) 계정 복구를 위한 OAuth 인증을 시작합니다.")
+	@GetMapping("/oauth2/reactivate/{provider}")
+	public void authorizeReactivate(@PathVariable String provider, HttpServletResponse response)
+			throws IOException {
+
+		log.info("OAuth reactivate authorize request for provider: {}", provider);
+		OAuth2Properties.ProviderType providerType = getProviderType(provider);
+
+		AuthorizeResult authResponse = authorizeFacade.authorizeReactivate(providerType);
+		response.sendRedirect(authResponse.authorizationUrl());
+	}
+
+	/**
 	 * OAuth 콜백 처리: 로그인 완료 후 JSON 응답 반환 (SPA 방식)
 	 */
 	@Operation(
@@ -153,7 +172,11 @@ public class AuthCommandController {
 		log.info("OAuth callback received for provider: {}", provider);
 		OAuth2Properties.ProviderType providerType = getProviderType(provider);
 
-		LoginResult loginResponse = loginFacade.login(providerType, code, state);
+		boolean isReactivate = loginStateService.isReactivateIntent(state);
+		LoginResult loginResponse =
+				isReactivate
+						? loginFacade.reactivate(providerType, code, state)
+						: loginFacade.login(providerType, code, state);
 
 		// Access Token 쿠키 저장
 		cookieUtil.addCookie(

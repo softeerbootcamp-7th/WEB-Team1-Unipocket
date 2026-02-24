@@ -1,48 +1,21 @@
 import { useState } from 'react';
 
-import { getCardNumberFromExpense } from '@/components/data-table/util';
-
 import type { CategoryId } from '@/types/category';
 
-import type { Expense } from '@/api/expenses/type';
-import { useGetCardsQuery } from '@/api/users/query';
-
-function useSidePanelForm(initialData?: Partial<Expense>) {
-  const { data: cards = [] } = useGetCardsQuery();
-  const [prevId, setPrevId] = useState<number | null>(null);
+function useSidePanelForm() {
   const [title, setTitle] = useState('');
   const [memo, setMemo] = useState('');
-  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
-  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(
-    null,
+  const [selectedDateTime, setSelectedDateTime] = useState<Date>(
+    () => new Date(),
   );
+  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>(0);
   const [selectedCardNumber, setSelectedCardNumber] = useState<string | null>(
     null,
   );
   const [selectedTravelId, setSelectedTravelId] = useState<
     number | string | null
   >(null);
-
-  // 비교하기 전에 미리 null로 변환하여 타입을 완벽히 맞춤
-  const currentExpenseId = initialData?.expenseId ?? null;
-
-  if (currentExpenseId !== prevId) {
-    setPrevId(currentExpenseId);
-    setTitle(initialData?.merchantName || '');
-    setMemo(initialData?.memo || '');
-    setSelectedDateTime(
-      initialData?.occurredAt ? new Date(initialData.occurredAt) : null,
-    );
-    setIsDateTimePickerOpen(false);
-    setSelectedCategory(initialData?.category ?? null);
-    setSelectedCardNumber(
-      initialData?.paymentMethod
-        ? getCardNumberFromExpense(initialData as Expense, cards)
-        : null,
-    );
-    setSelectedTravelId(initialData?.travel?.travelId ?? null);
-  }
 
   return {
     title,
@@ -62,9 +35,9 @@ function useSidePanelForm(initialData?: Partial<Expense>) {
     resetForm: () => {
       setTitle('');
       setMemo('');
-      setSelectedDateTime(null);
+      setSelectedDateTime(new Date());
       setIsDateTimePickerOpen(false);
-      setSelectedCategory(null);
+      setSelectedCategory(0);
       setSelectedCardNumber(null);
       setSelectedTravelId(null);
     },

@@ -10,7 +10,7 @@ import DropDown from '@/components/common/dropdown/Dropdown';
 
 import type { CurrencyType } from '@/types/currency';
 
-import { useWidgetQuery } from '@/api/widget/query';
+import { useContextualWidgetQuery } from '@/api/widget/query';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const ComparisonChart = ({ isPreview = false }: ChartMode) => {
@@ -20,7 +20,9 @@ const ComparisonChart = ({ isPreview = false }: ChartMode) => {
 
   const currencyType: CurrencyType =
     CURRENCY_OPTIONS.find((opt) => opt.id === selectedCurrency)?.type ?? 'BASE';
-  const { data, isLoading } = useWidgetQuery('COMPARISON', { currencyType });
+  const { data, isLoading } = useContextualWidgetQuery('COMPARISON', {
+    currencyType,
+  });
 
   const localCountryCode = useRequiredAccountBook().localCountryCode;
 

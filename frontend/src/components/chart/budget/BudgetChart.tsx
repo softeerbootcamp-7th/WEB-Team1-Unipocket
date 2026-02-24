@@ -10,10 +10,10 @@ import ChartHeader from '@/components/chart/layout/ChartHeader';
 import { CHART_MESSAGES } from '@/components/chart/message';
 import Button from '@/components/common/Button';
 
-import { useWidgetQuery } from '@/api/widget/query';
+import { useContextualWidgetQuery } from '@/api/widget/query';
 
 const BudgetChart = ({ isPreview = false }: ChartMode) => {
-  const { data, isLoading } = useWidgetQuery('BUDGET');
+  const { data, isLoading } = useContextualWidgetQuery('BUDGET');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const budgetAmount = Number(data?.budget) || 0;

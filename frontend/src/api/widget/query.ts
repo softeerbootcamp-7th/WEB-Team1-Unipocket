@@ -1,11 +1,14 @@
+import { useContext } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import type { WidgetType } from '@/components/chart/widget/type';
+import { WidgetContext } from '@/components/chart/widget/WidgetContext';
 
 import type { CurrencyType } from '@/types/currency';
 import type { PeriodType } from '@/types/period';
 
+import { useTravelWidgetQuery } from '@/api/travels/query';
 import {
   getWidget,
   getWidgetLayout,
@@ -94,4 +97,28 @@ export const useUpdateWidgetLayoutMutation = () => {
       toast.error('위젯 순서 저장에 실패했어요.');
     },
   });
+};
+
+/**
+ * WidgetContext의 travelId 유무에 따라
+ * 홈(useWidgetQuery) 또는 여행(useTravelWidgetQuery)을 자동으로 분기하는 훅
+ */
+export const useContextualWidgetQuery = <T extends keyof WidgetResponseMap>(
+  widgetType: T,
+  options: UseWidgetQueryOptions = {},
+) => {
+  const travelId = useContext(WidgetContext)?.travelId;
+  const { enabled = true, ...rest } = options;
+
+  const homeResult = useWidgetQuery(widgetType, {
+    ...rest,
+    enabled: !travelId && enabled,
+  });
+
+  const travelResult = useTravelWidgetQuery(travelId ?? '', widgetType, {
+    ...rest,
+    enabled: !!travelId && enabled,
+  });
+
+  return travelId ? travelResult : homeResult;
 };

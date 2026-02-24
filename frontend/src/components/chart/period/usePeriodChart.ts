@@ -14,7 +14,7 @@ import {
 import type { CurrencyType } from '@/types/currency';
 import { getPeriodTypeById } from '@/types/period';
 
-import { useWidgetQuery } from '@/api/widget/query';
+import { useContextualWidgetQuery } from '@/api/widget/query';
 import { useAccountBookCountryCode } from '@/stores/accountBookStore';
 
 export const usePeriodChart = (isPreview: boolean) => {
@@ -30,7 +30,7 @@ export const usePeriodChart = (isPreview: boolean) => {
 
   const periodType = getPeriodTypeById(selectedPeriod) as PeriodChartType;
 
-  const { data: apiData, isLoading } = useWidgetQuery('PERIOD', {
+  const { data: apiData, isLoading } = useContextualWidgetQuery('PERIOD', {
     period: periodType,
     currencyType: periodType === 'WEEKLY' ? currencyType : undefined,
   });

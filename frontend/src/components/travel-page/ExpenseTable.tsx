@@ -2,6 +2,7 @@ import { useParams } from '@tanstack/react-router';
 
 import Button from '@/components/common/Button';
 import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
+import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
 import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
 import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
@@ -34,6 +35,7 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
         </Button>
       }
       totalPages={totalPages}
+      columns={expenseColumns}
     >
       <UpdateActionBar />
       <TextCellEditor />

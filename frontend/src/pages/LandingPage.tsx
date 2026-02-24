@@ -7,9 +7,9 @@ import {
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
+import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
 import { DataTable } from '@/components/data-table/DataTable';
 import DataTableProvider from '@/components/data-table/DataTableProvider';
-import { columns } from '@/components/home-page/columns';
 import { getData } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
@@ -185,7 +185,7 @@ const DemoSection = () => {
                   />
                 </div>
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
-                  <DataTableProvider columns={columns} data={data}>
+                  <DataTableProvider columns={expenseColumns} data={data}>
                     <DataTable
                       enableGroupSelection={false}
                       groupBy={(row: Expense) =>
@@ -209,7 +209,7 @@ const DemoSection = () => {
                   />
                 </div>
                 <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
-                  <DataTableProvider columns={columns} data={data}>
+                  <DataTableProvider columns={expenseColumns} data={data}>
                     <DataTable
                       enableGroupSelection={false}
                       groupBy={(row: Expense) =>

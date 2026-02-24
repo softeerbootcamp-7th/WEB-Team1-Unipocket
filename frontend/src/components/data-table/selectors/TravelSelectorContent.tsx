@@ -13,6 +13,7 @@ interface TravelSelectorContentProps extends PopoverContentProps {
   initialTravelId: number | string | null;
   onTravelSelect: (travelId: number | string) => void;
   onInteractOutside?: () => void;
+  showNoneTravel?: boolean;
 }
 
 export const TravelSelectorContent = ({
@@ -22,11 +23,15 @@ export const TravelSelectorContent = ({
   align = 'start',
   sideOffset = 0,
   className,
+  showNoneTravel = true,
   ...props
 }: TravelSelectorContentProps) => {
   const { data: travels = [] } = useGetTravelsQuery();
 
-  const options = [NONE_TRAVEL, ...travels.map((travel) => travel.travelId)];
+  const options = [
+    ...(showNoneTravel ? [NONE_TRAVEL] : []),
+    ...travels.map((travel) => travel.travelId),
+  ];
 
   const currentTravel = initialTravelId;
 

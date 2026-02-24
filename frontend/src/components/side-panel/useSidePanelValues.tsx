@@ -119,6 +119,7 @@ export const useSidePanelValues = ({
           }}
           onInteractOutside={() => setIsTravelOpen(false)}
           className="w-63"
+          showNoneTravel={false}
         />
       ),
     },

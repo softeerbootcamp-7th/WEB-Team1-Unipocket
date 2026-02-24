@@ -14,7 +14,7 @@ import {
 
 interface DataTableProps<TData> {
   groupBy?: (row: TData) => string;
-  groupDisplay?: (groupKey: string) => string; // 다른 groupKey로도
+  groupDisplay?: (groupKey: string) => string;
   enableGroupSelection?: boolean;
   blankFallbackText?: string;
 }
@@ -46,8 +46,6 @@ const DataTable = <TData,>({
       cell: Cell<TData, unknown>,
       currentTarget: EventTarget & HTMLTableCellElement,
     ) => {
-      const editorType = cell.column.columnDef.meta?.cellEditor;
-
       const columnId = cell.column.id;
       if (columnId === 'select') return;
 
@@ -58,6 +56,20 @@ const DataTable = <TData,>({
         rect,
         value: cell.getValue(),
       };
+
+      const original = cell.row.original;
+      const hasIssue =
+        typeof original === 'object' &&
+        original !== null &&
+        'status' in original &&
+        (original as Record<string, unknown>).status !== 'NORMAL';
+
+      if (hasIssue) {
+        dispatch({ type: 'SET_WARNING_CELL', payload });
+        return;
+      }
+
+      const editorType = cell.column.columnDef.meta?.cellEditor;
 
       switch (editorType) {
         case 'text':

@@ -1,6 +1,5 @@
 import type { CategoryId } from '@/types/category';
 
-import type { PaymentMethod } from '@/api/expenses/type';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 
 export type UploadType = 'IMAGE' | 'DOCS';
@@ -66,17 +65,16 @@ export interface TempExpense {
   tempExpenseId: number;
   tempExpenseMetaId: number;
   fileId: number;
-  merchantName: string;
+  merchantName: string | null;
   category: CategoryId;
-  localCountryCode: CurrencyCode;
-  localCurrencyAmount: number;
+  localCountryCode: CurrencyCode | null;
+  localCurrencyAmount: number | null;
   baseCountryCode: CurrencyCode;
   baseCurrencyAmount: number;
-  paymentsMethod: PaymentMethod;
-  memo: string;
-  occurredAt: string;
-  status: string;
-  cardLastFourDigits: string;
+  memo: string | null;
+  occurredAt: string | null;
+  status: 'NORMAL' | 'INCOMPLETE' | 'ABNORMAL';
+  cardLastFourDigits: string | null;
 }
 
 export interface TempExpenseFile {
@@ -103,7 +101,6 @@ export type BulkUpdateRequest = TempExpense[];
 
 export interface BulkUpdateResult {
   tempExpenseId: number;
-  status: string;
   reason: string;
   updated: TempExpense;
 }

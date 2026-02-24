@@ -2,9 +2,8 @@ import { useCallback, useEffect, useState, useTransition } from 'react';
 
 import { useGetExpensesQuery } from '@/api/expenses/query';
 import type { ExpenseSearchFilter } from '@/api/expenses/type';
+import { DEFAULT_PAGE_SIZE } from '@/constants/column';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
-
-const DEFAULT_PAGE_SIZE = 50;
 
 export const useFilteredExpenses = (
   initialFilter?: Partial<ExpenseSearchFilter>,

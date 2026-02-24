@@ -114,6 +114,8 @@ public enum ErrorCode {
 	TRAVEL_IMAGE_NOT_FOUND(
 			HttpStatus.NOT_FOUND, "404_TRAVEL_IMAGE_NOT_FOUND", "여행 이미지를 찾을 수 없습니다."),
 	TRAVEL_INVALID_BUDGET(HttpStatus.BAD_REQUEST, "400_TRAVEL_INVALID_BUDGET", "예산은 0 이상이어야 합니다."),
+	TRAVEL_COUNT_EXCEEDED(
+			HttpStatus.BAD_REQUEST, "400_TRAVEL_COUNT_EXCEEDED", "가계부 내 여행을 더이상 만들 수 없습니다."),
 	// Expense Errors
 	EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "404_EXPENSE_NOT_FOUND", "지출 내역을 찾을 수 없습니다."),
 	EXPENSE_UNAUTHORIZED_ACCESS(

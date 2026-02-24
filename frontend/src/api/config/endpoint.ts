@@ -103,6 +103,8 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/exchange-rate`, // 가계부 환율 조회 (GET)
     ANALYSIS: (accountBookId: number | string) =>
       `account-books/${accountBookId}/analysis`, // 분석 전체 요약 조회 (GET)
+    AMOUNT: (accountBookId: number | string) =>
+      `account-books/${accountBookId}/amount`, // 가계부 금액 요약 조회 (GET)
     EXCHANGE_RATE: 'exchange-rate', // 환율 조회 (GET)
   },
 } as const;

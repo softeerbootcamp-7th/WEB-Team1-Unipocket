@@ -83,6 +83,18 @@ export interface GetAnalysisResponse {
   };
 }
 
+// GET /account-books/{accountBookId}/amount
+export interface GetAccountBookAmountResponse {
+  localCountryCode: string;
+  localCurrencyCode: string;
+  baseCountryCode: string;
+  baseCurrencyCode: string;
+  totalLocalAmount: number;
+  totalBaseAmount: number;
+  thisMonthLocalAmount: number;
+  thisMonthBaseAmount: number;
+}
+
 type CreateAccountBookRequest = Required<
   Pick<AccountBook, 'localCountryCode' | 'startDate' | 'endDate'>
 >;

@@ -11,6 +11,7 @@ import type { CurrencyType } from '@/types/currency';
 import {
   createAccountBook,
   deleteAccountBook,
+  getAccountBookAmount,
   getAccountBookDetail,
   getAccountBooks,
   getAnalysis,
@@ -151,6 +152,16 @@ const useGetExchangeRateQuery = (
   });
 };
 
+const useGetAccountBookAmountQuery = () => {
+  const { accountBookId } = useRequiredAccountBook();
+
+  return useQuery({
+    queryKey: ['accountBooks', 'amount', accountBookId],
+    queryFn: () => getAccountBookAmount(accountBookId),
+    enabled: !!accountBookId,
+  });
+};
+
 export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
@@ -158,6 +169,7 @@ export {
   useAnalysisQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
+  useGetAccountBookAmountQuery,
   useGetAccountBooksQuery,
   useGetExchangeRateQuery,
   useUpdateAccountBookBudgetMutation,

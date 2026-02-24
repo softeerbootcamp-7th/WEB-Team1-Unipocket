@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 
+import { ENDPOINTS } from '@/api/config/endpoint';
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 
 export const useFileUpload = (accountBookId: number) => {
@@ -10,6 +11,8 @@ export const useFileUpload = (accountBookId: number) => {
   const [isParsing, setIsParsing] = useState(false);
   const itemRef = useRef<UploadItem | null>(null);
   const metaIdRef = useRef<number | undefined>(undefined);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const parsedMetaIdRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     itemRef.current = item;
@@ -17,11 +20,81 @@ export const useFileUpload = (accountBookId: number) => {
 
   useEffect(() => {
     return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
       if (itemRef.current?.url) {
         URL.revokeObjectURL(itemRef.current.url);
       }
     };
   }, []);
+
+  const closeEventSource = () => {
+    if (!eventSourceRef.current) return;
+    eventSourceRef.current.close();
+    eventSourceRef.current = null;
+  };
+
+  const connectSSE = (taskId: string) => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
+    if (!baseUrl) return;
+
+    const endpoint = ENDPOINTS.TEMPORARY_EXPENSES.PARSE_STATUS(
+      accountBookId,
+      taskId,
+    );
+    const eventSource = new EventSource(`${baseUrl}/${endpoint}`, {
+      withCredentials: true,
+    });
+
+    eventSourceRef.current = eventSource;
+
+    const handleProgressValue = (data: { progress?: number }) => {
+      const { progress } = data;
+      if (typeof progress !== 'number') return;
+
+      const normalizedProgress = Math.max(0, Math.min(100, progress));
+      if (normalizedProgress < 100) return;
+
+      setItem((prev) =>
+        prev?.taskId === taskId
+          ? { ...prev, status: UPLOAD_STATUS.PARSED }
+          : prev,
+      );
+      setIsParsing(false);
+      closeEventSource();
+    };
+
+    eventSource.addEventListener('progress', (event) => {
+      try {
+        const parsed = JSON.parse((event as MessageEvent).data);
+        handleProgressValue(parsed);
+      } catch {
+        setItem((prev) =>
+          prev?.taskId === taskId
+            ? { ...prev, status: UPLOAD_STATUS.ERROR }
+            : prev,
+        );
+        setIsParsing(false);
+        toast.error(
+          '분석 진행 상태를 가져오는 중 문제가 발생했어요. 다시 시도해주세요.',
+        );
+        closeEventSource();
+      }
+    });
+
+    eventSource.onerror = () => {
+      setItem((prev) =>
+        prev?.taskId === taskId
+          ? { ...prev, status: UPLOAD_STATUS.ERROR }
+          : prev,
+      );
+      setIsParsing(false);
+      toast.error('분석 중 연결이 끊어졌어요. 다시 시도해주세요.');
+      closeEventSource();
+    };
+  };
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length !== 1) return;
@@ -80,7 +153,7 @@ export const useFileUpload = (accountBookId: number) => {
       !metaIdRef.current ||
       isParsing
     ) {
-      return undefined;
+      return;
     }
 
     setIsParsing(true);
@@ -94,42 +167,49 @@ export const useFileUpload = (accountBookId: number) => {
         s3Keys: [current.s3Key],
       });
 
+      parsedMetaIdRef.current = metaIdRef.current;
       setItem((prev) =>
         prev
-          ? { ...prev, status: UPLOAD_STATUS.PARSED, taskId: parse.taskId }
+          ? { ...prev, status: UPLOAD_STATUS.PARSING, taskId: parse.taskId }
           : prev,
       );
-      return metaIdRef.current;
+      connectSSE(parse.taskId);
     } catch {
       setItem((prev) =>
         prev ? { ...prev, status: UPLOAD_STATUS.ERROR } : prev,
       );
-      toast.error('파일 분석 요청에 실패했어요.');
-      return undefined;
-    } finally {
       setIsParsing(false);
+      toast.error('파일 분석 요청에 실패했어요.');
     }
   };
 
   const removeItem = () => {
+    closeEventSource();
     if (item?.url) {
       URL.revokeObjectURL(item.url);
     }
     setItem(null);
     metaIdRef.current = undefined;
+    parsedMetaIdRef.current = undefined;
     setIsParsing(false);
   };
 
   const clearItem = () => {
+    closeEventSource();
     if (itemRef.current?.url) {
       URL.revokeObjectURL(itemRef.current.url);
     }
     setItem(null);
     metaIdRef.current = undefined;
+    parsedMetaIdRef.current = undefined;
     setIsParsing(false);
   };
 
-  const isReady = item !== null && item.status === UPLOAD_STATUS.UPLOADED;
+  const isReady =
+    item !== null &&
+    (item.status === UPLOAD_STATUS.UPLOADED ||
+      item.status === UPLOAD_STATUS.PARSED);
+  const isParsed = item?.status === UPLOAD_STATUS.PARSED;
 
   return {
     item,
@@ -138,6 +218,8 @@ export const useFileUpload = (accountBookId: number) => {
     isReady,
     startParsing,
     isParsing,
+    isParsed,
+    parsedMetaId: parsedMetaIdRef.current,
     clearItem,
   };
 };

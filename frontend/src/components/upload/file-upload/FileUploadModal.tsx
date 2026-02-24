@@ -27,6 +27,8 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
     isReady,
     startParsing,
     isParsing,
+    isParsed,
+    parsedMetaId,
     clearItem,
   } = useFileUpload(accountBookId);
 
@@ -36,13 +38,15 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
   };
 
   const handleStartParsing = async () => {
-    const parsedMetaId = await startParsing();
-    if (parsedMetaId !== undefined) {
+    if (isParsed && parsedMetaId !== undefined) {
       setResultMetaId(parsedMetaId);
       onClose();
       setIsResultModalOpen(true);
       clearItem();
+      return;
     }
+
+    await startParsing();
   };
 
   return (

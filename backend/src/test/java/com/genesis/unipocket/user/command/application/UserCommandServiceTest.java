@@ -66,6 +66,9 @@ class UserCommandServiceTest {
 							ReflectionTestUtils.setField(saved, "id", newUserId);
 							return saved;
 						});
+		UserEntity activeUser = UserEntity.builder().name("given-name").build();
+		ReflectionTestUtils.setField(activeUser, "id", newUserId);
+		when(userRepository.findById(newUserId)).thenReturn(Optional.of(activeUser));
 		when(tokenIssuePort.issueTokens(newUserId)).thenReturn(tokenResult);
 
 		// when
@@ -101,6 +104,9 @@ class UserCommandServiceTest {
 							ReflectionTestUtils.setField(saved, "id", newUserId);
 							return saved;
 						});
+		UserEntity activeUser = UserEntity.builder().name("user_placeholder").build();
+		ReflectionTestUtils.setField(activeUser, "id", newUserId);
+		when(userRepository.findById(newUserId)).thenReturn(Optional.of(activeUser));
 		when(tokenIssuePort.issueTokens(newUserId)).thenReturn(tokenResult);
 
 		// when

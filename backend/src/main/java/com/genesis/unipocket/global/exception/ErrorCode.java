@@ -62,6 +62,7 @@ public enum ErrorCode {
 
 	// ========== User Errors ==========
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "404_USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
+	USER_WITHDRAWN(HttpStatus.NOT_FOUND, "404_USER_WITHDRAWN", "탈퇴한 사용자입니다."),
 	USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "409_USER_ALREADY_EXISTS", "이미 존재하는 사용자입니다."),
 
 	// ========== User Card Errors ==========

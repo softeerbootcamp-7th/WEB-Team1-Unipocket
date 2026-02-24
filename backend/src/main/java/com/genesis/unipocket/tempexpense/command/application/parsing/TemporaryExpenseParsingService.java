@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -88,7 +89,11 @@ public class TemporaryExpenseParsingService {
 		String taskId = UUID.randomUUID().toString();
 		progressPublisher.registerTask(taskId, accountBookId);
 
-		parsingExecutor.execute(() -> parseBatchFiles(meta, files, taskId));
+		try {
+			parsingExecutor.execute(() -> parseBatchFiles(meta, files, taskId));
+		} catch (RejectedExecutionException e) {
+			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT);
+		}
 		return new ParseStartResult(taskId, files.size());
 	}
 

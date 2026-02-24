@@ -169,35 +169,43 @@ public class GeminiService {
 	 */
 	private String buildDocumentParsingPrompt() {
 		return """
-				You are an expert at parsing expense documents (CSV, Excel text).
+				You are an expert at extracting structured expense data from expense documents.
 
-				Parse the provided text content and convert each row/item to the following JSON format:
+				Analyze the provided CSV-like text and extract the following information in JSON format:
 
 				{
 				"items": [
 					{
-					"merchantName": "가맹점명 (필수)",
-					"category": "FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
-					"localAmount": "현지 금액 (필수, 숫자만)",
-					"localCurrency": "현지 통화 코드 (필수, KRW, USD, etc)",
-					"baseAmount": "청구(본국) 금액 (있는 경우 작성, 숫자만)",
-					"baseCurrency": "청구(본국) 통화 코드 (있는 경우 작성, KRW, USD, etc)",
-					"occurredAt": "거래일시 (ISO 8601: YYYY-MM-DDTHH:mm:ss)",
-					"cardLastFourDigits": "카드번호 뒷4자리",
+					"merchantName": "상호명",
+					"category": "one of: FOOD, TRANSPORTATION, ACCOMMODATION, SHOPPING, ENTERTAINMENT, UNCLASSIFIED",
+					"localAmount": "현지 결제 금액 (숫자만)",
+					"localCurrency": "현지 통화 코드 (KRW, USD, JPY 등)",
+					"baseAmount": "청구 금액 (있는 경우 작성, 숫자만)",
+					"baseCurrency": "청구 통화 코드 (있는 경우 작성, KRW 등)",
+					"occurredAt": "결제 일시 (ISO 8601 format: YYYY-MM-DDTHH:mm:ss)",
+					"cardLastFourDigits": "카드 뒷 4자리 (없으면 null)",
 					"approvalNumber": "승인번호 (있는 경우 작성)",
-					"memo": "메모/적요"
+					"memo": "추가 메모 (없으면 null)"
 					}
 				]
 				}
 
 				Rules:
+				- If multiple rows are found, include all transaction rows in items
+				- Ignore subtotal/summary rows such as: total, sum, 합계, 총 n건
 				- Auto-detect headers/columns from the text
-				- Map columns intelligently (e.g., 'Store' -> merchantName, 'Cost' -> localAmount)
-				- Handle various date formats and convert to ISO 8601
+				- For card statements, map intelligently:
+				- merchant/store -> merchantName
+				- transaction date/time -> occurredAt
+				- local/foreign currency amount -> localAmount
+				- local/foreign currency code -> localCurrency
+				- billed amount -> baseAmount
+				- billed/base currency code -> baseCurrency
+				- If both localAmount and baseAmount exist, keep both values
 				- If currency is missing, infer from context or default to KRW
-				- Ignore header rows or summary rows (total, etc.)
-				- Use JSON null literal for missing values (do NOT use "null" string)
-				- Use JSON number for numeric amounts (do NOT use commas or currency symbols)
+				- Handle various date formats and convert to ISO 8601
+				- Always use JSON null literal for missing values (do NOT use "null" string)
+				- Always use JSON number for numeric amounts (do NOT use commas or currency symbols)
 				- Return a single valid JSON object only (no markdown/code fence/explanations)
 				- If nothing is parseable, return {"items":[]}
 				""";

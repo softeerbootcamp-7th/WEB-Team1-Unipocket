@@ -1,0 +1,62 @@
+import { Link, useParams } from '@tanstack/react-router';
+
+import Button from '@/components/common/Button';
+import Divider from '@/components/common/Divider';
+import Icon from '@/components/common/Icon';
+import ExpenseCard from '@/components/home-page/ExpenseCard';
+
+import { useGetTravelDetailQuery } from '@/api/travels/query';
+import { formatDateToDot, formatTripDuration } from '@/lib/utils';
+
+const TravelDetailHeader = () => {
+  return (
+    <div className="flex items-end gap-4">
+      <TripSummary />
+      <Divider style="vertical" className="h-15" />
+      {/* @TODO 총 지출 API 연동 필요 */}
+      <ExpenseCard
+        label="총 지출 (mock)"
+        baseCountryCode="KR"
+        baseCountryAmount={1402432}
+        localCountryCode="US"
+        localCountryAmount={12232}
+      />
+      <div className="flex-1" />
+      <Button variant="outlined" size="md">
+        위젯 편집하기
+      </Button>
+    </div>
+  );
+};
+
+export default TravelDetailHeader;
+
+const TripSummary = () => {
+  const { travelId } = useParams({ from: '/_app/travel/$travelId' });
+  const { data: travel } = useGetTravelDetailQuery(travelId);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2.5">
+        <Link to="/travel">
+          <Icon iconName="ChevronBack" className="text-label-normal size-6" />
+        </Link>
+        <span className="heading2-bold text-label-normal">
+          {travel?.travelPlaceName ?? ''}
+        </span>
+      </div>
+      <div className="flex gap-1.5">
+        {travel && (
+          <>
+            <span className="body1-normal-medium text-label-normal">
+              {formatDateToDot(travel.startDate)} - {formatDateToDot(travel.endDate)}
+            </span>
+            <span className="body1-normal-medium text-label-alternative">
+              {formatTripDuration(travel.startDate, travel.endDate)}
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};

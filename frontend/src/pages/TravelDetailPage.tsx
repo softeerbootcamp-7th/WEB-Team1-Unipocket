@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
+import ExpenseTableSkeleton from '@/components/expense/ExpenseTableSkeleton';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 import BottomSheet from '@/components/layout/BottomSheet';
 import ExpenseTable from '@/components/travel-page/ExpenseTable';
@@ -59,7 +60,9 @@ const TravelDetailPage = () => {
         isOpen={isBottomSheetOpen}
         onClose={() => setBottomSheetOpen(false)}
       >
-        <ImportExpenseTable />
+        <Suspense fallback={<ExpenseTableSkeleton />}>
+          <ImportExpenseTable />
+        </Suspense>
       </BottomSheet>
     </div>
   );

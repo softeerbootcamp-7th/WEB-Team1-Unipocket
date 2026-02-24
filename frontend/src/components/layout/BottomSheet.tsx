@@ -45,7 +45,7 @@ const BottomSheet = ({
             // 부모의 클릭 이벤트가 자식에게 전달되지 않도록 방지
             onClick={(e) => e.stopPropagation()}
             className={clsx(
-              'bg-background-normal flex h-[80vh] w-full max-w-[calc(100%-30vh)] flex-col rounded-t-2xl px-2',
+              'bg-background-normal flex h-[80vh] w-full max-w-[calc(100%-20vh)] flex-col rounded-t-2xl px-2 xl:max-w-[calc(100%-30vh)]',
               className,
             )}
           >

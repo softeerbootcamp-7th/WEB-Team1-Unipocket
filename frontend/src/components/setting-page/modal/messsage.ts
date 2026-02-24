@@ -20,7 +20,7 @@ export const SETTING_MODAL_TEXT = {
   DELETE_ACCOUNT_BOOK: {
     title: '가계부를 삭제하시겠습니까?',
     description: (title: string) => `${title} \n가계부를 정말 삭제하시겠어요?`,
-    subDescription: '메인 가계부를 삭제하면 다음 가계부가 메인으로 설정돼요.',
+    subDescription: `메인 가계부를 삭제하면 \n다음 가계부가 메인으로 설정돼요.`,
     confirm: '삭제',
   },
   DELETE_ACCOUNT: {

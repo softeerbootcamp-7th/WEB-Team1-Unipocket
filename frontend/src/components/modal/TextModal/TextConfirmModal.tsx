@@ -1,5 +1,5 @@
 import Modal, { type ModalButton } from '@/components/modal/Modal';
-import TextContext from '@/components/modal/TextModal/TextContext';
+import TextContent from '@/components/modal/TextModal/TextContent';
 
 export interface TextConfirmModalProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ const TextConfirmModal = ({
     onAction={onAction}
     confirmButton={confirmButton}
   >
-    <TextContext
+    <TextContent
       title={title}
       description={description}
       subDescription={subDescription}

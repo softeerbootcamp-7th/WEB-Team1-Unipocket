@@ -154,6 +154,7 @@ const DateTimePicker = ({
         <CalendarMonthPopover
           date={currentMonth}
           onDateChange={setCurrentMonth}
+          modal={false}
         />
         <Icon
           iconName="ChevronForward"

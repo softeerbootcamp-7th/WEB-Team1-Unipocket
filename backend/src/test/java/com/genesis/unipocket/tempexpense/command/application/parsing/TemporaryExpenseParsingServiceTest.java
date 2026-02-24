@@ -622,6 +622,73 @@ class TemporaryExpenseParsingServiceTest {
 	}
 
 	@Test
+	@DisplayName("해외 여행 가계부에서 Gemini가 통화를 반대로 반환하면 스왑 감지로 올바르게 저장한다")
+	void parseBatchSingleFile_swapsCurrenciesWhenGeminiReturnsThemReversed() {
+		Long accountBookId = 1L;
+		String s3Key = "temp/shinhan-csv.csv";
+		File file =
+				File.builder()
+						.fileId(5L)
+						.tempExpenseMetaId(14L)
+						.fileType(File.FileType.CSV)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(14L)
+						.accountBookId(accountBookId)
+						.build();
+
+		// AccountBook: base=KRW, local=USD (미국 여행)
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
+		when(fieldParser.parseCategory(anyString())).thenCallRealMethod();
+		// Gemini returns KRW as localCurrency, USD as baseCurrency (reversed)
+		when(fieldParser.parseCurrencyCode(eq("KRW"), any())).thenReturn(CurrencyCode.KRW);
+		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
+
+		when(temporaryExpenseParseClient.parse(file))
+				.thenReturn(
+						new GeminiService.GeminiParseResponse(
+								true,
+								List.of(
+										new GeminiService.ParsedExpenseItem(
+												"Amazon US",
+												"SHOPPING",
+												new BigDecimal("303198"),
+												"KRW", // Gemini reversed: KRW in local
+												new BigDecimal("218.58"),
+												"USD", // Gemini reversed: USD in base
+												LocalDateTime.of(2026, 2, 20, 15, 30),
+												"1234",
+												"AP12345",
+												null)),
+								null));
+
+		when(temporaryExpenseRepository.saveAll(anyList()))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		service.parseBatchFiles(meta, List.of(file), "task-swap-detect");
+
+		// baseAmount is already provided after swap, so no exchange rate lookup needed
+		verifyNoInteractions(exchangeRateProvider);
+
+		@SuppressWarnings("unchecked")
+		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
+		verify(temporaryExpenseRepository).saveAll(captor.capture());
+		TemporaryExpense saved = captor.getValue().get(0);
+
+		// After swap: local=USD/218.58, base=KRW/303198
+		assertThat(saved.getStatus()).isEqualTo(TemporaryExpenseStatus.NORMAL);
+		assertThat(saved.getLocalCountryCode()).isEqualTo(CurrencyCode.USD);
+		assertThat(saved.getLocalCurrencyAmount()).isEqualByComparingTo("218.58");
+		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
+		assertThat(saved.getBaseCurrencyAmount()).isEqualByComparingTo("303198");
+	}
+
+	@Test
 	@DisplayName("파일별 progress 이벤트는 일반 실패를 INTERNAL_SERVER_ERROR 코드로 발행한다")
 	void parseBatchFiles_publishesStructuredProgressCodeForInternalFailure() {
 		Long accountBookId = 1L;

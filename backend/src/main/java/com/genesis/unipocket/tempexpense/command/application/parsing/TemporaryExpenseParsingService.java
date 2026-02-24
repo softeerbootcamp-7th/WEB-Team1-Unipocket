@@ -193,23 +193,48 @@ public class TemporaryExpenseParsingService {
 
 		List<NormalizedParsedExpenseItem> normalizedItems =
 				geminiResponse.items().stream()
-						.map(
-								item ->
-										normalizeParsedItem(
-												item, rateContext.defaultLocalCurrencyCode()))
+						.map(item -> normalizeParsedItem(item, rateContext))
 						.toList();
 
 		temporaryExpensePersistenceService.persist(file, meta, normalizedItems, rateContext);
 	}
 
 	private NormalizedParsedExpenseItem normalizeParsedItem(
-			GeminiService.ParsedExpenseItem item, CurrencyCode defaultLocalCurrencyCode) {
+			GeminiService.ParsedExpenseItem item, AccountBookRateContext rateContext) {
+		CurrencyCode parsedLocalCurrency =
+				fieldParser.parseCurrencyCode(
+						item.localCurrency(), rateContext.defaultLocalCurrencyCode());
+		CurrencyCode parsedBaseCurrency = fieldParser.parseCurrencyCode(item.baseCurrency(), null);
+
+		boolean isForeignTravelContext =
+				rateContext.baseCurrencyCode() != rateContext.defaultLocalCurrencyCode();
+		boolean shouldSwap =
+				isForeignTravelContext
+						&& parsedLocalCurrency != null
+						&& parsedBaseCurrency != null
+						&& parsedLocalCurrency == rateContext.baseCurrencyCode()
+						&& parsedBaseCurrency == rateContext.defaultLocalCurrencyCode();
+
+		if (shouldSwap) {
+			return new NormalizedParsedExpenseItem(
+					item.merchantName(),
+					fieldParser.parseCategory(item.category()),
+					parsedBaseCurrency,
+					item.baseAmount(),
+					parsedLocalCurrency,
+					item.localAmount(),
+					item.memo(),
+					item.occurredAt(),
+					item.cardLastFourDigits(),
+					item.approvalNumber());
+		}
+
 		return new NormalizedParsedExpenseItem(
 				item.merchantName(),
 				fieldParser.parseCategory(item.category()),
-				fieldParser.parseCurrencyCode(item.localCurrency(), defaultLocalCurrencyCode),
+				parsedLocalCurrency,
 				item.localAmount(),
-				fieldParser.parseCurrencyCode(item.baseCurrency(), null),
+				parsedBaseCurrency,
 				item.baseAmount(),
 				item.memo(),
 				item.occurredAt(),

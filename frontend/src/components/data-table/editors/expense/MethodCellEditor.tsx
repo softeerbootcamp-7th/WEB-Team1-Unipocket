@@ -1,6 +1,6 @@
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
-import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
+import { useInlineExpenseUpdate } from '@/components/data-table/editors/expense/useInlineExpenseUpdate';
 import { MethodSelectorContent } from '@/components/data-table/selectors/MethodSelectorContent';
 import type { ActiveCellState } from '@/components/data-table/type';
 import {

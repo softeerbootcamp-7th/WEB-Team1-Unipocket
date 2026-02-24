@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
-import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
+import { useInlineExpenseUpdate } from '@/components/data-table/editors/expense/useInlineExpenseUpdate';
 import type { ActiveCellState } from '@/components/data-table/type';
 
 import type { Expense } from '@/api/expenses/type';

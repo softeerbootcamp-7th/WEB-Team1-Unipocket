@@ -1,29 +1,28 @@
 import { Link, useParams } from '@tanstack/react-router';
 
+import { useWidgetContext } from '@/components/chart/widget/WidgetContext';
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
-import ExpenseCard from '@/components/home-page/ExpenseCard';
 
 import { useGetTravelDetailQuery } from '@/api/travels/query';
 import { formatDateToDot, formatTripDuration } from '@/lib/utils';
 
 const TravelDetailHeader = () => {
+  const { isWidgetEditMode, toggleEditMode } = useWidgetContext();
+
   return (
     <div className="flex items-end gap-4">
       <TripSummary />
       <Divider style="vertical" className="h-15" />
       {/* @TODO 총 지출 API 연동 필요 */}
-      <ExpenseCard
-        label="총 지출 (mock)"
-        baseCountryCode="KR"
-        baseCountryAmount={1402432}
-        localCountryCode="US"
-        localCountryAmount={12232}
-      />
       <div className="flex-1" />
-      <Button variant="outlined" size="md">
-        위젯 편집하기
+      <Button
+        variant={isWidgetEditMode ? 'solid' : 'outlined'}
+        size="md"
+        onClick={toggleEditMode}
+      >
+        {isWidgetEditMode ? '위젯 편집 완료하기' : '위젯 편집하기'}
       </Button>
     </div>
   );
@@ -49,7 +48,8 @@ const TripSummary = () => {
         {travel && (
           <>
             <span className="body1-normal-medium text-label-normal">
-              {formatDateToDot(travel.startDate)} - {formatDateToDot(travel.endDate)}
+              {formatDateToDot(travel.startDate)} -{' '}
+              {formatDateToDot(travel.endDate)}
             </span>
             <span className="body1-normal-medium text-label-alternative">
               {formatTripDuration(travel.startDate, travel.endDate)}

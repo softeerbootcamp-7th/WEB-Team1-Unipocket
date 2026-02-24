@@ -1,41 +1,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { SnackbarStatus } from '@/components/common/Snackbar';
 import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
 import { uploadPolicy } from '@/components/upload/upload-box/useFileValidator';
+import { useParseSSE } from '@/components/upload/useParseSSE';
 
-import { ENDPOINTS } from '@/api/config/endpoint';
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 
 const MAX_TOTAL = uploadPolicy.image.maxCount;
 
 export const useImageUpload = (accountBookId: number) => {
   const [items, setItems] = useState<UploadItem[]>([]);
-  const [parseSnackbar, setParseSnackbar] = useState<{
-    isOpen: boolean;
-    status: SnackbarStatus;
-    description?: string;
-  }>({
-    isOpen: false,
-    status: 'default',
-  });
-  const [parsedMetaId, setParsedMetaId] = useState<number | undefined>(
-    undefined,
-  );
   const itemsRef = useRef<UploadItem[]>([]);
-  const eventSourcesRef = useRef<Record<string, EventSource>>({});
   const metaIdRef = useRef<number | undefined>(undefined);
-  const completedRef = useRef<Record<string, boolean>>({});
+
+  const {
+    parseSnackbar,
+    parsedMetaId,
+    connect,
+    disconnect,
+    disconnectAll,
+    closeParseSnackbar,
+    resetParseState,
+  } = useParseSSE(accountBookId);
 
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
 
   useEffect(() => {
-    const eventSources = eventSourcesRef.current;
     return () => {
-      Object.values(eventSources).forEach((es) => es.close());
       itemsRef.current.forEach((item) => {
         if (item.url) URL.revokeObjectURL(item.url);
       });
@@ -128,114 +122,29 @@ export const useImageUpload = (accountBookId: number) => {
       );
 
       // 4. SSE 연결
-      connectSSE(parse.taskId, metaIdRef.current!);
-      setParseSnackbar({
-        isOpen: true,
-        status: 'loading',
-        description: '0%',
+      connect(parse.taskId, metaIdRef.current!, {
+        onFileComplete: (fileKey) =>
+          setItems((prev) =>
+            prev.map((item) =>
+              item.s3Key === fileKey
+                ? { ...item, status: UPLOAD_STATUS.PARSED }
+                : item,
+            ),
+          ),
+        onComplete: () =>
+          setItems((prev) =>
+            prev.map((item) =>
+              item.taskId === parse.taskId
+                ? { ...item, status: UPLOAD_STATUS.PARSED }
+                : item,
+            ),
+          ),
       });
       return true;
     } catch {
       toast.error('파일 분석 요청에 실패했어요.');
       return false;
     }
-  };
-
-  const connectSSE = (taskId: string, metaId: number) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
-    if (!baseUrl) return;
-
-    const endpoint = ENDPOINTS.TEMPORARY_EXPENSES.PARSE_STATUS(
-      accountBookId,
-      taskId,
-    );
-    const url = `${baseUrl}/${endpoint}`;
-    const eventSource = new EventSource(url, { withCredentials: true });
-
-    eventSourcesRef.current[taskId] = eventSource;
-
-    const closeEventSource = () => {
-      eventSource.close();
-      delete eventSourcesRef.current[taskId];
-      delete completedRef.current[taskId];
-    };
-
-    const handleProgressValue = (data: {
-      progress?: number;
-      fileKey?: string;
-      code?: string;
-    }) => {
-      const { progress, fileKey, code } = data;
-      if (typeof progress !== 'number') return;
-
-      const normalizedProgress = Math.max(0, Math.min(100, progress));
-
-      // 1. 개별 파일 완료 상태 업데이트 (fileKey 매칭)
-      if (fileKey && code === 'SUCCESS') {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.s3Key === fileKey
-              ? { ...item, status: UPLOAD_STATUS.PARSED }
-              : item,
-          ),
-        );
-      }
-
-      // 2. 전체 완료 처리 (100% 도달 시)
-      if (normalizedProgress >= 100) {
-        if (completedRef.current[taskId]) return;
-        completedRef.current[taskId] = true;
-
-        setItems((prev) =>
-          prev.map((item) =>
-            item.taskId === taskId
-              ? { ...item, status: UPLOAD_STATUS.PARSED }
-              : item,
-          ),
-        );
-
-        setParseSnackbar({
-          isOpen: true,
-          status: 'success',
-          description: '100%',
-        });
-        setParsedMetaId(metaId);
-        closeEventSource();
-        return;
-      }
-
-      // 3. 진행률 스낵바 업데이트
-      setParseSnackbar((prev) => ({
-        ...prev,
-        isOpen: true,
-        description: `${normalizedProgress}%`,
-      }));
-    };
-
-    // 'progress' 이벤트 리스너
-    eventSource.addEventListener('progress', (event) => {
-      try {
-        const parsed = JSON.parse((event as MessageEvent).data);
-        handleProgressValue(parsed);
-      } catch {
-        toast.error(
-          '분석 진행 상태를 가져오는 중 문제가 발생했어요. 다시 시도해주세요.',
-        );
-        closeEventSource();
-      }
-    });
-
-    eventSource.onerror = () => {
-      if (!completedRef.current[taskId]) {
-        toast.error('분석 중 연결이 끊어졌어요. 다시 시도해주세요.');
-      }
-      setParseSnackbar({ isOpen: false, status: 'default' });
-      closeEventSource();
-    };
-  };
-
-  const closeParseSnackbar = () => {
-    setParseSnackbar({ isOpen: false, status: 'default' });
   };
 
   const removeItem = (id: string) => {
@@ -245,10 +154,7 @@ export const useImageUpload = (accountBookId: number) => {
         const isLastItemForTask = !prev.some(
           (item) => item.id !== id && item.taskId === itemToRemove.taskId,
         );
-        if (isLastItemForTask && eventSourcesRef.current[itemToRemove.taskId]) {
-          eventSourcesRef.current[itemToRemove.taskId].close();
-          delete eventSourcesRef.current[itemToRemove.taskId];
-        }
+        if (isLastItemForTask) disconnect(itemToRemove.taskId);
       }
       if (itemToRemove?.url) URL.revokeObjectURL(itemToRemove.url);
 
@@ -266,7 +172,8 @@ export const useImageUpload = (accountBookId: number) => {
     itemsRef.current.forEach((item) => {
       if (item.url) URL.revokeObjectURL(item.url);
     });
-
+    disconnectAll();
+    resetParseState();
     setItems([]);
     metaIdRef.current = undefined;
   };

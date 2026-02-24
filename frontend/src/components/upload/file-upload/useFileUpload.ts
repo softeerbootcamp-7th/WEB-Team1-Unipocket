@@ -1,29 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { SnackbarStatus } from '@/components/common/Snackbar';
 import { UPLOAD_STATUS, type UploadItem } from '@/components/upload/type';
+import { useParseSSE } from '@/components/upload/useParseSSE';
 
-import { ENDPOINTS } from '@/api/config/endpoint';
 import { getPresignedUrl, startParse } from '@/api/temporary-expenses/api';
 
 export const useFileUpload = (accountBookId: number) => {
   const [item, setItem] = useState<UploadItem | null>(null);
   const [isParsing, setIsParsing] = useState(false);
-  const [parseSnackbar, setParseSnackbar] = useState<{
-    isOpen: boolean;
-    status: SnackbarStatus;
-    description?: string;
-  }>({
-    isOpen: false,
-    status: 'default',
-  });
-  const [parsedMetaId, setParsedMetaId] = useState<number | undefined>(
-    undefined,
-  );
   const itemRef = useRef<UploadItem | null>(null);
   const metaIdRef = useRef<number | undefined>(undefined);
-  const eventSourceRef = useRef<EventSource | null>(null);
+
+  const {
+    parseSnackbar,
+    parsedMetaId,
+    connect,
+    disconnectAll,
+    closeParseSnackbar,
+    resetParseState,
+  } = useParseSSE(accountBookId);
 
   useEffect(() => {
     itemRef.current = item;
@@ -31,93 +27,11 @@ export const useFileUpload = (accountBookId: number) => {
 
   useEffect(() => {
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
       if (itemRef.current?.url) {
         URL.revokeObjectURL(itemRef.current.url);
       }
     };
   }, []);
-
-  const closeEventSource = () => {
-    if (!eventSourceRef.current) return;
-    eventSourceRef.current.close();
-    eventSourceRef.current = null;
-  };
-
-  const connectSSE = (taskId: string, metaId: number) => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '');
-    if (!baseUrl) return;
-
-    const endpoint = ENDPOINTS.TEMPORARY_EXPENSES.PARSE_STATUS(
-      accountBookId,
-      taskId,
-    );
-    const eventSource = new EventSource(`${baseUrl}/${endpoint}`, {
-      withCredentials: true,
-    });
-
-    eventSourceRef.current = eventSource;
-
-    const handleProgressValue = (data: { progress?: number }) => {
-      const { progress } = data;
-      if (typeof progress !== 'number') return;
-
-      const normalizedProgress = Math.max(0, Math.min(100, progress));
-
-      if (normalizedProgress >= 100) {
-        setIsParsing(false);
-        setParsedMetaId(metaId);
-        setParseSnackbar({
-          isOpen: true,
-          status: 'success',
-          description: '100%',
-        });
-        closeEventSource();
-        return;
-      }
-
-      setParseSnackbar((prev) => ({
-        ...prev,
-        isOpen: true,
-        status: 'loading',
-        description: `${normalizedProgress}%`,
-      }));
-    };
-
-    eventSource.addEventListener('progress', (event) => {
-      try {
-        const parsed = JSON.parse((event as MessageEvent).data);
-        handleProgressValue(parsed);
-      } catch {
-        setItem((prev) =>
-          prev?.taskId === taskId
-            ? { ...prev, status: UPLOAD_STATUS.ERROR }
-            : prev,
-        );
-        setIsParsing(false);
-        setParseSnackbar({ isOpen: false, status: 'default' });
-        toast.error(
-          '분석 진행 상태를 가져오는 중 문제가 발생했어요. 다시 시도해주세요.',
-        );
-        closeEventSource();
-      }
-    });
-
-    eventSource.onerror = () => {
-      setItem((prev) =>
-        prev?.taskId === taskId
-          ? { ...prev, status: UPLOAD_STATUS.ERROR }
-          : prev,
-      );
-      setIsParsing(false);
-      setParseSnackbar({ isOpen: false, status: 'default' });
-      toast.error('분석 중 연결이 끊어졌어요. 다시 시도해주세요.');
-      closeEventSource();
-    };
-  };
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length !== 1) return;
@@ -195,12 +109,17 @@ export const useFileUpload = (accountBookId: number) => {
           ? { ...prev, status: UPLOAD_STATUS.PARSING, taskId: parse.taskId }
           : prev,
       );
-      setParseSnackbar({
-        isOpen: true,
-        status: 'loading',
-        description: '0%',
+      connect(parse.taskId, metaIdRef.current, {
+        onComplete: () => setIsParsing(false),
+        onError: () => {
+          setItem((prev) =>
+            prev?.taskId === parse.taskId
+              ? { ...prev, status: UPLOAD_STATUS.ERROR }
+              : prev,
+          );
+          setIsParsing(false);
+        },
       });
-      connectSSE(parse.taskId, metaIdRef.current);
       return true;
     } catch {
       setItem((prev) =>
@@ -212,10 +131,6 @@ export const useFileUpload = (accountBookId: number) => {
     }
   };
 
-  const closeParseSnackbar = () => {
-    setParseSnackbar({ isOpen: false, status: 'default' });
-  };
-
   const clearItemAfterParseStart = () => {
     if (itemRef.current?.url) {
       URL.revokeObjectURL(itemRef.current.url);
@@ -224,27 +139,21 @@ export const useFileUpload = (accountBookId: number) => {
   };
 
   const removeItem = () => {
-    closeEventSource();
-    if (item?.url) {
-      URL.revokeObjectURL(item.url);
-    }
+    disconnectAll();
+    resetParseState();
+    if (item?.url) URL.revokeObjectURL(item.url);
     setItem(null);
     metaIdRef.current = undefined;
-    setParsedMetaId(undefined);
     setIsParsing(false);
-    setParseSnackbar({ isOpen: false, status: 'default' });
   };
 
   const clearItem = () => {
-    closeEventSource();
-    if (itemRef.current?.url) {
-      URL.revokeObjectURL(itemRef.current.url);
-    }
+    disconnectAll();
+    resetParseState();
+    if (itemRef.current?.url) URL.revokeObjectURL(itemRef.current.url);
     setItem(null);
     metaIdRef.current = undefined;
-    setParsedMetaId(undefined);
     setIsParsing(false);
-    setParseSnackbar({ isOpen: false, status: 'default' });
   };
 
   const isReady = item !== null && item.status === UPLOAD_STATUS.UPLOADED;

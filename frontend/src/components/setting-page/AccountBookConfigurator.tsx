@@ -6,12 +6,15 @@ import {
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import { AccountBookSettingsForm } from '@/components/setting-page/AccountBookSettingsForm';
-import AccountBookCreateModal from '@/components/setting-page/modal/AccountBookCreateModal';
+import {
+  AccountBookSettingsForm,
+  type AccountBookSettingsFormProps,
+} from '@/components/setting-page/AccountBookSettingsForm';
 import {
   SettingSection,
   SettingTitle,
 } from '@/components/setting-page/SettingLayout';
+import AccountBookCreateModal from '@/components/setting-page/temp-modal/AccountBookCreateModal';
 
 import {
   useAccountBookDetailQuery,
@@ -27,7 +30,22 @@ const ConfiguratorSkeleton = () => (
   <div className="h-32 w-full animate-pulse rounded-md bg-black/10" />
 );
 
-const AccountBookConfigurator = () => {
+type AccountBookModalOpeners = Pick<
+  AccountBookSettingsFormProps,
+  | 'openEditAccountBookName'
+  | 'openDeleteAccountBook'
+  | 'openEditAccountBookPeriod'
+  | 'openEditBaseCurrency'
+  | 'openEditLocalCurrency'
+>;
+
+const AccountBookConfigurator = ({
+  openEditAccountBookName,
+  openDeleteAccountBook,
+  openEditAccountBookPeriod,
+  openEditBaseCurrency,
+  openEditLocalCurrency,
+}: AccountBookModalOpeners) => {
   const { data: accountBooks } = useGetAccountBooksQuery();
   const createAccountBookMutation = useCreateAccountBookMutation();
 
@@ -92,6 +110,11 @@ const AccountBookConfigurator = () => {
               key={accountBookDetail.accountBookId}
               detail={accountBookDetail}
               accountBooks={accountBooks}
+              openEditAccountBookName={openEditAccountBookName}
+              openDeleteAccountBook={openDeleteAccountBook}
+              openEditAccountBookPeriod={openEditAccountBookPeriod}
+              openEditBaseCurrency={openEditBaseCurrency}
+              openEditLocalCurrency={openEditLocalCurrency}
             />
           )}
         </TabContent>

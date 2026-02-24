@@ -183,7 +183,7 @@ const PreviewSection = () => {
                     className="h-120 rounded-lg"
                   />
                 </div>
-                <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
+                <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 pb-4">
                   <LandingExpenseTable data={TEMP_EXPENSE_DUMMY} />
                 </div>
               </div>

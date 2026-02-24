@@ -51,7 +51,7 @@ const LandingExpenseTable = ({ data }: LandingExpenseTableProps) => {
   );
 
   return (
-    <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
+    <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2">
       <BaseExpenseTable
         data={data}
         columns={columns}

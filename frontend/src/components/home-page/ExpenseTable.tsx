@@ -1,4 +1,10 @@
+import UpdateActionBar from '@/components/data-table/bars/update/UpdateActionBar';
 import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
+import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
+import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
+import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
+import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
+import TravelCellEditor from '@/components/data-table/editors/TravelCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 import UploadMenu from '@/components/upload/UploadMenu';
@@ -36,7 +42,12 @@ const ExpenseTable = () => {
         groupBy={groupBy}
         groupDisplay={groupDisplay}
       >
-        {/* ... (기존 children 컴포넌트들) */}
+        <UpdateActionBar />
+        <TextCellEditor />
+        <CategoryCellEditor />
+        <AmountCellEditor />
+        <MethodCellEditor />
+        <TravelCellEditor />
       </BaseExpenseTable>
     </div>
   );

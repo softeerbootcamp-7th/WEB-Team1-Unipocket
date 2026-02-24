@@ -1,11 +1,12 @@
 import DropDown from '@/components/common/dropdown/Dropdown';
-import Icon from '@/components/common/Icon';
 import { useDataTableFilter } from '@/components/data-table/context';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+
+import { Icons } from '@/assets';
 
 const DROPDOWN_WIDTH_CLASS = 'w-32';
 
@@ -72,11 +73,10 @@ const SortDropdown = () => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Icon
-          color="text-label-neutral"
-          iconName="SwapVertical"
+        <Icons.SwapVertical
           width={20}
           height={20}
+          className="hover:bg-fill-normal cursor-pointer rounded-lg transition-opacity"
         />
       </PopoverTrigger>
       <PopoverContent

@@ -10,7 +10,7 @@ const TextContext = ({ title, description, subDescription }: ContentProps) => {
       <div className="flex flex-col items-center gap-2.5">
         <h2 className="text-label-normal headline1-bold">{title}</h2>
         {description && (
-          <span className="text-label-alternative body1-normal-medium text-center">
+          <span className="text-label-alternative body1-normal-medium text-center whitespace-pre-line">
             {description}
           </span>
         )}

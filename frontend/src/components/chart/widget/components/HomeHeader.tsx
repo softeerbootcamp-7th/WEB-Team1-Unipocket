@@ -29,7 +29,6 @@ const HomeHeader = () => {
         baseCountryAmount={amountData?.totalBaseAmount ?? 0}
         localCountryCode={(amountData?.localCountryCode ?? 'KR') as CountryCode}
         localCountryAmount={amountData?.totalLocalAmount ?? 0}
-        isInfo
         tooltipContent={`산정 기간 : ${startDateDot} ~ ${todayDot}`}
       />
       <Divider style="vertical" className="h-15" />
@@ -39,7 +38,6 @@ const HomeHeader = () => {
         baseCountryAmount={amountData?.thisMonthBaseAmount ?? 0}
         localCountryCode={(amountData?.localCountryCode ?? 'KR') as CountryCode}
         localCountryAmount={amountData?.thisMonthLocalAmount ?? 0}
-        isInfo
         tooltipContent={`산정 기간 : ${firstDayOfMonthDot} ~ ${todayDot}`}
       />
       <div className="flex-1" />

@@ -11,7 +11,6 @@ interface ExpenseCardProps {
   localCountryAmount: number; // 현지금액
   baseCountryCode: CountryCode; // 기준통화
   baseCountryAmount: number; // 기준금액
-  isInfo?: boolean;
   tooltipContent?: string;
 }
 
@@ -21,21 +20,17 @@ const ExpenseCard = ({
   localCountryAmount,
   baseCountryCode,
   baseCountryAmount,
-  isInfo = false,
   tooltipContent,
 }: ExpenseCardProps) => {
   return (
     <section className="flex flex-col gap-2">
       <div className="text-label-alternative flex items-center gap-1.5">
         <span className="body2-normal-medium">{label}</span>
-        {isInfo &&
-          (tooltipContent ? (
-            <Tooltip content={tooltipContent} side="bottom">
-              <Icons.Information className="size-4 cursor-pointer" />
-            </Tooltip>
-          ) : (
+        {tooltipContent ? (
+          <Tooltip content={tooltipContent} side="bottom">
             <Icons.Information className="size-4 cursor-pointer" />
-          ))}
+          </Tooltip>
+        ) : null}
       </div>
       <div className="flex items-end gap-3">
         <CurrencyAmountDisplay

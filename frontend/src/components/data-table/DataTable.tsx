@@ -160,29 +160,38 @@ const DataTable = <TData,>({
                 </TableRow>
 
                 {/* 실제 데이터 행들 */}
-                {dateRows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          onClick={(e) =>
-                            handleCellClick(cell, e.currentTarget)
-                          }
-                          className="cursor-pointer"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
+                {dateRows.map((row) => {
+                  const original = row.original;
+                  const hasIssue =
+                    typeof original === 'object' &&
+                    original !== null &&
+                    'status' in original &&
+                    (original as Record<string, unknown>).status !== 'NORMAL';
+                  return (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      className={hasIssue ? 'bg-red-50 hover:bg-red-100' : ''}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            onClick={(e) =>
+                              handleCellClick(cell, e.currentTarget)
+                            }
+                            className="cursor-pointer"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
               </React.Fragment>
             );
           })

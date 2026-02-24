@@ -23,6 +23,7 @@ type TableUIState = {
   methodCell: ActiveCellState | null;
   activeRow: ActiveRowState | null;
   travelCell: ActiveCellState | null;
+  warningCell: ActiveCellState | null;
 };
 
 type TableUIAction =
@@ -33,6 +34,7 @@ type TableUIAction =
   | { type: 'SET_AMOUNT_CELL'; payload: ActiveCellState | null }
   | { type: 'SET_METHOD_CELL'; payload: ActiveCellState | null }
   | { type: 'SET_TRAVEL_CELL'; payload: ActiveCellState | null }
-  | { type: 'SET_ACTIVE_ROW'; payload: ActiveRowState | null };
+  | { type: 'SET_ACTIVE_ROW'; payload: ActiveRowState | null }
+  | { type: 'SET_WARNING_CELL'; payload: ActiveCellState | null };
 
 export type { ActiveCellState, ActiveRowState, TableUIAction, TableUIState };

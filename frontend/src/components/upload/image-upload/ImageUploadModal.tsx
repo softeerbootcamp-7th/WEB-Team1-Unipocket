@@ -2,9 +2,9 @@ import { useState } from 'react';
 
 import Snackbar from '@/components/common/Snackbar';
 import Modal from '@/components/modal/Modal';
-import { useImageUpload } from '@/components/upload/hooks/useImageUpload';
 import ImageResultModal from '@/components/upload/image-upload/ImageResultModal';
 import ImageUploadContent from '@/components/upload/image-upload/ImageUploadContent';
+import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
 
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 

@@ -2,12 +2,23 @@ import { useEffect } from 'react';
 
 import { useModalContext } from '@/components/modal/useModalContext';
 import UploadFile from '@/components/upload/file-upload/UploadFile';
-import { useFileUpload } from '@/components/upload/hooks/useFileUpload';
+import type { UploadItem } from '@/components/upload/type';
 import UploadBox from '@/components/upload/upload-box/UploadBox';
 
-const FileUploadContent = () => {
+interface FileUploadContentProps {
+  item: UploadItem | null;
+  onFilesSelected: (files: File[]) => void;
+  onRemove: () => void;
+  isReady: boolean;
+}
+
+const FileUploadContent = ({
+  item,
+  onFilesSelected,
+  onRemove,
+  isReady,
+}: FileUploadContentProps) => {
   const { setActionReady } = useModalContext();
-  const { item, handleFilesSelected, removeItem, isReady } = useFileUpload();
 
   useEffect(() => {
     setActionReady(isReady);
@@ -26,10 +37,8 @@ const FileUploadContent = () => {
         </span>
       </div>
       <div className="mb-2.5 h-65.5">
-        {!item && (
-          <UploadBox type="file" onFilesSelected={handleFilesSelected} />
-        )}
-        {item && <UploadFile key={item.id} item={item} onRemove={removeItem} />}
+        {!item && <UploadBox type="file" onFilesSelected={onFilesSelected} />}
+        {item && <UploadFile key={item.id} item={item} onRemove={onRemove} />}
       </div>
     </div>
   );

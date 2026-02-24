@@ -45,11 +45,13 @@ public class FileUploadService {
 			UploadType uploadType,
 			Long tempExpenseMetaId) {
 		TempExpenseMeta savedMeta = resolveMeta(accountBookId, tempExpenseMetaId);
-		FileType fileType = resolveFileType(mimeType, uploadType);
+		MediaContentType mediaContentType = resolveMediaContentType(mimeType);
+		FileType fileType = resolveFileType(mediaContentType, uploadType);
 		validateFileGroupingPolicy(savedMeta.getTempExpenseMetaId(), fileType);
 
 		PresignedUrlResult s3Response =
-				tempExpenseMediaAccessService.issueUploadPath(accountBookId, mimeType);
+				tempExpenseMediaAccessService.issueUploadPath(
+						accountBookId, mediaContentType.getMimeType());
 
 		File file =
 				File.builder()
@@ -68,13 +70,15 @@ public class FileUploadService {
 				presignedPutExpirationSeconds);
 	}
 
-	private FileType resolveFileType(String mimeType, UploadType uploadType) {
+	private MediaContentType resolveMediaContentType(String mimeType) {
+		return MediaContentType.fromMimeType(mimeType)
+				.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
+	}
+
+	private FileType resolveFileType(MediaContentType mediaContentType, UploadType uploadType) {
 		if (uploadType == null) {
 			throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
 		}
-		MediaContentType mediaContentType =
-				MediaContentType.fromMimeType(mimeType)
-						.orElseThrow(() -> new BusinessException(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
 
 		return switch (uploadType) {
 			case IMAGE -> {

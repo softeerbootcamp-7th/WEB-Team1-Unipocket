@@ -6,7 +6,6 @@ import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import TravelCellEditor from '@/components/data-table/editors/TravelCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
-import TableSidePanel from '@/components/side-panel/TableSidePanel';
 import UploadMenu from '@/components/upload/UploadMenu';
 
 const ExpenseTable = () => {
@@ -27,7 +26,6 @@ const ExpenseTable = () => {
         <AmountCellEditor />
         <MethodCellEditor />
         <TravelCellEditor />
-        <TableSidePanel />
       </BaseExpenseTable>
     </div>
   );

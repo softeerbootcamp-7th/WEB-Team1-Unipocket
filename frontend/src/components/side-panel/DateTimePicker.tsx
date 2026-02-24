@@ -19,7 +19,7 @@ const minuteOptions = Array.from({ length: 60 }).map((_, i) => ({
 }));
 
 const OUTSIDE_CLICK_IGNORE_SELECTOR =
-  '[data-radix-popper-content-wrapper], [role="dialog"], [data-value-container]';
+  '[data-radix-popper-content-wrapper], [role="dialog"], [data-datetime-label]';
 
 interface DateTimePickerProps {
   onDateTimeSelect: (date: Date) => void;
@@ -154,6 +154,7 @@ const DateTimePicker = ({
         <CalendarMonthPopover
           date={currentMonth}
           onDateChange={setCurrentMonth}
+          modal={false}
         />
         <Icon
           iconName="ChevronForward"

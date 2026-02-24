@@ -12,6 +12,7 @@ import type {
   GetTravelWidgetRequest,
   PatchTravelRequest,
   TravelWidgetResponseMap,
+  UpdateTravelBudgetWidgetResponse,
   UpdateTravelRequest,
   UpdateTravelResponse,
   UpdateTravelWidgetLayoutRequest,
@@ -158,5 +159,19 @@ export const getTravelWidget = <T extends keyof TravelWidgetResponseMap>({
       ...(period && { period }),
     },
     options: { method: 'GET' },
+  });
+};
+
+export const updateTravelBudget = (
+  accountBookId: number | string,
+  travelId: number | string,
+  budget: number,
+): Promise<UpdateTravelBudgetWidgetResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.TRAVELS.BUDGET(accountBookId, travelId),
+    options: {
+      method: 'PATCH',
+      body: JSON.stringify({ budget }),
+    },
   });
 };

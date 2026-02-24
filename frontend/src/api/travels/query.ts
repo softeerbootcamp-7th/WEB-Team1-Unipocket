@@ -18,6 +18,7 @@ import {
   getTravelWidgetLayout,
   patchTravel,
   updateTravel,
+  updateTravelBudget,
   updateTravelWidgetLayout,
 } from '@/api/travels/api';
 import type {
@@ -60,6 +61,12 @@ export const travelKeys = {
     travelId: number | string | undefined,
   ) => [...travelKeys.all, 'widget', accountBookId, travelId] as const,
 
+  widgetByType: (
+    accountBookId: number | string | undefined,
+    travelId: number | string | undefined,
+    widgetType: WidgetType,
+  ) => [...travelKeys.allWidgets(accountBookId, travelId), widgetType] as const,
+
   widget: (
     accountBookId: number | string | undefined,
     travelId: number | string | undefined,
@@ -68,11 +75,7 @@ export const travelKeys = {
     period?: PeriodType,
   ) =>
     [
-      ...travelKeys.all,
-      'widget',
-      accountBookId,
-      travelId,
-      widgetType,
+      ...travelKeys.widgetByType(accountBookId, travelId, widgetType),
       { currencyType, period },
     ] as const,
 };
@@ -272,6 +275,31 @@ export const useUpdateTravelWidgetLayoutMutation = (
     },
     onError: () => {
       toast.error('위젯 순서 저장에 실패했어요.');
+    },
+  });
+};
+
+export const useUpdateTravelBudgetMutation = () => {
+  const accountBookId = useRequiredAccountBook().accountBookId;
+
+  return useMutation({
+    mutationFn: ({
+      travelId,
+      budget,
+    }: {
+      travelId: number | string;
+      budget: number;
+    }) => {
+      return updateTravelBudget(accountBookId, travelId, budget);
+    },
+    onSuccess: (_, { travelId }) => {
+      queryClient.invalidateQueries({
+        queryKey: travelKeys.widgetByType(accountBookId, travelId, 'BUDGET'),
+      });
+      toast.success('예산이 저장되었어요.');
+    },
+    onError: () => {
+      toast.error('예산 저장에 실패했어요.');
     },
   });
 };

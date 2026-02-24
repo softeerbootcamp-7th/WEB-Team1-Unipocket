@@ -91,3 +91,9 @@ export interface GetTravelWidgetRequest {
   currencyType?: CurrencyType;
   period?: PeriodType;
 }
+
+export interface UpdateTravelBudgetWidgetResponse {
+  travelId: number;
+  budget: number;
+  budgetCreatedAt: string;
+}

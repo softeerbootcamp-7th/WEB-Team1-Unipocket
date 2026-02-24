@@ -25,6 +25,8 @@ export const ENDPOINTS = {
       `account-books/${accountBookId}/travels/image-url`, // 이미지 URL 조회 (GET)
     AMOUNT: (accountBookId: number | string, travelId: number | string) =>
       `account-books/${accountBookId}/travels/${travelId}/amount`, // 여행 금액 조회 (GET)
+    BUDGET: (accountBookId: number | string, travelId: number | string) =>
+      `account-books/${accountBookId}/travels/${travelId}/budget`, // 여행 예산 수정 (PATCH)
   },
   TEMPORARY_EXPENSES: {
     METAS: (accountBookId: number | string) =>

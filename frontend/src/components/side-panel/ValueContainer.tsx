@@ -36,7 +36,11 @@ const ValueItem = ({
     <div className="flex h-8 items-center">
       <p className="label1-normal-bold text-label-alternative w-25">{label}</p>
       {popoverContent ? (
-        <Popover open={isPopoverOpen} onOpenChange={onPopoverOpenChange}>
+        <Popover
+          open={isPopoverOpen}
+          onOpenChange={onPopoverOpenChange}
+          modal={false}
+        >
           <PopoverTrigger asChild>{valueEl}</PopoverTrigger>
           {popoverContent}
         </Popover>

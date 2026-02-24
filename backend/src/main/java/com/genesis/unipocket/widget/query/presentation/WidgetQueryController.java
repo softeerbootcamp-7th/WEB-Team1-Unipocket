@@ -1,8 +1,8 @@
 package com.genesis.unipocket.widget.query.presentation;
 
 import com.genesis.unipocket.auth.common.annotation.LoginUser;
+import com.genesis.unipocket.widget.query.application.WidgetQueryService;
 import com.genesis.unipocket.widget.query.presentation.request.WidgetQueryRequest;
-import com.genesis.unipocket.widget.query.service.WidgetQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

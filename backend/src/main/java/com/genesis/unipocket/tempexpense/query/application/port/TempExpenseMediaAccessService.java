@@ -1,4 +1,4 @@
-package com.genesis.unipocket.tempexpense.query.service.port;
+package com.genesis.unipocket.tempexpense.query.application.port;
 
 import java.time.Duration;
 

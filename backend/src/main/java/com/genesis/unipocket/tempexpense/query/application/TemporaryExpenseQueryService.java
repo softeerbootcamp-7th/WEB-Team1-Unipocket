@@ -1,9 +1,10 @@
-package com.genesis.unipocket.tempexpense.query.service;
+package com.genesis.unipocket.tempexpense.query.application;
 
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.common.enums.TemporaryExpenseStatus;
 import com.genesis.unipocket.tempexpense.common.util.TempExpenseFileNameResolver;
+import com.genesis.unipocket.tempexpense.query.application.port.TempExpenseMediaAccessService;
 import com.genesis.unipocket.tempexpense.query.persistence.repository.TemporaryExpenseQueryRepository;
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseFileRow;
 import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExpenseMetaRow;
@@ -11,7 +12,6 @@ import com.genesis.unipocket.tempexpense.query.persistence.response.TemporaryExp
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaFilesResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseMetaListResponse;
 import com.genesis.unipocket.tempexpense.query.presentation.response.TemporaryExpenseResponse;
-import com.genesis.unipocket.tempexpense.query.service.port.TempExpenseMediaAccessService;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;

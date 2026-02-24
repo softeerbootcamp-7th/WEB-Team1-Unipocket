@@ -1,4 +1,4 @@
-package com.genesis.unipocket.travel.query.service;
+package com.genesis.unipocket.travel.query.application;
 
 import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBookQueryRepository;
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;

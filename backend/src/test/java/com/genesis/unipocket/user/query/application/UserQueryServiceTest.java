@@ -1,4 +1,4 @@
-package com.genesis.unipocket.user.query.service;
+package com.genesis.unipocket.user.query.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -7,10 +7,10 @@ import static org.mockito.Mockito.when;
 import com.genesis.unipocket.user.common.enums.CardCompany;
 import com.genesis.unipocket.user.common.enums.UserRole;
 import com.genesis.unipocket.user.common.enums.UserStatus;
+import com.genesis.unipocket.user.query.application.port.AccountBookCountService;
 import com.genesis.unipocket.user.query.persistence.repository.UserQueryRepository;
 import com.genesis.unipocket.user.query.persistence.response.UserCardQueryResponse;
 import com.genesis.unipocket.user.query.persistence.response.UserQueryResponse;
-import com.genesis.unipocket.user.query.service.port.AccountBookCountService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

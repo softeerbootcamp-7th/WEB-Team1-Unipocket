@@ -46,4 +46,22 @@ public class AsyncConfig {
 		executor.initialize();
 		return executor;
 	}
+
+	/**
+	 * 개별 파일 파싱용 Executor — 배치 내 파일별 병렬 처리에 사용.
+	 * parsingExecutor(배치 레벨)와 분리하여 스레드 풀 기아(starvation)를 방지한다.
+	 */
+	@Bean(name = "fileParsingExecutor")
+	public Executor fileParsingExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(6); // 2 배치 × 3 파일 동시 처리
+		executor.setMaxPoolSize(15); // 최대 5 배치 × 3 파일 동시 처리
+		executor.setQueueCapacity(50);
+		executor.setThreadNamePrefix("file-parse-");
+		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(60);
+		executor.initialize();
+		return executor;
+	}
 }

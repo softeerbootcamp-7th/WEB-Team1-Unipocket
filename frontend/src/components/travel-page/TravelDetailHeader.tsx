@@ -6,23 +6,28 @@ import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import ExpenseCard from '@/components/home-page/ExpenseCard';
 
-import { useGetTravelDetailQuery } from '@/api/travels/query';
+import {
+  useGetTravelAmountQuery,
+  useGetTravelDetailQuery,
+} from '@/api/travels/query';
+import type { CountryCode } from '@/data/country/countryCode';
 import { formatDateToDot, formatTripDuration } from '@/lib/utils';
 
 const TravelDetailHeader = () => {
   const { isWidgetEditMode, toggleEditMode } = useWidgetContext();
+  const { travelId } = useParams({ from: '/_app/travel/$travelId' });
+  const { data: amountData } = useGetTravelAmountQuery(travelId);
 
   return (
     <div className="flex items-end gap-4">
       <TripSummary />
       <Divider style="vertical" className="h-15" />
-      {/* @TODO 총 지출 API 연동 필요 */}
       <ExpenseCard
-        label="총 지출 (mock)"
-        baseCountryCode="KR"
-        baseCountryAmount={1402432}
-        localCountryCode="US"
-        localCountryAmount={12232}
+        label="총 지출"
+        baseCountryCode={(amountData?.baseCountryCode ?? 'KR') as CountryCode}
+        baseCountryAmount={amountData?.totalBaseAmount ?? 0}
+        localCountryCode={(amountData?.localCountryCode ?? 'KR') as CountryCode}
+        localCountryAmount={amountData?.totalLocalAmount ?? 0}
       />
       <div className="flex-1" />
       <Button

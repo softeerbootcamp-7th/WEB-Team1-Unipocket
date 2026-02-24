@@ -18,6 +18,7 @@ import {
   getTravelWidgetLayout,
   patchTravel,
   updateTravel,
+  updateTravelBudget,
   updateTravelWidgetLayout,
 } from '@/api/travels/api';
 import type {
@@ -272,6 +273,31 @@ export const useUpdateTravelWidgetLayoutMutation = (
     },
     onError: () => {
       toast.error('위젯 순서 저장에 실패했어요.');
+    },
+  });
+};
+
+export const useUpdateTravelBudgetMutation = () => {
+  const accountBookId = useRequiredAccountBook().accountBookId;
+
+  return useMutation({
+    mutationFn: ({
+      travelId,
+      budget,
+    }: {
+      travelId: number | string;
+      budget: number;
+    }) => {
+      return updateTravelBudget(accountBookId, travelId, budget);
+    },
+    onSuccess: (_, { travelId }) => {
+      queryClient.invalidateQueries({
+        queryKey: travelKeys.widget(accountBookId, travelId, 'BUDGET'),
+      });
+      toast.success('예산이 저장되었어요.');
+    },
+    onError: () => {
+      toast.error('예산 저장에 실패했어요.');
     },
   });
 };

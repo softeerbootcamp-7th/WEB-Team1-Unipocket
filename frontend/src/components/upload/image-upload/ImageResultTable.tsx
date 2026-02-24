@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 
+import TempUpdateActionBar from '@/components/data-table/bars/update/TempUpdateActionBar'; // 새로 만든 바
 import { getTempExpenseColumns } from '@/components/data-table/columns/tempExpenseColumns';
+import AmountCellEditor from '@/components/data-table/editors/AmountCellEditor';
+import CategoryCellEditor from '@/components/data-table/editors/CategoryCellEditor';
+import MethodCellEditor from '@/components/data-table/editors/MethodCellEditor';
+import TextCellEditor from '@/components/data-table/editors/TextCellEditor';
 import { getTempExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
@@ -40,7 +45,12 @@ const ImageResultTable = ({ data }: ImageResultTableProps) => {
         groupBy={groupBy}
         groupDisplay={groupDisplay}
       >
-        {/* ... (기존 children 컴포넌트들) */}
+        <TempUpdateActionBar />
+
+        <TextCellEditor />
+        <CategoryCellEditor />
+        <AmountCellEditor />
+        <MethodCellEditor />
       </BaseExpenseTable>
     </div>
   );

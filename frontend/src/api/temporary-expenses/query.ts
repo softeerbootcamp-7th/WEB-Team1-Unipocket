@@ -163,23 +163,31 @@ const useConfirmMetaMutation = (accountBookId: number) =>
   });
 
 /** 임시지출 일괄 수정 Mutation */
-const useBulkUpdateTempExpensesMutation = (
-  accountBookId: number,
-  metaId: number,
-  fileId: number,
-) =>
+const useBulkUpdateTempExpensesMutation = () =>
   useMutation({
-    mutationFn: (data: BulkUpdateRequest) =>
-      bulkUpdateTempExpenses(accountBookId, metaId, fileId, data),
-    onSuccess: () => {
+    mutationFn: ({
+      accountBookId,
+      metaId,
+      fileId,
+      data,
+    }: {
+      accountBookId: number | string;
+      metaId: number;
+      fileId: number;
+      data: BulkUpdateRequest;
+    }) => bulkUpdateTempExpenses(accountBookId, metaId, fileId, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
+        queryKey: temporaryExpenseKeys.metaFiles(
+          variables.accountBookId as number,
+          variables.metaId,
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metaFileDetail(
-          accountBookId,
-          metaId,
-          fileId,
+          variables.accountBookId as number,
+          variables.metaId,
+          variables.fileId,
         ),
       });
       toast.success('임시지출이 수정됐어요.');

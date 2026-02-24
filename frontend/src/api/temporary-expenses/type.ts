@@ -97,7 +97,13 @@ export interface GetMetaFileUrlResponse {
   expiresInSeconds: number;
 }
 
-export type BulkUpdateRequest = TempExpense[];
+export type BulkUpdateTempExpenseItem = Partial<TempExpense> & {
+  tempExpenseId: number;
+};
+
+export interface BulkUpdateRequest {
+  items: BulkUpdateTempExpenseItem[];
+}
 
 export interface BulkUpdateResult {
   tempExpenseId: number;

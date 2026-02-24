@@ -8,7 +8,11 @@ import { WidgetContext } from '@/components/chart/widget/WidgetContext';
 import type { CurrencyType } from '@/types/currency';
 import type { PeriodType } from '@/types/period';
 
-import { useTravelWidgetQuery } from '@/api/travels/query';
+import { useUpdateAccountBookBudgetMutation } from '@/api/account-books/query';
+import {
+  useTravelWidgetQuery,
+  useUpdateTravelBudgetMutation,
+} from '@/api/travels/query';
 import {
   getWidget,
   getWidgetLayout,
@@ -100,8 +104,7 @@ export const useUpdateWidgetLayoutMutation = () => {
 };
 
 /**
- * WidgetContext의 travelId 유무에 따라
- * 홈(useWidgetQuery) 또는 여행(useTravelWidgetQuery)을 자동으로 분기하는 훅
+ * WidgetContext의 travelId 유무에 따라 홈/여행 자동 분기 처리
  */
 export const useContextualWidgetQuery = <T extends keyof WidgetResponseMap>(
   widgetType: T,
@@ -121,4 +124,29 @@ export const useContextualWidgetQuery = <T extends keyof WidgetResponseMap>(
   });
 
   return travelId ? travelResult : homeResult;
+};
+
+/**
+ * WidgetContext의 travelId 유무에 따라 홈/여행 자동 분기 처리
+ */
+export const useContextualBudgetMutation = () => {
+  const travelId = useContext(WidgetContext)?.travelId;
+
+  const { mutate: updateBudget, ...homeResult } =
+    useUpdateAccountBookBudgetMutation();
+  const { mutate: updateTravelBudget, ...travelResult } =
+    useUpdateTravelBudgetMutation();
+
+  const mutate = (
+    budget: number,
+    options?: { onSuccess?: () => void; onError?: () => void },
+  ) => {
+    if (travelId) {
+      updateTravelBudget({ travelId, budget }, options);
+    } else {
+      updateBudget(budget, options);
+    }
+  };
+
+  return { mutate, ...(travelId ? travelResult : homeResult) };
 };

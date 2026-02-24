@@ -155,11 +155,11 @@ const PreviewSection = () => {
   return (
     <section id="preview" className="flex flex-col p-10 lg:px-60 lg:py-32.75">
       <h2 className="title1-medium mb-4 text-center">
-        지출 내역을 올려보고 기능을 체험해보세요!
+        사진과 파일을 올리면 지출 내역을 자동으로 정리해줘요!
       </h2>
       <h2 className="text-label-alternative mb-20 text-center text-2xl font-medium">
-        영수증 및 모바일 결제 화면 캡처본을 업로드하면
-        <br /> 자동으로 내역이 정리됩니다.
+        영수증, 은행 앱 이미지, CSV 파일을 업로드하면
+        <br /> 날짜·금액·카테고리를 분석해 한눈에 보기 쉽게 정리됩니다.
       </h2>
 
       <div className="bg-background-normal shadow-semantic-subtle flex flex-col gap-12 rounded-3xl px-3 py-8">

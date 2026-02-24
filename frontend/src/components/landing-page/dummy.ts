@@ -120,7 +120,7 @@ export const TEMP_EXPENSE_DUMMY: TempExpense[][] = [
       baseCountryCode: 'KRW',
       baseCurrencyAmount: 12052.62,
       memo: null,
-      occurredAt: '2025-01-01T12:00:00',
+      occurredAt: '2025-01-03T12:00:00',
       status: 'NORMAL',
       cardLastFourDigits: '',
     },

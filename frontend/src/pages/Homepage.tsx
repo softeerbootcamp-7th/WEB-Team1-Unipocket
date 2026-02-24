@@ -1,6 +1,6 @@
 import { Suspense, useState } from 'react';
 
-import WidgetHeader from '@/components/chart/widget/components/WidgetHeader';
+import HomeHeader from '@/components/chart/widget/components/HomeHeader';
 import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
@@ -19,7 +19,7 @@ const Homepage = () => {
     <WidgetContext.Provider value={widgetManager}>
       <div className="flex min-h-0 flex-1 flex-col gap-5 px-4 pt-8 xl:px-30">
         <div className="flex flex-col gap-8">
-          <WidgetHeader />
+          <HomeHeader />
           <WidgetList />
         </div>
         <div className="relative min-h-0 flex-1">

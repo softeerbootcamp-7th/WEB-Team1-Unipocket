@@ -1,3 +1,4 @@
+import Tooltip from '@/components/common/Tooltip';
 import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
 
@@ -11,6 +12,7 @@ interface ExpenseCardProps {
   baseCountryCode: CountryCode; // 기준통화
   baseCountryAmount: number; // 기준금액
   isInfo?: boolean;
+  tooltipContent?: string;
 }
 
 const ExpenseCard = ({
@@ -20,12 +22,20 @@ const ExpenseCard = ({
   baseCountryCode,
   baseCountryAmount,
   isInfo = false,
+  tooltipContent,
 }: ExpenseCardProps) => {
   return (
     <section className="flex flex-col gap-2">
       <div className="text-label-alternative flex items-center gap-1.5">
         <span className="body2-normal-medium">{label}</span>
-        {isInfo && <Icons.Information className="size-4 cursor-pointer" />}
+        {isInfo &&
+          (tooltipContent ? (
+            <Tooltip content={tooltipContent} side="bottom">
+              <Icons.Information className="size-4 cursor-pointer" />
+            </Tooltip>
+          ) : (
+            <Icons.Information className="size-4 cursor-pointer" />
+          ))}
       </div>
       <div className="flex items-end gap-3">
         <CurrencyAmountDisplay

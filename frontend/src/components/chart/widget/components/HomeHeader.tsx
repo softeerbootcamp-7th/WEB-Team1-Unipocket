@@ -5,11 +5,21 @@ import ExpenseCard from '@/components/home-page/ExpenseCard';
 
 import { useGetAccountBookAmountQuery } from '@/api/account-books/query';
 import type { CountryCode } from '@/data/country/countryCode';
+import { formatDateStringToDot, formatDateToDot } from '@/lib/utils';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
-const WidgetHeader = () => {
+const HomeHeader = () => {
   const { isWidgetEditMode, toggleEditMode } = useWidgetContext();
   const ButtonVariant = isWidgetEditMode ? 'solid' : 'outlined';
   const { data: amountData } = useGetAccountBookAmountQuery();
+  const accountBook = useRequiredAccountBook();
+
+  const today = new Date();
+  const todayDot = formatDateToDot(today);
+  const firstDayOfMonthDot = formatDateToDot(
+    new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const startDateDot = formatDateStringToDot(accountBook.startDate);
 
   return (
     <div className="flex items-end gap-4">
@@ -20,6 +30,7 @@ const WidgetHeader = () => {
         localCountryCode={(amountData?.localCountryCode ?? 'KR') as CountryCode}
         localCountryAmount={amountData?.totalLocalAmount ?? 0}
         isInfo
+        tooltipContent={`산정 기간 : ${startDateDot} ~ ${todayDot}`}
       />
       <Divider style="vertical" className="h-15" />
       <ExpenseCard
@@ -29,6 +40,7 @@ const WidgetHeader = () => {
         localCountryCode={(amountData?.localCountryCode ?? 'KR') as CountryCode}
         localCountryAmount={amountData?.thisMonthLocalAmount ?? 0}
         isInfo
+        tooltipContent={`산정 기간 : ${firstDayOfMonthDot} ~ ${todayDot}`}
       />
       <div className="flex-1" />
       <Button variant={ButtonVariant} size="md" onClick={toggleEditMode}>
@@ -38,4 +50,4 @@ const WidgetHeader = () => {
   );
 };
 
-export default WidgetHeader;
+export default HomeHeader;

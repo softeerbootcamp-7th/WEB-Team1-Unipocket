@@ -11,7 +11,7 @@ import {
   useGetTravelDetailQuery,
 } from '@/api/travels/query';
 import type { CountryCode } from '@/data/country/countryCode';
-import { formatDateToDot, formatTripDuration } from '@/lib/utils';
+import { formatDateStringToDot, formatTripDuration } from '@/lib/utils';
 
 const TravelDetailHeader = () => {
   const { isWidgetEditMode, toggleEditMode } = useWidgetContext();
@@ -61,8 +61,8 @@ const TripSummary = () => {
         {travel && (
           <>
             <span className="body1-normal-medium text-label-normal">
-              {formatDateToDot(travel.startDate)} -{' '}
-              {formatDateToDot(travel.endDate)}
+              {formatDateStringToDot(travel.startDate)} -{' '}
+              {formatDateStringToDot(travel.endDate)}
             </span>
             <span className="body1-normal-medium text-label-alternative">
               {formatTripDuration(travel.startDate, travel.endDate)}

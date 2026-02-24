@@ -5,7 +5,10 @@ import {
   ConfiguratorSkeleton,
 } from '@/components/setting-page/AccountBookConfigurator';
 import { AccountManagement } from '@/components/setting-page/AccountManagement';
-import { LinkedCardList } from '@/components/setting-page/LinkedCardList';
+import {
+  LinkedCardList,
+  LinkedCardListSkeleton,
+} from '@/components/setting-page/LinkedCardList';
 import {
   MainAccountBookSelector,
   MainAccountBookSkeleton,
@@ -36,10 +39,12 @@ const SettingPage = () => {
         <Suspense fallback={<MainAccountBookSkeleton />}>
           <MainAccountBookSelector />
         </Suspense>
-        <LinkedCardList
-          openEditCardNickname={openEditCardNickname}
-          openDeleteCard={openDeleteCard}
-        />
+        <Suspense fallback={<LinkedCardListSkeleton />}>
+          <LinkedCardList
+            openEditCardNickname={openEditCardNickname}
+            openDeleteCard={openDeleteCard}
+          />
+        </Suspense>
         <Suspense fallback={<ConfiguratorSkeleton />}>
           <AccountBookConfigurator
             openEditAccountBookName={openEditAccountBookName}

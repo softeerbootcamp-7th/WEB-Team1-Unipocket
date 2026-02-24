@@ -14,6 +14,7 @@ import {
   useDeleteCardMutation,
   useUpdateCardNicknameMutation,
 } from '@/api/cards/query';
+import { useDeleteUserMutation } from '@/api/users/query';
 import { ERROR_MESSAGE } from '@/constants/message';
 import type { CountryCode } from '@/data/country/countryCode';
 import { formatDateToString, parseStringToDate } from '@/lib/utils';
@@ -34,6 +35,7 @@ const SettingModalManager = ({
   const deleteAccountBookMutation = useDeleteAccountBookMutation();
   const updateCardNicknameMutation = useUpdateCardNicknameMutation();
   const deleteCardMutation = useDeleteCardMutation();
+  const deleteUserMutation = useDeleteUserMutation();
 
   return (
     <>
@@ -146,13 +148,13 @@ const SettingModalManager = ({
         }}
       />
 
-      {/* 계정 삭제 — @TODO API 연결 필요 */}
+      {/* 계정 삭제 */}
       <TextConfirmModal
         isOpen={activeModal.type === 'DELETE_ACCOUNT'}
         onClose={closeModal}
         title={SETTING_MODAL_TEXT.DELETE_ACCOUNT.title}
         description={SETTING_MODAL_TEXT.DELETE_ACCOUNT.description}
-        onAction={closeModal}
+        onAction={() => deleteUserMutation.mutate()}
       />
 
       {/* ── 기간 선택 모달 ── */}

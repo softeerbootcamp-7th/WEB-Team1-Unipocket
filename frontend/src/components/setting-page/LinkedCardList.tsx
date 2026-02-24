@@ -7,7 +7,10 @@ import {
   SettingTitle,
 } from '@/components/setting-page/SettingLayout';
 
-import { useCardsQuery, useCreateCardMutation } from '@/api/cards/query';
+import {
+  useCardsSuspenseQuery,
+  useCreateCardMutation,
+} from '@/api/cards/query';
 import { Icons } from '@/assets';
 
 interface LinkedCardListProps {
@@ -15,11 +18,18 @@ interface LinkedCardListProps {
   openDeleteCard: (cardId: number, cardNickname: string) => void;
 }
 
+const LinkedCardListSkeleton = () => (
+  <SettingSection>
+    <SettingTitle>국내카드 연동 목록</SettingTitle>
+    <div className="bg-cool-neutral-97 rounded-modal-8 h-25 w-100 animate-pulse rounded-md" />
+  </SettingSection>
+);
+
 const LinkedCardList = ({
   openEditCardNickname,
   openDeleteCard,
 }: LinkedCardListProps) => {
-  const { data: cards, isLoading } = useCardsQuery();
+  const { data: cards } = useCardsSuspenseQuery();
   const createCardMutation = useCreateCardMutation();
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -33,10 +43,6 @@ const LinkedCardList = ({
       onSuccess: () => setCreateModalOpen(false),
     });
   };
-
-  if (isLoading || !cards) {
-    return null;
-  }
 
   return (
     <SettingSection>
@@ -79,4 +85,4 @@ const LinkedCardList = ({
   );
 };
 
-export { LinkedCardList };
+export { LinkedCardList, LinkedCardListSkeleton };

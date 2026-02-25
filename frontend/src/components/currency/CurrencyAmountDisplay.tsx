@@ -7,19 +7,19 @@ const SIZE_VARIANTS = {
     containerGap: 'gap-0.5',
     symbol: 'caption1-medium',
     integer: 'caption1-medium',
-    decimal: 'caption1-medium -mt-0.5',
+    decimal: 'caption1-medium',
   },
   sm: {
     containerGap: 'gap-0.5',
     symbol: 'figure-caption1-medium',
     integer: 'figure-body2-14-semibold',
-    decimal: 'figure-caption1-medium -mt-0.5',
+    decimal: 'figure-caption1-medium',
   },
   md: {
     containerGap: 'gap-0.5',
     symbol: 'figure-label2-medium',
     integer: 'figure-body2-15-medium',
-    decimal: 'figure-caption2-medium -mt-0.5',
+    decimal: 'figure-caption2-medium',
   },
   lg: {
     containerGap: 'gap-1',
@@ -75,7 +75,6 @@ interface CurrencyAmountDisplayProps {
   countryCode: CountryCode;
   amount: number;
   className?: string;
-  decimalOffset?: number;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'folder_sm' | 'folder_lg';
   variant?: 'default' | 'inverse' | 'muted';
 }
@@ -86,7 +85,6 @@ const CurrencyAmountDisplay = ({
   size = 'md',
   variant = 'default',
   className,
-  decimalOffset,
 }: CurrencyAmountDisplayProps) => {
   const countryInfo = getCountryInfo(countryCode);
 
@@ -104,11 +102,8 @@ const CurrencyAmountDisplay = ({
     fractionDigits,
   );
 
-  const [integerPart, decimalPart] = formattedString.split('.');
-
   const sizeStyles = SIZE_VARIANTS[size];
   const colorStyles = COLOR_VARIANTS[variant];
-  const shouldHideDecimal = size.includes('folder');
 
   return (
     <div
@@ -126,32 +121,10 @@ const CurrencyAmountDisplay = ({
         {countryInfo.currencySign}
       </span>
 
-      {/* 숫자 영역 (정수 + 소수) */}
-      <div className="flex items-center">
-        <span
-          className={cn(sizeStyles.integer, colorStyles.integer, className)}
-        >
-          {integerPart}
-        </span>
-
-        {!shouldHideDecimal && decimalPart && (
-          <span
-            className={cn(
-              'text-label-alternative',
-              className && 'opacity-80',
-              sizeStyles.decimal,
-              colorStyles.decimal,
-              className,
-            )}
-            style={{
-              position: 'relative',
-              top: decimalOffset ?? 0,
-            }}
-          >
-            .{decimalPart}
-          </span>
-        )}
-      </div>
+      {/* 숫자 영역 */}
+      <span className={cn(sizeStyles.integer, colorStyles.integer, className)}>
+        {formattedString}
+      </span>
     </div>
   );
 };

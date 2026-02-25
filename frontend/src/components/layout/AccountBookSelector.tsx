@@ -1,3 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
+
 import Dropdown from '@/components/common/dropdown/Dropdown';
 
 import {
@@ -10,6 +12,7 @@ import { useAccountBookStore } from '@/stores/accountBookStore';
 const AccountBookSelector = () => {
   const { accountBook, setAccountBook } = useAccountBookStore();
   const { data } = useGetAccountBooksQuery();
+  const navigate = useNavigate();
 
   if (!accountBook) {
     return null;
@@ -28,6 +31,7 @@ const AccountBookSelector = () => {
     );
 
     setAccountBook(accountBookDetail);
+    navigate({ to: '/home' });
   };
 
   return (

@@ -24,18 +24,22 @@ const roundedRectPath = (
   h: number,
   rt: number, // top radius
   rb: number, // bottom radius
-) => `
-  M ${x + rt},${y}
-  h ${w - 2 * rt}
-  a ${rt},${rt} 0 0 1 ${rt},${rt}
-  v ${h - rt - rb}
-  a ${rb},${rb} 0 0 1 -${rb},${rb}
-  h -${w - 2 * rb}
-  a ${rb},${rb} 0 0 1 -${rb},-${rb}
-  v -${h - rt - rb}
-  a ${rt},${rt} 0 0 1 ${rt},-${rt}
-  z
-`;
+) => {
+  if (h <= 0 || w <= 0) return '';
+
+  return `
+    M ${x + rt},${y}
+    h ${w - 2 * rt}
+    a ${rt},${rt} 0 0 1 ${rt},${rt}
+    v ${h - rt - rb}
+    a ${rb},${rb} 0 0 1 ${-rb},${rb}
+    h ${-(w - 2 * rb)}
+    a ${rb},${rb} 0 0 1 ${-rb},${-rb}
+    v ${-(h - rt - rb)}
+    a ${rt},${rt} 0 0 1 ${rt},${-rt}
+    z
+  `;
+};
 
 interface VerticalBarChartProps {
   data: BarData[];
@@ -58,8 +62,8 @@ const VerticalBarChart = ({
 }: VerticalBarChartProps) => {
   const clipId = useId();
   const totalPercent = data.reduce((sum, item) => sum + item.percent, 0);
-  const totalGap = (data.length - 1) * gap;
-  const availableHeight = height - totalGap;
+  const totalGap = data.length > 0 ? (data.length - 1) * gap : 0;
+  const availableHeight = Math.max(0, height - totalGap); // 음수 방지
 
   // 각 막대(세그먼트)가 그려질 위치(y)와 높이(height) 계산
   // reduce를 사용하여 이전 막대의 위치를 기반으로 다음 막대의 위치를 쌓아올림
@@ -99,7 +103,7 @@ const VerticalBarChart = ({
               transition={
                 animate
                   ? { duration: TOTAL_ANIMATION_DURATION, ease: 'easeOut' }
-                  : { duration: 0 } // 애니메이션 시간 0
+                  : { duration: 0 }
               }
             />
           </clipPath>
@@ -111,17 +115,21 @@ const VerticalBarChart = ({
         */}
         <g clipPath={`url(#${clipId})`}>
           {segments.map(({ y, height: segmentHeight, index }) => {
+            if (segmentHeight <= 0.01) return null;
+
             const isFirst = index === 0;
             const isLast = index === data.length - 1;
 
-            const radius = 2;
+            // 도형이 깨지지 않도록 radius 최대값을 높이/너비의 절반으로 제한
+            const maxRadius = Math.min(width / 2, segmentHeight / 2);
+            const radius = Math.min(2, maxRadius);
+
             const rt = isFirst ? radius : 0;
             const rb = isLast ? radius : 0;
 
             return (
               <path
                 key={index}
-                // 미리 정의해둔 곡선 그리기 함수 사용
                 d={roundedRectPath(0, y, width, segmentHeight, rt, rb)}
                 fill={colors[index % colors.length]}
               />

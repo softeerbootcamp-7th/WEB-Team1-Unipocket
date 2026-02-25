@@ -59,7 +59,7 @@ const AccountBookSettingsForm = ({
 
   return (
     <div className="flex flex-col items-start gap-5">
-      <div className="border-line-normal-normal flex flex-col items-start gap-2 border-y px-4 py-4.5">
+      <div className="border-line-normal-normal flex w-full flex-col items-start gap-2 border-y px-4 py-4.5">
         <SettingRow
           label="이름 수정"
           value={detail.title}

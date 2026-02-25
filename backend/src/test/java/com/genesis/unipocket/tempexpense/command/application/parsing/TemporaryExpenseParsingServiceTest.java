@@ -675,14 +675,22 @@ class TemporaryExpenseParsingServiceTest {
 												"AP12345",
 												null)),
 								null));
+		when(exchangeRateProvider.getExchangeRate(
+						CurrencyCode.USD,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 20, 0, 0).atOffset(ZoneOffset.UTC)))
+				.thenReturn(new BigDecimal("1387.12"));
 
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
 		service.parseBatchFiles(meta, List.of(file), "task-swap-detect");
 
-		// baseAmount is already provided after swap, so no exchange rate lookup needed
-		verifyNoInteractions(exchangeRateProvider);
+		verify(exchangeRateProvider)
+				.getExchangeRate(
+						CurrencyCode.USD,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 20, 0, 0).atOffset(ZoneOffset.UTC));
 
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
@@ -695,6 +703,7 @@ class TemporaryExpenseParsingServiceTest {
 		assertThat(saved.getLocalCurrencyAmount()).isEqualByComparingTo("218.58");
 		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
 		assertThat(saved.getBaseCurrencyAmount()).isEqualByComparingTo("303198");
+		assertThat(saved.getExchangeRate()).isEqualByComparingTo("1387.12");
 	}
 
 	@Test

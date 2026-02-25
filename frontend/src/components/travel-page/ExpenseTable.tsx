@@ -9,7 +9,10 @@ import ExpenseMethodCellEditor from '@/components/data-table/editors/expense/Exp
 import ExpenseTextCellEditor from '@/components/data-table/editors/expense/ExpenseTextCellEditor';
 import TravelCellEditor from '@/components/data-table/editors/expense/TravelCellEditor';
 import { useFilteredExpenses } from '@/components/data-table/filters/useFilteredExpenses';
+import { getExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
+
+import type { Expense } from '@/api/expenses/type';
 
 interface ExpenseTableProps {
   onOpenBottomSheet: () => void;
@@ -25,6 +28,13 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
     travelId,
   });
 
+  const currentSort = filter.sort?.[0] || 'occurredAt,desc';
+  const isAmountSort = currentSort.startsWith('baseCurrencyAmount');
+
+  const groupBy = (row: Expense) => getExpenseGroupKey(row, isAmountSort);
+
+  const groupDisplay = (groupKey: string) => groupKey.split('__')[0];
+
   return (
     <BaseExpenseTable
       data={data}
@@ -38,6 +48,8 @@ const ExpenseTable = ({ onOpenBottomSheet }: ExpenseTableProps) => {
       }
       totalPages={totalPages}
       columns={expenseColumns}
+      groupBy={groupBy}
+      groupDisplay={groupDisplay}
     >
       <UpdateActionBar />
       <ExpenseTextCellEditor />

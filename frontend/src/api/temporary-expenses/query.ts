@@ -24,6 +24,7 @@ import type {
   BulkUpdateRequest,
   GetPresignedUrlRequest,
   StartParseRequest,
+  TempExpenseFile,
 } from '@/api/temporary-expenses/type';
 import { widgetKeys } from '@/api/widget/query';
 import { queryClient } from '@/main';
@@ -241,6 +242,51 @@ const useDeleteMetaMutation = (accountBookId: number) =>
     },
   });
 
+/** 기간 외 임시지출 일괄 삭제 Mutation */
+const useDeleteOutOfPeriodExpensesMutation = (
+  accountBookId: number,
+  metaId: number,
+  startDate: string,
+  endDate: string,
+) =>
+  useMutation({
+    mutationFn: async (files: TempExpenseFile[]) => {
+      const outOfPeriodExpenses = files.flatMap((file) =>
+        file.expenses
+          .filter((expense) => {
+            if (!expense.occurredAt) return false;
+            const date = expense.occurredAt.split('T')[0];
+            return date < startDate || date > endDate;
+          })
+          .map((expense) => ({
+            fileId: file.fileId,
+            tempExpenseId: expense.tempExpenseId,
+          })),
+      );
+
+      await Promise.all(
+        outOfPeriodExpenses.map(({ fileId, tempExpenseId }) =>
+          deleteTempExpense(accountBookId, metaId, fileId, tempExpenseId),
+        ),
+      );
+
+      return outOfPeriodExpenses.length;
+    },
+    onSuccess: (deletedCount) => {
+      queryClient.invalidateQueries({
+        queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
+      });
+      toast.success(`기간 외 지출내역이 ${deletedCount}건 삭제됐어요.`);
+    },
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '기간 외 지출 내역 삭제에 실패했어요.');
+      } else {
+        toast.error('기간 외 지출 내역 삭제에 실패했어요.');
+      }
+    },
+  });
+
 /** 임시지출 단건 삭제 Mutation */
 const useDeleteTempExpenseMutation = () =>
   useMutation({
@@ -285,6 +331,7 @@ export {
   useBulkUpdateTempExpensesMutation,
   useConfirmMetaMutation,
   useDeleteMetaMutation,
+  useDeleteOutOfPeriodExpensesMutation,
   useDeleteTempExpenseMutation,
   useGetMetaFileDetailQuery,
   useGetMetaFileDetailSuspenseQuery,

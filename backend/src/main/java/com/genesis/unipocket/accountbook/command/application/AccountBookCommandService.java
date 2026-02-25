@@ -5,7 +5,6 @@ import com.genesis.unipocket.accountbook.command.application.command.DeleteAccou
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.port.AccountBookExchangeRateReader;
 import com.genesis.unipocket.accountbook.command.application.port.AccountBookUserReader;
-import com.genesis.unipocket.accountbook.command.application.port.dto.AccountBookUserInfo;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookBudgetUpdateResult;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
@@ -44,19 +43,14 @@ public class AccountBookCommandService {
 
 	@Transactional
 	public AccountBookResult create(CreateAccountBookCommand command) {
-		AccountBookUserInfo userInfo = accountBookUserReader.getUser(command.userId());
-
+		var userInfo = accountBookUserReader.getUser(command.userId());
 		String uniqueTitle =
 				getUniqueTitle(command.userId(), command.userName() + DEFAULT_NAME_SUFFIX);
-		boolean isFirstAccountBook = repository.countByUser_Id(command.userId()) == 0;
-		int bucketOrder =
-				isFirstAccountBook
-						? 0
-						: repository.findMaxBucketOrderByUserId(command.userId()) + 1;
+		int bucketOrder = repository.findMaxBucketOrderByUserId(command.userId()) + 1;
 
 		AccountBookCreateByUserIdArgs args =
 				new AccountBookCreateByUserIdArgs(
-						userInfo.userId(),
+						command.userId(),
 						uniqueTitle,
 						command.localCountryCode(),
 						DEFAULT_BASE_COUNTRY_CODE,
@@ -79,7 +73,7 @@ public class AccountBookCommandService {
 	public AccountBookResult update(UpdateAccountBookCommand command) {
 
 		AccountBookEntity entity =
-				findAndVerifyOwnership(command.accountBookId(), command.userId());
+				findAndVerifyOwnershipWithLock(command.accountBookId(), command.userId());
 		CountryCode previousLocalCountryCode = entity.getLocalCountryCode();
 		CountryCode previousBaseCountryCode = entity.getBaseCountryCode();
 
@@ -157,6 +151,17 @@ public class AccountBookCommandService {
 		AccountBookEntity entity =
 				repository
 						.findById(accountBookId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+		if (!entity.getUser().getId().equals(userId)) {
+			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);
+		}
+		return entity;
+	}
+
+	private AccountBookEntity findAndVerifyOwnershipWithLock(Long accountBookId, UUID userId) {
+		AccountBookEntity entity =
+				repository
+						.findByIdWithLock(accountBookId)
 						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 		if (!entity.getUser().getId().equals(userId)) {
 			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_UNAUTHORIZED_ACCESS);

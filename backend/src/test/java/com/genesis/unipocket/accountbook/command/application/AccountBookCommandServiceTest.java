@@ -66,11 +66,10 @@ public class AccountBookCommandServiceTest {
 				new CreateAccountBookCommand(
 						userId, username, req.localCountryCode(), req.startDate(), req.endDate());
 
-		UserEntity user = createUser(userId, 0L);
-		given(accountBookUserReader.getUser(userId))
-				.willReturn(new AccountBookUserInfo(user.getId(), user.hasMainBucket()));
 		given(repository.findNamesStartingWith(any(), any())).willReturn(Collections.emptyList());
-		given(repository.countByUser_Id(userId)).willReturn(0L);
+		given(repository.findMaxBucketOrderByUserId(userId)).willReturn(-1);
+		given(accountBookUserReader.getUser(userId))
+				.willReturn(new AccountBookUserInfo(userId, false));
 		given(repository.save(any(AccountBookEntity.class)))
 				.willAnswer(
 						invocation -> {
@@ -110,13 +109,11 @@ public class AccountBookCommandServiceTest {
 						userId, username, req.localCountryCode(), req.startDate(), req.endDate());
 
 		String baseTitle = username + "의 가계부";
-		UserEntity user = createUser(userId, 1L);
-		given(accountBookUserReader.getUser(userId))
-				.willReturn(new AccountBookUserInfo(user.getId(), user.hasMainBucket()));
 		given(repository.findNamesStartingWith(userId, baseTitle))
 				.willReturn(List.of(baseTitle + "1", baseTitle + "2"));
-		given(repository.countByUser_Id(userId)).willReturn(2L);
 		given(repository.findMaxBucketOrderByUserId(userId)).willReturn(2);
+		given(accountBookUserReader.getUser(userId))
+				.willReturn(new AccountBookUserInfo(userId, false));
 
 		given(repository.save(any(AccountBookEntity.class)))
 				.willAnswer(
@@ -140,6 +137,7 @@ public class AccountBookCommandServiceTest {
 		// then
 		assertThat(result.accountBookId()).isEqualTo(1L);
 		verify(repository).save(any(AccountBookEntity.class));
+		verify(accountBookUserReader).updateMainAccountBook(userId, 1L);
 	}
 
 	@Test
@@ -176,7 +174,7 @@ public class AccountBookCommandServiceTest {
 		idField.setAccessible(true);
 		idField.set(entity, accountBookId);
 
-		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
+		given(repository.findByIdWithLock(accountBookId)).willReturn(Optional.of(entity));
 
 		// when
 		Long resultId = accountBookCommandService.update(command).accountBookId();
@@ -204,7 +202,7 @@ public class AccountBookCommandServiceTest {
 						false);
 		UpdateAccountBookCommand command = toUpdateAccountBookCommand(accountBookId, userId, req);
 
-		given(repository.findById(accountBookId)).willReturn(Optional.empty());
+		given(repository.findByIdWithLock(accountBookId)).willReturn(Optional.empty());
 
 		assertThatThrownBy(() -> accountBookCommandService.update(command))
 				.isInstanceOf(BusinessException.class)
@@ -238,7 +236,7 @@ public class AccountBookCommandServiceTest {
 								LocalDate.now(),
 								LocalDate.now()));
 
-		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
+		given(repository.findByIdWithLock(accountBookId)).willReturn(Optional.of(entity));
 
 		assertThatThrownBy(() -> accountBookCommandService.update(command))
 				.isInstanceOf(BusinessException.class)
@@ -308,7 +306,7 @@ public class AccountBookCommandServiceTest {
 		idField.setAccessible(true);
 		idField.set(entity, accountBookId);
 
-		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
+		given(repository.findByIdWithLock(accountBookId)).willReturn(Optional.of(entity));
 
 		// when
 		accountBookCommandService.update(command);
@@ -342,7 +340,7 @@ public class AccountBookCommandServiceTest {
 		idField.setAccessible(true);
 		idField.set(entity, accountBookId);
 
-		given(repository.findById(accountBookId)).willReturn(Optional.of(entity));
+		given(repository.findByIdWithLock(accountBookId)).willReturn(Optional.of(entity));
 
 		accountBookCommandService.update(command);
 

@@ -8,6 +8,7 @@ import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepo
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class AccountBookUserReaderProvider implements AccountBookUserReader {
 	private final UserCommandRepository userCommandRepository;
 
 	@Override
+	@Transactional(readOnly = true)
 	public AccountBookUserInfo getUser(UUID userId) {
 		return userCommandRepository
 				.findById(userId)
@@ -24,6 +26,7 @@ public class AccountBookUserReaderProvider implements AccountBookUserReader {
 	}
 
 	@Override
+	@Transactional
 	public void updateMainAccountBook(UUID userId, Long accountBookId) {
 		userCommandRepository
 				.findById(userId)

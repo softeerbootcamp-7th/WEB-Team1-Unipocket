@@ -1,5 +1,6 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
@@ -24,6 +25,7 @@ import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertVali
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -68,7 +70,8 @@ public class TemporaryExpenseConversionService {
 		CurrencyCode defaultBaseCurrencyCode = rateInfo.baseCurrencyCode();
 		CurrencyCode defaultLocalCurrencyCode = rateInfo.localCurrencyCode();
 		ZoneId localZoneId = CountryCodeTimezoneMapper.getZoneId(rateInfo.localCountryCode());
-		CardMatchContext cardMatchContext = buildCardMatchContext(accountBookId);
+		AccountBookEntity accountBook = getAccountBook(accountBookId);
+		CardMatchContext cardMatchContext = buildCardMatchContext(accountBook);
 
 		List<TempExpenseConvertValidationException.Violation> violations = new ArrayList<>();
 		for (TemporaryExpense expense : expenses) {
@@ -89,6 +92,7 @@ public class TemporaryExpenseConversionService {
 			convertOne(
 					accountBookId,
 					expense,
+					accountBook,
 					defaultBaseCurrencyCode,
 					defaultLocalCurrencyCode,
 					localZoneId,
@@ -100,6 +104,7 @@ public class TemporaryExpenseConversionService {
 	private void convertOne(
 			Long accountBookId,
 			TemporaryExpense temp,
+			AccountBookEntity accountBook,
 			CurrencyCode defaultBaseCurrencyCode,
 			CurrencyCode defaultLocalCurrencyCode,
 			ZoneId localZoneId,
@@ -116,6 +121,7 @@ public class TemporaryExpenseConversionService {
 						.atZone(localZoneId)
 						.withZoneSameInstant(ZoneOffset.UTC)
 						.toOffsetDateTime();
+		validateOccurredAtWithinAccountBookPeriod(accountBook, occurredAtUtc, localZoneId);
 
 		var amountInfo = temp.getAmountInfoOrEmpty();
 		TempExpenseConversionAmount conversionAmount =
@@ -154,11 +160,7 @@ public class TemporaryExpenseConversionService {
 		tempExpenseRepository.delete(temp);
 	}
 
-	private CardMatchContext buildCardMatchContext(Long accountBookId) {
-		var accountBook =
-				accountBookCommandRepository
-						.findById(accountBookId)
-						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+	private CardMatchContext buildCardMatchContext(AccountBookEntity accountBook) {
 		List<UserCardEntity> userCards =
 				userCardCommandRepository.findAllByUser_Id(accountBook.getUser().getId());
 		Map<String, Long> cardIdByLastFourDigits =
@@ -197,6 +199,28 @@ public class TemporaryExpenseConversionService {
 			return null;
 		}
 		return cardMatchContext.cardIdByLastFourDigits().get(cardLastFourDigits);
+	}
+
+	private AccountBookEntity getAccountBook(Long accountBookId) {
+		return accountBookCommandRepository
+				.findById(accountBookId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+	}
+
+	private void validateOccurredAtWithinAccountBookPeriod(
+			AccountBookEntity accountBook, OffsetDateTime occurredAtUtc, ZoneId localZoneId) {
+		LocalDate occurredDate = occurredAtUtc.atZoneSameInstant(localZoneId).toLocalDate();
+		LocalDate startDate = accountBook.getStartDate();
+		LocalDate endDate =
+				accountBook.getEndDate() != null
+						? accountBook.getEndDate()
+						: LocalDate.now(localZoneId);
+
+		boolean beforeStart = startDate != null && occurredDate.isBefore(startDate);
+		boolean afterEnd = endDate != null && occurredDate.isAfter(endDate);
+		if (beforeStart || afterEnd) {
+			throw new BusinessException(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD);
+		}
 	}
 
 	private record CardMatchContext(

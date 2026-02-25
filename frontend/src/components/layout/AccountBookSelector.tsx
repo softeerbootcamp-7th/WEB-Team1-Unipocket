@@ -15,11 +15,11 @@ import { useParseSnackbarStore } from '@/stores/parseSnackbarStore';
 const AccountBookSelector = () => {
   const { accountBook, setAccountBook } = useAccountBookStore();
   const { data } = useGetAccountBooksQuery();
-  
+
   const snackbars = useParseSnackbarStore((s) => s.snackbars);
   const resetAll = useParseSnackbarStore((s) => s.resetAll);
   const [pendingId, setPendingId] = useState<number | null>(null);
-    
+
   const navigate = useNavigate();
 
   if (!accountBook) {
@@ -37,7 +37,10 @@ const AccountBookSelector = () => {
     );
     resetAll();
     setAccountBook(accountBookDetail);
-    navigate({ to: '/home' });
+    navigate({
+      to: '/home',
+      search: {},
+    });
   };
 
   const handleOnSelect = async (selectedId: number) => {

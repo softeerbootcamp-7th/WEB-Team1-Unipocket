@@ -9,11 +9,14 @@ import HomeHeader from '@/components/home-page/HomeHeader';
 import ExpandableSheet from '@/components/layout/ExpandableSheet';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
+
 const Homepage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const widgetManager = useWidgetManager();
   const { isWidgetEditMode } = widgetManager;
+  const accountBook = useRequiredAccountBook();
 
   return (
     <WidgetContext.Provider value={widgetManager}>
@@ -36,7 +39,7 @@ const Homepage = () => {
               expandedHeight="93vh"
             >
               <Suspense fallback={<Skeleton className="h-100 w-full" />}>
-                <ExpenseTable />
+                <ExpenseTable key={accountBook?.accountBookId} />
               </Suspense>
             </ExpandableSheet>
           )}

@@ -10,6 +10,7 @@ import {
 } from '@/api/account-books/query';
 import { requireAuth } from '@/api/auth/api';
 import { useAccountBookStore } from '@/stores/accountBookStore';
+import { useRefreshStore } from '@/stores/refreshStore';
 
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context, location }) => {
@@ -59,12 +60,13 @@ export const Route = createFileRoute('/_app')({
 });
 
 function AppLayout() {
+  const refreshKey = useRefreshStore((s) => s.refreshKey);
   return (
     <div className="flex h-dvh overflow-hidden">
       <Menu />
       <div className="flex flex-1 flex-col">
         <Header />
-        <main className="flex min-h-0 flex-1 flex-col">
+        <main key={refreshKey} className="flex min-h-0 flex-1 flex-col">
           <Outlet />
         </main>
       </div>

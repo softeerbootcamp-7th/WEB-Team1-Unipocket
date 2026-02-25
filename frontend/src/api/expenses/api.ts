@@ -108,6 +108,9 @@ const getExpenses = (
     if (filter.cardNumber && filter.cardNumber.length > 0) {
       params.cardNumber = filter.cardNumber;
     }
+    if (filter.isCash !== undefined) {
+      params.isCash = filter.isCash.toString();
+    }
   }
 
   return customFetch({

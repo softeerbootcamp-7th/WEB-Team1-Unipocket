@@ -16,7 +16,7 @@ const ExpenseAmountCellEditor = () => {
   };
 
   return (
-    <AmountCellEditor<Expense> // 명시적으로 제네릭 주입
+    <AmountCellEditor<Expense>
       onUpdate={(rowId, field, value, oppositeField) =>
         updateInline(rowId, field, value, { [oppositeField]: null })
       }

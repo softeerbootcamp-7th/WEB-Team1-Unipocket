@@ -11,6 +11,7 @@ import { formatCurrency } from '@/lib/country';
 export const expenseColumns: ColumnDef<Expense>[] = [
   {
     id: 'select',
+    size: 4,
     header: ({ table }) => (
       <Checkbox
         checked={table.getIsAllPageRowsSelected()}
@@ -30,18 +31,20 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'merchantName',
+    size: 16,
     header: () => <>거래처</>,
     meta: {
       cellEditor: 'text',
     },
     cell: ({ row }) => (
       <div className="relative flex items-center">
-        <span>{row.original.merchantName}</span>
+        <span className="truncate">{row.original.merchantName}</span>
       </div>
     ),
   },
   {
     accessorKey: 'category',
+    size: 10,
     meta: {
       cellEditor: 'category',
     },
@@ -53,6 +56,7 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'localCurrencyCode',
+    size: 10,
     header: () => <>현지 통화</>,
     cell: ({ row }) => (
       <>
@@ -62,6 +66,7 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'localCurrencyAmount',
+    size: 10,
     meta: {
       cellEditor: 'amount',
     },
@@ -74,6 +79,7 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'baseCurrencyAmount',
+    size: 10,
     meta: {
       cellEditor: 'amount',
     },
@@ -86,6 +92,7 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'exchangeRate',
+    size: 10,
     header: () => <>환율</>,
     cell: ({ row }) => {
       const amount = row.original.exchangeRate;
@@ -95,6 +102,7 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'paymentMethod',
+    size: 15,
     header: () => <>결제 수단</>,
     meta: {
       cellEditor: 'method',
@@ -106,20 +114,14 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: 'travel',
+    size: 15,
     meta: {
       cellEditor: 'travel',
     },
     header: () => <>여행</>,
     cell: ({ row }) => {
       const travelName = row.original.travel?.name || '-';
-      return (
-        <div
-          className="w-10 truncate text-left lg:w-20"
-          title={travelName !== '-' ? travelName : undefined}
-        >
-          {travelName}
-        </div>
-      );
+      return <div className="truncate">{travelName}</div>;
     },
   },
 ];

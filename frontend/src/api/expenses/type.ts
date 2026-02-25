@@ -114,6 +114,7 @@ type ExpenseSearchFilter = Partial<{
   startDate: string;
   endDate: string;
   travelId: number;
+  isCash: boolean;
   page: number;
   size: number;
   sort: string[];

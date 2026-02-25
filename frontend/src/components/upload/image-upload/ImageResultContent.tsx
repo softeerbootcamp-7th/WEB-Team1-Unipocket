@@ -47,7 +47,6 @@ const ImageResultContent = ({
                 },
                 { successCount: 0, warningCount: 0 },
               );
-              const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
 
               return (
                 <TabTrigger
@@ -59,7 +58,7 @@ const ImageResultContent = ({
                     accountBookId={accountBookId}
                     metaId={metaId}
                     fileId={file.fileId}
-                    fileName={fileName}
+                    fileName={file.fileName}
                     successCount={successCount}
                     warningCount={warningCount}
                     hasIssue={warningCount > 0}

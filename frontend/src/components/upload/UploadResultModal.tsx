@@ -1,7 +1,5 @@
 import { type ReactNode, useEffect } from 'react';
 
-import { useEscapeKey } from '@/hooks/useKeyboardEvent';
-
 import Button from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
 
@@ -34,8 +32,6 @@ export default function UploadResultModal({
       document.body.style.overflow = original;
     };
   }, [isOpen]);
-
-  useEscapeKey(isOpen, onClose);
 
   if (!isOpen) return null;
 

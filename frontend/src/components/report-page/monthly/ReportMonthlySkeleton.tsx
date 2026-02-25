@@ -4,7 +4,11 @@ import ReportContent from '@/components/report-page/layout/ReportContent';
 import { getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
-const ReportMonthlySkeleton = () => {
+interface ReportMonthlySkeletonProps {
+  reason: 'me' | 'other';
+}
+
+const ReportMonthlySkeleton = ({ reason }: ReportMonthlySkeletonProps) => {
   const { localCountryCode } = useRequiredAccountBook();
   const localCountryName = getCountryInfo(localCountryCode)?.countryName ?? '';
 
@@ -13,7 +17,9 @@ const ReportMonthlySkeleton = () => {
       <ReportContent className="h-fit w-109 gap-5">
         <div className="flex h-15 flex-col">
           <h3 className="headline1-bold text-label-neutral">
-            {localCountryName} 교환학생의 데이터가 아직 충분하지 않아요
+            {reason === 'me'
+              ? '나의 데이터가 아직 충분하지 않아요'
+              : `${localCountryName} 교환학생의 데이터가 아직 충분하지 않아요`}
           </h3>
           <p className="body2-normal-medium text-label-alternative">
             데이터가 더 쌓이면 하단처럼 비교 통계를 제공할게요

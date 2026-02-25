@@ -22,7 +22,11 @@ const SKELETON_CATEGORY_IDS = (
   Object.keys(CATEGORIES) as unknown as CategoryId[]
 ).filter((id) => Number(id) !== 0 && Number(id) !== 9);
 
-const ReportCategorySkeleton = () => {
+interface ReportCategorySkeletonProps {
+  reason: 'me' | 'other';
+}
+
+const ReportCategorySkeleton = ({ reason }: ReportCategorySkeletonProps) => {
   const { localCountryCode } = useRequiredAccountBook();
   const countryName = getCountryInfo(localCountryCode)?.countryName ?? '';
 
@@ -31,7 +35,9 @@ const ReportCategorySkeleton = () => {
       <ReportContent className="h-fit w-full">
         <div className="flex flex-col gap-1">
           <h3 className="headline1-bold text-label-neutral">
-            {countryName} 교환학생의 데이터가 아직 충분하지 않아요
+            {reason === 'me'
+              ? '나의 데이터가 아직 충분하지 않아요'
+              : `${countryName} 교환학생의 데이터가 아직 충분하지 않아요`}
           </h3>
           <p className="body2-normal-medium text-label-alternative">
             데이터가 더 쌓이면 하단처럼 비교 통계를 제공할게요

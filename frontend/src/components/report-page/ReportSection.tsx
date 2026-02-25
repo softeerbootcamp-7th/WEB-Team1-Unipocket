@@ -26,9 +26,10 @@ const ReportSection = ({
 }: ReportSectionProps) => {
   // monthly 그래프 스켈레톤 노출 조건
   const monthlyData = data.compareWithAverage;
-  const showMonthlySkeleton =
-    Number(monthlyData.mySpentAmount) === 0 ||
-    Number(monthlyData.averageSpentAmount) === 0;
+  const myMonthlyZero = Number(monthlyData.mySpentAmount) === 0;
+  const otherMonthlyZero = Number(monthlyData.averageSpentAmount) === 0;
+  const showMonthlySkeleton = myMonthlyZero || otherMonthlyZero;
+  const monthlySkeletonReason: 'me' | 'other' = myMonthlyZero ? 'me' : 'other';
 
   // category 그래프 스켈레톤 노출 조건
   const categoryItems = data.compareByCategory.items;
@@ -39,6 +40,7 @@ const ReportSection = ({
     (item) => Number(item.averageSpentAmount) === 0,
   );
   const showCategorySkeleton = allMyZero || allOtherZero;
+  const categorySkeletonReason: 'me' | 'other' = allMyZero ? 'me' : 'other';
 
   return (
     <div className="flex w-full min-w-283 gap-3.5">
@@ -48,7 +50,7 @@ const ReportSection = ({
       >
         <div className="flex w-113 flex-col justify-between">
           {showMonthlySkeleton ? (
-            <ReportMonthlySkeleton />
+            <ReportMonthlySkeleton reason={monthlySkeletonReason} />
           ) : (
             <ReportMonthly
               data={monthlyData}
@@ -64,7 +66,7 @@ const ReportSection = ({
 
         <div className="flex-1">
           {showCategorySkeleton ? (
-            <ReportCategorySkeleton />
+            <ReportCategorySkeleton reason={categorySkeletonReason} />
           ) : (
             <ReportCategory data={data.compareByCategory} />
           )}

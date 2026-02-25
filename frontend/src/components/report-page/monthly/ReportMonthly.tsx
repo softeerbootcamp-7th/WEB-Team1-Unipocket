@@ -7,9 +7,9 @@ import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const barWidth = {
-  large: 'w-46',
-  small: 'w-42',
-  equal: 'w-38',
+  large: 'w-48',
+  small: 'w-36',
+  equal: 'w-42',
 } as const;
 
 interface ReportMonthlyProps {
@@ -18,13 +18,20 @@ interface ReportMonthlyProps {
     averageSpentAmount: string;
     spentAmountDiff: string;
   };
+  isPlaceholderData?: boolean;
 }
 
-const ReportMonthly = ({ data }: ReportMonthlyProps) => {
+const ReportMonthly = ({ data, isPlaceholderData }: ReportMonthlyProps) => {
   const { currencyType } = useReportContext();
   const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
-  const countryCode =
+  const currentCountryCode =
     currencyType === 'LOCAL' ? localCountryCode : baseCountryCode;
+  const displayCountryCode = isPlaceholderData
+    ? baseCountryCode
+    : currentCountryCode;
+  const unit = getCountryInfo(displayCountryCode)?.currencyUnitKor || '';
+
+  const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
 
   const isLocal = currencyType === 'LOCAL';
 
@@ -35,9 +42,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   const isLess = me < average;
   const isEqual = me === average;
 
-  const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
-  const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
-  const formattedDiff = formatAmountByCountry(diff, countryCode, 0);
+  const formattedDiff = formatAmountByCountry(diff, displayCountryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]
@@ -48,7 +53,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   return (
     <ReportContainer title="월별 지출 비교">
       <ReportContent className="h-fit w-109 gap-8">
-        <p className="heading1-bold text-label-normal">
+        <p className="heading1-bold text-label-normal h-15">
           {!isEqual ? (
             <>
               나랑 같은 국가의 교환학생보다 <br />
@@ -71,7 +76,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
             barWidth={averageBarWidth}
             label={`${localCountryName} 교환학생 평균`}
             amount={average}
-            countryCode={countryCode}
+            countryCode={displayCountryCode}
             isLocal={isLocal}
           />
           <ComparisonCard
@@ -79,7 +84,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
             barWidth={meBarWidth}
             label="나"
             amount={me}
-            countryCode={countryCode}
+            countryCode={displayCountryCode}
             isLocal={isLocal}
           />
         </div>

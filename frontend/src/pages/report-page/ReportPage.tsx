@@ -9,8 +9,6 @@ import ReportSection from '@/components/report-page/ReportSection';
 import {
   canGoToMonth,
   dateToYearMonth,
-  getMaxYearMonth,
-  parseYearMonth,
 } from '@/pages/report-page/report.utils';
 
 import { type CurrencyType } from '@/types/currency';
@@ -26,14 +24,8 @@ const ReportPage = () => {
 
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
-  const startDate = useRequiredAccountBook().startDate;
-  const endDate = useRequiredAccountBook().endDate;
-
-  const startYearMonth = parseYearMonth(startDate);
-  const endYearMonth = parseYearMonth(endDate);
 
   const nowYearMonth = dateToYearMonth(now);
-  const maxYearMonth = getMaxYearMonth(endYearMonth, nowYearMonth);
 
   const handleMonthChange = (offset: number) => {
     setSelectedDate((prev) => {
@@ -43,13 +35,8 @@ const ReportPage = () => {
     });
   };
 
-  const canGoPrev = canGoToMonth(
-    selectedDate,
-    -1,
-    startYearMonth,
-    maxYearMonth,
-  );
-  const canGoNext = canGoToMonth(selectedDate, 1, startYearMonth, maxYearMonth);
+  const canGoPrev = true;
+  const canGoNext = canGoToMonth(selectedDate, 1, null, nowYearMonth);
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;

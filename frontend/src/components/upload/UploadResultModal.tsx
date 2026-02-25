@@ -67,7 +67,8 @@ export default function UploadResultModal({
           </h2>
           <span className="body1-normal-medium text-label-alternative">
             수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
-            수정해주세요.
+            수정해주세요. <br /> 결제 시점의 환율에 따라 기준 금액이 자동
+            계산됩니다.
           </span>
         </div>
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>

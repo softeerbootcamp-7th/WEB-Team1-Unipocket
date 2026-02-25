@@ -6,6 +6,7 @@ import type { ActiveCellState } from '@/components/data-table/type';
 
 import { REGEX } from '@/constants/regex';
 import type { CurrencyCode } from '@/data/country/currencyCode';
+import { getLocaleByCurrencyCode } from '@/lib/country';
 
 // 제네릭 TData 적용
 interface AmountCellEditorProps<TData> {
@@ -77,7 +78,8 @@ const AmountCellEditorContent = <TData,>({
 
       if (!currencyCode) return '$';
 
-      const parts = new Intl.NumberFormat('ko-KR', {
+      const locale = getLocaleByCurrencyCode(currencyCode);
+      const parts = new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currencyCode,
         currencyDisplay: 'narrowSymbol',

@@ -66,6 +66,13 @@ export const formatCurrency = (
   }).format(amount);
 };
 
+export const getLocaleByCurrencyCode = (currencyCode: CurrencyCode): string => {
+  const countryInfo = getCountryInfoByCurrency(currencyCode);
+  return countryInfo
+    ? (COUNTRY_LOCALE_MAP[countryInfo.code] ?? 'en-US')
+    : 'en-US';
+};
+
 export const getCountryInfoByCurrency = (currencyCode: CurrencyCode) => {
   const countryCodes = Object.values(COUNTRY_CODE);
 

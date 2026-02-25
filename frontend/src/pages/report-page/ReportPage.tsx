@@ -85,7 +85,7 @@ const ReportPage = () => {
         {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
         {data && (
           <ReportSection
-            key={`${year}-${month}`}
+            key={`${year}-${month}-${currencyType}`}
             data={data}
             currencyType={currencyType}
             onCurrencyTypeChange={setCurrencyType}

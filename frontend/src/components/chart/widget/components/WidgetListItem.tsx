@@ -12,9 +12,14 @@ import {
 interface WidgetListItemProps {
   widget: WidgetItem;
   isFirst: boolean;
+  isLast: boolean;
 }
 
-const WidgetListItem = ({ widget, isFirst }: WidgetListItemProps) => {
+const WidgetListItem = ({
+  widget,
+  isFirst,
+  isLast,
+}: WidgetListItemProps) => {
   const {
     isWidgetEditMode,
     handleRemoveWidget,
@@ -61,7 +66,7 @@ const WidgetListItem = ({ widget, isFirst }: WidgetListItemProps) => {
       <WidgetItemContext.Provider value={value}>
         {renderWidget(widget)}
       </WidgetItemContext.Provider>
-      {isWidgetEditMode && (
+      {isWidgetEditMode && !isLast && (
         <GapDropIndicator
           dropOrder={widget.order + 1}
           onDropToGap={onDropToGap}

@@ -1,11 +1,11 @@
 import { Suspense, useState } from 'react';
 
-import HomeHeader from '@/components/chart/widget/components/HomeHeader';
 import WidgetList from '@/components/chart/widget/components/WidgetList';
 import WidgetPicker from '@/components/chart/widget/components/WidgetPicker';
 import { useWidgetManager } from '@/components/chart/widget/hook/useWidgetManager';
 import { WidgetContext } from '@/components/chart/widget/WidgetContext';
 import ExpenseTable from '@/components/home-page/ExpenseTable';
+import HomeHeader from '@/components/home-page/HomeHeader';
 import ExpandableSheet from '@/components/layout/ExpandableSheet';
 import { Skeleton } from '@/components/ui/skeleton';
 

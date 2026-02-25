@@ -3,6 +3,7 @@ import ReportCategorySkeleton from '@/components/report-page/category/ReportCate
 import ReportMonthly from '@/components/report-page/monthly/ReportMonthly';
 import ReportMonthlySkeleton from '@/components/report-page/monthly/ReportMonthlySkeleton';
 import ReportMyself from '@/components/report-page/myself/ReportMyself';
+import ReportMyselfSkeleton from '@/components/report-page/myself/ReportMyselfSkeleton';
 import ReportProvider from '@/components/report-page/ReportProvider';
 
 import { type CurrencyType } from '@/types/currency';
@@ -42,6 +43,11 @@ const ReportSection = ({
   const showCategorySkeleton = allMyZero || allOtherZero;
   const categorySkeletonReason: 'me' | 'other' = allMyZero ? 'me' : 'other';
 
+  // myself 그래프 스켈레톤 노출 조건
+  const myselfData = data.compareWithLastMonth;
+  const showMyselfSkeleton =
+    Number(myselfData.totalSpent.thisMonthToDate) === 0;
+
   return (
     <div className="flex w-full min-w-283 gap-3.5">
       <ReportProvider
@@ -57,11 +63,15 @@ const ReportSection = ({
               isPlaceholderData={isPlaceholderData}
             />
           )}
-          <ReportMyself
-            data={data.compareWithLastMonth}
-            isCurrentMonth={isCurrentMonth}
-            isPlaceholderData={isPlaceholderData}
-          />
+          {showMyselfSkeleton ? (
+            <ReportMyselfSkeleton />
+          ) : (
+            <ReportMyself
+              data={myselfData}
+              isCurrentMonth={isCurrentMonth}
+              isPlaceholderData={isPlaceholderData}
+            />
+          )}
         </div>
 
         <div className="flex-1">

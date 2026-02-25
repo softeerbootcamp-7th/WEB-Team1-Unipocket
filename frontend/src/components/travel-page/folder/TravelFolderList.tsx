@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
-import FolderCard from '@/components/travel-page/FolderCard';
+import FolderCard from '@/components/travel-page/folder/FolderCard';
 import TravelContextMenu from '@/components/travel-page/TravelContextMenu';
 
 import { useGetTravelsQuery } from '@/api/travels/query';
 import type { TravelBase } from '@/api/travels/type';
 
 interface TravelFolderListProps {
-  onOpenEditThumbnail: (travelId: number, imageUrl: string | null) => void;
+  onOpenEditThumbnail: (
+    travelId: number,
+    imageUrl: string | null,
+    travelPlaceName: string,
+    startDate: string,
+    endDate: string,
+  ) => void;
   onOpenEditName: (
     travelId: number,
     defaultName: string,
@@ -73,6 +79,9 @@ const TravelFolderList = ({
             onOpenEditThumbnail(
               contextMenu.folder.travelId,
               contextMenu.folder.imageKey,
+              contextMenu.folder.travelPlaceName,
+              contextMenu.folder.startDate,
+              contextMenu.folder.endDate,
             );
             setContextMenu(null);
           }}

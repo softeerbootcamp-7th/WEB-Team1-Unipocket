@@ -9,7 +9,7 @@ import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
 import TextInput from '@/components/common/TextInput';
 import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
-import { resolveUserCardId } from '@/components/data-table/util';
+import { resolveUserCardId } from '@/components/data-table/utils/card';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
 import MoneyContainer from '@/components/side-panel/MoneyContainer';
 import useSidePanelForm from '@/components/side-panel/useSidePanelForm';

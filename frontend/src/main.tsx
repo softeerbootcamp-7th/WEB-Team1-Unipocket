@@ -12,13 +12,21 @@ import { toast } from 'sonner';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
+import { HTTP_STATUS } from '@/api/config/constants';
+import { ApiError } from '@/api/config/error';
 import { routeTree } from '@/routeTree.gen';
 
 const TOOLTIP_DELAY_DURATION = 300;
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (_, query) => {
+    onError: (error, query) => {
+      if (
+        error instanceof ApiError &&
+        error.status === HTTP_STATUS.UNAUTHORIZED
+      ) {
+        return;
+      }
       const errorMessage = query.meta?.errorMessage as string;
       toast.error(errorMessage || '데이터를 불러오는데 실패했습니다.');
     },

@@ -16,14 +16,17 @@ import com.genesis.unipocket.tempexpense.command.persistence.repository.FileRepo
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.ParsingProgressPublisher;
 import com.genesis.unipocket.tempexpense.common.util.TemporaryExpenseTaskSupport;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -52,6 +55,8 @@ public class TemporaryExpenseParsingService {
 	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 
 	@Qualifier("parsingExecutor") private final Executor parsingExecutor;
+
+	@Qualifier("fileParsingExecutor") private final Executor fileParsingExecutor;
 
 	public ParseStartResult startParseAsync(
 			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys) {
@@ -127,37 +132,72 @@ public class TemporaryExpenseParsingService {
 		}
 
 		int total = files.size();
-		int completed = 0;
-		List<String> succeededFileKeys = new ArrayList<>();
-		List<FailedFile> failedFiles = new ArrayList<>();
+		AtomicInteger completed = new AtomicInteger(0);
+		List<String> succeededFileKeys = Collections.synchronizedList(new ArrayList<>());
+		List<FailedFile> failedFiles = Collections.synchronizedList(new ArrayList<>());
 		progressPublisher.publishProgress(taskId, 0);
 
-		for (File file : files) {
-			String progressMessage = "PROCESSING: " + file.getS3Key();
-			String progressCode = null;
-			try {
-				parseAndPersistExpenses(file, meta, rateContext);
-				succeededFileKeys.add(file.getS3Key());
-				progressMessage = buildPerFileProgressMessage(file.getS3Key(), true, null);
-				progressCode = buildPerFileProgressCode(true, null);
-			} catch (Exception e) {
-				ErrorCode errorCode =
-						TemporaryExpenseTaskSupport.resolveErrorCode(
-								e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
-				failedFiles.add(new FailedFile(file.getS3Key(), errorCode));
-				progressMessage = buildPerFileProgressMessage(file.getS3Key(), false, errorCode);
-				progressCode = buildPerFileProgressCode(false, errorCode);
-				log.error("Failed to parse file: {}", file.getS3Key(), e);
-			} finally {
-				completed++;
-				progressPublisher.publishProgress(
-						taskId,
-						TemporaryExpenseTaskSupport.toPercent(completed, total),
-						progressMessage,
-						progressCode,
-						file.getS3Key());
-			}
-		}
+		final AccountBookRateContext finalRateContext = rateContext;
+		List<CompletableFuture<Void>> futures =
+				files.stream()
+						.map(
+								file ->
+										CompletableFuture.runAsync(
+												() -> {
+													String progressMessage =
+															"PROCESSING: " + file.getS3Key();
+													String progressCode = null;
+													try {
+														parseAndPersistExpenses(
+																file, meta, finalRateContext);
+														succeededFileKeys.add(file.getS3Key());
+														progressMessage =
+																buildPerFileProgressMessage(
+																		file.getS3Key(),
+																		true,
+																		null);
+														progressCode =
+																buildPerFileProgressCode(
+																		true, null);
+													} catch (Exception e) {
+														ErrorCode errorCode =
+																TemporaryExpenseTaskSupport
+																		.resolveErrorCode(
+																				e,
+																				ErrorCode
+																						.TEMP_EXPENSE_PARSE_FAILED);
+														failedFiles.add(
+																new FailedFile(
+																		file.getS3Key(),
+																		errorCode));
+														progressMessage =
+																buildPerFileProgressMessage(
+																		file.getS3Key(),
+																		false,
+																		errorCode);
+														progressCode =
+																buildPerFileProgressCode(
+																		false, errorCode);
+														log.error(
+																"Failed to parse file: {}",
+																file.getS3Key(),
+																e);
+													} finally {
+														int done = completed.incrementAndGet();
+														progressPublisher.publishProgress(
+																taskId,
+																TemporaryExpenseTaskSupport
+																		.toPercent(done, total),
+																progressMessage,
+																progressCode,
+																file.getS3Key());
+													}
+												},
+												fileParsingExecutor))
+						.toList();
+
+		CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+
 		if (failedFiles.isEmpty()) {
 			progressPublisher.complete(taskId);
 			return;

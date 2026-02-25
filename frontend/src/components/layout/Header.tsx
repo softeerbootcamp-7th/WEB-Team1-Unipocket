@@ -34,7 +34,6 @@ const Header = () => {
         {!isInitPath && (
           <span className="label2-medium text-label-neutral">{time}</span>
         )}
-        {/* {!isInitPath && <Button onClick={() => {}}>모바일</Button>} */}
         <ProfilePopover />
       </div>
     </div>

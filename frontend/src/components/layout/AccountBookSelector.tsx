@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 
 import Dropdown from '@/components/common/dropdown/Dropdown';
 import TextConfirmModal from '@/components/modal/TextModal/TextConfirmModal';
@@ -14,10 +15,12 @@ import { useParseSnackbarStore } from '@/stores/parseSnackbarStore';
 const AccountBookSelector = () => {
   const { accountBook, setAccountBook } = useAccountBookStore();
   const { data } = useGetAccountBooksQuery();
+  
   const snackbars = useParseSnackbarStore((s) => s.snackbars);
   const resetAll = useParseSnackbarStore((s) => s.resetAll);
-
   const [pendingId, setPendingId] = useState<number | null>(null);
+    
+  const navigate = useNavigate();
 
   if (!accountBook) {
     return null;
@@ -34,6 +37,7 @@ const AccountBookSelector = () => {
     );
     resetAll();
     setAccountBook(accountBookDetail);
+    navigate({ to: '/home' });
   };
 
   const handleOnSelect = async (selectedId: number) => {

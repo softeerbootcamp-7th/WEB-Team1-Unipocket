@@ -18,6 +18,7 @@ import com.genesis.unipocket.auth.common.dto.AuthorizeResult;
 import com.genesis.unipocket.auth.common.dto.LoginResult;
 import com.genesis.unipocket.global.config.OAuth2Properties;
 import com.genesis.unipocket.global.util.CookieUtil;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +43,7 @@ class AuthCommandControllerTest {
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
 	@MockitoBean private JwtProperties jwtProperties;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@Test
 	@DisplayName("토큰 재발급 성공")

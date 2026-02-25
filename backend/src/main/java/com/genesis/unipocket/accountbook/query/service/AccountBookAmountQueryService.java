@@ -9,7 +9,9 @@ import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMon
 import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
 import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -38,6 +40,7 @@ public class AccountBookAmountQueryService {
 	private final AnalysisMonthlyDirtyRepository analysisMonthlyDirtyRepository;
 	private final AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	private final ExchangeRateService exchangeRateService;
+	private final ExpenseRepository expenseRepository;
 
 	@Transactional
 	public AccountBookAmountResponse getAccountBookAmount(String userId, Long accountBookId) {
@@ -61,6 +64,20 @@ public class AccountBookAmountQueryService {
 				resolveThisMonthAmount(
 						accountBookId, localCurrencyCode, zoneId, thisMonthStart, dirtyMonths);
 
+		Object[] dateRange = expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
+		Object[] row =
+				(dateRange != null && dateRange.length == 1 && dateRange[0] instanceof Object[])
+						? (Object[]) dateRange[0]
+						: dateRange;
+		OffsetDateTime oldest =
+				row != null && row.length > 0 && row[0] != null
+						? OffsetDateTimeConverter.from(row[0])
+						: null;
+		OffsetDateTime newest =
+				row != null && row.length > 1 && row[1] != null
+						? OffsetDateTimeConverter.from(row[1])
+						: null;
+
 		return new AccountBookAmountResponse(
 				localCountryCode,
 				localCurrencyCode,
@@ -69,7 +86,9 @@ public class AccountBookAmountQueryService {
 				total.localAmount(),
 				total.baseAmount(),
 				thisMonth.localAmount(),
-				thisMonth.baseAmount());
+				thisMonth.baseAmount(),
+				oldest,
+				newest);
 	}
 
 	private AccountBookDetailResponse getAccessibleAccountBook(String userId, Long accountBookId) {

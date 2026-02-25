@@ -89,10 +89,14 @@ export interface GetAccountBookAmountResponse {
   localCurrencyCode: string;
   baseCountryCode: string;
   baseCurrencyCode: string;
-  totalLocalAmount: number;
-  totalBaseAmount: number;
-  thisMonthLocalAmount: number;
-  thisMonthBaseAmount: number;
+
+  totalLocalAmount: string;
+  totalBaseAmount: string;
+  thisMonthLocalAmount: string;
+  thisMonthBaseAmount: string;
+
+  oldestExpenseDate: string; // ISO string
+  newestExpenseDate: string; // ISO string
 }
 
 type CreateAccountBookRequest = Required<

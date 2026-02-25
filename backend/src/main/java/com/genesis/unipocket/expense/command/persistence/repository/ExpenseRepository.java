@@ -76,6 +76,12 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 	Object[] findOccurredAtRangeByAccountBookId(@Param("accountBookId") Long accountBookId);
 
 	@Query(
+			"SELECT MIN(e.occurredAt), MAX(e.occurredAt) FROM ExpenseEntity e WHERE e.accountBookId"
+					+ " = :accountBookId AND e.travelId = :travelId")
+	Object[] findOccurredAtRangeByAccountBookIdAndTravelId(
+			@Param("accountBookId") Long accountBookId, @Param("travelId") Long travelId);
+
+	@Query(
 			"SELECT e.merchant.displayMerchantName FROM ExpenseEntity e WHERE e.accountBookId ="
 					+ " :accountBookId AND e.merchant.displayMerchantName LIKE CONCAT(:prefix, '%')"
 					+ " GROUP BY e.merchant.displayMerchantName ORDER BY MAX(e.updatedAt) DESC")

@@ -3,6 +3,7 @@ import type { CurrencyType } from '@/types/currency';
 import type {
   CreateAccountBookRequest,
   CreateAccountBookResponse,
+  GetAccountBookAmountResponse,
   GetAccountBookDetailResponse,
   GetAccountBookExchangeRateResponse,
   GetAccountBooksResponse,
@@ -133,9 +134,21 @@ const getExchangeRate = (
   });
 };
 
+const getAccountBookAmount = (
+  accountBookId: number,
+): Promise<GetAccountBookAmountResponse> => {
+  return customFetch({
+    endpoint: ENDPOINTS.ACCOUNT_BOOKS.AMOUNT(accountBookId),
+    options: {
+      method: 'GET',
+    },
+  });
+};
+
 export {
   createAccountBook,
   deleteAccountBook,
+  getAccountBookAmount,
   getAccountBookDetail,
   getAccountBookExchangeRate,
   getAccountBooks,

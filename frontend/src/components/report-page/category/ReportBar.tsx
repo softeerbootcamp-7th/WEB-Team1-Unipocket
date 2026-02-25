@@ -77,7 +77,6 @@ const ReportBar = ({ value, variant, maxValue }: ReportBarProps) => {
           countryCode={countryCode}
           size={styles.size}
           className={styles.textStyle}
-          decimalOffset={1}
         />
       </div>
     </div>

@@ -16,6 +16,7 @@ import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.user.command.facade.UserCommandFacade;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import com.genesis.unipocket.user.command.presentation.request.UserCardCreateRequest;
 import com.genesis.unipocket.user.command.presentation.request.UserCardUpdateRequest;
 import com.genesis.unipocket.user.command.presentation.response.UserCardUpdateResponse;
@@ -41,6 +42,7 @@ class UserCommandControllerTest {
 	@MockitoBean private JwtProvider jwtProvider;
 
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 

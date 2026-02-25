@@ -4,11 +4,14 @@ import LandingHeader from '@/components/landing-page/LandingHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { requireGuest } from '@/api/auth/api';
+import { useAccountBookStore } from '@/stores/accountBookStore';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
+    const { clearAccountBook } = useAccountBookStore.getState();
     // 이미 로그인된 유저라면 여기서 /home 또는 /init으로 튕겨나갑니다.
     await requireGuest();
+    clearAccountBook();
   },
   pendingComponent: () => <Skeleton className="h-dvh" />,
   component: AppLayout,

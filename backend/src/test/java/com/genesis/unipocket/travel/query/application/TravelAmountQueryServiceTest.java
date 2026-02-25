@@ -11,6 +11,7 @@ import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBoo
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -20,6 +21,7 @@ import com.genesis.unipocket.travel.query.persistence.response.TravelQueryRespon
 import com.genesis.unipocket.travel.query.presentation.response.TravelAmountResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -40,6 +42,7 @@ class TravelAmountQueryServiceTest {
 	@Mock private TravelQueryRepository travelQueryRepository;
 	@Mock private AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private ExpenseRepository expenseRepository;
 
 	@InjectMocks private TravelAmountQueryService service;
 
@@ -50,6 +53,8 @@ class TravelAmountQueryServiceTest {
 		Long accountBookId = 1L;
 		Long travelId = 2L;
 		LocalDate travelStartDate = LocalDate.of(2026, 2, 1);
+		LocalDateTime oldestRaw = LocalDateTime.of(2026, 2, 1, 9, 10);
+		LocalDateTime newestRaw = LocalDateTime.of(2026, 2, 15, 20, 30);
 
 		given(accountBookQueryRepository.findDetailById(UUID.fromString(userId), accountBookId))
 				.willReturn(
@@ -92,6 +97,10 @@ class TravelAmountQueryServiceTest {
 								eq(CurrencyCode.JPY),
 								eq(OffsetDateTime.of(2026, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC))))
 				.willReturn(new BigDecimal("1500.00"));
+		given(
+						expenseRepository.findOccurredAtRangeByAccountBookIdAndTravelId(
+								accountBookId, travelId))
+				.willReturn(new Object[] {new Object[] {oldestRaw, newestRaw}});
 
 		TravelAmountResponse result = service.getTravelAmount(accountBookId, travelId, userId);
 
@@ -101,6 +110,8 @@ class TravelAmountQueryServiceTest {
 		assertThat(result.baseCurrencyCode()).isEqualTo(CurrencyCode.KRW);
 		assertThat(result.totalLocalAmount()).isEqualByComparingTo("1600.00");
 		assertThat(result.totalBaseAmount()).isEqualByComparingTo("3500.00");
+		assertThat(result.oldestExpenseDate()).isEqualTo(oldestRaw.atOffset(ZoneOffset.UTC));
+		assertThat(result.newestExpenseDate()).isEqualTo(newestRaw.atOffset(ZoneOffset.UTC));
 		verify(exchangeRateService)
 				.convertAmount(
 						any(BigDecimal.class), eq(CurrencyCode.USD), eq(CurrencyCode.JPY), any());

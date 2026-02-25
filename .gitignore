@@ -41,5 +41,7 @@ out/
 **/*.DS_Store
 
 ### Local-only config ###
+backend/mysql_data_multi
+backend/mysql_data
 backend/src/main/resources/application-local.yml
 backend/src/main/resources/application-local-test.yml

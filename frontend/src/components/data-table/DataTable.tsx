@@ -169,14 +169,18 @@ const DataTable = <TData,>({
                       data-state={row.getIsSelected() && 'selected'}
                       className={hasIssue ? 'bg-red-50 hover:bg-red-100' : ''}
                     >
-                      {row.getVisibleCells().map((cell) => {
+                      {row.getVisibleCells().map((cell, index) => {
+                        // 첫 번째 셀(체크박스)이면서 그룹화가 되어있을 때 들여쓰기(pl-11) 적용
+                        const isSecondCell = index === 1;
+                        const shouldIndent = groupBy && isSecondCell;
                         return (
                           <TableCell
                             key={cell.id}
                             onClick={(e) =>
                               handleCellClick(cell, e.currentTarget)
                             }
-                            className="cursor-pointer"
+                            // 두 번째 셀일 때만 좌측 패딩(pl-8) 추가
+                            className={`cursor-pointer ${shouldIndent ? 'pl-8' : ''}`}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

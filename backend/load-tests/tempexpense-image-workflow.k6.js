@@ -3,7 +3,7 @@ import { check, group, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
 
 const BASE_URL = (__ENV.BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
-const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || '30s';
+const REQUEST_TIMEOUT = __ENV.REQUEST_TIMEOUT || '300s';
 const THINK_TIME_SECONDS = toNumber(__ENV.THINK_TIME_SECONDS, 0.2);
 
 const CLEANUP = toBoolean(__ENV.CLEANUP, true);

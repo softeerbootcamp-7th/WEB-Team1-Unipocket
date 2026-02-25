@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
+import { useRouter } from '@tanstack/react-router';
 
+import Icon from '@/components/common/Icon';
 import {
   AccountBookConfigurator,
   ConfiguratorSkeleton,
@@ -17,6 +19,7 @@ import SettingModalManager from '@/components/setting-page/modal/SettingModalMan
 import { useSettingModal } from '@/components/setting-page/modal/useSettingModal';
 
 const SettingPage = () => {
+  const router = useRouter();
   const {
     activeModal,
     closeModal,
@@ -34,7 +37,14 @@ const SettingPage = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-6.5 px-35 py-7.5">
-      <h1 className="title2-semibold text-label-normal">설정</h1>
+      <div className="flex items-center gap-2.5">
+        <Icon
+          iconName="ChevronBack"
+          onClick={() => router.history.back()}
+          color="text-label-normal"
+        />
+        <h1 className="title2-semibold text-label-normal">설정</h1>
+      </div>
       <div className="flex flex-1 flex-col gap-3.5">
         <Suspense fallback={<MainAccountBookSkeleton />}>
           <MainAccountBookSelector />

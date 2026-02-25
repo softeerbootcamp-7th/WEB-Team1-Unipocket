@@ -8,8 +8,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 public record AccountBookCreateRequest(
 		@NotNull(message = CODE) CountryCode localCountryCode,
-		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate startDate,
-		@DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull(message = CODE) LocalDate endDate) {
+		@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+		@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
 
 	public static final String CODE = ErrorCode.CodeLiterals.ACCOUNT_BOOK_CREATE_VALIDATION_FAILED;
 }

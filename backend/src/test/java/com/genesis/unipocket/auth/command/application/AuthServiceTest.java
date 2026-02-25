@@ -56,10 +56,15 @@ class AuthServiceTest {
 		String oldJti = "old-jti-123";
 		UUID userId = UUID.randomUUID();
 
+		UserEntity activeUser =
+				UserEntity.builder().name("Test User").email("test@example.com").build();
+		// UserEntity 기본 상태는 ACTIVE
+
 		when(jwtProvider.validateToken(oldRefreshToken)).thenReturn(true);
 		when(jwtProvider.getJti(oldRefreshToken)).thenReturn(oldJti);
 		when(blacklistService.isBlacklisted(oldJti)).thenReturn(false);
 		when(jwtProvider.getUserId(oldRefreshToken)).thenReturn(userId);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(activeUser));
 		when(jwtProvider.createAccessToken(userId)).thenReturn("new-access-token");
 		when(jwtProvider.createRefreshToken(userId)).thenReturn("new-refresh-token");
 		when(jwtProvider.getRemainingExpiration(oldRefreshToken)).thenReturn(60000L);
@@ -69,6 +74,27 @@ class AuthServiceTest {
 		assertThat(result.accessToken()).isEqualTo("new-access-token");
 		assertThat(result.refreshToken()).isEqualTo("new-refresh-token");
 		verify(blacklistService).addToBlacklist(oldJti, 60000L);
+	}
+
+	@Test
+	@DisplayName("토큰 재발급 - 탈퇴한 사용자면 예외 발생")
+	void reissue_WithdrawnUser_ThrowsException() {
+		String refreshToken = "refresh-token";
+		String jti = "jti-123";
+		UUID userId = UUID.randomUUID();
+
+		UserEntity inactiveUser =
+				UserEntity.builder().name("탈퇴유저").email("bye@example.com").build();
+		inactiveUser.deactivate();
+
+		when(jwtProvider.validateToken(refreshToken)).thenReturn(true);
+		when(jwtProvider.getJti(refreshToken)).thenReturn(jti);
+		when(blacklistService.isBlacklisted(jti)).thenReturn(false);
+		when(jwtProvider.getUserId(refreshToken)).thenReturn(userId);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(inactiveUser));
+
+		assertThatThrownBy(() -> authService.reissue(refreshToken))
+				.isInstanceOf(TokenException.class);
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package com.genesis.unipocket.auth.command.application;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.exception.TokenException;
 import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.common.enums.UserStatus;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import java.util.UUID;
@@ -76,7 +77,16 @@ public class AuthService {
 			// 3. 사용자 ID 추출
 			UUID userId = jwtProvider.getUserId(refreshToken);
 
-			// 4. 새로운 Access Token과 Refresh Token 발급
+			// 4. 탈퇴 여부 확인
+			userRepository
+					.findById(userId)
+					.filter(user -> user.getStatus() == UserStatus.INACTIVE)
+					.ifPresent(
+							ignored -> {
+								throw new TokenException(ErrorCode.USER_WITHDRAWN);
+							});
+
+			// 5. 새로운 Access Token과 Refresh Token 발급
 			String newAccessToken = jwtProvider.createAccessToken(userId);
 			String newRefreshToken = jwtProvider.createRefreshToken(userId);
 

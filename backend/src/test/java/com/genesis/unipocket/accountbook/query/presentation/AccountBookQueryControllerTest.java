@@ -17,6 +17,7 @@ import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ class AccountBookQueryControllerTest {
 	@MockitoBean private AccountBookAmountQueryService accountBookAmountQueryService;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@SuppressWarnings("unused")
 	@MockitoBean
@@ -111,7 +113,9 @@ class AccountBookQueryControllerTest {
 								new BigDecimal("12000.50"),
 								new BigDecimal("109000.10"),
 								new BigDecimal("1200.00"),
-								new BigDecimal("11000.00")));
+								new BigDecimal("11000.00"),
+								null,
+								null));
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(

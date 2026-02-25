@@ -5,6 +5,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.presentation.request.TemporaryExpenseMetaBulkUpdateItemRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public record TemporaryExpenseUpdateCommand(
 		String merchantName,
@@ -15,7 +16,7 @@ public record TemporaryExpenseUpdateCommand(
 		BigDecimal baseCurrencyAmount,
 		String memo,
 		LocalDateTime occurredAt,
-		String cardLastFourDigits) {
+		Optional<String> cardLastFourDigits) {
 
 	public static TemporaryExpenseUpdateCommand from(
 			TemporaryExpenseMetaBulkUpdateItemRequest request) {

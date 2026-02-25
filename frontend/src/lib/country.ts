@@ -40,7 +40,7 @@ export const formatAmountByCountry = (
 ): string => {
   const locale = COUNTRY_LOCALE_MAP[countryCode] || 'en-US';
 
-  return amount.toLocaleString(locale, {
+  return Number(amount).toLocaleString(locale, {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
@@ -51,12 +51,18 @@ export const formatCurrency = (
   currencyCode: CurrencyCode,
   fractionDigits: number = 2,
 ): string => {
-  return new Intl.NumberFormat('ko-KR', {
+  const countryInfo = getCountryInfoByCurrency(currencyCode);
+  const locale = countryInfo
+    ? (COUNTRY_LOCALE_MAP[countryInfo.code] ?? 'ko-KR')
+    : 'ko-KR';
+
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currencyCode,
     currencyDisplay: 'narrowSymbol',
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
+    trailingZeroDisplay: 'stripIfInteger',
   }).format(amount);
 };
 

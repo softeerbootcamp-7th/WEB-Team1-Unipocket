@@ -5,7 +5,7 @@ import { MethodSelectorContent } from '@/components/data-table/selectors/MethodS
 import {
   getCardNumberFromExpense,
   resolveUserCardId,
-} from '@/components/data-table/util';
+} from '@/components/data-table/utils/card';
 
 import type { Expense } from '@/api/expenses/type';
 import type { TempExpense } from '@/api/temporary-expenses/type';

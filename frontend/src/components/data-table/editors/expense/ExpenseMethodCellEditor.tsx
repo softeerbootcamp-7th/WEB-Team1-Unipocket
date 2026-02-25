@@ -2,7 +2,7 @@ import MethodCellEditor from '@/components/data-table/editors/common/MethodCellE
 import {
   getCardNumberFromExpense,
   resolveUserCardId,
-} from '@/components/data-table/util';
+} from '@/components/data-table/utils/card';
 
 import type { Expense } from '@/api/expenses/type';
 import { useGetCardsQuery } from '@/api/users/query';

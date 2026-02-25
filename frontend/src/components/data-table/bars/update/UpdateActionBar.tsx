@@ -56,7 +56,6 @@ const UpdateActionBar = () => {
         localCurrencyAmount: original.localCurrencyAmount,
         localCurrencyCode: original.localCurrencyCode,
         baseCurrencyAmount: original.baseCurrencyAmount,
-        memo: original.memo || '',
         travelId: original.travel?.travelId || null,
         userCardId: original.paymentMethod.isCash
           ? null

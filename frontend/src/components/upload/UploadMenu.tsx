@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import Button from '@/components/common/Button';
@@ -17,6 +17,11 @@ const MAX_PARSE_COUNT = 3;
 const UploadMenu = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [activeEntry, setActiveEntry] = useState<UploadEntryType>(null);
+  const [isSidePanelMounted, setIsSidePanelMounted] = useState(false);
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const sidePanelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const snackbars = useParseSnackbarStore((state) => state.snackbars);
 
   const handleOpenEntry = (type: Exclude<UploadEntryType, null>) => {
@@ -31,12 +36,33 @@ const UploadMenu = () => {
       setIsPopoverOpen(false);
       return;
     }
+    if (type === 'manual') {
+      if (sidePanelCloseTimer.current)
+        clearTimeout(sidePanelCloseTimer.current);
+      setIsSidePanelMounted(true);
+      requestAnimationFrame(() => setIsSidePanelOpen(true));
+    }
     setActiveEntry(type);
     setIsPopoverOpen(false);
   };
 
   const handleCloseEntry = useCallback(() => {
     setActiveEntry(null);
+  }, []);
+
+  const handleCloseSidePanel = useCallback(() => {
+    setIsSidePanelOpen(false);
+    sidePanelCloseTimer.current = setTimeout(() => {
+      setIsSidePanelMounted(false);
+      setActiveEntry(null);
+    }, 300);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (sidePanelCloseTimer.current)
+        clearTimeout(sidePanelCloseTimer.current);
+    };
   }, []);
 
   return (
@@ -57,7 +83,9 @@ const UploadMenu = () => {
         isOpen={activeEntry === 'file'}
         onClose={handleCloseEntry}
       />
-      <SidePanel isOpen={activeEntry === 'manual'} onClose={handleCloseEntry} />
+      {isSidePanelMounted && (
+        <SidePanel isOpen={isSidePanelOpen} onClose={handleCloseSidePanel} />
+      )}
     </>
   );
 };

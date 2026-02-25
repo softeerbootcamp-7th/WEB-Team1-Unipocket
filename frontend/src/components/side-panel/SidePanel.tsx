@@ -7,7 +7,6 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
-import TextInput from '@/components/common/TextInput';
 import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
 import { resolveUserCardId } from '@/components/data-table/utils/card';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
@@ -20,6 +19,7 @@ import { useCreateManualExpenseMutation } from '@/api/expenses/query';
 import type { CreateManualExpenseRequest } from '@/api/expenses/type';
 import { useGetCardsQuery } from '@/api/users/query';
 import { NONE_TRAVEL } from '@/constants/column';
+import { parseStringToDate } from '@/lib/utils';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 interface SidePanelProps {
@@ -32,14 +32,42 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   const { mutate } = useCreateManualExpenseMutation();
-  const accountBookId = useRequiredAccountBook().accountBookId;
+  const {
+    accountBookId,
+    startDate: startDateStr,
+    endDate: endDateStr,
+  } = useRequiredAccountBook();
+
+  const accountBookStartDate = parseStringToDate(startDateStr);
+  const accountBookEndDate = parseStringToDate(endDateStr);
+
+  const defaultDate = (() => {
+    const today = new Date();
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+    const startStart = new Date(
+      accountBookStartDate.getFullYear(),
+      accountBookStartDate.getMonth(),
+      accountBookStartDate.getDate(),
+    );
+    const endStart = new Date(
+      accountBookEndDate.getFullYear(),
+      accountBookEndDate.getMonth(),
+      accountBookEndDate.getDate(),
+    );
+    return todayStart >= startStart && todayStart <= endStart
+      ? today
+      : accountBookEndDate;
+  })();
+
   const { data: cards = [] } = useGetCardsQuery();
 
   const {
     title,
     setTitle,
-    memo,
-    setMemo,
     selectedDateTime,
     setSelectedDateTime,
     isDateTimePickerOpen,
@@ -51,7 +79,7 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
     selectedTravelId,
     setSelectedTravelId,
     resetForm,
-  } = useSidePanelForm();
+  } = useSidePanelForm(defaultDate);
 
   const [currencyValues, setCurrencyValues] = useState<CurrencyValues | null>(
     null,
@@ -107,7 +135,6 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
       localCurrencyAmount: currencyValues!.localAmount,
       localCurrencyCode: currencyValues!.localCurrencyCode,
       baseCurrencyAmount: currencyValues!.baseAmount,
-      memo,
       travelId,
     };
 
@@ -199,22 +226,17 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
                 initialDateTime={selectedDateTime}
                 onDateTimeSelect={setSelectedDateTime}
                 onClose={() => setIsDateTimePickerOpen(false)}
+                startDate={accountBookStartDate}
+                endDate={accountBookEndDate}
               />
             </div>
           )}
         </div>
         <Divider style="thin" />
         <MoneyContainer
-          key={resetKey}
+          resetTrigger={resetKey}
           rateUpdatedAt={selectedDateTime ?? undefined}
           onValuesChange={setCurrencyValues}
-        />
-        <Divider style="thin" />
-        <TextInput
-          value={memo}
-          onChange={setMemo}
-          title="메모"
-          placeholder="메모를 입력해 주세요."
         />
       </div>
     </div>

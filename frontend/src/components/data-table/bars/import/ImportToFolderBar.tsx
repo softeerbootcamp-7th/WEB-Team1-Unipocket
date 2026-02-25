@@ -39,7 +39,6 @@ const ImportToFolderBar = ({ onSuccess }: ImportToFolderBarProps) => {
         localCurrencyAmount: original.localCurrencyAmount,
         localCurrencyCode: original.localCurrencyCode,
         baseCurrencyAmount: original.baseCurrencyAmount,
-        memo: original.memo || '',
         travelId: travelId,
         userCardId: original.paymentMethod.isCash
           ? null

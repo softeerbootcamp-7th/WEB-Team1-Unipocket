@@ -71,7 +71,6 @@ export interface TempExpense {
   localCurrencyAmount: number | null;
   baseCountryCode: CurrencyCode;
   baseCurrencyAmount: number;
-  memo: string | null;
   occurredAt: string | null;
   status: 'NORMAL' | 'INCOMPLETE' | 'ABNORMAL';
   cardLastFourDigits: string | null;

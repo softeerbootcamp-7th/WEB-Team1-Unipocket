@@ -10,6 +10,5 @@ export type SidePanelFormValues = {
   localCurrencyAmount: number;
   localCurrencyCode: CurrencyCode;
   baseCurrencyAmount: number;
-  memo?: string;
   travelId?: number;
 };

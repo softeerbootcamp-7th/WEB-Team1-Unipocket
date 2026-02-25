@@ -219,8 +219,8 @@ class TemporaryExpenseParsingServiceTest {
 	}
 
 	@Test
-	@DisplayName("파싱 결과에 기본 통화 금액(BaseAmount)이 있으면 환율 조회를 건너뛰고 해당 값을 사용")
-	void parseBatchSingleFile_usesProvidedBaseAmount_skipsExchangeLookup() {
+	@DisplayName("파싱 결과에 기본 통화 금액(BaseAmount)이 있어도 환율은 조회하고 금액은 입력값을 유지한다")
+	void parseBatchSingleFile_usesProvidedBaseAmount_butLooksUpExchangeRate() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-base-amount.jpg";
 		File file =
@@ -261,14 +261,22 @@ class TemporaryExpenseParsingServiceTest {
 												null,
 												null)),
 								null));
+		when(exchangeRateProvider.getExchangeRate(
+						CurrencyCode.USD,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 15, 0, 0).atOffset(ZoneOffset.UTC)))
+				.thenReturn(new BigDecimal("1350.00"));
 
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
 
 		service.parseBatchFiles(meta, List.of(file), "task-single-3");
 
-		// Verify NO interaction with ExchangeRateProvider
-		verifyNoInteractions(exchangeRateProvider);
+		verify(exchangeRateProvider)
+				.getExchangeRate(
+						CurrencyCode.USD,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 15, 0, 0).atOffset(ZoneOffset.UTC));
 
 		@SuppressWarnings("unchecked")
 		ArgumentCaptor<List<TemporaryExpense>> captor = ArgumentCaptor.forClass(List.class);
@@ -281,6 +289,7 @@ class TemporaryExpenseParsingServiceTest {
 		assertThat(saved.getBaseCountryCode()).isEqualTo(CurrencyCode.KRW);
 		assertThat(saved.getBaseCurrencyAmount())
 				.isEqualByComparingTo("135000"); // Should use the provided value
+		assertThat(saved.getExchangeRate()).isEqualByComparingTo("1350.00");
 	}
 
 	@Test

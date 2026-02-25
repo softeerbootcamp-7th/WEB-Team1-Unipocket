@@ -98,16 +98,23 @@ const DataTable = <TData,>({
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-              </TableHead>
-            ))}
+            {headerGroup.headers.map((header) => {
+              const isSelectColumn = header.column.id === 'select';
+              const columnWidth = isSelectColumn
+                ? '48px'
+                : `${header.column.getSize()}%`;
+
+              return (
+                <TableHead key={header.id} style={{ width: columnWidth }}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              );
+            })}
           </TableRow>
         ))}
       </TableHeader>

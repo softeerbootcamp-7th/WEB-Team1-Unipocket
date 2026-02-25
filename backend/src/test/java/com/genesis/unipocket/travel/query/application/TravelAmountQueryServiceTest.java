@@ -11,6 +11,7 @@ import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBoo
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -40,6 +41,7 @@ class TravelAmountQueryServiceTest {
 	@Mock private TravelQueryRepository travelQueryRepository;
 	@Mock private AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private ExpenseRepository expenseRepository;
 
 	@InjectMocks private TravelAmountQueryService service;
 

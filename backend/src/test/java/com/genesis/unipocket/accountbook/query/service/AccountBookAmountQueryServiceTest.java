@@ -19,6 +19,7 @@ import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
 import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
@@ -48,6 +49,7 @@ class AccountBookAmountQueryServiceTest {
 	@Mock private AnalysisMonthlyDirtyRepository analysisMonthlyDirtyRepository;
 	@Mock private AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	@Mock private ExchangeRateService exchangeRateService;
+	@Mock private ExpenseRepository expenseRepository;
 
 	@InjectMocks private AccountBookAmountQueryService service;
 

@@ -7,16 +7,15 @@ import TextConfirmModal from '@/components/modal/TextModal/TextConfirmModal';
 
 import { API_BASE_URL } from '@/api/config/constants';
 import { Icons } from '@/assets';
+import { LOGIN_MODAL_TEXT } from '@/constants/message';
 
 const routeApi = getRouteApi('/_auth/login');
 
 const LoginPage = () => {
-  // 1. URL 파라미터에서 reason과 (혹시 모를) provider를 가져옵니다.
   const { reason, provider } = routeApi.useSearch();
 
   const navigate = routeApi.useNavigate();
 
-  // 2. reason이 'withdrawn'일 때 모달을 엽니다.
   const isModalOpen = reason === 'withdrawn';
 
   const handleModalClose = () => {
@@ -28,13 +27,8 @@ const LoginPage = () => {
   };
 
   const handleModalAction = () => {
-    // 3. 복구 API 호출 (provider 유무에 따른 분기 처리)
     if (provider) {
       window.location.href = `${API_BASE_URL}/auth/oauth2/reactivate/${provider}`;
-    } else {
-      // TODO: 백엔드에서 provider 없이 복구가 가능하도록 변경했다면 이 경로를 사용하세요.
-      // 변경되지 않았다면 백엔드 개발자에게 URL에 provider 파라미터 추가를 요청해야 합니다.
-      window.location.href = `${API_BASE_URL}/auth/oauth2/reactivate`;
     }
   };
   return (
@@ -63,10 +57,13 @@ const LoginPage = () => {
         isOpen={isModalOpen}
         onClose={handleModalClose}
         onAction={handleModalAction}
-        title="계정 복구"
-        description="탈퇴한 계정입니다."
-        subDescription="계정을 복구하고 다시 로그인하시겠습니까?"
-        confirmButton={{ label: '복구하기', variant: 'solid' }} // 기존 삭제 버튼 대신 긍정적인 느낌으로 변경
+        title={LOGIN_MODAL_TEXT.REACTIVATE_ACCOUNT.title}
+        description={LOGIN_MODAL_TEXT.REACTIVATE_ACCOUNT.description}
+        subDescription={LOGIN_MODAL_TEXT.REACTIVATE_ACCOUNT.subDescription}
+        confirmButton={{
+          label: LOGIN_MODAL_TEXT.REACTIVATE_ACCOUNT.confirmButtonLabel,
+          variant: 'solid',
+        }}
       />
     </main>
   );

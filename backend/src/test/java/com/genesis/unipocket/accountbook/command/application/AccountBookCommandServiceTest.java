@@ -12,6 +12,7 @@ import com.genesis.unipocket.accountbook.command.application.command.DeleteAccou
 import com.genesis.unipocket.accountbook.command.application.command.UpdateAccountBookCommand;
 import com.genesis.unipocket.accountbook.command.application.port.AccountBookExchangeRateReader;
 import com.genesis.unipocket.accountbook.command.application.port.AccountBookUserReader;
+import com.genesis.unipocket.accountbook.command.application.port.dto.AccountBookUserInfo;
 import com.genesis.unipocket.accountbook.command.application.result.AccountBookResult;
 import com.genesis.unipocket.accountbook.command.application.validator.AccountBookValidator;
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookCreateArgs;
@@ -67,6 +68,8 @@ public class AccountBookCommandServiceTest {
 
 		given(repository.findNamesStartingWith(any(), any())).willReturn(Collections.emptyList());
 		given(repository.findMaxBucketOrderByUserId(userId)).willReturn(-1);
+		given(accountBookUserReader.getUser(userId))
+				.willReturn(new AccountBookUserInfo(userId, false));
 		given(repository.save(any(AccountBookEntity.class)))
 				.willAnswer(
 						invocation -> {
@@ -109,6 +112,8 @@ public class AccountBookCommandServiceTest {
 		given(repository.findNamesStartingWith(userId, baseTitle))
 				.willReturn(List.of(baseTitle + "1", baseTitle + "2"));
 		given(repository.findMaxBucketOrderByUserId(userId)).willReturn(2);
+		given(accountBookUserReader.getUser(userId))
+				.willReturn(new AccountBookUserInfo(userId, false));
 
 		given(repository.save(any(AccountBookEntity.class)))
 				.willAnswer(

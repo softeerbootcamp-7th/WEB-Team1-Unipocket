@@ -43,6 +43,7 @@ public class AccountBookCommandService {
 
 	@Transactional
 	public AccountBookResult create(CreateAccountBookCommand command) {
+		var userInfo = accountBookUserReader.getUser(command.userId());
 		String uniqueTitle =
 				getUniqueTitle(command.userId(), command.userName() + DEFAULT_NAME_SUFFIX);
 		int bucketOrder = repository.findMaxBucketOrderByUserId(command.userId()) + 1;
@@ -61,7 +62,9 @@ public class AccountBookCommandService {
 		AccountBookEntity newEntity = AccountBookEntity.create(args);
 		validator.validate(newEntity);
 		AccountBookEntity savedEntity = repository.save(newEntity);
-		accountBookUserReader.updateMainAccountBook(command.userId(), savedEntity.getId());
+		if (!userInfo.hasMainBucket()) {
+			accountBookUserReader.updateMainAccountBook(command.userId(), savedEntity.getId());
+		}
 
 		return AccountBookResult.of(savedEntity);
 	}

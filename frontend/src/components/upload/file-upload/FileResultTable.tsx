@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 
+import TempUpdateActionBar from '@/components/data-table/bars/update/TempUpdateActionBar';
 import { getTempExpenseColumns } from '@/components/data-table/columns/tempExpenseColumns';
+import TempAmountCellEditor from '@/components/data-table/editors/temp-expense/TempAmountCellEditor';
+import TempCategoryCellEditor from '@/components/data-table/editors/temp-expense/TempCategoryCellEditor';
+import TempMethodCellEditor from '@/components/data-table/editors/temp-expense/TempMethodCellEditor';
+import TempTextCellEditor from '@/components/data-table/editors/temp-expense/TempTextCellEditor';
 import { getTempExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
@@ -24,7 +29,12 @@ const FileResultTable = ({ data }: FileResultTableProps) => {
     return groupKey;
   };
 
-  const columns = useMemo(() => getTempExpenseColumns(), []);
+  const columns = useMemo(
+    () => getTempExpenseColumns({ showBaseCurrencyAmount: false }),
+    [],
+  );
+
+  const getRowIssue = (row: TempExpense) => row.status === 'INCOMPLETE';
 
   return (
     <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
@@ -37,8 +47,14 @@ const FileResultTable = ({ data }: FileResultTableProps) => {
         hideFilters={true}
         groupBy={groupBy}
         groupDisplay={groupDisplay}
+        getRowIssue={getRowIssue}
       >
-        {/* ... (기존 children 컴포넌트들) */}
+        <TempUpdateActionBar />
+
+        <TempTextCellEditor />
+        <TempCategoryCellEditor />
+        <TempAmountCellEditor />
+        <TempMethodCellEditor />
       </BaseExpenseTable>
     </div>
   );

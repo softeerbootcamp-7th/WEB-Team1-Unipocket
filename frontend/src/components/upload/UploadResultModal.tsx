@@ -78,8 +78,8 @@ export default function UploadResultModal({
               결제 시점의 환율에 따라 기준 금액이 자동 계산됩니다.
             </div>
             <div className="body1-normal-medium text-status-cautionary text-right">
-              가계부 기간을 벗어난 지출내역은 목록에서 제외해주세요. <br />
-              {formattedStartDate} ~ {formattedEndDate}
+              기간을 벗어난 지출내역은 가계부에 추가되지 않습니다. <br />
+              가계부 기간: {formattedStartDate} ~ {formattedEndDate}
             </div>
           </div>
         </div>

@@ -1,11 +1,15 @@
 import React from 'react';
 import { clsx } from 'clsx';
 
+import { ActionButton } from '@/components/data-table/bars/update/ActionButton';
 import { BulkCategoryAction } from '@/components/data-table/bars/update/actions/BulkCategoryAction';
 import { BulkMethodAction } from '@/components/data-table/bars/update/actions/BulkMethodAction';
 import { useDataTable } from '@/components/data-table/context';
 
-import { useBulkUpdateTempExpensesMutation } from '@/api/temporary-expenses/query';
+import {
+  useBulkUpdateTempExpensesMutation,
+  useDeleteTempExpenseMutation,
+} from '@/api/temporary-expenses/query';
 import type { TempExpense } from '@/api/temporary-expenses/type';
 import { Icons } from '@/assets';
 import { CASH } from '@/constants/column';
@@ -34,18 +38,19 @@ const TempUpdateActionBar = () => {
 
   const { accountBookId } = useRequiredAccountBook();
 
+  const firstRowOriginal = selectedRows[0]?.original as TempExpense | undefined;
+  const metaId = firstRowOriginal?.tempExpenseMetaId ?? 0;
+  const fileId = firstRowOriginal?.fileId ?? 0;
+
   const { mutate: bulkUpdateTemp } = useBulkUpdateTempExpensesMutation();
+
+  const { mutateAsync: deleteTempExpense } = useDeleteTempExpenseMutation();
 
   const handleBulkUpdate = <K extends keyof TempExpense>(
     field: K,
     value: TempExpense[K],
   ) => {
     if (selectedRows.length === 0) return;
-
-    // 1. 선택된 데이터에서 API URL에 필요한 metaId와 fileId 추출
-    const firstRowOriginal = selectedRows[0].original as TempExpense;
-    const metaId = firstRowOriginal.tempExpenseMetaId;
-    const fileId = firstRowOriginal.fileId;
 
     const payloadItems = selectedRows.map((row) => {
       const original = row.original as TempExpense;
@@ -66,6 +71,32 @@ const TempUpdateActionBar = () => {
         onSuccess: () => table.toggleAllRowsSelected(false),
       },
     );
+  };
+
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        `선택한 ${selectedRows.length}개의 내역을 삭제하시겠습니까?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await Promise.allSettled(
+        selectedRows.map((row) => {
+          const original = row.original as TempExpense;
+          return deleteTempExpense({
+            accountBookId,
+            metaId,
+            fileId,
+            tempExpenseId: original.tempExpenseId,
+          });
+        }),
+      );
+    } finally {
+      table.toggleAllRowsSelected(false);
+    }
   };
 
   if (!tableState.selectionMode) return null;
@@ -91,6 +122,9 @@ const TempUpdateActionBar = () => {
               handleBulkUpdate('cardLastFourDigits', cardLastFourDigits);
             }}
           />
+          <ActionButton onClick={handleDelete} className="text-status-negative">
+            삭제
+          </ActionButton>
         </ActionGroup>
 
         <Icons.Close

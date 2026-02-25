@@ -17,7 +17,11 @@ const FileResultContent = ({ file }: FileResultContentProps) => {
     );
   }
 
-  return <FileResultTable data={file.expenses} />;
+  return (
+    <div className="flex min-h-0 flex-1 flex-col px-4.25">
+      <FileResultTable data={file.expenses} />
+    </div>
+  );
 };
 
 export default FileResultContent;

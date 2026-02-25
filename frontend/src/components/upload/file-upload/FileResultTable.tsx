@@ -37,7 +37,7 @@ const FileResultTable = ({ data }: FileResultTableProps) => {
   const getRowIssue = (row: TempExpense) => row.status === 'INCOMPLETE';
 
   return (
-    <div className="bg-background-normal relative flex min-h-0 flex-1 flex-col px-2 pt-4">
+    <div className="bg-background-normal shadow-semantic-subtle relative flex min-h-0 flex-1 flex-col rounded-2xl px-2 py-4">
       <BaseExpenseTable
         data={data}
         columns={columns}

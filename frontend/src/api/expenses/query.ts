@@ -52,10 +52,16 @@ const invalidateRelatedQueries = (
   queryClient.invalidateQueries({
     queryKey: widgetKeys.allDetails(accountBookId),
   });
+  queryClient.invalidateQueries({
+    queryKey: travelKeys.allTravelWidgets(accountBookId),
+  });
+  queryClient.invalidateQueries({
+    queryKey: ['accountBooks', 'amount', accountBookId],
+  });
+  queryClient.invalidateQueries({
+    queryKey: travelKeys.allAmounts(accountBookId),
+  });
   if (travelId) {
-    queryClient.invalidateQueries({
-      queryKey: travelKeys.allWidgets(accountBookId, travelId),
-    });
     queryClient.invalidateQueries({
       queryKey: travelKeys.amount(accountBookId, travelId),
     });

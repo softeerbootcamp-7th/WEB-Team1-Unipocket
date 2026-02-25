@@ -63,6 +63,12 @@ export const travelKeys = {
     travelId: number | string | undefined,
   ) => [...travelKeys.all, 'widget', accountBookId, travelId] as const,
 
+  allTravelWidgets: (accountBookId: number | string | undefined) =>
+    [...travelKeys.all, 'widget', accountBookId] as const,
+
+  allAmounts: (accountBookId: number | string | undefined) =>
+    [...travelKeys.all, 'amount', accountBookId] as const,
+
   widgetByType: (
     accountBookId: number | string | undefined,
     travelId: number | string | undefined,

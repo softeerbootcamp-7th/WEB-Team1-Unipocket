@@ -14,15 +14,7 @@ export const useImageUpload = (accountBookId: number) => {
   const itemsRef = useRef<UploadItem[]>([]);
   const metaIdRef = useRef<number | undefined>(undefined);
 
-  const {
-    parseSnackbar,
-    parsedMetaId,
-    connect,
-    disconnect,
-    disconnectAll,
-    closeParseSnackbar,
-    resetParseState,
-  } = useParseSSE(accountBookId);
+  const { connect, disconnect } = useParseSSE(accountBookId);
 
   useEffect(() => {
     itemsRef.current = items;
@@ -122,7 +114,7 @@ export const useImageUpload = (accountBookId: number) => {
       );
 
       // 4. SSE 연결
-      connect(parse.taskId, metaIdRef.current!, {
+      connect(parse.taskId, metaIdRef.current!, 'image', {
         onFileComplete: (fileKey) =>
           setItems((prev) =>
             prev.map((item) =>
@@ -187,8 +179,6 @@ export const useImageUpload = (accountBookId: number) => {
 
   const resetAll = () => {
     clearItems();
-    disconnectAll();
-    resetParseState();
   };
 
   return {
@@ -197,10 +187,7 @@ export const useImageUpload = (accountBookId: number) => {
     handleFilesSelected,
     removeItem,
     isAllUploaded,
-    parseSnackbar,
-    closeParseSnackbar,
     clearItems,
     resetAll,
-    parsedMetaId,
   };
 };

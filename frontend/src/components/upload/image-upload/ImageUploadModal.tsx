@@ -1,8 +1,4 @@
-import { useState } from 'react';
-
-import Snackbar from '@/components/common/Snackbar';
 import Modal from '@/components/modal/Modal';
-import ImageResultModal from '@/components/upload/image-upload/ImageResultModal';
 import ImageUploadContent from '@/components/upload/image-upload/ImageUploadContent';
 import { useImageUpload } from '@/components/upload/image-upload/useImageUpload';
 
@@ -15,19 +11,14 @@ interface ImageUploadModalProps {
 
 const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
   const accountBookId = useRequiredAccountBook().accountBookId;
-  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
-
   const {
     items,
     handleFilesSelected,
     removeItem,
     isAllUploaded,
     startParsing,
-    parseSnackbar,
-    closeParseSnackbar,
     clearItems,
     resetAll,
-    parsedMetaId,
   } = useImageUpload(accountBookId);
 
   const handleStartParsing = () => {
@@ -60,28 +51,6 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
           isAllUploaded={isAllUploaded}
         />
       </Modal>
-
-      {parseSnackbar.isOpen && (
-        <Snackbar
-          status={parseSnackbar.status}
-          description={parseSnackbar.description}
-          onAction={() => {
-            closeParseSnackbar();
-            if (parseSnackbar.status === 'success') {
-              setIsResultModalOpen(true);
-            }
-          }}
-        />
-      )}
-
-      {parsedMetaId !== undefined && isResultModalOpen && (
-        <ImageResultModal
-          isOpen={isResultModalOpen}
-          accountBookId={accountBookId}
-          metaId={parsedMetaId}
-          onClose={() => setIsResultModalOpen(false)}
-        />
-      )}
     </>
   );
 };

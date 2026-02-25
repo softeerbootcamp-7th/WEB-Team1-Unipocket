@@ -7,7 +7,6 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import Button from '@/components/common/Button';
 import Divider from '@/components/common/Divider';
 import Icon from '@/components/common/Icon';
-import TextInput from '@/components/common/TextInput';
 import type { CurrencyValues } from '@/components/currency/CurrencyConverter';
 import { resolveUserCardId } from '@/components/data-table/utils/card';
 import DateTimePicker from '@/components/side-panel/DateTimePicker';
@@ -38,8 +37,6 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
   const {
     title,
     setTitle,
-    memo,
-    setMemo,
     selectedDateTime,
     setSelectedDateTime,
     isDateTimePickerOpen,
@@ -115,7 +112,6 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
       localCurrencyAmount: currencyValues!.localAmount,
       localCurrencyCode: currencyValues!.localCurrencyCode,
       baseCurrencyAmount: currencyValues!.baseAmount,
-      memo,
       travelId,
     };
 
@@ -216,13 +212,6 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
           resetTrigger={resetKey}
           rateUpdatedAt={selectedDateTime ?? undefined}
           onValuesChange={setCurrencyValues}
-        />
-        <Divider style="thin" />
-        <TextInput
-          value={memo}
-          onChange={setMemo}
-          title="메모"
-          placeholder="메모를 입력해 주세요."
         />
       </div>
     </div>

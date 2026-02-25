@@ -4,7 +4,6 @@ import type { CategoryId } from '@/types/category';
 
 function useSidePanelForm() {
   const [title, setTitle] = useState('');
-  const [memo, setMemo] = useState('');
   const [selectedDateTime, setSelectedDateTime] = useState<Date>(
     () => new Date(),
   );
@@ -20,8 +19,6 @@ function useSidePanelForm() {
   return {
     title,
     setTitle,
-    memo,
-    setMemo,
     selectedDateTime,
     setSelectedDateTime,
     isDateTimePickerOpen,
@@ -34,7 +31,6 @@ function useSidePanelForm() {
     setSelectedTravelId,
     resetForm: () => {
       setTitle('');
-      setMemo('');
       setSelectedDateTime(new Date());
       setIsDateTimePickerOpen(false);
       setSelectedCategory(0);

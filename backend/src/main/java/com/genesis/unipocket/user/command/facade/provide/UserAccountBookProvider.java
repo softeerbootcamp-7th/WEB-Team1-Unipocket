@@ -7,6 +7,7 @@ import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepo
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class UserAccountBookProvider implements UserMainAccountBookService {
 	private final UserCommandRepository userCommandRepository;
 
 	@Override
+	@Transactional
 	public void updateMainAccountBook(UUID userId, Long accountBookId) {
 		var user =
 				userCommandRepository

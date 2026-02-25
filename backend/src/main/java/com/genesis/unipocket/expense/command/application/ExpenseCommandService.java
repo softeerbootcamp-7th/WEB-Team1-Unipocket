@@ -101,7 +101,15 @@ public class ExpenseCommandService {
 				expenseRepository.findDistinctLocalCurrencyDatePairsByAccountBookId(accountBookId);
 
 		for (Object[] pair : localCurrencyDatePairs) {
-			CurrencyCode localCurrencyCode = (CurrencyCode) pair[0];
+			if (!(pair[0] instanceof CurrencyCode localCurrencyCode)) {
+				throw new IllegalStateException(
+						"Expected CurrencyCode but got: "
+								+ (pair[0] == null ? "null" : pair[0].getClass().getName()));
+			}
+			if (pair[1] == null) {
+				throw new IllegalStateException(
+						"occurredAt date is null for accountBookId: " + accountBookId);
+			}
 			LocalDate occurredDate = toLocalDate(pair[1]);
 			OffsetDateTime dayStart = occurredDate.atStartOfDay().atOffset(ZoneOffset.UTC);
 			OffsetDateTime nextDayStart = dayStart.plusDays(1);

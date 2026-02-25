@@ -64,19 +64,21 @@ public class AccountBookAmountQueryService {
 				resolveThisMonthAmount(
 						accountBookId, localCurrencyCode, zoneId, thisMonthStart, dirtyMonths);
 
+		OffsetDateTime oldest = null;
+		OffsetDateTime newest = null;
 		Object[] dateRange = expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
-		Object[] row =
-				(dateRange != null && dateRange.length == 1 && dateRange[0] instanceof Object[])
-						? (Object[]) dateRange[0]
-						: dateRange;
-		OffsetDateTime oldest =
-				row != null && row.length > 0 && row[0] != null
-						? OffsetDateTimeConverter.from(row[0])
-						: null;
-		OffsetDateTime newest =
-				row != null && row.length > 1 && row[1] != null
-						? OffsetDateTimeConverter.from(row[1])
-						: null;
+		if (dateRange != null) {
+			Object[] row = dateRange;
+			if (dateRange.length == 1 && dateRange[0] instanceof Object[] inner) {
+				row = inner;
+			}
+			if (row.length > 0 && row[0] != null && !(row[0] instanceof Object[])) {
+				oldest = OffsetDateTimeConverter.from(row[0]);
+			}
+			if (row.length > 1 && row[1] != null && !(row[1] instanceof Object[])) {
+				newest = OffsetDateTimeConverter.from(row[1]);
+			}
+		}
 
 		return new AccountBookAmountResponse(
 				localCountryCode,

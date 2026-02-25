@@ -29,9 +29,12 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.common.enums.ExpenseSource;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import com.genesis.unipocket.user.common.enums.CardCompany;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +79,12 @@ class ExpenseCommandFacadeTest {
 		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
-								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.of(2026, 1, 1),
+								LocalDate.of(2026, 12, 31)));
 		when(expenseService.createExpenseManual(any(ExpenseCreateCommand.class)))
 				.thenReturn(
 						new ExpenseResult(
@@ -154,7 +162,12 @@ class ExpenseCommandFacadeTest {
 		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
-								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.of(2026, 1, 1),
+								LocalDate.of(2026, 12, 31)));
 		when(userCardFetchService.getUserCardOwnedBy(11L, userId.toString()))
 				.thenReturn(Optional.empty());
 		when(userCardFetchService.getUserCard(11L))
@@ -172,6 +185,50 @@ class ExpenseCommandFacadeTest {
 										.isEqualTo(ErrorCode.CARD_NOT_OWNED));
 
 		verify(expenseService, never()).createExpenseManual(any());
+	}
+
+	@Test
+	@DisplayName("수기 생성 - 가계부 종료일이 없으면 오늘까지만 허용한다")
+	void createExpenseManual_whenAccountBookEndDateIsNull_allowsUntilTodayOnly() {
+		Long accountBookId = 7L;
+		UUID userId = UUID.randomUUID();
+		ZoneId accountBookZoneId = CountryCodeTimezoneMapper.getZoneId(CountryCode.US);
+		LocalDate tomorrow = LocalDate.now(accountBookZoneId).plusDays(1);
+		Instant occurredAt = tomorrow.atTime(12, 0).atZone(accountBookZoneId).toInstant();
+		ExpenseManualCreateRequest request =
+				new ExpenseManualCreateRequest(
+						"스타벅스",
+						Category.FOOD,
+						null,
+						occurredAt,
+						new BigDecimal("100.00"),
+						null,
+						null,
+						"memo",
+						null);
+
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.now(accountBookZoneId).minusDays(30),
+								null));
+
+		assertThatThrownBy(
+						() ->
+								expenseCommandFacade.createExpenseManual(
+										request, accountBookId, userId))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD));
+
+		verify(expenseService, never()).createExpenseManual(any());
+		verify(userCardFetchService, never()).getUserCardOwnedBy(any(), any());
 	}
 
 	@Test
@@ -195,7 +252,12 @@ class ExpenseCommandFacadeTest {
 		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
-								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.of(2026, 1, 1),
+								LocalDate.of(2026, 12, 31)));
 		when(userCardFetchService.getUserCardOwnedBy(999L, userId.toString()))
 				.thenReturn(Optional.empty());
 		when(userCardFetchService.getUserCard(999L)).thenReturn(Optional.empty());
@@ -235,7 +297,12 @@ class ExpenseCommandFacadeTest {
 		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
-								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.of(2026, 1, 1),
+								LocalDate.of(2026, 12, 31)));
 		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
 				.thenReturn(
 						new ExpenseResult(
@@ -328,7 +395,12 @@ class ExpenseCommandFacadeTest {
 		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
 				.thenReturn(
 						new AccountBookInfo(
-								accountBookId, userId.toString(), CountryCode.KR, CountryCode.US));
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.of(2026, 1, 1),
+								LocalDate.of(2026, 12, 31)));
 		when(expenseService.updateExpense(any(ExpenseUpdateCommand.class)))
 				.thenReturn(
 						new ExpenseResult(
@@ -368,5 +440,52 @@ class ExpenseCommandFacadeTest {
 
 		verify(expenseOwnershipValidator).validateOwnership(accountBookId, userId.toString());
 		verify(userCardFetchService, never()).getUserCard(any());
+	}
+
+	@Test
+	@DisplayName("일괄 수정 - 가계부 기간 밖 지출일시는 예외를 반환한다")
+	void updateExpensesBulk_whenOccurredAtOutOfAccountBookPeriod_throws() {
+		Long accountBookId = 7L;
+		UUID userId = UUID.randomUUID();
+		ZoneId accountBookZoneId = CountryCodeTimezoneMapper.getZoneId(CountryCode.US);
+		LocalDate tomorrow = LocalDate.now(accountBookZoneId).plusDays(1);
+		Instant occurredAt = tomorrow.atTime(12, 0).atZone(accountBookZoneId).toInstant();
+
+		ExpenseBulkUpdateRequest request =
+				new ExpenseBulkUpdateRequest(
+						List.of(
+								new ExpenseBulkUpdateItemRequest(
+										101L,
+										"택시",
+										Category.TRANSPORT,
+										null,
+										occurredAt,
+										new BigDecimal("1000.00"),
+										CurrencyCode.JPY,
+										null,
+										"memo-1",
+										null)));
+
+		when(accountBookFetchService.getAccountBook(accountBookId, userId.toString()))
+				.thenReturn(
+						new AccountBookInfo(
+								accountBookId,
+								userId.toString(),
+								CountryCode.KR,
+								CountryCode.US,
+								LocalDate.now(accountBookZoneId).minusDays(30),
+								null));
+
+		assertThatThrownBy(
+						() ->
+								expenseCommandFacade.updateExpensesBulk(
+										accountBookId, userId, request))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD));
+
+		verify(expenseService, never()).updateExpense(any());
 	}
 }

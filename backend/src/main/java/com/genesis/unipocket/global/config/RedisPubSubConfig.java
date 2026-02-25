@@ -13,27 +13,26 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 @RequiredArgsConstructor
 public class RedisPubSubConfig {
 
-    public static final String PARSE_NOTIFY_CHANNEL = "tempexpense:parse-notify";
+	public static final String PARSE_NOTIFY_CHANNEL = "tempexpense:parse-notify";
 
-    @Bean
-    public ChannelTopic parseNotifyTopic() {
-        return new ChannelTopic(PARSE_NOTIFY_CHANNEL);
-    }
+	@Bean
+	public ChannelTopic parseNotifyTopic() {
+		return new ChannelTopic(PARSE_NOTIFY_CHANNEL);
+	}
 
-    @Bean
-    public MessageListenerAdapter parseNotifyListenerAdapter(
-            ParsingProgressPublisher publisher) {
-        return new MessageListenerAdapter(publisher, "onPubSubNotification");
-    }
+	@Bean
+	public MessageListenerAdapter parseNotifyListenerAdapter(ParsingProgressPublisher publisher) {
+		return new MessageListenerAdapter(publisher, "onPubSubNotification");
+	}
 
-    @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory connectionFactory,
-            MessageListenerAdapter parseNotifyListenerAdapter,
-            ChannelTopic parseNotifyTopic) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.addMessageListener(parseNotifyListenerAdapter, parseNotifyTopic);
-        return container;
-    }
+	@Bean
+	public RedisMessageListenerContainer redisMessageListenerContainer(
+			RedisConnectionFactory connectionFactory,
+			MessageListenerAdapter parseNotifyListenerAdapter,
+			ChannelTopic parseNotifyTopic) {
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		container.addMessageListener(parseNotifyListenerAdapter, parseNotifyTopic);
+		return container;
+	}
 }

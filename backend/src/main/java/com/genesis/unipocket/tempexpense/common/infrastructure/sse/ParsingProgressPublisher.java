@@ -32,7 +32,8 @@ public class ParsingProgressPublisher {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-	@Value("${tempexpense.parse-task.ttl-seconds:${tempexpense.parse-task.completed-ttl-seconds:600}}")
+	@Value(
+			"${tempexpense.parse-task.ttl-seconds:${tempexpense.parse-task.completed-ttl-seconds:600}}")
 	private long taskTtlSeconds;
 
 	public void registerTask(String taskId, Long accountBookId) {
@@ -101,8 +102,9 @@ public class ParsingProgressPublisher {
 			return;
 		}
 
-		ParsingTaskState terminalState = new ParsingTaskState(
-				state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null);
+		ParsingTaskState terminalState =
+				new ParsingTaskState(
+						state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null);
 		saveStateToRedis(taskId, terminalState);
 
 		notifyViaChannel(taskId);
@@ -127,13 +129,14 @@ public class ParsingProgressPublisher {
 			return;
 		}
 
-		ParsingTaskState terminalState = new ParsingTaskState(
-				state.accountBookId(),
-				state.progress(),
-				TaskStatus.ERROR,
-				errorCode,
-				errorStatus,
-				errorMessage);
+		ParsingTaskState terminalState =
+				new ParsingTaskState(
+						state.accountBookId(),
+						state.progress(),
+						TaskStatus.ERROR,
+						errorCode,
+						errorStatus,
+						errorMessage);
 		saveStateToRedis(taskId, terminalState);
 
 		notifyViaChannel(taskId);
@@ -199,31 +202,33 @@ public class ParsingProgressPublisher {
 			String message,
 			String code,
 			String fileKey) {
-		boolean sent = sendEvent(
-				emitter,
-				taskId,
-				"progress",
-				new ParsingProgressEvent(progress, message, code, fileKey));
+		boolean sent =
+				sendEvent(
+						emitter,
+						taskId,
+						"progress",
+						new ParsingProgressEvent(progress, message, code, fileKey));
 		if (!sent) {
 			emitters.remove(taskId);
 		}
 	}
 
 	private void flushTerminalEvent(String taskId, SseEmitter emitter, ParsingTaskState state) {
-		boolean sent = state.status() == TaskStatus.ERROR
-				? sendEvent(
-						emitter,
-						taskId,
-						"error",
-						new ParsingErrorEvent(
-								state.errorMessage(),
-								state.errorCode(),
-								state.errorStatus()))
-				: sendEvent(
-						emitter,
-						taskId,
-						"complete",
-						new ParsingProgressEvent(state.progress()));
+		boolean sent =
+				state.status() == TaskStatus.ERROR
+						? sendEvent(
+								emitter,
+								taskId,
+								"error",
+								new ParsingErrorEvent(
+										state.errorMessage(),
+										state.errorCode(),
+										state.errorStatus()))
+						: sendEvent(
+								emitter,
+								taskId,
+								"complete",
+								new ParsingProgressEvent(state.progress()));
 		if (!sent) {
 			emitters.remove(taskId);
 			return;

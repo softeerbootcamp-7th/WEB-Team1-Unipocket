@@ -229,7 +229,9 @@ class AuthCommandControllerTest {
 								.param("code", code)
 								.param("state", state))
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("http://localhost:5173/login?reason=withdrawn"));
+				.andExpect(
+						redirectedUrl(
+								"http://localhost:5173/login?reason=withdrawn&provider=kakao"));
 
 		verify(loginFacade).login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state));
 		verify(cookieUtil, never())

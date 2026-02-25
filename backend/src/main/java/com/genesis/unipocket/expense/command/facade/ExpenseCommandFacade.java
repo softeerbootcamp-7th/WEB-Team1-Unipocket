@@ -1,5 +1,6 @@
 package com.genesis.unipocket.expense.command.facade;
 
+import com.genesis.unipocket.accountbook.common.validation.AccountBookPeriodValidator;
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
@@ -17,10 +18,7 @@ import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
-import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +35,7 @@ public class ExpenseCommandFacade {
 	private final AccountBookFetchService accountBookFetchService;
 	private final AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 	private final ExpenseOwnershipValidator expenseOwnershipValidator;
+	private final AccountBookPeriodValidator accountBookPeriodValidator;
 
 	@Transactional
 	public ExpenseResult createExpenseManual(
@@ -193,20 +192,11 @@ public class ExpenseCommandFacade {
 
 	private void validateOccurredAtWithinAccountBookPeriod(
 			AccountBookInfo accountBookInfo, OffsetDateTime occurredAt) {
-		ZoneId accountBookZoneId =
-				CountryCodeTimezoneMapper.getZoneId(accountBookInfo.localCountryCode());
-		LocalDate occurredDate = occurredAt.atZoneSameInstant(accountBookZoneId).toLocalDate();
-		LocalDate startDate = accountBookInfo.startDate();
-		LocalDate endDate =
-				accountBookInfo.endDate() != null
-						? accountBookInfo.endDate()
-						: LocalDate.now(accountBookZoneId);
-
-		boolean beforeStart = startDate != null && occurredDate.isBefore(startDate);
-		boolean afterEnd = endDate != null && occurredDate.isAfter(endDate);
-		if (beforeStart || afterEnd) {
-			throw new BusinessException(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD);
-		}
+		accountBookPeriodValidator.validate(
+				accountBookInfo.localCountryCode(),
+				accountBookInfo.startDate(),
+				accountBookInfo.endDate(),
+				occurredAt);
 	}
 
 	@Transactional

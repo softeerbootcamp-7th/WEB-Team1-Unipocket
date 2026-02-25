@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.genesis.unipocket.accountbook.common.validation.AccountBookPeriodValidator;
 import com.genesis.unipocket.analysis.command.application.AnalysisMonthlyDirtyMarkerService;
 import com.genesis.unipocket.expense.command.application.ExpenseCommandService;
 import com.genesis.unipocket.expense.command.application.command.ExpenseCreateCommand;
@@ -45,6 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +57,10 @@ class ExpenseCommandFacadeTest {
 	@Mock private AccountBookFetchService accountBookFetchService;
 	@Mock private AnalysisMonthlyDirtyMarkerService analysisMonthlyDirtyMarkerService;
 	@Mock private ExpenseOwnershipValidator expenseOwnershipValidator;
+
+	@Spy
+	private AccountBookPeriodValidator accountBookPeriodValidator =
+			new AccountBookPeriodValidator();
 
 	@InjectMocks private ExpenseCommandFacade expenseCommandFacade;
 

@@ -50,6 +50,7 @@ const BudgetChart = ({ isPreview = false }: ChartMode) => {
       <BudgetSetupModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        initialBudget={budgetAmount > 0 ? budgetAmount : undefined}
       />
     </ChartContainer>
   );

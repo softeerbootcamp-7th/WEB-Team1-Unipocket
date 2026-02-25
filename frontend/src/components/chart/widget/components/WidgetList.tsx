@@ -14,6 +14,9 @@ const WidgetList = () => {
           key={widget.widgetType === 'BLANK' ? `BLANK-${i}` : widget.widgetType}
           widget={widget}
           isFirst={i === 0}
+          isLast={
+            widget.widgetType === 'BLANK' || i === displayWidgets.length - 1
+          }
         />
       ))}
     </div>

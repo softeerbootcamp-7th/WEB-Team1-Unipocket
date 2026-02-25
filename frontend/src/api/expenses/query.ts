@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { accountBookKeys } from '@/api/account-books/query';
 import {
   bulkUpdateExpenses,
   createManualExpense,
@@ -52,10 +53,16 @@ const invalidateRelatedQueries = (
   queryClient.invalidateQueries({
     queryKey: widgetKeys.allDetails(accountBookId),
   });
+  queryClient.invalidateQueries({
+    queryKey: travelKeys.allTravelWidgets(accountBookId),
+  });
+  queryClient.invalidateQueries({
+    queryKey: accountBookKeys.amount(accountBookId),
+  });
+  queryClient.invalidateQueries({
+    queryKey: travelKeys.allAmounts(accountBookId),
+  });
   if (travelId) {
-    queryClient.invalidateQueries({
-      queryKey: travelKeys.allWidgets(accountBookId, travelId),
-    });
     queryClient.invalidateQueries({
       queryKey: travelKeys.amount(accountBookId, travelId),
     });
@@ -117,9 +124,10 @@ export const useBulkUpdateExpensesMutation = () =>
     }: {
       accountBookId: number | string;
       data: BulkUpdateExpenseRequest;
+      travelId?: number | string;
     }) => bulkUpdateExpenses(accountBookId, data),
     onSuccess: (_, variables) => {
-      invalidateRelatedQueries(variables.accountBookId);
+      invalidateRelatedQueries(variables.accountBookId, variables.travelId);
       toast.success('지출 내역이 일괄 수정되었어요.');
     },
     onError: () => {

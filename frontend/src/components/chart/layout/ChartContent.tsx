@@ -25,7 +25,7 @@ const ChartContent = ({
   return (
     <div
       className={cn(
-        'rounded-modal-8 bg-background-alternative relative flex flex-1 justify-between p-5',
+        'rounded-modal-8 bg-background-alternative relative flex flex-1 justify-between overflow-hidden p-5',
         className,
       )}
     >

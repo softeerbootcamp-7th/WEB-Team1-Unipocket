@@ -9,6 +9,7 @@ import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMon
 import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
 import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
 import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.util.OffsetDateTimeConverter;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CountryCode;
@@ -64,10 +65,18 @@ public class AccountBookAmountQueryService {
 						accountBookId, localCurrencyCode, zoneId, thisMonthStart, dirtyMonths);
 
 		Object[] dateRange = expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
+		Object[] row =
+				(dateRange != null && dateRange.length == 1 && dateRange[0] instanceof Object[])
+						? (Object[]) dateRange[0]
+						: dateRange;
 		OffsetDateTime oldest =
-				dateRange != null && dateRange[0] != null ? (OffsetDateTime) dateRange[0] : null;
+				row != null && row.length > 0 && row[0] != null
+						? OffsetDateTimeConverter.from(row[0])
+						: null;
 		OffsetDateTime newest =
-				dateRange != null && dateRange[1] != null ? (OffsetDateTime) dateRange[1] : null;
+				row != null && row.length > 1 && row[1] != null
+						? OffsetDateTimeConverter.from(row[1])
+						: null;
 
 		return new AccountBookAmountResponse(
 				localCountryCode,

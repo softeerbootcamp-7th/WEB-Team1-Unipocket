@@ -15,6 +15,7 @@ public record TravelAmountResponse(
 		CurrencyCode baseCurrencyCode,
 		@JsonSerialize(using = FixedScaleDecimalStringSerializer.class) BigDecimal totalLocalAmount,
 		@JsonSerialize(using = FixedScaleDecimalStringSerializer.class) BigDecimal totalBaseAmount,
-		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") OffsetDateTime oldestExpenseDate,
-		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") OffsetDateTime newestExpenseDate) {
-}
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+				OffsetDateTime oldestExpenseDate,
+		@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+				OffsetDateTime newestExpenseDate) {}

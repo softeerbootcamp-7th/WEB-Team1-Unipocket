@@ -35,12 +35,13 @@ public class TempExpensePaymentInfo {
 	 *                           Optional.of(value) = 새 값 설정
 	 * @param approvalNumber     null이면 기존값 유지, non-null이면 새 값 설정
 	 */
-	public TempExpensePaymentInfo merge(Optional<String> cardLastFourDigits, String approvalNumber) {
-		String mergedCard = cardLastFourDigits == null
-				? this.cardLastFourDigits // 필드 미전송 → 기존값 유지
-				: cardLastFourDigits.orElse(null); // empty() → null, of(v) → v
+	public TempExpensePaymentInfo merge(
+			Optional<String> cardLastFourDigits, String approvalNumber) {
+		String mergedCard =
+				cardLastFourDigits == null
+						? this.cardLastFourDigits // 필드 미전송 → 기존값 유지
+						: cardLastFourDigits.orElse(null); // empty() → null, of(v) → v
 		return new TempExpensePaymentInfo(
-				mergedCard,
-				approvalNumber != null ? approvalNumber : this.approvalNumber);
+				mergedCard, approvalNumber != null ? approvalNumber : this.approvalNumber);
 	}
 }

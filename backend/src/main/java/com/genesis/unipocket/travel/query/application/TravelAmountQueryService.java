@@ -37,16 +37,21 @@ public class TravelAmountQueryService {
 
 		CurrencyCode accountBookLocalCurrency = accountBook.localCountryCode().getCurrencyCode();
 		var raw = analysisBatchAggregationRepository.aggregateTravelRaw(accountBookId, travelId);
-		BigDecimal correctedLocal = computeCorrectedLocalAmount(
-				analysisBatchAggregationRepository
-						.aggregateTravelLocalAmountGroupedByCurrency(
-								accountBookId, travelId),
-				accountBookLocalCurrency,
-				travel.startDate().atStartOfDay().atOffset(ZoneOffset.UTC));
+		BigDecimal correctedLocal =
+				computeCorrectedLocalAmount(
+						analysisBatchAggregationRepository
+								.aggregateTravelLocalAmountGroupedByCurrency(
+										accountBookId, travelId),
+						accountBookLocalCurrency,
+						travel.startDate().atStartOfDay().atOffset(ZoneOffset.UTC));
 
-		Object[] dateRange = expenseRepository.findOccurredAtRangeByAccountBookIdAndTravelId(accountBookId, travelId);
-		OffsetDateTime oldest = dateRange != null && dateRange[0] != null ? (OffsetDateTime) dateRange[0] : null;
-		OffsetDateTime newest = dateRange != null && dateRange[1] != null ? (OffsetDateTime) dateRange[1] : null;
+		Object[] dateRange =
+				expenseRepository.findOccurredAtRangeByAccountBookIdAndTravelId(
+						accountBookId, travelId);
+		OffsetDateTime oldest =
+				dateRange != null && dateRange[0] != null ? (OffsetDateTime) dateRange[0] : null;
+		OffsetDateTime newest =
+				dateRange != null && dateRange[1] != null ? (OffsetDateTime) dateRange[1] : null;
 
 		return new TravelAmountResponse(
 				accountBook.localCountryCode(),
@@ -67,9 +72,10 @@ public class TravelAmountQueryService {
 	}
 
 	private TravelQueryResponse getAccessibleTravel(Long accountBookId, Long travelId) {
-		TravelQueryResponse travel = travelQueryRepository
-				.findById(travelId)
-				.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
+		TravelQueryResponse travel =
+				travelQueryRepository
+						.findById(travelId)
+						.orElseThrow(() -> new BusinessException(ErrorCode.TRAVEL_NOT_FOUND));
 		if (!travel.accountBookId().equals(accountBookId)) {
 			throw new BusinessException(ErrorCode.TRAVEL_NOT_FOUND);
 		}
@@ -93,9 +99,10 @@ public class TravelAmountQueryService {
 			if (from == targetCurrency) {
 				total = total.add(amount);
 			} else {
-				total = total.add(
-						exchangeRateService.convertAmount(
-								amount, from, targetCurrency, refDateTime));
+				total =
+						total.add(
+								exchangeRateService.convertAmount(
+										amount, from, targetCurrency, refDateTime));
 			}
 		}
 		return total;

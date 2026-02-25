@@ -18,5 +18,5 @@ public record TemporaryExpenseMetaBulkUpdateItemRequest(
 		BigDecimal baseCurrencyAmount,
 		String memo,
 		LocalDateTime occurredAt,
-		Optional<@Pattern(regexp = "\\d{4}", message = "카드 번호 뒷자리는 4자리 숫자여야 합니다.") String> cardLastFourDigits) {
-}
+		Optional<@Pattern(regexp = "\\d{4}", message = "카드 번호 뒷자리는 4자리 숫자여야 합니다.") String>
+				cardLastFourDigits) {}

@@ -76,15 +76,13 @@ public record TempExpensePatch(
 	}
 
 	private static String normalizeBlank(String value) {
-		if (value == null)
-			return null;
+		if (value == null) return null;
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
 	}
 
 	private static Optional<String> normalizeOptionalBlank(Optional<String> value) {
-		if (value == null)
-			return null; // absent in JSON → keep old value
+		if (value == null) return null; // absent in JSON → keep old value
 		return value.map(String::trim).map(s -> s.isEmpty() ? null : s);
 	}
 }

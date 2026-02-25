@@ -25,3 +25,7 @@ export const LOGIN_MODAL_TEXT = {
     confirmButtonLabel: '복구하기',
   },
 } as const;
+
+export const POLICY = {
+  TRAVEL_MODAL: '지원 형식: jpg, jpeg, png',
+};

@@ -13,9 +13,10 @@ import { Icons } from '@/assets';
 interface UploadBoxProps {
   type: 'image' | 'file';
   onFilesSelected: (files: File[]) => void;
+  message?: string;
 }
 
-const UploadBox = ({ type, onFilesSelected }: UploadBoxProps) => {
+const UploadBox = ({ type, onFilesSelected, message }: UploadBoxProps) => {
   const policy = uploadPolicy[type];
   const validateFiles = useFileValidator(policy);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -68,7 +69,7 @@ const UploadBox = ({ type, onFilesSelected }: UploadBoxProps) => {
         {'여기에 파일을 드래그하거나\n클릭하여 업로드하세요.'}
       </h3>
       <p className="caption1-medium text-label-alternative text-center whitespace-pre-line">
-        {policy.message}
+        {message ?? policy.message}
       </p>
     </label>
   );

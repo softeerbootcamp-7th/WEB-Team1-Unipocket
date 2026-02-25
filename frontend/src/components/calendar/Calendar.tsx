@@ -61,13 +61,11 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
 
   return (
     <div className="bg-background-normal border-line-normal-normal rounded-modal-10 relative flex h-105 w-fit flex-row items-start border px-4 py-8">
-      <button
+      <Icon
+        iconName="ChevronForward"
         className="text-label-normal absolute top-8 left-8 rotate-180"
         onClick={() => handleMonthChange('prev')}
-      >
-        <Icon iconName="ChevronForward" />
-      </button>
-
+      />
       <CalendarView
         displayDate={displayMonth}
         startDate={startDate}
@@ -76,12 +74,11 @@ const Calendar = ({ startDate, endDate, onChange }: CalendarProps) => {
         onDisplayDateChange={setDisplayMonth}
       />
 
-      <button
+      <Icon
+        iconName="ChevronForward"
         className="text-label-normal absolute top-8 right-8"
         onClick={() => handleMonthChange('next')}
-      >
-        <Icon iconName="ChevronForward" />
-      </button>
+      />
     </div>
   );
 };

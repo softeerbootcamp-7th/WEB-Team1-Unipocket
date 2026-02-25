@@ -5,7 +5,7 @@ import ExpenseCard from '@/components/home-page/ExpenseCard';
 
 import { useGetAccountBookAmountQuery } from '@/api/account-books/query';
 import type { CountryCode } from '@/data/country/countryCode';
-import { formatDateStringToDot, formatDateToDot } from '@/lib/utils';
+import { formatDateToDot } from '@/lib/utils';
 
 const HomeHeader = () => {
   const { isWidgetEditMode, toggleEditMode } = useWidgetContext();
@@ -18,10 +18,10 @@ const HomeHeader = () => {
     new Date(today.getFullYear(), today.getMonth(), 1),
   );
   const oldestExpenseDateDot = amountData?.oldestExpenseDate
-    ? formatDateStringToDot(amountData.oldestExpenseDate)
+    ? formatDateToDot(new Date(amountData.oldestExpenseDate))
     : todayDot;
   const newestExpenseDateDot = amountData?.newestExpenseDate
-    ? formatDateStringToDot(amountData.newestExpenseDate)
+    ? formatDateToDot(new Date(amountData.newestExpenseDate))
     : todayDot;
 
   return (

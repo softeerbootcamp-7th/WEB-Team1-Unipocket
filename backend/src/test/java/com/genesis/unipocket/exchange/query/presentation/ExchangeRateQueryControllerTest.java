@@ -10,6 +10,7 @@ import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +29,7 @@ class ExchangeRateQueryControllerTest {
 	@MockitoBean private ExchangeRateService exchangeRateService;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@SuppressWarnings("unused")
 	@MockitoBean

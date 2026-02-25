@@ -8,7 +8,6 @@ import { REGEX } from '@/constants/regex';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 import { getLocaleByCurrencyCode } from '@/lib/country';
 
-// 제네릭 TData 적용
 interface AmountCellEditorProps<TData> {
   onUpdate: (
     rowId: string,
@@ -49,12 +48,21 @@ const AmountCellEditorContent = <TData,>({
   const [value, setValue] = useState(String(amountCell.value || ''));
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const isCancelingRef = useRef(false);
+
   useEffect(() => {
     inputRef.current?.focus();
     inputRef.current?.select();
   }, []);
 
+  const handleCancel = () => {
+    isCancelingRef.current = true;
+    dispatch({ type: 'SET_AMOUNT_CELL', payload: null });
+  };
+
   const handleSave = () => {
+    if (isCancelingRef.current) return;
+
     if (value !== String(amountCell.value || '')) {
       const isLocal = amountCell.columnId === 'localCurrencyAmount';
       const field = isLocal ? 'localCurrencyAmount' : 'baseCurrencyAmount';
@@ -62,10 +70,14 @@ const AmountCellEditorContent = <TData,>({
         ? 'baseCurrencyAmount'
         : 'localCurrencyAmount';
 
-      // 부모 Wrapper에게 반대 필드의 이름을 그대로 넘겨줍니다.
       onUpdate(amountCell.rowId, field, Number(value), oppositeField);
     }
     dispatch({ type: 'SET_AMOUNT_CELL', payload: null });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') handleCancel();
   };
 
   const currencySymbol = useMemo(() => {
@@ -73,7 +85,6 @@ const AmountCellEditorContent = <TData,>({
       const row = table.getRow(amountCell.rowId);
       const isLocal = amountCell.columnId === 'localCurrencyAmount';
 
-      // TData로 타입 단언 (안전함)
       const currencyCode = getCurrencyCode(row.original as TData, isLocal);
 
       if (!currencyCode) return '$';
@@ -109,7 +120,7 @@ const AmountCellEditorContent = <TData,>({
         value={value}
         onChange={handleChange}
         onBlur={handleSave}
-        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+        onKeyDown={handleKeyDown}
       />
     </CellEditorAnchor>
   );

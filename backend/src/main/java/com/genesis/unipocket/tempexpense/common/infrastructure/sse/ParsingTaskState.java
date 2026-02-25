@@ -18,6 +18,15 @@ record ParsingTaskState(
 			String errorCode,
 			Integer errorStatus,
 			String errorMessage) {
-		this(accountBookId, progress, status, errorCode, errorStatus, errorMessage, null, null, null);
+		this(
+				accountBookId,
+				progress,
+				status,
+				errorCode,
+				errorStatus,
+				errorMessage,
+				null,
+				null,
+				null);
 	}
 }

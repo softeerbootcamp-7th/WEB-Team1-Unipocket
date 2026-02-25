@@ -35,7 +35,8 @@ public class ParsingProgressPublisher {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-	@Value("${tempexpense.parse-task.ttl-seconds:${tempexpense.parse-task.completed-ttl-seconds:600}}")
+	@Value(
+			"${tempexpense.parse-task.ttl-seconds:${tempexpense.parse-task.completed-ttl-seconds:600}}")
 	private long taskTtlSeconds;
 
 	public void registerTask(String taskId, Long accountBookId) {
@@ -112,16 +113,17 @@ public class ParsingProgressPublisher {
 			return;
 		}
 
-		ParsingTaskState terminalState = new ParsingTaskState(
-				state.accountBookId(),
-				100,
-				TaskStatus.COMPLETE,
-				null,
-				null,
-				null,
-				state.lastMessage(),
-				state.lastCode(),
-				state.lastFileKey());
+		ParsingTaskState terminalState =
+				new ParsingTaskState(
+						state.accountBookId(),
+						100,
+						TaskStatus.COMPLETE,
+						null,
+						null,
+						null,
+						state.lastMessage(),
+						state.lastCode(),
+						state.lastFileKey());
 		saveStateToRedis(taskId, terminalState);
 
 		notifyViaChannel(taskId);
@@ -146,16 +148,17 @@ public class ParsingProgressPublisher {
 			return;
 		}
 
-		ParsingTaskState terminalState = new ParsingTaskState(
-				state.accountBookId(),
-				state.progress(),
-				TaskStatus.ERROR,
-				errorCode,
-				errorStatus,
-				errorMessage,
-				state.lastMessage(),
-				state.lastCode(),
-				state.lastFileKey());
+		ParsingTaskState terminalState =
+				new ParsingTaskState(
+						state.accountBookId(),
+						state.progress(),
+						TaskStatus.ERROR,
+						errorCode,
+						errorStatus,
+						errorMessage,
+						state.lastMessage(),
+						state.lastCode(),
+						state.lastFileKey());
 		saveStateToRedis(taskId, terminalState);
 
 		notifyViaChannel(taskId);
@@ -236,37 +239,39 @@ public class ParsingProgressPublisher {
 			String message,
 			String code,
 			String fileKey) {
-		boolean sent = sendEvent(
-				emitter,
-				taskId,
-				"progress",
-				new ParsingProgressEvent(progress, message, code, fileKey));
+		boolean sent =
+				sendEvent(
+						emitter,
+						taskId,
+						"progress",
+						new ParsingProgressEvent(progress, message, code, fileKey));
 		if (!sent) {
 			emitters.remove(taskId);
 		}
 	}
 
 	private void flushTerminalEvent(String taskId, SseEmitter emitter, ParsingTaskState state) {
-		boolean sent = state.status() == TaskStatus.ERROR
-				? sendEvent(
-						emitter,
-						taskId,
-						"error",
-						new ParsingErrorEvent(
-								state.errorMessage(),
-								state.errorCode(),
-								state.errorStatus(),
-								state.lastCode(),
-								state.lastFileKey()))
-				: sendEvent(
-						emitter,
-						taskId,
-						"complete",
-						new ParsingProgressEvent(
-								state.progress(),
-								state.lastMessage(),
-								state.lastCode(),
-								state.lastFileKey()));
+		boolean sent =
+				state.status() == TaskStatus.ERROR
+						? sendEvent(
+								emitter,
+								taskId,
+								"error",
+								new ParsingErrorEvent(
+										state.errorMessage(),
+										state.errorCode(),
+										state.errorStatus(),
+										state.lastCode(),
+										state.lastFileKey()))
+						: sendEvent(
+								emitter,
+								taskId,
+								"complete",
+								new ParsingProgressEvent(
+										state.progress(),
+										state.lastMessage(),
+										state.lastCode(),
+										state.lastFileKey()));
 		if (!sent) {
 			emitters.remove(taskId);
 			return;

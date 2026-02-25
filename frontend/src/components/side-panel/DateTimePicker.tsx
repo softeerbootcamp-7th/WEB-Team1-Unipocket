@@ -263,9 +263,19 @@ const DateTimePicker = ({
         </div>
       </div>
 
-      <p className="text-label-neutral label1-normal-medium text-center">
-        가계부 기간 내에서만 설정 가능합니다.
-      </p>
+      <div className="flex flex-col items-center gap-1">
+        <p className="text-label-neutral label1-normal-medium text-center">
+          해당 기간 내에서만 선택 가능합니다.
+        </p>
+        {(startDate || endDate) && (
+          <p className="text-label-alternative label2-medium text-center">
+            가계부 기간:{' '}
+            {`${startDate!.getFullYear()}.${String(startDate!.getMonth() + 1).padStart(2, '0')}.${String(startDate!.getDate()).padStart(2, '0')}`}
+            {' ~ '}
+            {`${endDate!.getFullYear()}.${String(endDate!.getMonth() + 1).padStart(2, '0')}.${String(endDate!.getDate()).padStart(2, '0')}`}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

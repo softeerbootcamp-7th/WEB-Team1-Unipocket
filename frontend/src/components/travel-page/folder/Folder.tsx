@@ -68,7 +68,6 @@ const Folder = ({
         />
       </svg>
 
-      {/* @TODO: 금액 필드 추가되면 undefined 삭제 필요 */}
       {localCountryCode !== undefined && baseCountryCode !== undefined && (
         <div className="absolute right-5.5 bottom-6 flex flex-col items-end gap-1">
           <CurrencyAmountDisplay

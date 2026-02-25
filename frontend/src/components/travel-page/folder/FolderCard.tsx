@@ -7,10 +7,10 @@ interface FolderCardProps {
   travelPlaceName: string;
   startDate: string;
   endDate: string;
-  localCountryCode?: CountryCode;
-  localCountryAmount?: number;
-  baseCountryCode?: CountryCode;
-  baseCountryAmount?: number;
+  localCountryCode?: string;
+  localCurrencyAmount?: number;
+  baseCountryCode?: string;
+  baseCurrencyAmount?: number;
   imageKey: string | null;
   onContextMenu?: (e: React.MouseEvent) => void;
 }
@@ -20,9 +20,9 @@ const FolderCard = ({
   startDate,
   endDate,
   localCountryCode,
-  localCountryAmount,
+  localCurrencyAmount,
   baseCountryCode,
-  baseCountryAmount,
+  baseCurrencyAmount,
   imageKey,
   onContextMenu,
 }: FolderCardProps) => {
@@ -36,10 +36,10 @@ const FolderCard = ({
     >
       <Folder
         imageKey={viewUrl}
-        localCountryCode={localCountryCode}
-        localCountryAmount={localCountryAmount}
-        baseCountryCode={baseCountryCode}
-        baseCountryAmount={baseCountryAmount}
+        localCountryCode={localCountryCode as CountryCode | undefined}
+        localCountryAmount={localCurrencyAmount}
+        baseCountryCode={baseCountryCode as CountryCode | undefined}
+        baseCountryAmount={baseCurrencyAmount}
       />
       <div className="flex flex-col gap-1.5 text-center">
         <h3 className="body1-normal-bold text-label-normal">

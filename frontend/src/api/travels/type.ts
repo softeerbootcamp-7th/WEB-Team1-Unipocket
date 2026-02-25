@@ -19,6 +19,10 @@ export interface TravelBase {
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   imageKey: string;
+  localCountryCode: string;
+  localCurrencyAmount: number;
+  baseCountryCode: string;
+  baseCurrencyAmount: number;
 }
 
 // GET /account-books/{accountBookId}/travels/{travelId}

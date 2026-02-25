@@ -73,6 +73,7 @@ class TemporaryExpenseParsingServiceTest {
 						temporaryExpensePersistenceService,
 						progressPublisher,
 						temporaryExpenseScopeValidator,
+						Runnable::run,
 						Runnable::run);
 	}
 
@@ -349,7 +350,8 @@ class TemporaryExpenseParsingServiceTest {
 						temporaryExpensePersistenceService,
 						progressPublisher,
 						temporaryExpenseScopeValidator,
-						runnable -> {});
+						runnable -> {},
+						Runnable::run);
 
 		Long accountBookId = 1L;
 		Long metaId = 10L;

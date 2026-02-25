@@ -17,6 +17,7 @@ import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ class AccountBookQueryControllerTest {
 	@MockitoBean private AccountBookAmountQueryService accountBookAmountQueryService;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@SuppressWarnings("unused")
 	@MockitoBean

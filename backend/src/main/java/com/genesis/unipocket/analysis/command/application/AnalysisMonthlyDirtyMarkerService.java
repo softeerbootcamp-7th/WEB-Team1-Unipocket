@@ -97,11 +97,17 @@ public class AnalysisMonthlyDirtyMarkerService {
 														+ accountBookId));
 		Object[] occurredRange =
 				expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
-		if (occurredRange == null || occurredRange.length < 2) {
+		Object[] row =
+				(occurredRange != null
+								&& occurredRange.length == 1
+								&& occurredRange[0] instanceof Object[])
+						? (Object[]) occurredRange[0]
+						: occurredRange;
+		if (row == null || row.length < 2) {
 			return;
 		}
-		OffsetDateTime minOccurredAt = OffsetDateTimeConverter.from(occurredRange[0]);
-		OffsetDateTime maxOccurredAt = OffsetDateTimeConverter.from(occurredRange[1]);
+		OffsetDateTime minOccurredAt = OffsetDateTimeConverter.from(row[0]);
+		OffsetDateTime maxOccurredAt = OffsetDateTimeConverter.from(row[1]);
 		if (minOccurredAt == null || maxOccurredAt == null) {
 			return;
 		}

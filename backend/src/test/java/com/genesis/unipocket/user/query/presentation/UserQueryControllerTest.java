@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import com.genesis.unipocket.user.common.enums.CardCompany;
 import com.genesis.unipocket.user.common.enums.UserRole;
 import com.genesis.unipocket.user.common.enums.UserStatus;
@@ -37,6 +38,7 @@ class UserQueryControllerTest {
 	@MockitoBean private JwtProvider jwtProvider;
 
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 

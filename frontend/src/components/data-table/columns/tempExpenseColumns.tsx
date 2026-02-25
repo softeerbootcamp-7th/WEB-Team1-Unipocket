@@ -10,11 +10,13 @@ import { formatCurrency } from '@/lib/country';
 
 interface TempExpenseColumnOptions {
   showBaseCurrencyAmount?: boolean;
+  showPaymentMethod?: boolean;
 }
 
 export const getTempExpenseColumns = ({
   // 기본적으로 기준 금액은 보여준다고 가정 (필요에 따라 기본값은 변경 가능)
   showBaseCurrencyAmount = true,
+  showPaymentMethod = true,
 }: TempExpenseColumnOptions = {}): ColumnDef<TempExpense>[] => {
   const columns: (ColumnDef<TempExpense> | false)[] = [
     {
@@ -84,7 +86,8 @@ export const getTempExpenseColumns = ({
       },
     },
 
-    {
+    // 조건에 따라 결제 수단 열 삽입
+    showPaymentMethod && {
       id: 'paymentMethod',
       header: () => <>결제 수단</>,
       meta: { cellEditor: 'method' },

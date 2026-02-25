@@ -23,6 +23,7 @@ import type {
   GetAnalysisResponse,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
+import { widgetKeys } from '@/api/widget/query';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 import { queryClient } from '@/main';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
@@ -124,7 +125,7 @@ const useUpdateAccountBookBudgetMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['widget', accountBookId, 'BUDGET'],
+        queryKey: widgetKeys.detailType(accountBookId, 'BUDGET'),
       });
       toast.success('예산이 저장되었어요.');
     },

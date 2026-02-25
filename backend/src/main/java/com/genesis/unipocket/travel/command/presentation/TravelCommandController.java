@@ -4,11 +4,14 @@ import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.travel.command.application.command.CreateTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.PatchTravelCommand;
 import com.genesis.unipocket.travel.command.application.command.UpdateTravelCommand;
+import com.genesis.unipocket.travel.command.application.result.TravelBudgetUpdateResult;
 import com.genesis.unipocket.travel.command.facade.TravelCommandFacade;
 import com.genesis.unipocket.travel.command.facade.port.dto.TravelImageUploadPathInfo;
+import com.genesis.unipocket.travel.command.presentation.request.TravelBudgetUpdateRequest;
 import com.genesis.unipocket.travel.command.presentation.request.TravelImageUploadPathRequest;
 import com.genesis.unipocket.travel.command.presentation.request.TravelRequest;
 import com.genesis.unipocket.travel.command.presentation.request.TravelUpdateRequest;
+import com.genesis.unipocket.travel.command.presentation.response.TravelBudgetUpdateResponse;
 import com.genesis.unipocket.travel.command.presentation.response.TravelImageUploadPathResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -87,6 +91,19 @@ public class TravelCommandController {
 						request.imageKey());
 		travelCommandFacade.updateTravel(accountBookId, command, userId);
 		return ResponseEntity.ok().build();
+	}
+
+	@Operation(summary = "여행 예산 수정 API", description = "여행의 예산을 설정합니다.")
+	@PatchMapping("/{travelId}/budget")
+	public ResponseEntity<TravelBudgetUpdateResponse> updateTravelBudget(
+			@PathVariable Long accountBookId,
+			@PathVariable Long travelId,
+			@RequestBody @Valid TravelBudgetUpdateRequest request,
+			@LoginUser UUID userId) {
+		TravelBudgetUpdateResult result =
+				travelCommandFacade.updateTravelBudget(
+						accountBookId, travelId, request.budget(), userId);
+		return ResponseEntity.ok(TravelBudgetUpdateResponse.from(result));
 	}
 
 	@Operation(summary = "여행 수정 API2", description = "Travel의 메타데이터를 수정합니다.")

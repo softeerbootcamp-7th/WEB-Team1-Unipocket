@@ -3,7 +3,7 @@ import { useState } from 'react';
 import CurrencyConverter from '@/components/currency/CurrencyConverter';
 import Modal from '@/components/modal/Modal';
 
-import { useUpdateAccountBookBudgetMutation } from '@/api/account-books/query';
+import { useContextualBudgetMutation } from '@/api/widget/query';
 
 interface BudgetSetupModalProps {
   isOpen: boolean;
@@ -13,14 +13,10 @@ interface BudgetSetupModalProps {
 const BudgetSetupModal = ({ isOpen, onClose }: BudgetSetupModalProps) => {
   const [budgetAmount, setBudgetAmount] = useState<number>(0);
 
-  const { mutate: updateBudget } = useUpdateAccountBookBudgetMutation();
+  const { mutate: updateBudget } = useContextualBudgetMutation();
 
   const handleAction = () => {
-    updateBudget(budgetAmount, {
-      onSuccess: () => {
-        onClose();
-      },
-    });
+    updateBudget(budgetAmount, { onSuccess: onClose });
   };
 
   return (

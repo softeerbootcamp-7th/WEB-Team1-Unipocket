@@ -109,8 +109,8 @@ public class TemporaryExpenseQueryRepository {
 							+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName,"
 							+ " te.contentInfo.category, te.amountInfo.localCurrencyCode,"
 							+ " te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
-							+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod,"
-							+ " te.contentInfo.memo, te.contentInfo.occurredAt, te.status,"
+							+ " te.amountInfo.baseCurrencyAmount, te.contentInfo.memo,"
+							+ " te.contentInfo.occurredAt, te.status,"
 							+ " te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
 							+ " te.fileId IN :fileIds ORDER BY te.tempExpenseId ASC",
 						TemporaryExpenseItemRow.class)
@@ -125,8 +125,8 @@ public class TemporaryExpenseQueryRepository {
 							+ " te.tempExpenseMetaId, te.fileId, te.contentInfo.merchantName,"
 							+ " te.contentInfo.category, te.amountInfo.localCurrencyCode,"
 							+ " te.amountInfo.localCurrencyAmount, te.amountInfo.baseCurrencyCode,"
-							+ " te.amountInfo.baseCurrencyAmount, te.paymentInfo.paymentsMethod,"
-							+ " te.contentInfo.memo, te.contentInfo.occurredAt, te.status,"
+							+ " te.amountInfo.baseCurrencyAmount, te.contentInfo.memo,"
+							+ " te.contentInfo.occurredAt, te.status,"
 							+ " te.paymentInfo.cardLastFourDigits) FROM TemporaryExpense te WHERE"
 							+ " te.fileId = :fileId ORDER BY te.tempExpenseId ASC",
 						TemporaryExpenseItemRow.class)

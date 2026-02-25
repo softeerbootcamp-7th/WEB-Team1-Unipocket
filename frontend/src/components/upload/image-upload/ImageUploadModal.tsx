@@ -26,6 +26,7 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
     parseSnackbar,
     closeParseSnackbar,
     clearItems,
+    resetAll,
     parsedMetaId,
   } = useImageUpload(accountBookId);
 
@@ -38,11 +39,16 @@ const ImageUploadModal = ({ isOpen, onClose }: ImageUploadModalProps) => {
     });
   };
 
+  const handleClose = () => {
+    onClose();
+    resetAll();
+  };
+
   return (
     <>
       <Modal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={handleClose}
         onAction={handleStartParsing}
         confirmButton={{ label: '결과 확인' }}
         className="px-8 pb-4"

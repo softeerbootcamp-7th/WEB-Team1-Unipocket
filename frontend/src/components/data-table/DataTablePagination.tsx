@@ -41,6 +41,8 @@ export const DataTablePagination = ({
   const canGoPrev = page > 0;
   const canGoNext = page < totalPages - 1;
 
+  if (totalPages <= 1) return null;
+
   return (
     <div className="bg-background-normal relative flex items-center justify-center pt-1 pb-4">
       <div className="from-background-normal to-background-normal/0 pointer-events-none absolute -top-8 left-0 h-8 w-full bg-linear-to-t" />

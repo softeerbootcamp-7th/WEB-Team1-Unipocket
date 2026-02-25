@@ -12,14 +12,8 @@ export const useFileUpload = (accountBookId: number) => {
   const itemRef = useRef<UploadItem | null>(null);
   const metaIdRef = useRef<number | undefined>(undefined);
 
-  const {
-    parseSnackbar,
-    parsedMetaId,
-    connect,
-    disconnectAll,
-    closeParseSnackbar,
-    resetParseState,
-  } = useParseSSE(accountBookId);
+  const { connect, disconnectAll, resetParseState } =
+    useParseSSE(accountBookId);
 
   useEffect(() => {
     itemRef.current = item;
@@ -109,7 +103,7 @@ export const useFileUpload = (accountBookId: number) => {
           ? { ...prev, status: UPLOAD_STATUS.PARSING, taskId: parse.taskId }
           : prev,
       );
-      connect(parse.taskId, metaIdRef.current, {
+      connect(parse.taskId, metaIdRef.current, 'file', {
         onComplete: () => setIsParsing(false),
         onError: () => {
           setItem((prev) =>
@@ -148,8 +142,6 @@ export const useFileUpload = (accountBookId: number) => {
   };
 
   const clearItem = () => {
-    disconnectAll();
-    resetParseState();
     if (itemRef.current?.url) URL.revokeObjectURL(itemRef.current.url);
     setItem(null);
     metaIdRef.current = undefined;
@@ -165,9 +157,6 @@ export const useFileUpload = (accountBookId: number) => {
     isReady,
     startParsing,
     isParsing,
-    parseSnackbar,
-    closeParseSnackbar,
-    parsedMetaId,
     clearItemAfterParseStart,
     clearItem,
   };

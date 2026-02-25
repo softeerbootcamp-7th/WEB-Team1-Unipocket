@@ -48,8 +48,10 @@ export const travelKeys = {
     travelId: number | string | undefined,
   ) => [...travelKeys.all, 'amount', accountBookId, travelId] as const,
 
-  imageUrl: (accountBookId: number | string | undefined) =>
-    [...travelKeys.all, 'imageUrl', accountBookId] as const,
+  imageUrl: (
+    accountBookId: number | string | undefined,
+    imageKey: string | null | undefined,
+  ) => [...travelKeys.all, 'imageUrl', accountBookId, imageKey] as const,
 
   widgetLayout: (
     accountBookId: number | string | undefined,
@@ -110,13 +112,14 @@ export const useGetTravelAmountQuery = (travelId: number | string) => {
   });
 };
 
-export const useGetTravelImageUrlQuery = () => {
+export const useGetTravelImageUrlQuery = (imageKey: string | null) => {
   const { accountBookId } = useRequiredAccountBook();
 
   return useQuery({
-    queryKey: travelKeys.imageUrl(accountBookId),
-    queryFn: () => getTravelImageUrl(accountBookId),
-    enabled: !!accountBookId,
+    queryKey: travelKeys.imageUrl(accountBookId, imageKey),
+    queryFn: () => getTravelImageUrl(accountBookId, imageKey ?? undefined),
+    enabled: !!accountBookId && !!imageKey,
+    staleTime: 1000 * 60 * 4, // presigned URL 만료(5분) 전 4분 캐시
   });
 };
 
@@ -212,6 +215,18 @@ export const useGetTravelPresignedUrlMutation = () => {
       getTravelPresignedUrl(accountBookId, data),
     onError: () => {
       toast.error('이미지 업로드 URL 발급에 실패했어요.');
+    },
+  });
+};
+
+export const useGetTravelImageUrlMutation = () => {
+  const { accountBookId } = useRequiredAccountBook();
+
+  return useMutation({
+    mutationFn: (imageKey: string) =>
+      getTravelImageUrl(accountBookId, imageKey),
+    onError: () => {
+      toast.error('이미지 URL 조회에 실패했어요.');
     },
   });
 };

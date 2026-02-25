@@ -28,6 +28,9 @@ public class ParsingProgressPublisher {
 	private static final String FIELD_ERROR_CODE = "errorCode";
 	private static final String FIELD_ERROR_STATUS = "errorStatus";
 	private static final String FIELD_ERROR_MESSAGE = "errorMessage";
+	private static final String FIELD_LAST_MESSAGE = "lastMessage";
+	private static final String FIELD_LAST_CODE = "lastCode";
+	private static final String FIELD_LAST_FILE_KEY = "lastFileKey";
 
 	private final RedisTemplate<String, String> redisTemplate;
 	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
@@ -91,7 +94,15 @@ public class ParsingProgressPublisher {
 		saveStateToRedis(
 				taskId,
 				new ParsingTaskState(
-						state.accountBookId(), normalized, TaskStatus.ACTIVE, null, null, null));
+						state.accountBookId(),
+						normalized,
+						TaskStatus.ACTIVE,
+						null,
+						null,
+						null,
+						message,
+						code,
+						fileKey));
 
 		notifyViaChannel(taskId);
 	}
@@ -104,7 +115,15 @@ public class ParsingProgressPublisher {
 
 		ParsingTaskState terminalState =
 				new ParsingTaskState(
-						state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null);
+						state.accountBookId(),
+						100,
+						TaskStatus.COMPLETE,
+						null,
+						null,
+						null,
+						state.lastMessage(),
+						state.lastCode(),
+						state.lastFileKey());
 		saveStateToRedis(taskId, terminalState);
 
 		notifyViaChannel(taskId);
@@ -136,7 +155,10 @@ public class ParsingProgressPublisher {
 						TaskStatus.ERROR,
 						errorCode,
 						errorStatus,
-						errorMessage);
+						errorMessage,
+						state.lastMessage(),
+						state.lastCode(),
+						state.lastFileKey());
 		saveStateToRedis(taskId, terminalState);
 
 		notifyViaChannel(taskId);
@@ -156,13 +178,24 @@ public class ParsingProgressPublisher {
 		String errorCode = hash.get(key, FIELD_ERROR_CODE);
 		String errorStatusValue = hash.get(key, FIELD_ERROR_STATUS);
 		String errorMessage = hash.get(key, FIELD_ERROR_MESSAGE);
+		String lastMessage = hash.get(key, FIELD_LAST_MESSAGE);
+		String lastCode = hash.get(key, FIELD_LAST_CODE);
+		String lastFileKey = hash.get(key, FIELD_LAST_FILE_KEY);
 
 		Long parsedAccountBookId = Long.valueOf(accountBookId);
 		int progress = parseProgress(progressValue);
 		TaskStatus status = parseStatus(statusValue);
 		Integer parsedErrorStatus = parseErrorStatus(errorStatusValue);
 		return new ParsingTaskState(
-				parsedAccountBookId, progress, status, errorCode, parsedErrorStatus, errorMessage);
+				parsedAccountBookId,
+				progress,
+				status,
+				errorCode,
+				parsedErrorStatus,
+				errorMessage,
+				lastMessage,
+				lastCode,
+				lastFileKey);
 	}
 
 	private void saveStateToRedis(String taskId, ParsingTaskState state) {
@@ -171,22 +204,26 @@ public class ParsingProgressPublisher {
 		hash.put(key, FIELD_ACCOUNT_BOOK_ID, String.valueOf(state.accountBookId()));
 		hash.put(key, FIELD_PROGRESS, String.valueOf(clamp(state.progress())));
 		hash.put(key, FIELD_STATUS, state.status().name());
-		if (state.errorCode() == null || state.errorCode().isBlank()) {
-			hash.delete(key, FIELD_ERROR_CODE);
-		} else {
-			hash.put(key, FIELD_ERROR_CODE, state.errorCode());
-		}
+		putOrDelete(hash, key, FIELD_ERROR_CODE, state.errorCode());
+		putOrDelete(hash, key, FIELD_ERROR_MESSAGE, state.errorMessage());
+		putOrDelete(hash, key, FIELD_LAST_MESSAGE, state.lastMessage());
+		putOrDelete(hash, key, FIELD_LAST_CODE, state.lastCode());
+		putOrDelete(hash, key, FIELD_LAST_FILE_KEY, state.lastFileKey());
 		if (state.errorStatus() == null) {
 			hash.delete(key, FIELD_ERROR_STATUS);
 		} else {
 			hash.put(key, FIELD_ERROR_STATUS, String.valueOf(state.errorStatus()));
 		}
-		if (state.errorMessage() == null || state.errorMessage().isBlank()) {
-			hash.delete(key, FIELD_ERROR_MESSAGE);
-		} else {
-			hash.put(key, FIELD_ERROR_MESSAGE, state.errorMessage());
-		}
 		applyTtl(key);
+	}
+
+	private void putOrDelete(
+			HashOperations<String, String, String> hash, String key, String field, String value) {
+		if (value == null || value.isBlank()) {
+			hash.delete(key, field);
+		} else {
+			hash.put(key, field, value);
+		}
 	}
 
 	private void applyTtl(String key) {
@@ -223,12 +260,18 @@ public class ParsingProgressPublisher {
 								new ParsingErrorEvent(
 										state.errorMessage(),
 										state.errorCode(),
-										state.errorStatus()))
+										state.errorStatus(),
+										state.lastCode(),
+										state.lastFileKey()))
 						: sendEvent(
 								emitter,
 								taskId,
 								"complete",
-								new ParsingProgressEvent(state.progress()));
+								new ParsingProgressEvent(
+										state.progress(),
+										state.lastMessage(),
+										state.lastCode(),
+										state.lastFileKey()));
 		if (!sent) {
 			emitters.remove(taskId);
 			return;
@@ -284,7 +327,13 @@ public class ParsingProgressPublisher {
 		}
 
 		if (state.status() == TaskStatus.ACTIVE) {
-			sendProgress(taskId, emitter, state.progress(), null, null, null);
+			sendProgress(
+					taskId,
+					emitter,
+					state.progress(),
+					state.lastMessage(),
+					state.lastCode(),
+					state.lastFileKey());
 		} else {
 			flushTerminalEvent(taskId, emitter, state);
 		}

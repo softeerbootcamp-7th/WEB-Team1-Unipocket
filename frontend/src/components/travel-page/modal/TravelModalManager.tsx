@@ -103,6 +103,15 @@ const TravelModalManager = ({
           onClose={closeModal}
           travelId={activeModal.travelId}
           imageKey={activeModal.imageKey}
+          onAction={(newImageKey) =>
+            handlePatch({
+              travelId: activeModal.travelId,
+              travelPlaceName: activeModal.travelPlaceName,
+              startDate: activeModal.startDate,
+              endDate: activeModal.endDate,
+              imageKey: newImageKey,
+            })
+          }
         />
       )}
     </>

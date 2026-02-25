@@ -1,8 +1,4 @@
-import { useState } from 'react';
-
-import Snackbar from '@/components/common/Snackbar';
 import Modal from '@/components/modal/Modal';
-import FileResultModal from '@/components/upload/file-upload/FileResultModal';
 import FileUploadContent from '@/components/upload/file-upload/FileUploadContent';
 import { useFileUpload } from '@/components/upload/file-upload/useFileUpload';
 
@@ -15,20 +11,12 @@ interface FileUploadModalProps {
 
 const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
   const accountBookId = useRequiredAccountBook().accountBookId;
-  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
-  const [resultMetaId, setResultMetaId] = useState<number | undefined>(
-    undefined,
-  );
-
   const {
     item,
     handleFilesSelected,
     removeItem,
     isReady,
     startParsing,
-    parseSnackbar,
-    closeParseSnackbar,
-    parsedMetaId,
     clearItemAfterParseStart,
     clearItem,
   } = useFileUpload(accountBookId);
@@ -64,35 +52,6 @@ const FileUploadModal = ({ isOpen, onClose }: FileUploadModalProps) => {
           isReady={isReady}
         />
       </Modal>
-
-      {parseSnackbar.isOpen && (
-        <Snackbar
-          status={parseSnackbar.status}
-          description={parseSnackbar.description}
-          onAction={() => {
-            closeParseSnackbar();
-            if (
-              parseSnackbar.status === 'success' &&
-              parsedMetaId !== undefined
-            ) {
-              setResultMetaId(parsedMetaId);
-              setIsResultModalOpen(true);
-            }
-          }}
-        />
-      )}
-
-      {resultMetaId !== undefined && isResultModalOpen && (
-        <FileResultModal
-          isOpen={isResultModalOpen}
-          accountBookId={accountBookId}
-          metaId={resultMetaId}
-          onClose={() => {
-            setIsResultModalOpen(false);
-            setResultMetaId(undefined);
-          }}
-        />
-      )}
     </>
   );
 };

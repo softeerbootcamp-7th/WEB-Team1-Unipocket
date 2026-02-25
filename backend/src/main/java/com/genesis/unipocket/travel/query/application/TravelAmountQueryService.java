@@ -12,6 +12,7 @@ import com.genesis.unipocket.travel.query.persistence.repository.TravelQueryRepo
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
 import com.genesis.unipocket.travel.query.presentation.response.TravelAmountResponse;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -48,10 +49,8 @@ public class TravelAmountQueryService {
 		Object[] dateRange =
 				expenseRepository.findOccurredAtRangeByAccountBookIdAndTravelId(
 						accountBookId, travelId);
-		OffsetDateTime oldest =
-				dateRange != null && dateRange[0] != null ? (OffsetDateTime) dateRange[0] : null;
-		OffsetDateTime newest =
-				dateRange != null && dateRange[1] != null ? (OffsetDateTime) dateRange[1] : null;
+		OffsetDateTime oldest = extractRangeDateTime(dateRange, 0);
+		OffsetDateTime newest = extractRangeDateTime(dateRange, 1);
 
 		return new TravelAmountResponse(
 				accountBook.localCountryCode(),
@@ -109,6 +108,9 @@ public class TravelAmountQueryService {
 	}
 
 	private CurrencyCode parseCurrencyCode(String rawCode) {
+		if (rawCode == null) {
+			return null;
+		}
 		try {
 			int ordinal = Integer.parseInt(rawCode);
 			CurrencyCode[] values = CurrencyCode.values();
@@ -120,5 +122,38 @@ public class TravelAmountQueryService {
 				return null;
 			}
 		}
+	}
+
+	private OffsetDateTime extractRangeDateTime(Object[] range, int index) {
+		if (range == null || range.length == 0) {
+			return null;
+		}
+		if (range.length == 1 && range[0] instanceof Object[] wrapped) {
+			return convertToOffsetDateTime(index < wrapped.length ? wrapped[index] : null);
+		}
+		return convertToOffsetDateTime(index < range.length ? range[index] : null);
+	}
+
+	private OffsetDateTime convertToOffsetDateTime(Object value) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof OffsetDateTime offsetDateTime) {
+			return offsetDateTime;
+		}
+		if (value instanceof LocalDateTime localDateTime) {
+			return localDateTime.atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof java.sql.Timestamp timestamp) {
+			return timestamp.toLocalDateTime().atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof java.util.Date date) {
+			return date.toInstant().atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof String stringValue) {
+			return OffsetDateTime.parse(stringValue);
+		}
+		throw new IllegalStateException(
+				"Unsupported occurredAt range value type: " + value.getClass().getName());
 	}
 }

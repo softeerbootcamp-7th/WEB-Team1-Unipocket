@@ -14,6 +14,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.travel.query.application.TravelAmountQueryService;
 import com.genesis.unipocket.travel.query.application.TravelQueryService;
 import com.genesis.unipocket.travel.query.presentation.response.TravelAmountResponse;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -34,6 +35,7 @@ class TravelQueryControllerTest {
 	@MockitoBean private TravelAmountQueryService travelAmountQueryService;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@SuppressWarnings("unused")
 	@MockitoBean

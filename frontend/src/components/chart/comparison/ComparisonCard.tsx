@@ -52,7 +52,7 @@ const ComparisonCard = ({
     <div className="flex h-8.5 items-center gap-3.5">
       <div
         className={clsx(
-          'animate-expand-width h-8 origin-left items-center rounded-xs',
+          'animate-expand-width h-8 origin-left items-center rounded-sm',
           barWidth,
           styles.barColor,
         )}

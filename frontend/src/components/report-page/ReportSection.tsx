@@ -1,6 +1,7 @@
 import ReportCategory from '@/components/report-page/category/ReportCategory';
 import ReportCategorySkeleton from '@/components/report-page/category/ReportCategorySkeleton';
 import ReportMonthly from '@/components/report-page/monthly/ReportMonthly';
+import ReportMonthlySkeleton from '@/components/report-page/monthly/ReportMonthlySkeleton';
 import ReportMyself from '@/components/report-page/myself/ReportMyself';
 import ReportProvider from '@/components/report-page/ReportProvider';
 
@@ -21,6 +22,11 @@ const ReportSection = ({
   onCurrencyTypeChange,
   isCurrentMonth,
 }: ReportSectionProps) => {
+  const monthlyData = data.compareWithAverage;
+  const showMonthlySkeleton =
+    Number(monthlyData.mySpentAmount) === 0 ||
+    Number(monthlyData.averageSpentAmount) === 0;
+
   const categoryItems = data.compareByCategory.items;
   const allMyZero = categoryItems.every(
     (item) => Number(item.mySpentAmount) === 0,
@@ -37,7 +43,11 @@ const ReportSection = ({
         onCurrencyTypeChange={onCurrencyTypeChange}
       >
         <div className="flex w-113 flex-col justify-between">
-          <ReportMonthly data={data.compareWithAverage} />
+          {showMonthlySkeleton ? (
+            <ReportMonthlySkeleton />
+          ) : (
+            <ReportMonthly data={monthlyData} />
+          )}
           <ReportMyself
             data={data.compareWithLastMonth}
             isCurrentMonth={isCurrentMonth}

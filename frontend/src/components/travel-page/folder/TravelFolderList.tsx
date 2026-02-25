@@ -8,7 +8,13 @@ import { useGetTravelsQuery } from '@/api/travels/query';
 import type { TravelBase } from '@/api/travels/type';
 
 interface TravelFolderListProps {
-  onOpenEditThumbnail: (travelId: number, imageUrl: string | null) => void;
+  onOpenEditThumbnail: (
+    travelId: number,
+    imageUrl: string | null,
+    travelPlaceName: string,
+    startDate: string,
+    endDate: string,
+  ) => void;
   onOpenEditName: (
     travelId: number,
     defaultName: string,
@@ -73,6 +79,9 @@ const TravelFolderList = ({
             onOpenEditThumbnail(
               contextMenu.folder.travelId,
               contextMenu.folder.imageKey,
+              contextMenu.folder.travelPlaceName,
+              contextMenu.folder.startDate,
+              contextMenu.folder.endDate,
             );
             setContextMenu(null);
           }}

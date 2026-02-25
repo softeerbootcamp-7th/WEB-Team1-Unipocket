@@ -21,7 +21,14 @@ export type TravelModalState =
       imageKey: string;
     }
   | { type: 'DELETE'; travelId: number }
-  | { type: 'EDIT_THUMBNAIL'; travelId: number; imageKey: string | null };
+  | {
+      type: 'EDIT_THUMBNAIL';
+      travelId: number;
+      imageKey: string | null;
+      travelPlaceName: string;
+      startDate: string;
+      endDate: string;
+    };
 
 export const useTravelModal = () => {
   const [activeModal, setActiveModal] = useState<TravelModalState>({
@@ -76,8 +83,21 @@ export const useTravelModal = () => {
     openDelete: (travelId: number) => {
       setActiveModal({ type: 'DELETE', travelId });
     },
-    openEditThumbnail: (travelId: number, imageKey: string | null) => {
-      setActiveModal({ type: 'EDIT_THUMBNAIL', travelId, imageKey });
+    openEditThumbnail: (
+      travelId: number,
+      imageKey: string | null,
+      travelPlaceName: string,
+      startDate: string,
+      endDate: string,
+    ) => {
+      setActiveModal({
+        type: 'EDIT_THUMBNAIL',
+        travelId,
+        imageKey,
+        travelPlaceName,
+        startDate,
+        endDate,
+      });
     },
   };
 };

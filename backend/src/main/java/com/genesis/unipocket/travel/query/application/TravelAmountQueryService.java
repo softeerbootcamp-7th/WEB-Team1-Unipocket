@@ -4,6 +4,7 @@ import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBoo
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -11,6 +12,7 @@ import com.genesis.unipocket.travel.query.persistence.repository.TravelQueryRepo
 import com.genesis.unipocket.travel.query.persistence.response.TravelQueryResponse;
 import com.genesis.unipocket.travel.query.presentation.response.TravelAmountResponse;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -21,14 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class TravelAmountQueryService {
 
 	private final AccountBookQueryRepository accountBookQueryRepository;
 	private final TravelQueryRepository travelQueryRepository;
 	private final AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	private final ExchangeRateService exchangeRateService;
+	private final ExpenseRepository expenseRepository;
 
+	@Transactional
 	public TravelAmountResponse getTravelAmount(Long accountBookId, Long travelId, String userId) {
 		AccountBookDetailResponse accountBook = getAccessibleAccountBook(accountBookId, userId);
 		TravelQueryResponse travel = getAccessibleTravel(accountBookId, travelId);
@@ -43,13 +46,21 @@ public class TravelAmountQueryService {
 						accountBookLocalCurrency,
 						travel.startDate().atStartOfDay().atOffset(ZoneOffset.UTC));
 
+		Object[] dateRange =
+				expenseRepository.findOccurredAtRangeByAccountBookIdAndTravelId(
+						accountBookId, travelId);
+		OffsetDateTime oldest = extractRangeDateTime(dateRange, 0);
+		OffsetDateTime newest = extractRangeDateTime(dateRange, 1);
+
 		return new TravelAmountResponse(
 				accountBook.localCountryCode(),
 				accountBook.localCountryCode().getCurrencyCode(),
 				accountBook.baseCountryCode(),
 				accountBook.baseCountryCode().getCurrencyCode(),
 				correctedLocal,
-				raw.totalBaseAmount());
+				raw.totalBaseAmount(),
+				oldest,
+				newest);
 	}
 
 	private AccountBookDetailResponse getAccessibleAccountBook(Long accountBookId, String userId) {
@@ -97,6 +108,9 @@ public class TravelAmountQueryService {
 	}
 
 	private CurrencyCode parseCurrencyCode(String rawCode) {
+		if (rawCode == null) {
+			return null;
+		}
 		try {
 			int ordinal = Integer.parseInt(rawCode);
 			CurrencyCode[] values = CurrencyCode.values();
@@ -108,5 +122,38 @@ public class TravelAmountQueryService {
 				return null;
 			}
 		}
+	}
+
+	private OffsetDateTime extractRangeDateTime(Object[] range, int index) {
+		if (range == null || range.length == 0) {
+			return null;
+		}
+		if (range.length == 1 && range[0] instanceof Object[] wrapped) {
+			return convertToOffsetDateTime(index < wrapped.length ? wrapped[index] : null);
+		}
+		return convertToOffsetDateTime(index < range.length ? range[index] : null);
+	}
+
+	private OffsetDateTime convertToOffsetDateTime(Object value) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof OffsetDateTime offsetDateTime) {
+			return offsetDateTime;
+		}
+		if (value instanceof LocalDateTime localDateTime) {
+			return localDateTime.atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof java.sql.Timestamp timestamp) {
+			return timestamp.toLocalDateTime().atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof java.util.Date date) {
+			return date.toInstant().atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof String stringValue) {
+			return OffsetDateTime.parse(stringValue);
+		}
+		throw new IllegalStateException(
+				"Unsupported occurredAt range value type: " + value.getClass().getName());
 	}
 }

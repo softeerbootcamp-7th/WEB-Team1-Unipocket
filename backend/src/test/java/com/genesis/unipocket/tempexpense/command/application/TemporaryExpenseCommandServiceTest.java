@@ -72,16 +72,7 @@ class TemporaryExpenseCommandServiceTest {
 
 		TemporaryExpenseUpdateCommand command =
 				new TemporaryExpenseUpdateCommand(
-						null,
-						null,
-						null,
-						null,
-						null,
-						new BigDecimal("13000.00"),
-						null,
-						null,
-						null,
-						null);
+						null, null, null, null, null, new BigDecimal("13000.00"), null, null, null);
 
 		when(temporaryExpenseRepository.findById(tempExpenseId)).thenReturn(Optional.of(existing));
 		when(tempExpenseMetaRepository.findById(metaId))

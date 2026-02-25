@@ -5,6 +5,7 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.tempexpense.command.application.command.TemporaryExpenseUpdateCommand;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public record TempExpensePatch(
 		String merchantName,
@@ -14,10 +15,9 @@ public record TempExpensePatch(
 		CurrencyCode baseCurrencyCode,
 		BigDecimal baseCurrencyAmount,
 		BigDecimal exchangeRate,
-		String paymentsMethod,
 		String memo,
 		LocalDateTime occurredAt,
-		String cardLastFourDigits,
+		Optional<String> cardLastFourDigits,
 		String approvalNumber) {
 	public boolean hasAnyChange() {
 		return merchantName != null
@@ -27,7 +27,6 @@ public record TempExpensePatch(
 				|| baseCurrencyCode != null
 				|| baseCurrencyAmount != null
 				|| exchangeRate != null
-				|| paymentsMethod != null
 				|| memo != null
 				|| occurredAt != null
 				|| cardLastFourDigits != null
@@ -42,10 +41,9 @@ public record TempExpensePatch(
 			CurrencyCode baseCurrencyCode,
 			BigDecimal baseCurrencyAmount,
 			BigDecimal exchangeRate,
-			String paymentsMethod,
 			String memo,
 			LocalDateTime occurredAt,
-			String cardLastFourDigits,
+			Optional<String> cardLastFourDigits,
 			String approvalNumber) {
 		return new TempExpensePatch(
 				normalizeBlank(merchantName),
@@ -55,10 +53,9 @@ public record TempExpensePatch(
 				baseCurrencyCode,
 				baseCurrencyAmount,
 				exchangeRate,
-				normalizeBlank(paymentsMethod),
 				memo,
 				occurredAt,
-				normalizeBlank(cardLastFourDigits),
+				normalizeOptionalBlank(cardLastFourDigits),
 				normalizeBlank(approvalNumber));
 	}
 
@@ -72,7 +69,6 @@ public record TempExpensePatch(
 				resolvedBaseCurrencyCode,
 				command.baseCurrencyAmount(),
 				null,
-				command.paymentsMethod(),
 				command.memo(),
 				command.occurredAt(),
 				command.cardLastFourDigits(),
@@ -83,5 +79,10 @@ public record TempExpensePatch(
 		if (value == null) return null;
 		String trimmed = value.trim();
 		return trimmed.isEmpty() ? null : trimmed;
+	}
+
+	private static Optional<String> normalizeOptionalBlank(Optional<String> value) {
+		if (value == null) return null; // absent in JSON → keep old value
+		return value.map(String::trim).map(s -> s.isEmpty() ? null : s);
 	}
 }

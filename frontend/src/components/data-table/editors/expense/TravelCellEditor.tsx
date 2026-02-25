@@ -1,6 +1,6 @@
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
-import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
+import { useInlineExpenseUpdate } from '@/components/data-table/editors/expense/useInlineExpenseUpdate';
 import { TravelSelectorContent } from '@/components/data-table/selectors/TravelSelectorContent';
 import type { ActiveCellState } from '@/components/data-table/type';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';

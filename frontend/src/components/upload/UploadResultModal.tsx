@@ -1,7 +1,5 @@
 import { type ReactNode, useEffect } from 'react';
 
-import { useEscapeKey } from '@/hooks/useKeyboardEvent';
-
 import Button from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
 
@@ -12,6 +10,7 @@ interface UploadResultModalProps {
   onClose: () => void;
   onConfirm?: () => void;
   children?: ReactNode;
+  isConfirmDisabled?: boolean;
 }
 
 export default function UploadResultModal({
@@ -20,6 +19,7 @@ export default function UploadResultModal({
   expenseCount,
   onClose,
   onConfirm,
+  isConfirmDisabled = false,
   children,
 }: UploadResultModalProps) {
   useEffect(() => {
@@ -33,8 +33,6 @@ export default function UploadResultModal({
     };
   }, [isOpen]);
 
-  useEscapeKey(isOpen, onClose);
-
   if (!isOpen) return null;
 
   const title = imageCount
@@ -46,7 +44,7 @@ export default function UploadResultModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="upload-result-title"
-      className="bg-background-alternative z-overlay fixed inset-0 flex flex-col gap-8"
+      className="bg-background-alternative z-modal fixed inset-0 flex flex-col gap-8"
     >
       <div className="border-line-normal-normal flex h-11.5 items-center justify-between border-b px-8">
         <span className="body2-normal-bold text-label-normal">결과 확인</span>
@@ -69,7 +67,8 @@ export default function UploadResultModal({
           </h2>
           <span className="body1-normal-medium text-label-alternative">
             수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
-            수정해주세요.
+            수정해주세요. <br /> 결제 시점의 환율에 따라 기준 금액이 자동
+            계산됩니다.
           </span>
         </div>
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
@@ -78,7 +77,12 @@ export default function UploadResultModal({
         <Button variant="outlined" size="lg" onClick={onClose}>
           취소
         </Button>
-        <Button variant="solid" size="lg" onClick={onConfirm}>
+        <Button
+          variant="solid"
+          size="lg"
+          onClick={onConfirm}
+          disabled={isConfirmDisabled}
+        >
           지출 내역 적용하기
         </Button>
       </footer>

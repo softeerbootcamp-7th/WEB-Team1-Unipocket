@@ -113,7 +113,9 @@ const UpdateActionBar = () => {
             onUpdate={(val) => handleBulkUpdate('category', val)}
           />
           <BulkMethodAction
-            onUpdate={(val) => handleBulkUpdate('userCardId', val)}
+            onUpdate={(userCardId) =>
+              handleBulkUpdate('userCardId', userCardId)
+            }
           />
           <BulkTravelAction
             onUpdate={(val) => handleBulkUpdate('travelId', val)}

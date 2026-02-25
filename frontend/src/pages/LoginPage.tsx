@@ -1,5 +1,6 @@
 import LoginContainer from '@/components/login-page/LoginContainer';
 import LoginContainerTemp from '@/components/login-page/LoginContainerTemp';
+import LoginTerms from '@/components/login-page/LoginTerms';
 
 import { Icons } from '@/assets';
 
@@ -23,6 +24,7 @@ const LoginPage = () => {
         <div className="absolute right-20 bottom-23 left-20 flex flex-col gap-3 md:static md:w-81.25">
           <LoginContainer />
           <LoginContainerTemp />
+          <LoginTerms />
         </div>
       </div>
     </main>

@@ -49,10 +49,6 @@ export const CARDS = {
     code: '토스',
     logo: `${CDN_URL}/assets/cards/TOSS.svg`,
   },
-  12: {
-    code: '트래블월렛',
-    logo: `${CDN_URL}/assets/cards/TAVEL_WALLET.svg`,
-  },
 } as const;
 
 export type CardId = keyof typeof CARDS;

@@ -16,7 +16,6 @@ public record TemporaryExpenseItemRow(
 		BigDecimal localCurrencyAmount,
 		CurrencyCode baseCountryCode,
 		BigDecimal baseCurrencyAmount,
-		String paymentsMethod,
 		String memo,
 		LocalDateTime occurredAt,
 		TemporaryExpenseStatus status,

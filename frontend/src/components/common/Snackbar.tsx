@@ -11,6 +11,7 @@ interface SnackbarProps {
   title?: string;
   description?: string;
   btnText?: string;
+  className?: string;
   onAction: () => void;
 }
 
@@ -33,6 +34,7 @@ const Snackbar = ({
   title,
   description,
   btnText = '결과 확인',
+  className,
   onAction,
 }: SnackbarProps) => {
   const isLoading = status === 'loading';
@@ -40,7 +42,10 @@ const Snackbar = ({
   return (
     <div
       role="status"
-      className="z-priority rounded-modal-12 fixed bottom-10 left-10 flex w-83.75 max-w-105 items-center justify-between gap-8 bg-[#49494B] px-4 py-2.75"
+      className={clsx(
+        'rounded-modal-12 flex w-83.75 max-w-105 items-center justify-between gap-8 bg-[#49494B] px-4 py-2.75',
+        className,
+      )}
     >
       <div className="flex items-center gap-2">
         {iconMap[status]}

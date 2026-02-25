@@ -17,6 +17,7 @@ interface DataTableProps<TData> {
   groupDisplay?: (groupKey: string) => string;
   enableGroupSelection?: boolean;
   blankFallbackText?: string;
+  getRowIssue?: (row: TData) => boolean;
 }
 
 const DataTable = <TData,>({
@@ -24,6 +25,7 @@ const DataTable = <TData,>({
   groupDisplay,
   enableGroupSelection = true,
   blankFallbackText,
+  getRowIssue,
 }: DataTableProps<TData>) => {
   const { table, dispatch } = useDataTable();
   const rows = table.getRowModel().rows as Row<TData>[];
@@ -57,41 +59,38 @@ const DataTable = <TData,>({
         value: cell.getValue(),
       };
 
-      const original = cell.row.original;
-      const hasIssue =
-        typeof original === 'object' &&
-        original !== null &&
-        'status' in original &&
-        (original as Record<string, unknown>).status !== 'NORMAL';
+      const editorType = cell.column.columnDef.meta?.cellEditor;
 
-      if (hasIssue) {
-        dispatch({ type: 'SET_WARNING_CELL', payload });
+      if (editorType) {
+        switch (editorType) {
+          case 'text':
+            dispatch({ type: 'SET_TEXT_CELL', payload });
+            break;
+          case 'category':
+            dispatch({ type: 'SET_CATEGORY_CELL', payload });
+            break;
+          case 'amount':
+            dispatch({ type: 'SET_AMOUNT_CELL', payload });
+            break;
+          case 'method':
+            dispatch({ type: 'SET_METHOD_CELL', payload });
+            break;
+          case 'travel':
+            dispatch({ type: 'SET_TRAVEL_CELL', payload });
+            break;
+          default:
+            break;
+        }
         return;
       }
 
-      const editorType = cell.column.columnDef.meta?.cellEditor;
+      const hasIssue = getRowIssue ? getRowIssue(cell.row.original) : false;
 
-      switch (editorType) {
-        case 'text':
-          dispatch({ type: 'SET_TEXT_CELL', payload });
-          break;
-        case 'category':
-          dispatch({ type: 'SET_CATEGORY_CELL', payload });
-          break;
-        case 'amount':
-          dispatch({ type: 'SET_AMOUNT_CELL', payload });
-          break;
-        case 'method':
-          dispatch({ type: 'SET_METHOD_CELL', payload });
-          break;
-        case 'travel':
-          dispatch({ type: 'SET_TRAVEL_CELL', payload });
-          break;
-        default:
-          break;
+      if (hasIssue) {
+        dispatch({ type: 'SET_WARNING_CELL', payload });
       }
     },
-    [dispatch],
+    [dispatch, getRowIssue],
   );
 
   return (
@@ -161,26 +160,27 @@ const DataTable = <TData,>({
 
                 {/* 실제 데이터 행들 */}
                 {dateRows.map((row) => {
-                  const original = row.original;
-                  const hasIssue =
-                    typeof original === 'object' &&
-                    original !== null &&
-                    'status' in original &&
-                    (original as Record<string, unknown>).status !== 'NORMAL';
+                  const hasIssue = getRowIssue
+                    ? getRowIssue(row.original)
+                    : false;
                   return (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
                       className={hasIssue ? 'bg-red-50 hover:bg-red-100' : ''}
                     >
-                      {row.getVisibleCells().map((cell) => {
+                      {row.getVisibleCells().map((cell, index) => {
+                        // 첫 번째 셀(체크박스)이면서 그룹화가 되어있을 때 들여쓰기(pl-11) 적용
+                        const isSecondCell = index === 1;
+                        const shouldIndent = groupBy && isSecondCell;
                         return (
                           <TableCell
                             key={cell.id}
                             onClick={(e) =>
                               handleCellClick(cell, e.currentTarget)
                             }
-                            className="cursor-pointer"
+                            // 두 번째 셀일 때만 좌측 패딩(pl-8) 추가
+                            className={`cursor-pointer ${shouldIndent ? 'pl-8' : ''}`}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

@@ -11,4 +11,6 @@ import com.genesis.unipocket.auth.common.dto.LoginResult;
  */
 public interface UserLoginProcessor {
 	LoginResult loginOrRegister(UserLoginRequest request);
+
+	LoginResult reactivate(UserLoginRequest request);
 }

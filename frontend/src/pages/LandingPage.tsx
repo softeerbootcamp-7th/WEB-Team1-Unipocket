@@ -7,15 +7,11 @@ import {
   TabProvider,
   TabTrigger,
 } from '@/components/common/Tab';
-import { expenseColumns } from '@/components/data-table/columns/expenseColumns';
-import { DataTable } from '@/components/data-table/DataTable';
-import DataTableProvider from '@/components/data-table/DataTableProvider';
-import { getData } from '@/components/landing-page/dummy';
+import { TEMP_EXPENSE_DUMMY } from '@/components/landing-page/dummy';
 import FeatureCard from '@/components/landing-page/FeatureCard';
 import InfiniteCurrency from '@/components/landing-page/InfinityCurrency';
-import LandingUploadBox from '@/components/upload/upload-box/LandingUploadBox';
+import LandingExpenseTable from '@/components/landing-page/LandingExpenseTable';
 
-import type { Expense } from '@/api/expenses/type';
 import { LandingImages } from '@/assets';
 
 const LandingPage = () => {
@@ -23,7 +19,7 @@ const LandingPage = () => {
     <main className="-mt-14.25">
       <HomeSection />
       <FeatureSection />
-      <DemoSection />
+      <PreviewSection />
     </main>
   );
 };
@@ -56,9 +52,9 @@ const HomeSection = () => {
               로그인
             </Button>
           </Link>
-          <Link to="/" hash="demo">
+          <Link to="/" hash="preview">
             <Button variant="outlined" size="lg">
-              데모 체험하기
+              서비스 미리보기
             </Button>
           </Link>
         </div>
@@ -155,72 +151,48 @@ const FeatureSection = () => {
   );
 };
 
-const DemoSection = () => {
-  const data = getData();
+const PreviewSection = () => {
   return (
-    <section id="demo" className="flex flex-col p-10 lg:px-60 lg:py-32.75">
+    <section id="preview" className="flex flex-col p-10 lg:px-60 lg:py-32.75">
       <h2 className="title1-medium mb-4 text-center">
-        지출 내역을 올려보고 기능을 체험해보세요!
+        사진과 파일을 올리면 지출 내역을 자동으로 정리해줘요!
       </h2>
       <h2 className="text-label-alternative mb-20 text-center text-2xl font-medium">
-        영수증 및 모바일 결제 화면 캡처본을 업로드하면
-        <br /> 자동으로 내역이 정리됩니다.
+        영수증, 은행 앱 이미지, CSV 파일을 업로드하면
+        <br /> 날짜·금액·카테고리를 분석해 한눈에 보기 쉽게 정리됩니다.
       </h2>
 
-      <div className="bg-background-normal shadow-semantic-subtle flex flex-col gap-12 rounded-3xl p-3 pb-7">
-        <LandingUploadBox />
+      <div className="bg-background-normal shadow-semantic-subtle flex flex-col gap-12 rounded-3xl px-3 py-8">
         <div className="px-4.25">
           <TabProvider variant="underline" defaultValue="sample1">
             <TabList>
-              <TabTrigger value="sample1">Sample1.png</TabTrigger>
-              <TabTrigger value="sample2">Sample2.png</TabTrigger>
+              <TabTrigger value="sample1">Receipt.png</TabTrigger>
+              <TabTrigger value="sample2">Bank.jpeg</TabTrigger>
             </TabList>
-            <div className="h-10" />
+            <div className="h-7" />
             <TabContent value="sample1">
               <div className="flex flex-col gap-4.5 lg:flex-row">
-                <div className="bg-background-alternative flex items-center justify-center rounded-2xl border border-gray-200 p-2.5">
+                <div className="bg-background-alternative flex items-center justify-center self-start rounded-2xl border border-gray-200 p-2.5">
                   <img
-                    src={LandingImages.DemoReceipt1}
-                    className="h-120 rounded-lg"
+                    src={LandingImages.DemoReceipt}
+                    className="h-131 rounded-lg object-contain"
                   />
                 </div>
-                <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
-                  <DataTableProvider columns={expenseColumns} data={data}>
-                    <DataTable
-                      enableGroupSelection={false}
-                      groupBy={(row: Expense) =>
-                        new Date(row.occurredAt).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                        })
-                      }
-                    />
-                  </DataTableProvider>
+                <div className="shadow-semantic-subtle h-136 min-w-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 px-2 pb-4">
+                  <LandingExpenseTable data={TEMP_EXPENSE_DUMMY[0]} />
                 </div>
               </div>
             </TabContent>
             <TabContent value="sample2">
               <div className="flex flex-col gap-4.5 lg:flex-row">
-                <div className="bg-background-alternative flex items-center justify-center rounded-2xl border border-gray-200 p-2.5">
+                <div className="bg-background-alternative flex items-center justify-center self-start rounded-2xl border border-gray-200 p-2.5">
                   <img
-                    src={LandingImages.DemoReceipt1}
-                    className="h-120 rounded-lg"
+                    src={LandingImages.DemoBank}
+                    className="h-131 rounded-lg object-contain"
                   />
                 </div>
-                <div className="shadow-semantic-subtle h-fit min-w-0 flex-1 rounded-2xl px-2 py-4">
-                  <DataTableProvider columns={expenseColumns} data={data}>
-                    <DataTable
-                      enableGroupSelection={false}
-                      groupBy={(row: Expense) =>
-                        new Date(row.occurredAt).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                        })
-                      }
-                    />
-                  </DataTableProvider>
+                <div className="shadow-semantic-subtle h-136 min-w-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 px-2 pb-4">
+                  <LandingExpenseTable data={TEMP_EXPENSE_DUMMY[1]} />
                 </div>
               </div>
             </TabContent>

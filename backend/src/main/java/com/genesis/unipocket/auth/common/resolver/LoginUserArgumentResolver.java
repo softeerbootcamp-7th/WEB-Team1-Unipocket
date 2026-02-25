@@ -6,6 +6,8 @@ import com.genesis.unipocket.auth.common.annotation.LoginUser;
 import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
+import com.genesis.unipocket.user.common.enums.UserStatus;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -24,6 +26,7 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
 
 	private final JwtProvider jwtProvider;
 	private final TokenBlacklistService blacklistService;
+	private final UserCommandRepository userRepository;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
@@ -59,8 +62,22 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
 				throw new BusinessException(ErrorCode.TOKEN_BLACKLISTED);
 			}
 
-			// 4. 토큰에서 User ID(UUID) 추출 및 반환
-			return jwtProvider.getUserId(token);
+			// 4. 토큰에서 User ID(UUID) 추출
+			UUID userId = jwtProvider.getUserId(token);
+			if (userId == null) {
+				throw new BusinessException(ErrorCode.TOKEN_INVALID);
+			}
+
+			// 5. 탈퇴 여부 확인
+			userRepository
+					.findById(userId)
+					.filter(user -> user.getStatus() == UserStatus.INACTIVE)
+					.ifPresent(
+							ignored -> {
+								throw new BusinessException(ErrorCode.USER_WITHDRAWN);
+							});
+
+			return userId;
 		} catch (IllegalArgumentException e) {
 			throw new BusinessException(ErrorCode.TOKEN_INVALID);
 		}

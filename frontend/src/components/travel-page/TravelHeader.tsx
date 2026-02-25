@@ -15,9 +15,6 @@ const TravelHeader = ({ onCreateClick }: TravelHeaderProps) => {
         <Button variant="solid" size="md" onClick={onCreateClick}>
           여행 포켓 생성하기
         </Button>
-        <Button variant="outlined" size="md">
-          편집
-        </Button>
       </div>
     </div>
   );

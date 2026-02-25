@@ -74,13 +74,17 @@ export interface TempExpense {
   memo: string | null;
   occurredAt: string | null;
   status: 'NORMAL' | 'INCOMPLETE' | 'ABNORMAL';
-  cardLastFourDigits: string;
+  cardLastFourDigits: string | null;
 }
 
 export interface TempExpenseFile {
   fileId: number;
   s3Key: string;
+  fileName: string;
   fileType: string;
+  normalCount: number;
+  incompleteCount: number;
+  abnormalCount: number;
   expenses: TempExpense[];
 }
 
@@ -97,7 +101,13 @@ export interface GetMetaFileUrlResponse {
   expiresInSeconds: number;
 }
 
-export type BulkUpdateRequest = TempExpense[];
+export type BulkUpdateTempExpenseItem = Partial<TempExpense> & {
+  tempExpenseId: number;
+};
+
+export interface BulkUpdateRequest {
+  items: BulkUpdateTempExpenseItem[];
+}
 
 export interface BulkUpdateResult {
   tempExpenseId: number;

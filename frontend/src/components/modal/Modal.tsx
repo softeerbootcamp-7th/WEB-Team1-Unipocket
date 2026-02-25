@@ -1,4 +1,5 @@
 import React, { type ReactNode, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -63,7 +64,7 @@ const Modal = ({
     }
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <ModalContext.Provider value={contextValue}>
@@ -114,7 +115,8 @@ const Modal = ({
           </motion.div>
         </ModalContext.Provider>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
 

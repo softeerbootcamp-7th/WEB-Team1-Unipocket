@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { expenseKeys } from '@/api/expenses/query';
 import {
   bulkUpdateTempExpenses,
   confirmMeta,
@@ -23,6 +24,7 @@ import type {
   GetPresignedUrlRequest,
   StartParseRequest,
 } from '@/api/temporary-expenses/type';
+import { widgetKeys } from '@/api/widget/query';
 import { queryClient } from '@/main';
 
 export const temporaryExpenseKeys = {
@@ -155,6 +157,12 @@ const useConfirmMetaMutation = (accountBookId: number) =>
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metas(accountBookId),
       });
+      queryClient.invalidateQueries({
+        queryKey: expenseKeys.lists(accountBookId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: widgetKeys.allDetails(accountBookId),
+      });
       toast.success('임시지출이 확정됐어요.');
     },
     onError: () => {
@@ -163,23 +171,31 @@ const useConfirmMetaMutation = (accountBookId: number) =>
   });
 
 /** 임시지출 일괄 수정 Mutation */
-const useBulkUpdateTempExpensesMutation = (
-  accountBookId: number,
-  metaId: number,
-  fileId: number,
-) =>
+const useBulkUpdateTempExpensesMutation = () =>
   useMutation({
-    mutationFn: (data: BulkUpdateRequest) =>
-      bulkUpdateTempExpenses(accountBookId, metaId, fileId, data),
-    onSuccess: () => {
+    mutationFn: ({
+      accountBookId,
+      metaId,
+      fileId,
+      data,
+    }: {
+      accountBookId: number | string;
+      metaId: number;
+      fileId: number;
+      data: BulkUpdateRequest;
+    }) => bulkUpdateTempExpenses(accountBookId, metaId, fileId, data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
+        queryKey: temporaryExpenseKeys.metaFiles(
+          variables.accountBookId as number,
+          variables.metaId,
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metaFileDetail(
-          accountBookId,
-          metaId,
-          fileId,
+          variables.accountBookId as number,
+          variables.metaId,
+          variables.fileId,
         ),
       });
       toast.success('임시지출이 수정됐어요.');

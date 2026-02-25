@@ -1,4 +1,4 @@
-import { Link, useMatchRoute, useRouterState } from '@tanstack/react-router';
+import { Link, useMatchRoute } from '@tanstack/react-router';
 
 import MenuItem from '@/components/layout/menu/MenuItem';
 
@@ -11,10 +11,6 @@ const menuItems = [
 ] as const;
 
 const Menu = () => {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
-
   const matchRoute = useMatchRoute();
   const isInitPath = !!matchRoute({ to: '/init' });
 
@@ -30,7 +26,7 @@ const Menu = () => {
               <MenuItem
                 logo={<Icon className="size-5" />}
                 label={label}
-                isActive={pathname === to}
+                isActive={!!matchRoute({ to, fuzzy: true })}
               />
             </Link>
           ))}

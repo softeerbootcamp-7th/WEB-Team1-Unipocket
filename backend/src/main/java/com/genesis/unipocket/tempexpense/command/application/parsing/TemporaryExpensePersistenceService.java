@@ -64,7 +64,6 @@ public class TemporaryExpensePersistenceService {
 							.baseCountryCode(amountInfo.getBaseCurrencyCode())
 							.baseCurrencyAmount(amountInfo.getBaseCurrencyAmount())
 							.exchangeRate(amountInfo.getExchangeRate())
-							.paymentsMethod("카드")
 							.memo(contentInfo.getMemo())
 							.occurredAt(contentInfo.getOccurredAt())
 							.status(status)
@@ -87,8 +86,12 @@ public class TemporaryExpensePersistenceService {
 				&& item.baseCurrencyCode() == baseCurrencyCode) {
 			baseAmount = item.baseAmount();
 			if (item.localAmount() != null && item.localAmount().compareTo(BigDecimal.ZERO) > 0) {
-				exchangeRate =
-						ExchangeAmountCalculator.deriveExchangeRate(baseAmount, item.localAmount());
+				exchangeRate = resolveExchangeRateForStoredTempExpense(item, baseCurrencyCode);
+				if (exchangeRate == null) {
+					exchangeRate =
+							ExchangeAmountCalculator.deriveExchangeRate(
+									baseAmount, item.localAmount());
+				}
 			}
 			return new CalculatedAmount(baseAmount, exchangeRate);
 		}
@@ -102,14 +105,7 @@ public class TemporaryExpensePersistenceService {
 		if (item.localCurrencyCode() == baseCurrencyCode) {
 			exchangeRate = BigDecimal.ONE;
 		} else {
-			exchangeRate =
-					exchangeRateProvider.getExchangeRate(
-							item.localCurrencyCode(),
-							baseCurrencyCode,
-							item.occurredAt()
-									.toLocalDate()
-									.atStartOfDay()
-									.atOffset(ZoneOffset.UTC));
+			exchangeRate = fetchExchangeRateByOccurredDate(item, baseCurrencyCode);
 		}
 		if (exchangeRate != null) {
 			baseAmount =
@@ -117,6 +113,25 @@ public class TemporaryExpensePersistenceService {
 		}
 
 		return new CalculatedAmount(baseAmount, exchangeRate);
+	}
+
+	private BigDecimal resolveExchangeRateForStoredTempExpense(
+			NormalizedParsedExpenseItem item, CurrencyCode baseCurrencyCode) {
+		if (item.localCurrencyCode() == null || item.occurredAt() == null) {
+			return null;
+		}
+		if (item.localCurrencyCode() == baseCurrencyCode) {
+			return BigDecimal.ONE;
+		}
+		return fetchExchangeRateByOccurredDate(item, baseCurrencyCode);
+	}
+
+	private BigDecimal fetchExchangeRateByOccurredDate(
+			NormalizedParsedExpenseItem item, CurrencyCode baseCurrencyCode) {
+		return exchangeRateProvider.getExchangeRate(
+				item.localCurrencyCode(),
+				baseCurrencyCode,
+				item.occurredAt().toLocalDate().atStartOfDay().atOffset(ZoneOffset.UTC));
 	}
 
 	private record CalculatedAmount(BigDecimal baseAmount, BigDecimal exchangeRate) {}

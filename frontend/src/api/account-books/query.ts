@@ -11,6 +11,7 @@ import type { CurrencyType } from '@/types/currency';
 import {
   createAccountBook,
   deleteAccountBook,
+  getAccountBookAmount,
   getAccountBookDetail,
   getAccountBooks,
   getAnalysis,
@@ -23,6 +24,7 @@ import type {
   GetAnalysisResponse,
   UpdateAccountBookRequest,
 } from '@/api/account-books/type';
+import { widgetKeys } from '@/api/widget/query';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 import { queryClient } from '@/main';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
@@ -124,7 +126,7 @@ const useUpdateAccountBookBudgetMutation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['widget', accountBookId, 'BUDGET'],
+        queryKey: widgetKeys.detailType(accountBookId, 'BUDGET'),
       });
       toast.success('예산이 저장되었어요.');
     },
@@ -151,6 +153,16 @@ const useGetExchangeRateQuery = (
   });
 };
 
+const useGetAccountBookAmountQuery = () => {
+  const { accountBookId } = useRequiredAccountBook();
+
+  return useQuery({
+    queryKey: ['accountBooks', 'amount', accountBookId],
+    queryFn: () => getAccountBookAmount(accountBookId),
+    enabled: !!accountBookId,
+  });
+};
+
 export {
   accountBookDetailQueryOptions,
   accountBooksQueryOptions,
@@ -158,6 +170,7 @@ export {
   useAnalysisQuery,
   useCreateAccountBookMutation,
   useDeleteAccountBookMutation,
+  useGetAccountBookAmountQuery,
   useGetAccountBooksQuery,
   useGetExchangeRateQuery,
   useUpdateAccountBookBudgetMutation,

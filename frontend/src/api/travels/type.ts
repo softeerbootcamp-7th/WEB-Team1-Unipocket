@@ -19,6 +19,10 @@ export interface TravelBase {
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   imageKey: string;
+  localCountryCode: string;
+  localCurrencyAmount: number;
+  baseCountryCode: string;
+  baseCurrencyAmount: number;
 }
 
 // GET /account-books/{accountBookId}/travels/{travelId}
@@ -90,4 +94,10 @@ export interface GetTravelWidgetRequest {
   widgetType: WidgetType;
   currencyType?: CurrencyType;
   period?: PeriodType;
+}
+
+export interface UpdateTravelBudgetWidgetResponse {
+  travelId: number;
+  budget: number;
+  budgetCreatedAt: string;
 }

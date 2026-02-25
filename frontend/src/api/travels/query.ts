@@ -18,6 +18,7 @@ import {
   getTravelWidgetLayout,
   patchTravel,
   updateTravel,
+  updateTravelBudget,
   updateTravelWidgetLayout,
 } from '@/api/travels/api';
 import type {
@@ -47,8 +48,10 @@ export const travelKeys = {
     travelId: number | string | undefined,
   ) => [...travelKeys.all, 'amount', accountBookId, travelId] as const,
 
-  imageUrl: (accountBookId: number | string | undefined) =>
-    [...travelKeys.all, 'imageUrl', accountBookId] as const,
+  imageUrl: (
+    accountBookId: number | string | undefined,
+    imageKey: string | null | undefined,
+  ) => [...travelKeys.all, 'imageUrl', accountBookId, imageKey] as const,
 
   widgetLayout: (
     accountBookId: number | string | undefined,
@@ -60,6 +63,12 @@ export const travelKeys = {
     travelId: number | string | undefined,
   ) => [...travelKeys.all, 'widget', accountBookId, travelId] as const,
 
+  widgetByType: (
+    accountBookId: number | string | undefined,
+    travelId: number | string | undefined,
+    widgetType: WidgetType,
+  ) => [...travelKeys.allWidgets(accountBookId, travelId), widgetType] as const,
+
   widget: (
     accountBookId: number | string | undefined,
     travelId: number | string | undefined,
@@ -68,11 +77,7 @@ export const travelKeys = {
     period?: PeriodType,
   ) =>
     [
-      ...travelKeys.all,
-      'widget',
-      accountBookId,
-      travelId,
-      widgetType,
+      ...travelKeys.widgetByType(accountBookId, travelId, widgetType),
       { currencyType, period },
     ] as const,
 };
@@ -107,13 +112,14 @@ export const useGetTravelAmountQuery = (travelId: number | string) => {
   });
 };
 
-export const useGetTravelImageUrlQuery = () => {
+export const useGetTravelImageUrlQuery = (imageKey: string | null) => {
   const { accountBookId } = useRequiredAccountBook();
 
   return useQuery({
-    queryKey: travelKeys.imageUrl(accountBookId),
-    queryFn: () => getTravelImageUrl(accountBookId),
-    enabled: !!accountBookId,
+    queryKey: travelKeys.imageUrl(accountBookId, imageKey),
+    queryFn: () => getTravelImageUrl(accountBookId, imageKey ?? undefined),
+    enabled: !!accountBookId && !!imageKey,
+    staleTime: 1000 * 60 * 4, // presigned URL 만료(5분) 전 4분 캐시
   });
 };
 
@@ -213,6 +219,18 @@ export const useGetTravelPresignedUrlMutation = () => {
   });
 };
 
+export const useGetTravelImageUrlMutation = () => {
+  const { accountBookId } = useRequiredAccountBook();
+
+  return useMutation({
+    mutationFn: (imageKey: string) =>
+      getTravelImageUrl(accountBookId, imageKey),
+    onError: () => {
+      toast.error('이미지 URL 조회에 실패했어요.');
+    },
+  });
+};
+
 interface UseTravelWidgetQueryOptions {
   currencyType?: CurrencyType;
   period?: PeriodType;
@@ -272,6 +290,31 @@ export const useUpdateTravelWidgetLayoutMutation = (
     },
     onError: () => {
       toast.error('위젯 순서 저장에 실패했어요.');
+    },
+  });
+};
+
+export const useUpdateTravelBudgetMutation = () => {
+  const accountBookId = useRequiredAccountBook().accountBookId;
+
+  return useMutation({
+    mutationFn: ({
+      travelId,
+      budget,
+    }: {
+      travelId: number | string;
+      budget: number;
+    }) => {
+      return updateTravelBudget(accountBookId, travelId, budget);
+    },
+    onSuccess: (_, { travelId }) => {
+      queryClient.invalidateQueries({
+        queryKey: travelKeys.widgetByType(accountBookId, travelId, 'BUDGET'),
+      });
+      toast.success('예산이 저장되었어요.');
+    },
+    onError: () => {
+      toast.error('예산 저장에 실패했어요.');
     },
   });
 };

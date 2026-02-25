@@ -5,13 +5,15 @@ import { MethodSelectorContent } from '@/components/data-table/selectors/MethodS
 import {
   getCardNumberFromExpense,
   resolveUserCardId,
-} from '@/components/data-table/util';
+} from '@/components/data-table/utils/card';
 
 import type { Expense } from '@/api/expenses/type';
+import type { TempExpense } from '@/api/temporary-expenses/type';
 import { useGetCardsQuery } from '@/api/users/query';
+import { CASH } from '@/constants/column'; // CASH 상수 필요
 
 interface BulkMethodActionProps {
-  onUpdate: (userCardId: number | null) => void;
+  onUpdate: (userCardId: number | null, cardNumber: string) => void;
 }
 
 export const BulkMethodAction = ({ onUpdate }: BulkMethodActionProps) => {
@@ -23,9 +25,18 @@ export const BulkMethodAction = ({ onUpdate }: BulkMethodActionProps) => {
     if (selectedRows.length === 0) return null;
 
     const uniqueMethods = new Set(
-      selectedRows.map((row) =>
-        getCardNumberFromExpense(row.original as Expense, cards),
-      ),
+      selectedRows.map((row) => {
+        const original = row.original as Expense | TempExpense;
+
+        if ('cardLastFourDigits' in original) {
+          return original.cardLastFourDigits === ''
+            ? CASH
+            : original.cardLastFourDigits;
+        }
+
+        // Expense인 경우 기존 로직 사용
+        return getCardNumberFromExpense(original, cards);
+      }),
     );
 
     return uniqueMethods.size === 1 ? Array.from(uniqueMethods)[0] : null;
@@ -35,7 +46,7 @@ export const BulkMethodAction = ({ onUpdate }: BulkMethodActionProps) => {
     const userCardId = resolveUserCardId(cardNumber, cards);
 
     if (userCardId !== undefined) {
-      onUpdate(userCardId);
+      onUpdate(userCardId, cardNumber);
     }
     close();
   };

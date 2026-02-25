@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.genesis.unipocket.auth.command.application.AuthService;
 import com.genesis.unipocket.auth.command.application.JwtProvider;
+import com.genesis.unipocket.auth.command.application.OAuthLoginStateService;
 import com.genesis.unipocket.auth.command.application.TokenBlacklistService;
 import com.genesis.unipocket.auth.command.facade.OAuthAuthorizeFacade;
 import com.genesis.unipocket.auth.command.facade.UserLoginFacade;
@@ -16,7 +17,10 @@ import com.genesis.unipocket.auth.common.constant.AuthCookieConstants;
 import com.genesis.unipocket.auth.common.dto.AuthorizeResult;
 import com.genesis.unipocket.auth.common.dto.LoginResult;
 import com.genesis.unipocket.global.config.OAuth2Properties;
+import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.global.util.CookieUtil;
+import com.genesis.unipocket.user.command.persistence.repository.UserCommandRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -36,10 +40,12 @@ class AuthCommandControllerTest {
 	@MockitoBean private CookieUtil cookieUtil;
 	@MockitoBean private OAuthAuthorizeFacade authorizeFacade;
 	@MockitoBean private UserLoginFacade loginFacade;
+	@MockitoBean private OAuthLoginStateService loginStateService;
 	@MockitoBean private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 	@MockitoBean private JwtProvider jwtProvider;
 	@MockitoBean private TokenBlacklistService tokenBlacklistService;
 	@MockitoBean private JwtProperties jwtProperties;
+	@MockitoBean private UserCommandRepository userRepository;
 
 	@Test
 	@DisplayName("토큰 재발급 성공")
@@ -175,6 +181,7 @@ class AuthCommandControllerTest {
 						.expiresIn(expiresIn)
 						.build();
 
+		given(loginStateService.isReactivateIntent(state)).willReturn(false);
 		given(loginFacade.login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state)))
 				.willReturn(loginResult);
 
@@ -202,5 +209,35 @@ class AuthCommandControllerTest {
 						eq(refreshToken),
 						anyInt(),
 						eq("/"));
+	}
+
+	@Test
+	@DisplayName("OAuth2 콜백 처리 - 탈퇴 사용자면 로그인 페이지로 리다이렉트")
+	void callback_RedirectsToLogin_WhenUserWithdrawn() throws Exception {
+		// given
+		String provider = "kakao";
+		String code = "auth_code";
+		String state = "state_code";
+
+		given(loginStateService.isReactivateIntent(state)).willReturn(false);
+		given(loginFacade.login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state)))
+				.willThrow(new BusinessException(ErrorCode.USER_WITHDRAWN));
+
+		// when & then
+		mockMvc.perform(
+						get("/auth/oauth2/callback/{provider}", provider)
+								.param("code", code)
+								.param("state", state))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("http://localhost:5173/login?reason=withdrawn"));
+
+		verify(loginFacade).login(eq(OAuth2Properties.ProviderType.KAKAO), eq(code), eq(state));
+		verify(cookieUtil, never())
+				.addCookie(
+						any(HttpServletResponse.class),
+						anyString(),
+						anyString(),
+						anyInt(),
+						anyString());
 	}
 }

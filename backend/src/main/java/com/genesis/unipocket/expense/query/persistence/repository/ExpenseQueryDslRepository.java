@@ -222,6 +222,23 @@ public class ExpenseQueryDslRepository {
 
 	private EnumExpression<CurrencyCode> displayBaseCurrencyCodeExpression(QExpenseEntity expense) {
 		return new CaseBuilder()
+				.when(
+						expense.exchangeInfo
+								.baseCurrencyAmount
+								.isNotNull()
+								.and(expense.exchangeInfo.calculatedBaseCurrencyAmount.isNotNull())
+								.and(
+										expense.exchangeInfo
+												.baseCurrencyAmount
+												.subtract(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount)
+												.abs()
+												.gt(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount
+																.multiply(new BigDecimal("0.10")))))
+				.then(expense.exchangeInfo.calculatedBaseCurrencyCode)
 				.when(expense.exchangeInfo.baseCurrencyAmount.isNotNull())
 				.then(expense.exchangeInfo.baseCurrencyCode)
 				.otherwise(expense.exchangeInfo.calculatedBaseCurrencyCode);
@@ -229,6 +246,23 @@ public class ExpenseQueryDslRepository {
 
 	private NumberExpression<BigDecimal> displayBaseAmountExpression(QExpenseEntity expense) {
 		return new CaseBuilder()
+				.when(
+						expense.exchangeInfo
+								.baseCurrencyAmount
+								.isNotNull()
+								.and(expense.exchangeInfo.calculatedBaseCurrencyAmount.isNotNull())
+								.and(
+										expense.exchangeInfo
+												.baseCurrencyAmount
+												.subtract(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount)
+												.abs()
+												.gt(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount
+																.multiply(new BigDecimal("0.10")))))
+				.then(expense.exchangeInfo.calculatedBaseCurrencyAmount)
 				.when(expense.exchangeInfo.baseCurrencyAmount.isNotNull())
 				.then(expense.exchangeInfo.baseCurrencyAmount)
 				.otherwise(expense.exchangeInfo.calculatedBaseCurrencyAmount);

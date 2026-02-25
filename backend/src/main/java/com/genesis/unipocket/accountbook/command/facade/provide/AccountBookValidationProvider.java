@@ -40,7 +40,9 @@ public class AccountBookValidationProvider
 				accountBook.getId(),
 				accountBook.getUser().getId().toString(),
 				accountBook.getBaseCountryCode(),
-				accountBook.getLocalCountryCode());
+				accountBook.getLocalCountryCode(),
+				accountBook.getStartDate(),
+				accountBook.getEndDate());
 	}
 
 	@Override

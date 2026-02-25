@@ -97,13 +97,20 @@ public class AnalysisMonthlyDirtyMarkerService {
 														+ accountBookId));
 		Object[] occurredRange =
 				expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
-		Object[] row =
-				(occurredRange != null
-								&& occurredRange.length == 1
-								&& occurredRange[0] instanceof Object[])
-						? (Object[]) occurredRange[0]
-						: occurredRange;
-		if (row == null || row.length < 2) {
+		if (occurredRange == null) {
+			return;
+		}
+		Object[] row = occurredRange;
+		if (occurredRange.length == 1 && occurredRange[0] instanceof Object[] inner) {
+			row = inner;
+		}
+		if (row.length < 2) {
+			return;
+		}
+		if (row[0] == null
+				|| row[1] == null
+				|| row[0] instanceof Object[]
+				|| row[1] instanceof Object[]) {
 			return;
 		}
 		OffsetDateTime minOccurredAt = OffsetDateTimeConverter.from(row[0]);

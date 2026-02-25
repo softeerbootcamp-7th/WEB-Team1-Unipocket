@@ -17,7 +17,10 @@ import com.genesis.unipocket.expense.common.validation.ExpenseOwnershipValidator
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +53,7 @@ public class ExpenseCommandFacade {
 						: accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		OffsetDateTime occurredAt = request.occurredAt().atOffset(ZoneOffset.UTC);
+		validateOccurredAtWithinAccountBookPeriod(accountBookInfo, occurredAt);
 		validateUserCardOwnershipIfPresent(request.userCardId(), userId);
 
 		ExpenseCreateCommand command =
@@ -85,6 +89,7 @@ public class ExpenseCommandFacade {
 						: accountBookInfo.localCountryCode().getCurrencyCode();
 		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		OffsetDateTime occurredAt = request.occurredAt().atOffset(ZoneOffset.UTC);
+		validateOccurredAtWithinAccountBookPeriod(accountBookInfo, occurredAt);
 		validateUserCardOwnershipIfPresent(request.userCardId(), userId);
 
 		ExpenseUpdateCommand command =
@@ -112,19 +117,8 @@ public class ExpenseCommandFacade {
 
 		AccountBookInfo accountBookInfo =
 				accountBookFetchService.getAccountBook(accountBookId, userId.toString());
-		CurrencyCode accountBookLocalCurrencyCode =
-				accountBookInfo.localCountryCode().getCurrencyCode();
-		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
-
 		return request.items().stream()
-				.map(
-						item ->
-								updateExpenseItem(
-										accountBookId,
-										userId,
-										item,
-										accountBookLocalCurrencyCode,
-										baseCurrencyCode))
+				.map(item -> updateExpenseItem(accountBookId, userId, item, accountBookInfo))
 				.toList();
 	}
 
@@ -132,13 +126,16 @@ public class ExpenseCommandFacade {
 			Long accountBookId,
 			UUID userId,
 			ExpenseBulkUpdateItemRequest item,
-			CurrencyCode accountBookLocalCurrencyCode,
-			CurrencyCode baseCurrencyCode) {
+			AccountBookInfo accountBookInfo) {
+		CurrencyCode accountBookLocalCurrencyCode =
+				accountBookInfo.localCountryCode().getCurrencyCode();
+		CurrencyCode baseCurrencyCode = accountBookInfo.baseCountryCode().getCurrencyCode();
 		CurrencyCode localCurrencyCode =
 				item.localCurrencyCode() != null
 						? item.localCurrencyCode()
 						: accountBookLocalCurrencyCode;
 		OffsetDateTime occurredAt = item.occurredAt().atOffset(ZoneOffset.UTC);
+		validateOccurredAtWithinAccountBookPeriod(accountBookInfo, occurredAt);
 		validateUserCardOwnershipIfPresent(item.userCardId(), userId);
 
 		ExpenseUpdateCommand command =
@@ -192,6 +189,24 @@ public class ExpenseCommandFacade {
 		}
 
 		throw new BusinessException(ErrorCode.CARD_NOT_OWNED);
+	}
+
+	private void validateOccurredAtWithinAccountBookPeriod(
+			AccountBookInfo accountBookInfo, OffsetDateTime occurredAt) {
+		ZoneId accountBookZoneId =
+				CountryCodeTimezoneMapper.getZoneId(accountBookInfo.localCountryCode());
+		LocalDate occurredDate = occurredAt.atZoneSameInstant(accountBookZoneId).toLocalDate();
+		LocalDate startDate = accountBookInfo.startDate();
+		LocalDate endDate =
+				accountBookInfo.endDate() != null
+						? accountBookInfo.endDate()
+						: LocalDate.now(accountBookZoneId);
+
+		boolean beforeStart = startDate != null && occurredDate.isBefore(startDate);
+		boolean afterEnd = endDate != null && occurredDate.isAfter(endDate);
+		if (beforeStart || afterEnd) {
+			throw new BusinessException(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD);
+		}
 	}
 
 	@Transactional

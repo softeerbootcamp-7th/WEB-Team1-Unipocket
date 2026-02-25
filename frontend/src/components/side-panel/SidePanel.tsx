@@ -72,6 +72,14 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
     allowDeselect: true,
   });
 
+  const handleDateTimeSelect = (dateTime: Date) => {
+    if (dateTime > new Date()) {
+      toast.error('미래 날짜와 시간은 입력할 수 없어요.');
+      return;
+    }
+    setSelectedDateTime(dateTime);
+  };
+
   const handleReset = () => {
     resetForm();
     setCurrencyValues(null);
@@ -197,7 +205,7 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
             <div className="absolute top-9 right-0 z-10">
               <DateTimePicker
                 initialDateTime={selectedDateTime}
-                onDateTimeSelect={setSelectedDateTime}
+                onDateTimeSelect={handleDateTimeSelect}
                 onClose={() => setIsDateTimePickerOpen(false)}
               />
             </div>

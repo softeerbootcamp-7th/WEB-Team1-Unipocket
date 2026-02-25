@@ -82,7 +82,9 @@ export interface TempExpenseFile {
   s3Key: string;
   fileName: string;
   fileType: string;
+  normalCount: number;
   incompleteCount: number;
+  abnormalCount: number;
   expenses: TempExpense[];
 }
 

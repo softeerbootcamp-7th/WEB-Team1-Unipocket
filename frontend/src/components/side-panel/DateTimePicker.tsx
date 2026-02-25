@@ -25,12 +25,16 @@ interface DateTimePickerProps {
   onDateTimeSelect: (date: Date) => void;
   onClose?: () => void;
   initialDateTime: Date | null;
+  startDate?: Date | null;
+  endDate?: Date | null;
 }
 
 const DateTimePicker = ({
   onDateTimeSelect,
   onClose,
   initialDateTime,
+  startDate,
+  endDate,
 }: DateTimePickerProps) => {
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     const baseDate = initialDateTime ?? new Date();
@@ -138,6 +142,35 @@ const DateTimePicker = ({
     setCurrentMonth(new Date(year, month + monthOffset));
   };
 
+  const todayStart = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const effectiveEnd = useMemo(() => {
+    if (endDate) {
+      const endDateNormalized = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        endDate.getDate(),
+      );
+      return endDateNormalized < todayStart ? endDateNormalized : todayStart;
+    }
+    return todayStart;
+  }, [endDate, todayStart]);
+
+  const effectiveStart = useMemo(() => {
+    if (startDate) {
+      return new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate(),
+      );
+    }
+    return null;
+  }, [startDate]);
+
   return (
     <div
       ref={containerRef}
@@ -175,15 +208,29 @@ const DateTimePicker = ({
         {dates.map((date) => {
           const isCurrentMonth = date.getMonth() === month;
           const isSelected = selectedDate && isSameDay(date, selectedDate);
+          const dateStart = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+          );
+          const isDisabled =
+            dateStart > effectiveEnd ||
+            (effectiveStart !== null && dateStart < effectiveStart);
 
           return (
             <button
               key={date.toISOString()}
-              onClick={() => handleDateClick(date)}
+              onClick={() => !isDisabled && handleDateClick(date)}
+              disabled={isDisabled}
               className={clsx(
                 'figure-body2-14-semibold mx-auto flex h-7 w-8 items-center justify-center rounded-full',
-                !isCurrentMonth && !isSelected && 'text-label-disable',
-                !isSelected &&
+                isDisabled && 'text-label-disable cursor-not-allowed',
+                !isDisabled &&
+                  !isSelected &&
+                  !isCurrentMonth &&
+                  'text-label-alternative',
+                !isDisabled &&
+                  !isSelected &&
                   'hover:bg-inverse-label hover:text-primary-normal',
                 isSelected && 'bg-primary-normal text-inverse-label',
               )}

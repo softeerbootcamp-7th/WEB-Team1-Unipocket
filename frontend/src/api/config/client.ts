@@ -99,7 +99,12 @@ export const customFetch = async <T>({
         await refreshAccessToken();
 
         // 재발급 성공 시 원래 요청 재시도 (isRetry=true로 설정)
-        return await customFetch<T>({ endpoint, options, isRetry: true });
+        return await customFetch<T>({
+          endpoint,
+          params,
+          options,
+          isRetry: true,
+        });
       } catch {
         // 재발급 실패 시 401 에러 발생
         throw new ApiError({

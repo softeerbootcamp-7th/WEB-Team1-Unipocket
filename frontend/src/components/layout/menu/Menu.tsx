@@ -18,45 +18,33 @@ const Menu = () => {
 
   const isInitPath = !!matchRoute({ to: '/init' });
 
+  const handleRefreshClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    to: string,
+  ) => {
+    if (matchRoute({ to, fuzzy: true })) {
+      e.preventDefault();
+      router.invalidate();
+      triggerRefresh();
+    }
+  };
+
   return (
     <nav className="border-line-normal-normal bg-background-normal sticky top-0 bottom-0 left-0 flex w-16 flex-col items-center gap-9 border-r px-4 py-3">
-      <Link
-        to="/home"
-        onClick={(e) => {
-          if (matchRoute({ to: '/home' })) {
-            e.preventDefault();
-            router.invalidate();
-            triggerRefresh();
-          }
-        }}
-      >
+      <Link to="/home" onClick={(e) => handleRefreshClick(e, '/home')}>
         <Icons.Logo className="size-8 cursor-pointer" />
       </Link>
       {!isInitPath && (
         <div className="flex flex-col gap-6">
-          {menuItems.map(({ to, Icon, label }) => {
-            const isActive = !!matchRoute({ to, fuzzy: true });
-
-            return (
-              <Link
-                key={to}
-                to={to}
-                onClick={(e) => {
-                  if (isActive) {
-                    e.preventDefault();
-                    router.invalidate();
-                    triggerRefresh();
-                  }
-                }}
-              >
-                <MenuItem
-                  logo={<Icon className="size-5" />}
-                  label={label}
-                  isActive={isActive}
-                />
-              </Link>
-            );
-          })}
+          {menuItems.map(({ to, Icon, label }) => (
+            <Link key={to} to={to} onClick={(e) => handleRefreshClick(e, to)}>
+              <MenuItem
+                logo={<Icon className="size-5" />}
+                label={label}
+                isActive={!!matchRoute({ to, fuzzy: true })}
+              />
+            </Link>
+          ))}
         </div>
       )}
     </nav>

@@ -56,7 +56,12 @@ const ReportPage = () => {
   const isCurrentMonth =
     year === now.getFullYear() && month === now.getMonth() + 1;
 
-  const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
+  const { data, isPlaceholderData } = useAnalysisQuery(
+    accountBookId,
+    year,
+    month,
+    currencyType,
+  );
 
   const { ref, scale } = useAutoFitScaleToViewport<HTMLDivElement>(16, 0.9, [
     data,
@@ -89,6 +94,7 @@ const ReportPage = () => {
             currencyType={currencyType}
             onCurrencyTypeChange={setCurrencyType}
             isCurrentMonth={isCurrentMonth}
+            isPlaceholderData={isPlaceholderData}
           />
         )}
       </div>

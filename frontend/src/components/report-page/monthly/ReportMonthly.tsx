@@ -18,13 +18,20 @@ interface ReportMonthlyProps {
     averageSpentAmount: string;
     spentAmountDiff: string;
   };
+  isPlaceholderData?: boolean;
 }
 
-const ReportMonthly = ({ data }: ReportMonthlyProps) => {
+const ReportMonthly = ({ data, isPlaceholderData }: ReportMonthlyProps) => {
   const { currencyType } = useReportContext();
   const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
-  const countryCode =
+  const currentCountryCode =
     currencyType === 'LOCAL' ? localCountryCode : baseCountryCode;
+  const displayCountryCode = isPlaceholderData
+    ? baseCountryCode
+    : currentCountryCode;
+  const unit = getCountryInfo(displayCountryCode)?.currencyUnitKor || '';
+
+  const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
 
   const isLocal = currencyType === 'LOCAL';
 
@@ -35,9 +42,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   const isLess = me < average;
   const isEqual = me === average;
 
-  const unit = getCountryInfo(countryCode)?.currencyUnitKor || '';
-  const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
-  const formattedDiff = formatAmountByCountry(diff, countryCode, 0);
+  const formattedDiff = formatAmountByCountry(diff, displayCountryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
     ? [barWidth.equal, barWidth.equal]
@@ -71,7 +76,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
             barWidth={averageBarWidth}
             label={`${localCountryName} 교환학생 평균`}
             amount={average}
-            countryCode={countryCode}
+            countryCode={displayCountryCode}
             isLocal={isLocal}
           />
           <ComparisonCard
@@ -79,7 +84,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
             barWidth={meBarWidth}
             label="나"
             amount={me}
-            countryCode={countryCode}
+            countryCode={displayCountryCode}
             isLocal={isLocal}
           />
         </div>

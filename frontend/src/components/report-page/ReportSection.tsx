@@ -14,6 +14,7 @@ interface ReportSectionProps {
   currencyType: CurrencyType;
   onCurrencyTypeChange: (type: CurrencyType) => void;
   isCurrentMonth: boolean;
+  isPlaceholderData: boolean;
 }
 
 const ReportSection = ({
@@ -21,12 +22,15 @@ const ReportSection = ({
   currencyType,
   onCurrencyTypeChange,
   isCurrentMonth,
+  isPlaceholderData,
 }: ReportSectionProps) => {
+  // monthly 그래프 스켈레톤 노출 조건
   const monthlyData = data.compareWithAverage;
   const showMonthlySkeleton =
     Number(monthlyData.mySpentAmount) === 0 ||
     Number(monthlyData.averageSpentAmount) === 0;
 
+  // category 그래프 스켈레톤 노출 조건
   const categoryItems = data.compareByCategory.items;
   const allMyZero = categoryItems.every(
     (item) => Number(item.mySpentAmount) === 0,
@@ -46,11 +50,15 @@ const ReportSection = ({
           {showMonthlySkeleton ? (
             <ReportMonthlySkeleton />
           ) : (
-            <ReportMonthly data={monthlyData} />
+            <ReportMonthly
+              data={monthlyData}
+              isPlaceholderData={isPlaceholderData}
+            />
           )}
           <ReportMyself
             data={data.compareWithLastMonth}
             isCurrentMonth={isCurrentMonth}
+            isPlaceholderData={isPlaceholderData}
           />
         </div>
 

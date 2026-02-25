@@ -19,10 +19,20 @@ public class WidgetQueryRepository {
 	// ── 공통 헬퍼 ──────────────────────────────────────
 
 	private String amountExpr(CurrencyType type) {
-		return type == CurrencyType.LOCAL
-				? "e.exchangeInfo.localCurrencyAmount"
-				: "COALESCE(e.exchangeInfo.baseCurrencyAmount,"
-						+ " e.exchangeInfo.calculatedBaseCurrencyAmount)";
+		if (type == CurrencyType.LOCAL) {
+			return "e.exchangeInfo.localCurrencyAmount";
+		}
+		// BASE: base와 calculated 차이가 10% 이상이면 calculated 우선 사용
+		return "CASE"
+				+ " WHEN e.exchangeInfo.baseCurrencyAmount IS NOT NULL"
+				+ " AND e.exchangeInfo.calculatedBaseCurrencyAmount IS NOT NULL"
+				+ " AND ABS(e.exchangeInfo.baseCurrencyAmount"
+				+ " - e.exchangeInfo.calculatedBaseCurrencyAmount)"
+				+ " > e.exchangeInfo.calculatedBaseCurrencyAmount * 0.10"
+				+ " THEN e.exchangeInfo.calculatedBaseCurrencyAmount"
+				+ " ELSE COALESCE(e.exchangeInfo.baseCurrencyAmount,"
+				+ " e.exchangeInfo.calculatedBaseCurrencyAmount)"
+				+ " END";
 	}
 
 	private String travelFilter(Long travelId) {
@@ -219,7 +229,13 @@ public class WidgetQueryRepository {
 		String amountCol =
 				type == CurrencyType.LOCAL
 						? "e.local_currency_amount"
-						: "COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)";
+						: "CASE WHEN e.base_currency_amount IS NOT NULL AND"
+							+ " e.calculated_base_currency_amount IS NOT NULL AND"
+							+ " ABS(e.base_currency_amount - e.calculated_base_currency_amount) >"
+							+ " e.calculated_base_currency_amount * 0.10 THEN"
+							+ " e.calculated_base_currency_amount ELSE"
+							+ " COALESCE(e.base_currency_amount,"
+							+ " e.calculated_base_currency_amount) END";
 
 		Object result =
 				em.createNativeQuery(

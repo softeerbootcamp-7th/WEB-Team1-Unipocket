@@ -5,11 +5,13 @@ import com.genesis.unipocket.widget.common.enums.CurrencyType;
 import com.genesis.unipocket.widget.common.enums.Period;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
 /**
  * <b>Widget 조회시 위젯별 조회에 필요한 context를 담는 헬퍼 객체</b>
  */
 public record WidgetQueryContext(
+		UUID userId,
 		Long accountBookId,
 		Long travelId,
 		CurrencyType currencyType,

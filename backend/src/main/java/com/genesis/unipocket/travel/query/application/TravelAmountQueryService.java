@@ -4,6 +4,7 @@ import com.genesis.unipocket.accountbook.query.persistence.repository.AccountBoo
 import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookDetailResponse;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisBatchAggregationRepository;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
+import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
@@ -27,6 +28,7 @@ public class TravelAmountQueryService {
 	private final TravelQueryRepository travelQueryRepository;
 	private final AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	private final ExchangeRateService exchangeRateService;
+	private final ExpenseRepository expenseRepository;
 
 	@Transactional
 	public TravelAmountResponse getTravelAmount(Long accountBookId, Long travelId, String userId) {
@@ -43,13 +45,23 @@ public class TravelAmountQueryService {
 						accountBookLocalCurrency,
 						travel.startDate().atStartOfDay().atOffset(ZoneOffset.UTC));
 
+		Object[] dateRange =
+				expenseRepository.findOccurredAtRangeByAccountBookIdAndTravelId(
+						accountBookId, travelId);
+		OffsetDateTime oldest =
+				dateRange != null && dateRange[0] != null ? (OffsetDateTime) dateRange[0] : null;
+		OffsetDateTime newest =
+				dateRange != null && dateRange[1] != null ? (OffsetDateTime) dateRange[1] : null;
+
 		return new TravelAmountResponse(
 				accountBook.localCountryCode(),
 				accountBook.localCountryCode().getCurrencyCode(),
 				accountBook.baseCountryCode(),
 				accountBook.baseCountryCode().getCurrencyCode(),
 				correctedLocal,
-				raw.totalBaseAmount());
+				raw.totalBaseAmount(),
+				oldest,
+				newest);
 	}
 
 	private AccountBookDetailResponse getAccessibleAccountBook(Long accountBookId, String userId) {

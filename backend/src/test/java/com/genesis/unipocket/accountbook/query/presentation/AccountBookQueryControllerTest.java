@@ -111,7 +111,9 @@ class AccountBookQueryControllerTest {
 								new BigDecimal("12000.50"),
 								new BigDecimal("109000.10"),
 								new BigDecimal("1200.00"),
-								new BigDecimal("11000.00")));
+								new BigDecimal("11000.00"),
+								null,
+								null));
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(

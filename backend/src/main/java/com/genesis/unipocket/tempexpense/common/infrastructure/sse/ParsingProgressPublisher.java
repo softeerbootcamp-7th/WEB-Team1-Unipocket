@@ -1,5 +1,6 @@
 package com.genesis.unipocket.tempexpense.common.infrastructure.sse;
 
+import com.genesis.unipocket.global.config.RedisPubSubConfig;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.event.ParsingErrorEvent;
 import com.genesis.unipocket.tempexpense.common.infrastructure.sse.event.ParsingProgressEvent;
@@ -92,10 +93,7 @@ public class ParsingProgressPublisher {
 				new ParsingTaskState(
 						state.accountBookId(), normalized, TaskStatus.ACTIVE, null, null, null));
 
-		SseEmitter emitter = emitters.get(taskId);
-		if (emitter != null) {
-			sendProgress(taskId, emitter, normalized, message, code, fileKey);
-		}
+		notifyViaChannel(taskId);
 	}
 
 	public void complete(String taskId) {
@@ -109,10 +107,7 @@ public class ParsingProgressPublisher {
 						state.accountBookId(), 100, TaskStatus.COMPLETE, null, null, null);
 		saveStateToRedis(taskId, terminalState);
 
-		SseEmitter emitter = emitters.get(taskId);
-		if (emitter != null) {
-			flushTerminalEvent(taskId, emitter, terminalState);
-		}
+		notifyViaChannel(taskId);
 	}
 
 	public void publishError(String taskId, ErrorCode errorCode) {
@@ -144,10 +139,7 @@ public class ParsingProgressPublisher {
 						errorMessage);
 		saveStateToRedis(taskId, terminalState);
 
-		SseEmitter emitter = emitters.get(taskId);
-		if (emitter != null) {
-			flushTerminalEvent(taskId, emitter, terminalState);
-		}
+		notifyViaChannel(taskId);
 	}
 
 	private ParsingTaskState readTaskStateFromRedis(String taskId) {
@@ -258,6 +250,47 @@ public class ParsingProgressPublisher {
 			return false;
 		}
 	}
+
+	// ── Redis Pub/Sub ──────────────────────────────────────────
+
+	private void notifyViaChannel(String taskId) {
+		try {
+			redisTemplate.convertAndSend(RedisPubSubConfig.PARSE_NOTIFY_CHANNEL, taskId);
+		} catch (Exception e) {
+			log.warn("Failed to publish Pub/Sub notification. taskId={}", taskId, e);
+			// Pub/Sub 실패 시 로컬 emitter로 직접 전달 (단일 인스턴스 폴백)
+			deliverToLocalEmitter(taskId);
+		}
+	}
+
+	/**
+	 * Redis Pub/Sub 메시지 수신 핸들러.
+	 * RedisPubSubConfig의 MessageListenerAdapter가 이 메서드를 호출한다.
+	 * 모든 인스턴스가 수신하지만, 로컬에 해당 taskId의 emitter가 있는 인스턴스만 처리한다.
+	 */
+	public void onPubSubNotification(String taskId) {
+		deliverToLocalEmitter(taskId);
+	}
+
+	private void deliverToLocalEmitter(String taskId) {
+		SseEmitter emitter = emitters.get(taskId);
+		if (emitter == null) {
+			return; // 이 인스턴스에 해당 emitter가 없으면 무시
+		}
+
+		ParsingTaskState state = readTaskStateFromRedis(taskId);
+		if (state == null) {
+			return;
+		}
+
+		if (state.status() == TaskStatus.ACTIVE) {
+			sendProgress(taskId, emitter, state.progress(), null, null, null);
+		} else {
+			flushTerminalEvent(taskId, emitter, state);
+		}
+	}
+
+	// ── Helpers ────────────────────────────────────────────────
 
 	private String taskKey(String taskId) {
 		return TASK_KEY_PREFIX + taskId;

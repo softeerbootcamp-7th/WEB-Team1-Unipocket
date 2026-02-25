@@ -1,3 +1,4 @@
+import { useDataTable } from '@/components/data-table/context';
 import AmountCellEditor from '@/components/data-table/editors/common/AmountCellEditor';
 import { useTempInlineExpenseUpdate } from '@/components/data-table/editors/temp-expense/useTempInlineExpenseUpdate.ts';
 
@@ -6,6 +7,7 @@ import type { CurrencyCode } from '@/data/country/currencyCode';
 
 const TempAmountCellEditor = () => {
   const { updateInline } = useTempInlineExpenseUpdate();
+  const { table } = useDataTable();
 
   const getCurrencyCode = (
     original: TempExpense,
@@ -16,9 +18,19 @@ const TempAmountCellEditor = () => {
 
   return (
     <AmountCellEditor<TempExpense> // 명시적으로 제네릭 주입
-      onUpdate={(rowId, field, value, oppositeField) =>
-        updateInline(rowId, field, value, { [oppositeField]: null })
-      }
+      onUpdate={(rowId, field, value, oppositeField) => {
+        const row = table.getRow(rowId);
+        const original = row?.original as TempExpense | undefined;
+
+        // localCountryCode === baseCountryCode 이면 두 금액 모두 동일하게 맞춰야 함
+        const isSameCurrency =
+          original?.localCountryCode !== null &&
+          original?.localCountryCode === original?.baseCountryCode;
+
+        updateInline(rowId, field, value, {
+          [oppositeField]: isSameCurrency ? value : null,
+        });
+      }}
       getCurrencyCode={getCurrencyCode}
     />
   );

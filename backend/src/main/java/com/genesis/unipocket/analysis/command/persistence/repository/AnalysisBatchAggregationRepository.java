@@ -25,22 +25,62 @@ public class AnalysisBatchAggregationRepository {
 				(Object[])
 						em.createNativeQuery(
 										"""
-								SELECT
-									COALESCE(SUM(e.local_currency_amount), 0),
-									COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
-									COUNT(*)
-								FROM expenses e
-								WHERE e.account_book_id = :accountBookId
-									AND e.occurred_at >= :startUtc
-									AND e.occurred_at < :endUtc
-									AND (e.category IS NULL OR e.category <> :incomeCategory)
-								""")
+						SELECT
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.occurred_at >= :startUtc
+							AND e.occurred_at < :endUtc
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						""")
 								.setParameter("accountBookId", accountBookId)
 								.setParameter("startUtc", startUtc)
 								.setParameter("endUtc", endUtc)
 								.setParameter("incomeCategory", Category.INCOME.ordinal())
 								.getSingleResult();
 		return toAmountPairCount(row);
+	}
+
+	public AmountPairCount aggregateAccountBookTotalRaw(Long accountBookId) {
+		Object[] row =
+				(Object[])
+						em.createNativeQuery(
+										"""
+						SELECT
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						""")
+								.setParameter("accountBookId", accountBookId)
+								.setParameter("incomeCategory", Category.INCOME.ordinal())
+								.getSingleResult();
+		return toAmountPairCount(row);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LocalCurrencyGroupRow> aggregateAllLocalAmountGroupedByCurrency(
+			Long accountBookId) {
+		List<Object[]> rows =
+				em.createNativeQuery(
+								"""
+						SELECT
+							e.local_currency_code,
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						GROUP BY e.local_currency_code
+						""")
+						.setParameter("accountBookId", accountBookId)
+						.setParameter("incomeCategory", Category.INCOME.ordinal())
+						.getResultList();
+		return rows.stream().map(this::toLocalCurrencyGroupRow).toList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -96,15 +136,15 @@ public class AnalysisBatchAggregationRepository {
 				(Object[])
 						em.createNativeQuery(
 										"""
-								SELECT
-									COALESCE(SUM(e.local_currency_amount), 0),
-									COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
-									COUNT(*)
-								FROM expenses e
-								WHERE e.account_book_id = :accountBookId
-									AND e.travel_id = :travelId
-									AND (e.category IS NULL OR e.category <> :incomeCategory)
-								""")
+						SELECT
+							COALESCE(SUM(e.local_currency_amount), 0),
+							COALESCE(SUM(COALESCE(e.base_currency_amount, e.calculated_base_currency_amount)), 0),
+							COUNT(*)
+						FROM expenses e
+						WHERE e.account_book_id = :accountBookId
+							AND e.travel_id = :travelId
+							AND (e.category IS NULL OR e.category <> :incomeCategory)
+						""")
 								.setParameter("accountBookId", accountBookId)
 								.setParameter("travelId", travelId)
 								.setParameter("incomeCategory", Category.INCOME.ordinal())
@@ -150,13 +190,13 @@ public class AnalysisBatchAggregationRepository {
 				(Number)
 						em.createNativeQuery(
 										"""
-								SELECT COUNT(*)
-								FROM account_monthly_aggregate r
-								WHERE r.account_book_id = :accountBookId
-									AND r.target_year_month = :monthStart
-									AND r.metric_type = :metricType
-									AND r.quality_type = :qualityType
-								""")
+						SELECT COUNT(*)
+						FROM account_monthly_aggregate r
+						WHERE r.account_book_id = :accountBookId
+							AND r.target_year_month = :monthStart
+							AND r.metric_type = :metricType
+							AND r.quality_type = :qualityType
+						""")
 								.setParameter("accountBookId", accountBookId)
 								.setParameter("monthStart", monthStart)
 								.setParameter("metricType", metricType.name())

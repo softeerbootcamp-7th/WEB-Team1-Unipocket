@@ -70,6 +70,8 @@ public interface ExpenseRepository extends JpaRepository<ExpenseEntity, Long> {
 
 	long countByAccountBookId(Long accountBookId);
 
+	boolean existsByAccountBookId(Long accountBookId);
+
 	@Query(
 			"SELECT MIN(e.occurredAt), MAX(e.occurredAt) FROM ExpenseEntity e WHERE e.accountBookId"
 					+ " = :accountBookId")

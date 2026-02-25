@@ -115,6 +115,14 @@ public class AccountBookAmountQueryService {
 								accountBookId, AnalysisMetricType.TOTAL_BASE_AMOUNT, QUALITY_TYPE);
 
 		if (dirtyMonths == null || dirtyMonths.isEmpty()) {
+			// aggregate가 존재하면 그대로 사용, 없으면(batch 미실행) expense 직접 집계
+			if (totalLocal.signum() != 0 || totalBase.signum() != 0) {
+				return new AmountPair(totalLocal, totalBase);
+			}
+			// batch가 한 번도 돌지 않은 경우: expense에서 전체 집계
+			if (expenseRepository.existsByAccountBookId(accountBookId)) {
+				return resolveAllRawAmount(accountBookId, accountBookLocalCurrency, zoneId);
+			}
 			return new AmountPair(totalLocal, totalBase);
 		}
 
@@ -178,6 +186,19 @@ public class AccountBookAmountQueryService {
 
 		return resolveMonthlyRawAmount(
 				accountBookId, accountBookLocalCurrency, zoneId, thisMonthStart);
+	}
+
+	private AmountPair resolveAllRawAmount(
+			Long accountBookId, CurrencyCode accountBookLocalCurrency, ZoneId zoneId) {
+		var raw = analysisBatchAggregationRepository.aggregateAccountBookTotalRaw(accountBookId);
+		BigDecimal correctedLocal =
+				computeCorrectedLocalAmount(
+						analysisBatchAggregationRepository.aggregateAllLocalAmountGroupedByCurrency(
+								accountBookId),
+						accountBookLocalCurrency,
+						OffsetDateTime.now(zoneId));
+
+		return new AmountPair(correctedLocal, raw.totalBaseAmount());
 	}
 
 	private AmountPair resolveMonthlyRawAmount(

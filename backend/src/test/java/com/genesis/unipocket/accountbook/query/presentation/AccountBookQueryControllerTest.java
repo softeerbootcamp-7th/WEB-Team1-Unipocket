@@ -34,12 +34,17 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(AccountBookQueryController.class)
 class AccountBookQueryControllerTest {
 
-	@Autowired private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-	@MockitoBean private AccountBookQueryService accountBookQueryService;
-	@MockitoBean private AccountBookAmountQueryService accountBookAmountQueryService;
-	@MockitoBean private JwtProvider jwtProvider;
-	@MockitoBean private TokenBlacklistService tokenBlacklistService;
+	@MockitoBean
+	private AccountBookQueryService accountBookQueryService;
+	@MockitoBean
+	private AccountBookAmountQueryService accountBookAmountQueryService;
+	@MockitoBean
+	private JwtProvider jwtProvider;
+	@MockitoBean
+	private TokenBlacklistService tokenBlacklistService;
 
 	@SuppressWarnings("unused")
 	@MockitoBean
@@ -59,8 +64,8 @@ class AccountBookQueryControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						get("/account-books")
-								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				get("/account-books")
+						.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].accountBookId").value(1L))
 				.andExpect(jsonPath("$[0].title").value("메인 가계부"))
@@ -87,8 +92,8 @@ class AccountBookQueryControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						get("/account-books/{accountBookId}", accountBookId)
-								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				get("/account-books/{accountBookId}", accountBookId)
+						.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.accountBookId").value(accountBookId))
 				.andExpect(jsonPath("$.title").value("메인 가계부"));
@@ -111,12 +116,14 @@ class AccountBookQueryControllerTest {
 								new BigDecimal("12000.50"),
 								new BigDecimal("109000.10"),
 								new BigDecimal("1200.00"),
-								new BigDecimal("11000.00")));
+								new BigDecimal("11000.00"),
+								null,
+								null));
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						get("/account-books/{accountBookId}/amount", accountBookId)
-								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				get("/account-books/{accountBookId}/amount", accountBookId)
+						.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
 				.andExpect(jsonPath("$.localCurrencyCode").value("JPY"))
@@ -139,8 +146,8 @@ class AccountBookQueryControllerTest {
 		Long accountBookId = 1L;
 
 		given(
-						accountBookQueryService.getAccountBookExchangeRate(
-								userId.toString(), accountBookId, null))
+				accountBookQueryService.getAccountBookExchangeRate(
+						userId.toString(), accountBookId, null))
 				.willReturn(
 						new AccountBookExchangeRateResponse(
 								CountryCode.KR,
@@ -150,8 +157,8 @@ class AccountBookQueryControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
-								.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
+				get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+						.cookie(new Cookie(AuthCookieConstants.ACCESS_TOKEN, accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))
@@ -171,8 +178,8 @@ class AccountBookQueryControllerTest {
 		LocalDateTime occurredAt = LocalDateTime.of(2026, 2, 13, 10, 30, 0);
 
 		given(
-						accountBookQueryService.getAccountBookExchangeRate(
-								userId.toString(), accountBookId, occurredAt))
+				accountBookQueryService.getAccountBookExchangeRate(
+						userId.toString(), accountBookId, occurredAt))
 				.willReturn(
 						new AccountBookExchangeRateResponse(
 								CountryCode.KR,
@@ -182,9 +189,9 @@ class AccountBookQueryControllerTest {
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(
-						get("/account-books/{accountBookId}/exchange-rate", accountBookId)
-								.param("occurredAt", "2026-02-13T10:30:00")
-								.cookie(new Cookie("access_token", accessToken)))
+				get("/account-books/{accountBookId}/exchange-rate", accountBookId)
+						.param("occurredAt", "2026-02-13T10:30:00")
+						.cookie(new Cookie("access_token", accessToken)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.baseCountryCode").value("KR"))
 				.andExpect(jsonPath("$.localCountryCode").value("JP"))

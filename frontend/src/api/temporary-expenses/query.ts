@@ -221,23 +221,32 @@ const useDeleteMetaMutation = (accountBookId: number) =>
   });
 
 /** 임시지출 단건 삭제 Mutation */
-const useDeleteTempExpenseMutation = (
-  accountBookId: number,
-  metaId: number,
-  fileId: number,
-) =>
+const useDeleteTempExpenseMutation = () =>
   useMutation({
-    mutationFn: (tempExpenseId: number) =>
-      deleteTempExpense(accountBookId, metaId, fileId, tempExpenseId),
-    onSuccess: () => {
+    mutationFn: ({
+      accountBookId,
+      metaId,
+      fileId,
+      tempExpenseId,
+    }: {
+      accountBookId: number | string;
+      metaId: number;
+      fileId: number;
+      tempExpenseId: number;
+    }) => deleteTempExpense(accountBookId, metaId, fileId, tempExpenseId),
+
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
+        queryKey: temporaryExpenseKeys.metaFiles(
+          Number(variables.accountBookId),
+          variables.metaId,
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metaFileDetail(
-          accountBookId,
-          metaId,
-          fileId,
+          Number(variables.accountBookId),
+          variables.metaId,
+          variables.fileId,
         ),
       });
       toast.success('임시지출이 삭제됐어요.');

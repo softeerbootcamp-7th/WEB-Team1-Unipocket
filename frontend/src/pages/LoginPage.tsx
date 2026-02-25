@@ -1,10 +1,35 @@
+import { getRouteApi } from '@tanstack/react-router';
+
 import LoginContainer from '@/components/login-page/LoginContainer';
 import LoginContainerTemp from '@/components/login-page/LoginContainerTemp';
 import LoginTerms from '@/components/login-page/LoginTerms';
+import TextConfirmModal from '@/components/modal/TextModal/TextConfirmModal';
 
+import { API_BASE_URL } from '@/api/config/constants';
 import { Icons } from '@/assets';
 
+const routeApi = getRouteApi('/_auth/login');
+
 const LoginPage = () => {
+  const { error, provider } = routeApi.useSearch();
+
+  const navigate = routeApi.useNavigate();
+
+  const isModalOpen = error === '404_USER_WITHDRAWN' && !!provider;
+
+  const handleModalClose = () => {
+    navigate({
+      to: '.',
+      search: {},
+      replace: true,
+    });
+  };
+
+  const handleModalAction = () => {
+    if (provider) {
+      window.location.href = `${API_BASE_URL}/auth/oauth2/reactivate/${provider}`;
+    }
+  };
   return (
     <main className="realative -mt-14.25 flex min-h-screen items-center justify-center md:static">
       <div className="px-25 py-17.5 text-center">
@@ -27,6 +52,15 @@ const LoginPage = () => {
           <LoginTerms />
         </div>
       </div>
+      <TextConfirmModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onAction={handleModalAction}
+        title="계정 복구"
+        description="탈퇴한 계정입니다."
+        subDescription="계정을 복구하고 다시 로그인하시겠습니까?"
+        confirmButton={{ label: '복구하기', variant: 'solid' }} // 기존 삭제 버튼 대신 긍정적인 느낌으로 변경
+      />
     </main>
   );
 };

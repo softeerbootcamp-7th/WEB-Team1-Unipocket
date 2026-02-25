@@ -7,9 +7,9 @@ import { formatAmountByCountry, getCountryInfo } from '@/lib/country';
 import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 const barWidth = {
-  large: 'w-46',
-  small: 'w-42',
-  equal: 'w-38',
+  large: 'w-48',
+  small: 'w-36',
+  equal: 'w-42',
 } as const;
 
 interface ReportMonthlyProps {
@@ -48,7 +48,7 @@ const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   return (
     <ReportContainer title="월별 지출 비교">
       <ReportContent className="h-fit w-109 gap-8">
-        <p className="heading1-bold text-label-normal">
+        <p className="heading1-bold text-label-normal h-15">
           {!isEqual ? (
             <>
               나랑 같은 국가의 교환학생보다 <br />

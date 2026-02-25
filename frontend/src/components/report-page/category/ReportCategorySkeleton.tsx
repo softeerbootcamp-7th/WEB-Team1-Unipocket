@@ -30,15 +30,15 @@ const ReportCategorySkeleton = () => {
     <ReportContainer title="월별 지출 비교">
       <ReportContent className="h-fit w-full">
         <div className="flex flex-col">
-          <h3 className="heading1-bold text-label-normal">
+          <h3 className="headline1-bold text-label-neutral">
             다른 {countryName} 교환학생의 데이터가 아직 충분하지 않아요
           </h3>
-          <p className="body2-normal-regular text-label-alternative">
+          <p className="body2-normal-medium text-label-alternative">
             데이터가 더 쌓이면 하단처럼 비교 통계를 제공할게요
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-1">
+        <div className="flex w-full flex-col gap-2">
           <div className="flex justify-end gap-4">
             <ReportLegend label="나" color="primary" />
             <ReportLegend label="다른 학생" color="secondary" />
@@ -60,7 +60,7 @@ const ReportCategorySkeleton = () => {
                   <div className="flex w-full flex-col justify-between">
                     <div className="flex flex-1 items-center gap-2">
                       <div
-                        className="bg-cool-neutral-90 h-3 origin-left rounded-r-xs"
+                        className="bg-cool-neutral-80 h-3 origin-left rounded-r-xs"
                         style={{ width: `${SKELETON_ME_WIDTH}%` }}
                       />
                       <span className="body2-normal-bold text-cool-neutral-80">

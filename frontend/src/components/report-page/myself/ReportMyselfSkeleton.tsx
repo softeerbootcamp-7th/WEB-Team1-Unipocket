@@ -97,7 +97,7 @@ const lastAreaPath = buildAreaPath(
 const ReportMyselfSkeleton = () => {
   return (
     <ReportContainer title="전월 대비 지출 비교">
-      <ReportContent className="h-fit w-109 gap-2 pr-6">
+      <ReportContent className="h-fit w-109 gap-3 pr-6">
         <div className="flex flex-col gap-1">
           <h3 className="headline1-bold text-label-neutral">
             지출 기록을 시작해보세요!

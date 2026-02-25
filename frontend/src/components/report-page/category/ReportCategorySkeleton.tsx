@@ -44,7 +44,7 @@ const ReportCategorySkeleton = ({ reason }: ReportCategorySkeletonProps) => {
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-2">
+        <div className="flex w-full flex-col gap-1">
           <div className="flex justify-end gap-4">
             <ReportLegend label="나" color="skeletonPrimary" />
             <ReportLegend label="다른 학생" color="skeletonSecondary" />

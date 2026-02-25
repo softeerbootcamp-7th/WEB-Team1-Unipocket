@@ -68,6 +68,7 @@ const updateAccountBook = (
       method: 'PATCH',
       body: JSON.stringify(data),
     },
+    timeout: null, // 통화/국가 변경은 오래 걸리는 작업이므로 타임아웃 비활성화
   });
 };
 

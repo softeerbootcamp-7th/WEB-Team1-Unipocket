@@ -47,12 +47,9 @@ const useGetAccountBooksQuery = () => {
 };
 
 const useCreateAccountBookMutation = () => {
-  const setAccountBook = useAccountBookStore((s) => s.setAccountBook);
-
   return useMutation({
     mutationFn: (data: CreateAccountBookRequest) => createAccountBook(data),
-    onSuccess: (createdAccountBook) => {
-      setAccountBook(createdAccountBook);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
       toast.success('가계부가 생성되었어요.');
     },

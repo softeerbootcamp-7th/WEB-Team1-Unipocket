@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class TravelAmountQueryService {
 
 	private final AccountBookQueryRepository accountBookQueryRepository;
@@ -29,6 +28,7 @@ public class TravelAmountQueryService {
 	private final AnalysisBatchAggregationRepository analysisBatchAggregationRepository;
 	private final ExchangeRateService exchangeRateService;
 
+	@Transactional
 	public TravelAmountResponse getTravelAmount(Long accountBookId, Long travelId, String userId) {
 		AccountBookDetailResponse accountBook = getAccessibleAccountBook(accountBookId, userId);
 		TravelQueryResponse travel = getAccessibleTravel(accountBookId, travelId);

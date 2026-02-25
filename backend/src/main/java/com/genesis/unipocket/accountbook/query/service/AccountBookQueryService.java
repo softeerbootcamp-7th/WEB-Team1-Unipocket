@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AccountBookQueryService {
 
 	private final AccountBookQueryRepository accountBookQueryRepository;
@@ -40,6 +39,7 @@ public class AccountBookQueryService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 	}
 
+	@Transactional
 	public AccountBookExchangeRateResponse getAccountBookExchangeRate(
 			String userId, Long accountBookId, LocalDateTime occurredAt) {
 		UUID userUuid = UUID.fromString(userId);

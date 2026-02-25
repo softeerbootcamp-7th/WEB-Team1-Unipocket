@@ -56,8 +56,9 @@ public class AccountBookQueryRepository {
 							+ " com.genesis.unipocket.accountbook.query.persistence.response.AccountBookSummaryResponse("
 							+ " a.id, a.title, CASE WHEN a.id = (SELECT u.mainBucketId FROM"
 							+ " UserEntity u WHERE u.id = :userId) THEN true ELSE false END) FROM"
-							+ " AccountBookEntity a WHERE a.user.id = :userId ORDER BY"
-							+ " a.bucketOrder ASC",
+							+ " AccountBookEntity a WHERE a.user.id = :userId ORDER BY CASE WHEN"
+							+ " a.id = (SELECT u.mainBucketId FROM UserEntity u WHERE u.id ="
+							+ " :userId) THEN 0 ELSE 1 END ASC, a.bucketOrder ASC",
 						AccountBookSummaryResponse.class)
 				.setParameter("userId", userId)
 				.getResultList();

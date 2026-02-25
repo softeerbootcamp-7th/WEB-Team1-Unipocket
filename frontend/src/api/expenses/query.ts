@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { accountBookKeys } from '@/api/account-books/query';
 import {
   bulkUpdateExpenses,
   createManualExpense,
@@ -56,7 +57,7 @@ const invalidateRelatedQueries = (
     queryKey: travelKeys.allTravelWidgets(accountBookId),
   });
   queryClient.invalidateQueries({
-    queryKey: ['accountBooks', 'amount', accountBookId],
+    queryKey: accountBookKeys.amount(accountBookId),
   });
   queryClient.invalidateQueries({
     queryKey: travelKeys.allAmounts(accountBookId),

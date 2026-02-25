@@ -1,3 +1,5 @@
+import { useAutoFitScale } from '@/hooks/useAutoFitScale';
+
 import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
 import ReportLineGraph from '@/components/report-page/myself/ReportLineGraph';
@@ -67,11 +69,21 @@ const ReportMyself = ({
     Number(thisMonthData.totalSpent),
   );
 
+  const { ref: headerRef, scale: headerScale } =
+    useAutoFitScale<HTMLHeadingElement>(384, [formattedDiff, unit, isLess]);
+
   return (
     <ReportContainer title="전월 대비 지출 비교">
       <ReportContent className="h-fit w-109 pr-6">
         <div className="flex flex-col gap-2.5">
-          <h3 className="heading1-bold text-label-normal">
+          <h3
+            ref={headerRef}
+            className="heading1-bold text-label-normal whitespace-nowrap"
+            style={{
+              transform: `scale(${headerScale})`,
+              transformOrigin: 'left',
+            }}
+          >
             지난달보다{' '}
             <span className="text-primary-strong">
               {`${formattedDiff}${unit} ${isLess ? '덜' : '더'}`}

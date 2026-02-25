@@ -2,7 +2,7 @@ import type { Expense } from '@/api/expenses/type';
 import type { TempExpense } from '@/api/temporary-expenses/type';
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('ko-KR', {
+  return new Date(dateString).toLocaleDateString(navigator.language, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -82,12 +83,36 @@ const DateTimePicker = ({
     }
   };
 
+  const isToday = (date: Date | null) => {
+    if (!date) return false;
+    const now = new Date();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  };
+
   const handleHourSelect = (hourValue: number) => {
+    if (selectedDate && isToday(selectedDate)) {
+      const candidate = createDateTime(selectedDate, hourValue, minute);
+      if (candidate > new Date()) {
+        toast.error('미래 날짜와 시간은 입력할 수 없어요.');
+        return;
+      }
+    }
     setHour(hourValue);
     updateDateTime(hourValue, minute);
   };
 
   const handleMinuteSelect = (minuteValue: number) => {
+    if (selectedDate && isToday(selectedDate)) {
+      const candidate = createDateTime(selectedDate, hour, minuteValue);
+      if (candidate > new Date()) {
+        toast.error('미래 날짜와 시간은 입력할 수 없어요.');
+        return;
+      }
+    }
     setMinute(minuteValue);
     updateDateTime(hour, minuteValue);
   };

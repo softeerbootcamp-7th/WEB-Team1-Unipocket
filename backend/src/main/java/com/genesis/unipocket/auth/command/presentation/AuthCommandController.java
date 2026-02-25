@@ -173,10 +173,19 @@ public class AuthCommandController {
 		OAuth2Properties.ProviderType providerType = getProviderType(provider);
 
 		boolean isReactivate = loginStateService.isReactivateIntent(state);
-		LoginResult loginResponse =
-				isReactivate
-						? loginFacade.reactivate(providerType, code, state)
-						: loginFacade.login(providerType, code, state);
+		LoginResult loginResponse;
+		try {
+			loginResponse =
+					isReactivate
+							? loginFacade.reactivate(providerType, code, state)
+							: loginFacade.login(providerType, code, state);
+		} catch (BusinessException e) {
+			if (e.getCode() == ErrorCode.USER_WITHDRAWN) {
+				response.sendRedirect(frontendUrl + "/login?reason=withdrawn");
+				return;
+			}
+			throw e;
+		}
 
 		// Access Token 쿠키 저장
 		cookieUtil.addCookie(

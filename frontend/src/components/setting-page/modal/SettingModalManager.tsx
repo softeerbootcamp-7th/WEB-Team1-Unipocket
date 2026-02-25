@@ -37,6 +37,11 @@ const SettingModalManager = ({
   const deleteCardMutation = useDeleteCardMutation();
   const deleteUserMutation = useDeleteUserMutation();
 
+  const isCurrencyMutating =
+    updateAccountBookMutation.isPending &&
+    (activeModal.type === 'EDIT_BASE_CURRENCY' ||
+      activeModal.type === 'EDIT_LOCAL_CURRENCY');
+
   return (
     <>
       {/* ── TextInput 모달 ── */}
@@ -196,6 +201,7 @@ const SettingModalManager = ({
           activeModal.type === 'EDIT_LOCAL_CURRENCY'
         }
         onClose={closeModal}
+        isLoading={isCurrencyMutating}
         mode={activeModal.type === 'EDIT_BASE_CURRENCY' ? 'BASE' : 'LOCAL'}
         baseCountryCode={
           activeModal.type === 'EDIT_BASE_CURRENCY' ||

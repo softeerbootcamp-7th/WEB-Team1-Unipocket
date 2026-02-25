@@ -15,21 +15,23 @@ interface LocaleSelectModalProps {
   onSelect?: (code: CountryCode) => void;
   baseCountryCode: CountryCode | null;
   localCountryCode: CountryCode | null;
+  isLoading?: boolean;
 }
 
 const LocaleSelectModal = ({
   isOpen,
   onClose,
+  isLoading,
   ...contentProps
 }: LocaleSelectModalProps) => {
-  useEscapeKey(isOpen, onClose);
+  useEscapeKey(isOpen && !isLoading, onClose);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           className="bg-dimmer-strong z-overlay fixed inset-0 box-border flex h-dvh w-full justify-center pt-12"
-          onClick={onClose}
+          onClick={!isLoading ? onClose : undefined}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -42,7 +44,7 @@ const LocaleSelectModal = ({
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <LocaleSelectContent {...contentProps} />
+            <LocaleSelectContent {...contentProps} isLoading={isLoading} />
           </motion.div>
         </motion.div>
       )}

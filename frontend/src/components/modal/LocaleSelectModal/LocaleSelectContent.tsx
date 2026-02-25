@@ -6,6 +6,7 @@ import CountryItem from '@/components/modal/LocaleSelectModal/CountryItem';
 import type { LocaleMode } from '@/components/modal/LocaleSelectModal/LocaleSelectModal';
 import SearchInput from '@/components/modal/LocaleSelectModal/SearchInput';
 
+import { Icons } from '@/assets';
 import { COUNTRY_CODE, type CountryCode } from '@/data/country/countryCode';
 import { type CountryInfo, getCountryInfo } from '@/lib/country';
 
@@ -14,6 +15,7 @@ interface LocaleSelectContentProps {
   onSelect?: (code: CountryCode) => void;
   baseCountryCode: CountryCode | null;
   localCountryCode: CountryCode | null;
+  isLoading?: boolean;
 }
 
 const TOAST_MESSAGE = {
@@ -21,6 +23,8 @@ const TOAST_MESSAGE = {
   LOCAL: '기준 통화와 동일한 통화로 설정할 수 없습니다.',
   INIT: '기준 통화와 동일한 통화로 설정할 수 없습니다.',
 } as const;
+
+const CAUTION_MESSAGE = '통화 변경 작업은 최대 5분 정도 소요될 수 있습니다.';
 
 const MODAL_TEXT = {
   BASE: {
@@ -42,6 +46,7 @@ const LocaleSelectContent = ({
   onSelect,
   baseCountryCode,
   localCountryCode,
+  isLoading,
 }: LocaleSelectContentProps) => {
   const initialSelectedCode =
     mode === 'BASE' ? baseCountryCode : localCountryCode;
@@ -104,13 +109,23 @@ const LocaleSelectContent = ({
   const { title, subTitle } = MODAL_TEXT[mode];
 
   return (
-    <div className="rounded-t-modal-20 bg-background-normal flex h-full flex-col items-center gap-12 px-7.5 py-13">
+    <div className="rounded-t-modal-20 bg-background-normal relative flex h-full flex-col items-center gap-12 px-7.5 py-13">
+      {isLoading && (
+        <div className="rounded-t-modal-20 absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+          <Icons.Loading className="text-inverse-label size-5.5 animate-spin" />
+        </div>
+      )}
       {/* text section */}
       <div className="flex flex-col items-center gap-1.5 text-center">
         <span className="text-label-normal title3-semibold">{title}</span>
         <span className="text-label-alternative heading2-medium">
           {subTitle}
         </span>
+        {mode !== 'INIT' && (
+          <span className="text-status-cautionary body1-normal-medium">
+            {CAUTION_MESSAGE}
+          </span>
+        )}
       </div>
 
       {/* select section */}

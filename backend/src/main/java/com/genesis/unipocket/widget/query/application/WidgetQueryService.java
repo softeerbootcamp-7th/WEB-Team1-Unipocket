@@ -1,5 +1,7 @@
 package com.genesis.unipocket.widget.query.application;
 
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookAmountResponse;
+import com.genesis.unipocket.accountbook.query.service.AccountBookAmountQueryService;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
@@ -67,6 +69,7 @@ public class WidgetQueryService {
 	private final AccountMonthlyCategoryAggregateRepository
 			accountMonthlyCategoryAggregateRepository;
 	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	private final AccountBookAmountQueryService accountBookAmountQueryService;
 
 	public Object getWidget(
 			UUID userId,
@@ -105,6 +108,7 @@ public class WidgetQueryService {
 
 		WidgetQueryContext context =
 				new WidgetQueryContext(
+						userId,
 						accountBookId,
 						travelId,
 						resolvedCurrencyType,
@@ -131,22 +135,38 @@ public class WidgetQueryService {
 						? widgetQueryRepository.getTravelBudget(context.travelId())
 						: widgetQueryRepository.getBudget(context.accountBookId());
 
+		String baseSpentAmount;
+		String localSpentAmount;
+
+		if (context.travelId() != null) {
+			// 여행인 경우 기존 방식 유지 (travel별 집계 테이블 없음)
+			baseSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(),
+									context.travelId(),
+									CurrencyType.BASE));
+			localSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(),
+									context.travelId(),
+									CurrencyType.LOCAL));
+		} else {
+			// 가게부인 경우 환율 변환이 적용된 정확한 금액 사용
+			AccountBookAmountResponse amounts =
+					accountBookAmountQueryService.getAccountBookAmount(
+							context.userId().toString(), context.accountBookId());
+			baseSpentAmount = AmountFormatUtil.format(amounts.totalBaseAmount());
+			localSpentAmount = AmountFormatUtil.format(amounts.totalLocalAmount());
+		}
+
 		return BudgetWidgetResponse.builder()
 				.budget(AmountFormatUtil.format(budget))
 				.baseCountryCode(context.baseCountryCode())
 				.localCountryCode(context.localCountryCode())
-				.baseSpentAmount(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getTotalSpentByAccountBookId(
-										context.accountBookId(),
-										context.travelId(),
-										CurrencyType.BASE)))
-				.localSpentAmount(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getTotalSpentByAccountBookId(
-										context.accountBookId(),
-										context.travelId(),
-										CurrencyType.LOCAL)))
+				.baseSpentAmount(baseSpentAmount)
+				.localSpentAmount(localSpentAmount)
 				.build();
 	}
 

@@ -3,6 +3,8 @@ import { type ReactNode, useEffect } from 'react';
 import Button from '@/components/common/Button';
 import Icon from '@/components/common/Icon';
 
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
+
 interface UploadResultModalProps {
   isOpen: boolean;
   imageCount?: number;
@@ -22,6 +24,7 @@ export default function UploadResultModal({
   isConfirmDisabled = false,
   children,
 }: UploadResultModalProps) {
+  const { startDate, endDate } = useRequiredAccountBook();
   useEffect(() => {
     if (!isOpen) return;
 
@@ -34,6 +37,9 @@ export default function UploadResultModal({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const formattedStartDate = startDate.replace(/-/g, '.');
+  const formattedEndDate = endDate.replace(/-/g, '.');
 
   const title = imageCount
     ? `${imageCount}개의 사진에서 ${expenseCount}건의 지출 내역이 생성됐어요.`
@@ -65,13 +71,20 @@ export default function UploadResultModal({
           >
             {title}
           </h2>
-          <span className="body1-normal-medium text-label-alternative">
-            수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
-            수정해주세요. <br /> 결제 시점의 환율에 따라 기준 금액이 자동
-            계산됩니다.
-          </span>
+          <div className="flex justify-between">
+            <div className="body1-normal-medium text-label-alternative">
+              수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
+              수정해주세요. <br />
+              결제 시점의 환율에 따라 기준 금액이 자동 계산됩니다.
+            </div>
+            <div className="body1-normal-medium text-status-cautionary text-right">
+              기간을 벗어난 지출내역은 가계부에 추가되지 않습니다. <br />
+              가계부 기간: {formattedStartDate} ~ {formattedEndDate}
+            </div>
+          </div>
         </div>
-        <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+
+        <main className="flex min-h-0 flex-1 flex-col pb-4">{children}</main>
       </div>
       <footer className="bg-background-normal border-line-normal-neutral flex h-28 justify-end gap-4 border-t p-8">
         <Button variant="outlined" size="lg" onClick={onClose}>

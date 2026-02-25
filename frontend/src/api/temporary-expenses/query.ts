@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { ApiError } from '@/api/config/error';
 import { expenseKeys } from '@/api/expenses/query';
 import {
   bulkUpdateTempExpenses,
@@ -23,6 +24,7 @@ import type {
   BulkUpdateRequest,
   GetPresignedUrlRequest,
   StartParseRequest,
+  TempExpenseFile,
 } from '@/api/temporary-expenses/type';
 import { widgetKeys } from '@/api/widget/query';
 import { queryClient } from '@/main';
@@ -135,8 +137,12 @@ const usePresignedUrlMutation = (accountBookId: number) =>
   useMutation({
     mutationFn: (data: GetPresignedUrlRequest) =>
       getPresignedUrl(accountBookId, data),
-    onError: () => {
-      toast.error('업로드 URL 발급에 실패했어요.');
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '업로드 URL 발급에 실패했어요.');
+      } else {
+        toast.error('업로드 URL 발급에 실패했어요.');
+      }
     },
   });
 
@@ -144,8 +150,12 @@ const usePresignedUrlMutation = (accountBookId: number) =>
 const useStartParseMutation = (accountBookId: number) =>
   useMutation({
     mutationFn: (data: StartParseRequest) => startParse(accountBookId, data),
-    onError: () => {
-      toast.error('파싱 시작에 실패했어요.');
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '파싱 시작에 실패했어요.');
+      } else {
+        toast.error('파싱 시작에 실패했어요.');
+      }
     },
   });
 
@@ -165,8 +175,12 @@ const useConfirmMetaMutation = (accountBookId: number) =>
       });
       toast.success('임시지출이 확정됐어요.');
     },
-    onError: () => {
-      toast.error('임시지출 확정에 실패했어요.');
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '임시지출 확정에 실패했어요.');
+      } else {
+        toast.error('임시지출 확정에 실패했어요.');
+      }
     },
   });
 
@@ -200,8 +214,12 @@ const useBulkUpdateTempExpensesMutation = () =>
       });
       toast.success('임시지출이 수정됐어요.');
     },
-    onError: () => {
-      toast.error('임시지출 수정에 실패했어요.');
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '임시지출 수정에 실패했어요.');
+      } else {
+        toast.error('임시지출 수정에 실패했어요.');
+      }
     },
   });
 
@@ -215,35 +233,97 @@ const useDeleteMetaMutation = (accountBookId: number) =>
       });
       toast.success('임시지출 파일이 삭제됐어요.');
     },
-    onError: () => {
-      toast.error('임시지출 파일 삭제에 실패했어요.');
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '임시지출 파일 삭제에 실패했어요.');
+      } else {
+        toast.error('임시지출 파일 삭제에 실패했어요.');
+      }
+    },
+  });
+
+/** 기간 외 임시지출 일괄 삭제 Mutation */
+const useDeleteOutOfPeriodExpensesMutation = (
+  accountBookId: number,
+  metaId: number,
+  startDate: string,
+  endDate: string,
+) =>
+  useMutation({
+    mutationFn: async (files: TempExpenseFile[]) => {
+      const outOfPeriodExpenses = files.flatMap((file) =>
+        file.expenses
+          .filter((expense) => {
+            if (!expense.occurredAt) return false;
+            const date = expense.occurredAt.split('T')[0];
+            return date < startDate || date > endDate;
+          })
+          .map((expense) => ({
+            fileId: file.fileId,
+            tempExpenseId: expense.tempExpenseId,
+          })),
+      );
+
+      await Promise.all(
+        outOfPeriodExpenses.map(({ fileId, tempExpenseId }) =>
+          deleteTempExpense(accountBookId, metaId, fileId, tempExpenseId),
+        ),
+      );
+
+      return outOfPeriodExpenses.length;
+    },
+    onSuccess: (deletedCount) => {
+      queryClient.invalidateQueries({
+        queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
+      });
+      toast.success(`기간 외 지출내역이 ${deletedCount}건 삭제됐어요.`);
+    },
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '기간 외 지출 내역 삭제에 실패했어요.');
+      } else {
+        toast.error('기간 외 지출 내역 삭제에 실패했어요.');
+      }
     },
   });
 
 /** 임시지출 단건 삭제 Mutation */
-const useDeleteTempExpenseMutation = (
-  accountBookId: number,
-  metaId: number,
-  fileId: number,
-) =>
+const useDeleteTempExpenseMutation = () =>
   useMutation({
-    mutationFn: (tempExpenseId: number) =>
-      deleteTempExpense(accountBookId, metaId, fileId, tempExpenseId),
-    onSuccess: () => {
+    mutationFn: ({
+      accountBookId,
+      metaId,
+      fileId,
+      tempExpenseId,
+    }: {
+      accountBookId: number | string;
+      metaId: number;
+      fileId: number;
+      tempExpenseId: number;
+    }) => deleteTempExpense(accountBookId, metaId, fileId, tempExpenseId),
+
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
+        queryKey: temporaryExpenseKeys.metaFiles(
+          Number(variables.accountBookId),
+          variables.metaId,
+        ),
       });
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metaFileDetail(
-          accountBookId,
-          metaId,
-          fileId,
+          Number(variables.accountBookId),
+          variables.metaId,
+          variables.fileId,
         ),
       });
       toast.success('임시지출이 삭제됐어요.');
     },
-    onError: () => {
-      toast.error('임시지출 삭제에 실패했어요.');
+    onError: (error) => {
+      if (error instanceof ApiError) {
+        toast.error(error.message || '임시지출 파일 삭제에 실패했어요.');
+      } else {
+        toast.error('임시지출 파일 삭제에 실패했어요.');
+      }
     },
   });
 
@@ -251,6 +331,7 @@ export {
   useBulkUpdateTempExpensesMutation,
   useConfirmMetaMutation,
   useDeleteMetaMutation,
+  useDeleteOutOfPeriodExpensesMutation,
   useDeleteTempExpenseMutation,
   useGetMetaFileDetailQuery,
   useGetMetaFileDetailSuspenseQuery,

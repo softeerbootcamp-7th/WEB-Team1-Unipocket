@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import { useMatchRoute } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 
 import Calendar, { type DateRange } from '@/components/calendar/Calendar';
@@ -51,6 +52,9 @@ export const SelectDateContent = ({
   onChange,
 }: SelectDateContentProps) => {
   const context = useContext(ModalContext);
+  const matchRoute = useMatchRoute();
+  const isTravelRoute = !!matchRoute({ to: '/travel', fuzzy: true });
+  const title = isTravelRoute ? '여행 기간 설정' : '가계부 기간 설정';
 
   useEffect(() => {
     const isValid = !!startDate && !!endDate;
@@ -61,7 +65,7 @@ export const SelectDateContent = ({
     <div className="flex flex-col gap-8">
       {/* text section */}
       <div className="flex flex-col items-center gap-2.5">
-        <h2 className="text-label-normal headline1-bold">가계부 기간 설정</h2>
+        <h2 className="text-label-normal headline1-bold">{title}</h2>
         <span className="text-label-alternative body1-normal-medium text-center">
           언제부터 기록할까요? <br />
           교환학생 지출을 기록할 기간을 선택해주세요

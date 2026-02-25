@@ -2,6 +2,7 @@ package com.genesis.unipocket.tempexpense.command.application;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.accountbook.common.validation.AccountBookPeriodValidator;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
@@ -25,7 +26,6 @@ import com.genesis.unipocket.tempexpense.common.exception.TempExpenseConvertVali
 import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValidator;
 import com.genesis.unipocket.user.command.persistence.entity.UserCardEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -53,6 +53,7 @@ public class TemporaryExpenseConversionService {
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
+	private final AccountBookPeriodValidator accountBookPeriodValidator;
 	private final AccountBookCommandRepository accountBookCommandRepository;
 	private final UserCardCommandRepository userCardCommandRepository;
 
@@ -121,7 +122,11 @@ public class TemporaryExpenseConversionService {
 						.atZone(localZoneId)
 						.withZoneSameInstant(ZoneOffset.UTC)
 						.toOffsetDateTime();
-		validateOccurredAtWithinAccountBookPeriod(accountBook, occurredAtUtc, localZoneId);
+		accountBookPeriodValidator.validate(
+				accountBook.getLocalCountryCode(),
+				accountBook.getStartDate(),
+				accountBook.getEndDate(),
+				occurredAtUtc);
 
 		var amountInfo = temp.getAmountInfoOrEmpty();
 		TempExpenseConversionAmount conversionAmount =
@@ -205,22 +210,6 @@ public class TemporaryExpenseConversionService {
 		return accountBookCommandRepository
 				.findById(accountBookId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
-	}
-
-	private void validateOccurredAtWithinAccountBookPeriod(
-			AccountBookEntity accountBook, OffsetDateTime occurredAtUtc, ZoneId localZoneId) {
-		LocalDate occurredDate = occurredAtUtc.atZoneSameInstant(localZoneId).toLocalDate();
-		LocalDate startDate = accountBook.getStartDate();
-		LocalDate endDate =
-				accountBook.getEndDate() != null
-						? accountBook.getEndDate()
-						: LocalDate.now(localZoneId);
-
-		boolean beforeStart = startDate != null && occurredDate.isBefore(startDate);
-		boolean afterEnd = endDate != null && occurredDate.isAfter(endDate);
-		if (beforeStart || afterEnd) {
-			throw new BusinessException(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD);
-		}
 	}
 
 	private record CardMatchContext(

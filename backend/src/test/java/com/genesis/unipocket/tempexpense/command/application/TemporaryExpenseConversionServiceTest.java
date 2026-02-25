@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.accountbook.common.validation.AccountBookPeriodValidator;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
@@ -58,6 +59,8 @@ class TemporaryExpenseConversionServiceTest {
 	@Mock private UserCardCommandRepository userCardCommandRepository;
 
 	private TemporaryExpenseConversionService service;
+	private final AccountBookPeriodValidator accountBookPeriodValidator =
+			new AccountBookPeriodValidator();
 
 	@BeforeEach
 	void setUp() {
@@ -70,6 +73,7 @@ class TemporaryExpenseConversionServiceTest {
 						accountBookRateInfoProvider,
 						temporaryExpenseScopeValidationProvider,
 						temporaryExpenseValidator,
+						accountBookPeriodValidator,
 						accountBookCommandRepository,
 						userCardCommandRepository);
 	}

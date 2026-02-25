@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
-import FolderCard from '@/components/travel-page/FolderCard';
+import FolderCard from '@/components/travel-page/folder/FolderCard';
 import TravelContextMenu from '@/components/travel-page/TravelContextMenu';
 
 import { useGetTravelsQuery } from '@/api/travels/query';

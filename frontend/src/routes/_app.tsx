@@ -27,9 +27,7 @@ export const Route = createFileRoute('/_app')({
       return;
     }
 
-    const accountBooks = await queryClient.ensureQueryData(
-      accountBooksQueryOptions,
-    );
+    const accountBooks = await queryClient.fetchQuery(accountBooksQueryOptions);
 
     if (!accountBooks || accountBooks.length === 0) {
       clearAccountBook();
@@ -45,13 +43,9 @@ export const Route = createFileRoute('/_app')({
     const isStoredValid =
       !!storedId && accountBooks.some((ab) => ab.accountBookId === storedId);
 
-    if (isStoredValid) {
-      return;
-    }
-
-    const targetId = accountBooks[0].accountBookId;
+    const targetId = isStoredValid ? storedId : accountBooks[0].accountBookId;
     try {
-      const accountBookDetail = await queryClient.ensureQueryData(
+      const accountBookDetail = await queryClient.fetchQuery(
         accountBookDetailQueryOptions(targetId),
       );
       setAccountBook(accountBookDetail);

@@ -262,6 +262,10 @@ const DateTimePicker = ({
           />
         </div>
       </div>
+
+      <p className="text-label-neutral label1-normal-medium text-center">
+        가계부 기간 내에서만 설정 가능합니다.
+      </p>
     </div>
   );
 };

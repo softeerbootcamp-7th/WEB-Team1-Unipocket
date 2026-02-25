@@ -105,6 +105,7 @@ public class WidgetQueryService {
 
 		WidgetQueryContext context =
 				new WidgetQueryContext(
+						userId,
 						accountBookId,
 						travelId,
 						resolvedCurrencyType,
@@ -131,22 +132,41 @@ public class WidgetQueryService {
 						? widgetQueryRepository.getTravelBudget(context.travelId())
 						: widgetQueryRepository.getBudget(context.accountBookId());
 
+		String baseSpentAmount;
+		String localSpentAmount;
+
+		if (context.travelId() != null) {
+			// 여행인 경우 기존 방식 유지 (travel별 집계 테이블 없음)
+			baseSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(),
+									context.travelId(),
+									CurrencyType.BASE));
+			localSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(),
+									context.travelId(),
+									CurrencyType.LOCAL));
+		} else {
+			// 기존 방식: expense 직접 집계
+			baseSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(), null, CurrencyType.BASE));
+			localSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(), null, CurrencyType.LOCAL));
+		}
+
 		return BudgetWidgetResponse.builder()
 				.budget(AmountFormatUtil.format(budget))
 				.baseCountryCode(context.baseCountryCode())
 				.localCountryCode(context.localCountryCode())
-				.baseSpentAmount(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getTotalSpentByAccountBookId(
-										context.accountBookId(),
-										context.travelId(),
-										CurrencyType.BASE)))
-				.localSpentAmount(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getTotalSpentByAccountBookId(
-										context.accountBookId(),
-										context.travelId(),
-										CurrencyType.LOCAL)))
+				.baseSpentAmount(baseSpentAmount)
+				.localSpentAmount(localSpentAmount)
 				.build();
 	}
 

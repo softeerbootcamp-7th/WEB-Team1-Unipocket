@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.genesis.unipocket.accountbook.query.service.AccountBookAmountQueryService;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
@@ -43,6 +44,7 @@ class WidgetQueryControllerTest {
 	private AccountMonthlyCategoryAggregateRepository accountMonthlyCategoryAggregateRepository;
 
 	@MockitoBean private PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	@MockitoBean private AccountBookAmountQueryService accountBookAmountQueryService;
 
 	@SuppressWarnings("unused")
 	@MockitoBean

@@ -27,24 +27,29 @@ export const Route = createFileRoute('/_app')({
       return;
     }
 
-    if (location.pathname === '/init') {
-      throw redirect({ to: '/home' });
-    }
-
-    if (accountBook) {
-      return;
-    }
-
     const accountBooks = await queryClient.ensureQueryData(
       accountBooksQueryOptions,
     );
 
     if (!accountBooks || accountBooks.length === 0) {
+      clearAccountBook();
+      if (location.pathname === '/init') return;
       throw redirect({ to: '/init' });
     }
 
-    const targetId = accountBooks[0].accountBookId;
+    if (location.pathname === '/init') {
+      throw redirect({ to: '/home' });
+    }
 
+    const storedId = accountBook?.accountBookId;
+    const isStoredValid =
+      !!storedId && accountBooks.some((ab) => ab.accountBookId === storedId);
+
+    if (isStoredValid) {
+      return;
+    }
+
+    const targetId = accountBooks[0].accountBookId;
     try {
       const accountBookDetail = await queryClient.ensureQueryData(
         accountBookDetailQueryOptions(targetId),

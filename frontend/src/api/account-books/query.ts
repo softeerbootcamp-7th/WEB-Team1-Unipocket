@@ -90,15 +90,22 @@ const useDeleteAccountBookMutation = () => {
       const isLastOne = !cached || cached.length <= 1;
 
       if (isLastOne) {
-        // removeQueries를 navigate 완료 후에 호출
-        // → 컴포넌트가 언마운트된 뒤 구독자가 없어 리페치(404) 방지
         void navigate({ to: '/init' }).then(() => {
+          queryClient.removeQueries({ queryKey: ['accountBooks', 'list'] });
           queryClient.removeQueries({
             queryKey: ['accountBooks', 'detail', accountBookId],
           });
           clearAccountBook();
         });
       } else {
+        // 리스트 캐시에서 삭제된 항목을 즉시 제거 (낙관적 업데이트)
+        // → resolvedActiveId가 같은 렌더에서 바로 다른 ID로 전환
+        // → detail 구독자가 없어진 후에 removeQueries 호출 → 404 재조회 방지
+        queryClient.setQueryData<{ accountBookId: number }[]>(
+          ['accountBooks', 'list'],
+          (old) =>
+            old?.filter((ab) => ab.accountBookId !== accountBookId) ?? [],
+        );
         queryClient.removeQueries({
           queryKey: ['accountBooks', 'detail', accountBookId],
         });

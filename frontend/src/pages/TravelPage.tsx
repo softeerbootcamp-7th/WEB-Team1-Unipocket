@@ -1,6 +1,6 @@
+import TravelFolderList from '@/components/travel-page/folder/TravelFolderList';
 import TravelModalManager from '@/components/travel-page/modal/TravelModalManager';
 import { useTravelModal } from '@/components/travel-page/modal/useTravelModal';
-import TravelFolderList from '@/components/travel-page/TravelFolderList';
 import TravelHeader from '@/components/travel-page/TravelHeader';
 
 const TravelPage = () => {

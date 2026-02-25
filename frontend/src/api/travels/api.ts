@@ -103,9 +103,11 @@ export const getTravelPresignedUrl = (
 
 export const getTravelImageUrl = (
   accountBookId: number | string,
+  imageKey?: string,
 ): Promise<GetImageUrlResponse> => {
   return customFetch({
     endpoint: ENDPOINTS.TRAVELS.IMAGE_URL(accountBookId),
+    ...(imageKey && { params: { imageKey } }),
     options: { method: 'GET' },
   });
 };

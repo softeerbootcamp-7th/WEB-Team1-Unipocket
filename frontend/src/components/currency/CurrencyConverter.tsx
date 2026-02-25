@@ -71,8 +71,10 @@ const CurrencyConverter = ({
   const modalContext = useContext(ModalContext);
   const { localCountryCode } = useRequiredAccountBook();
   const [localCurrencyType, setLocalCurrencyType] = useState(() => {
-    const idx = Object.keys(countryData).indexOf(localCountryCode);
-    return idx >= 0 ? idx + 1 : 1;
+    const localCurrencyName =
+      countryData[localCountryCode as keyof typeof countryData]?.currencyName;
+    const option = currencyOptions.find((o) => o.name === localCurrencyName);
+    return option?.id ?? 1;
   });
 
   const {

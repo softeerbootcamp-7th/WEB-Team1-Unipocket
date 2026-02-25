@@ -57,7 +57,9 @@ const UploadMenu = () => {
         isOpen={activeEntry === 'file'}
         onClose={handleCloseEntry}
       />
-      <SidePanel isOpen={activeEntry === 'manual'} onClose={handleCloseEntry} />
+      {activeEntry === 'manual' && (
+        <SidePanel isOpen onClose={handleCloseEntry} />
+      )}
     </>
   );
 };

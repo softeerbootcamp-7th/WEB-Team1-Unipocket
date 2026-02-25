@@ -104,7 +104,7 @@ const CurrencyConverter = ({
   } = useCurrencyConverter(rate ?? 0);
 
   useEffect(() => {
-    if (resetTrigger === undefined || resetTrigger === 0) return;
+    if (!resetTrigger) return;
     reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetTrigger]);

@@ -19,6 +19,9 @@ public class AccountBookValidator {
 	}
 
 	private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+		if (startDate == null || endDate == null) {
+			return;
+		}
 		if (startDate.isAfter(endDate)) {
 			throw new BusinessException(ErrorCode.ACCOUNT_BOOK_INVALID_DATE_RANGE);
 		}

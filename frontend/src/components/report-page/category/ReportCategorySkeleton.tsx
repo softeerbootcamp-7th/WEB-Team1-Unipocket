@@ -40,8 +40,8 @@ const ReportCategorySkeleton = () => {
 
         <div className="flex w-full flex-col gap-2">
           <div className="flex justify-end gap-4">
-            <ReportLegend label="나" color="primary" />
-            <ReportLegend label="다른 학생" color="secondary" />
+            <ReportLegend label="나" color="skeletonPrimary" />
+            <ReportLegend label="다른 학생" color="skeletonSecondary" />
           </div>
 
           <div className="relative h-125.25 pt-4.75">

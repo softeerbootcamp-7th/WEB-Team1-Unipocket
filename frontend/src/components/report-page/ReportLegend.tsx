@@ -3,6 +3,8 @@ import clsx from 'clsx';
 const LEGEND_COLOR = {
   primary: 'bg-primary-normal',
   secondary: 'bg-cool-neutral-90',
+  skeletonPrimary: 'bg-cool-neutral-80',
+  skeletonSecondary: 'bg-cool-neutral-95',
 } as const;
 
 const SHAPE_STYLE = {

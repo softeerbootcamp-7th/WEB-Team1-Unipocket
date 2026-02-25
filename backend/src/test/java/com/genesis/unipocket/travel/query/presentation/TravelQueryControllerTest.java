@@ -55,7 +55,9 @@ class TravelQueryControllerTest {
 								CountryCode.KR,
 								CurrencyCode.KRW,
 								new BigDecimal("1200.00"),
-								new BigDecimal("11000.00")));
+								new BigDecimal("11000.00"),
+								null,
+								null));
 		mockAuthentication(accessToken, userId);
 
 		mockMvc.perform(

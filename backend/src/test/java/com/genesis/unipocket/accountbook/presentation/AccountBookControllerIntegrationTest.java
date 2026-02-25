@@ -606,6 +606,35 @@ class AccountBookControllerIntegrationTest {
 				.andExpect(jsonPath("$[1].isMain").value(false));
 	}
 
+	@Test
+	@DisplayName("가계부 목록 조회 - 메인가계부는 bucketOrder와 무관하게 첫 번째로 반환")
+	void 가계부_목록_조회_메인가계부_우선정렬() throws Exception {
+		Long firstId = createAccountBook();
+		Long secondId = createAccountBook();
+
+		String body = """
+			{
+				"isMain": true
+			}
+			""";
+
+		mockMvc.perform(
+						patch("/account-books/{id}", secondId)
+								.with(jwtTestHelper.withJwtAuth(userId))
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(body))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accountBookId").value(secondId));
+
+		mockMvc.perform(get("/account-books").with(jwtTestHelper.withJwtAuth(userId)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(2))
+				.andExpect(jsonPath("$[0].accountBookId").value(secondId))
+				.andExpect(jsonPath("$[0].isMain").value(true))
+				.andExpect(jsonPath("$[1].accountBookId").value(firstId))
+				.andExpect(jsonPath("$[1].isMain").value(false));
+	}
+
 	// ========== GET /account-books/{id} (단건 조회) ==========
 
 	@Test

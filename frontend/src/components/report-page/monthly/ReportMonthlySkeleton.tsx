@@ -15,7 +15,7 @@ const ReportMonthlySkeleton = ({ reason }: ReportMonthlySkeletonProps) => {
   return (
     <ReportContainer title="월별 지출 비교">
       <ReportContent className="h-fit w-109 gap-5">
-        <div className="flex h-15 flex-col">
+        <div className="flex h-15 flex-col gap-1">
           <h3 className="headline1-bold text-label-neutral">
             {reason === 'me'
               ? '나의 데이터가 아직 충분하지 않아요'

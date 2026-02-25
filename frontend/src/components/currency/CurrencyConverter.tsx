@@ -31,6 +31,7 @@ interface CurrencyConverterProps {
   rateUpdatedAt?: Date;
   onValuesChange?: (values: CurrencyValues) => void;
   onBaseCurrencyChange?: (amount: number) => void;
+  resetTrigger?: number;
 }
 
 const formatRateDate = (date: Date): string => {
@@ -64,6 +65,7 @@ const CurrencyConverter = ({
   rateUpdatedAt,
   onValuesChange,
   onBaseCurrencyChange,
+  resetTrigger,
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
@@ -98,7 +100,14 @@ const CurrencyConverter = ({
     baseError,
     handleCurrencyChange,
     isValid,
+    reset,
   } = useCurrencyConverter(rate ?? 0);
+
+  useEffect(() => {
+    if (resetTrigger === undefined || resetTrigger === 0) return;
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetTrigger]);
 
   const setActionReady = modalContext?.setActionReady;
 

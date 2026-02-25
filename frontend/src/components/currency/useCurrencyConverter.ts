@@ -96,6 +96,13 @@ const useCurrencyConverter = (rate: number) => {
     setSecondary(converted);
   };
 
+  const reset = () => {
+    setLocalCurrency('');
+    setBaseCurrency('');
+    setLocalError(null);
+    setBaseError(null);
+  };
+
   return {
     localCurrency,
     baseCurrency,
@@ -103,6 +110,7 @@ const useCurrencyConverter = (rate: number) => {
     baseError,
     handleCurrencyChange,
     isValid,
+    reset,
   };
 };
 

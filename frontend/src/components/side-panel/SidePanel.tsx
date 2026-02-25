@@ -213,7 +213,7 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
         </div>
         <Divider style="thin" />
         <MoneyContainer
-          key={resetKey}
+          resetTrigger={resetKey}
           rateUpdatedAt={selectedDateTime ?? undefined}
           onValuesChange={setCurrencyValues}
         />

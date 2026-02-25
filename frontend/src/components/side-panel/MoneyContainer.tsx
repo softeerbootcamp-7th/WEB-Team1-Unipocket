@@ -5,11 +5,13 @@ import CurrencyConverter, {
 interface MoneyContainerProps {
   rateUpdatedAt?: Date;
   onValuesChange?: (values: CurrencyValues) => void;
+  resetTrigger?: number;
 }
 
 const MoneyContainer = ({
   rateUpdatedAt,
   onValuesChange,
+  resetTrigger,
 }: MoneyContainerProps) => {
   return (
     <div className="flex w-90 flex-col gap-6">
@@ -24,6 +26,7 @@ const MoneyContainer = ({
         showCurrencyDropdown
         rateUpdatedAt={rateUpdatedAt}
         onValuesChange={onValuesChange}
+        resetTrigger={resetTrigger}
       />
     </div>
   );

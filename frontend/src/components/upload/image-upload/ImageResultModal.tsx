@@ -31,6 +31,9 @@ const ImageResultModal = ({
     });
   };
 
+  const hasAnyIssue =
+    data?.files.some((file) => file.incompleteCount > 0) ?? false;
+
   const imageCount = data?.files.length ?? 0;
   const expenseCount =
     data?.files.reduce((sum, file) => sum + file.expenses.length, 0) ?? 0;
@@ -42,6 +45,7 @@ const ImageResultModal = ({
       expenseCount={expenseCount}
       onClose={onClose}
       onConfirm={handleConfirm}
+      isConfirmDisabled={hasAnyIssue}
     >
       <ImageResultContent
         accountBookId={accountBookId}

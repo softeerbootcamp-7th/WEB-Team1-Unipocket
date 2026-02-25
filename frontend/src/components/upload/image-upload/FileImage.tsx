@@ -8,7 +8,6 @@ interface FileImageProps {
   fileName: string;
   successCount?: number;
   warningCount?: number;
-  hasIssue?: boolean;
   variant?: 'tab' | 'preview';
 }
 
@@ -19,7 +18,6 @@ const FileImage = ({
   fileName,
   successCount = 0,
   warningCount = 0,
-  hasIssue = false,
   variant = 'tab',
 }: FileImageProps) => {
   const { data } = useGetMetaFileUrlQuery(accountBookId, metaId, fileId);
@@ -56,10 +54,6 @@ const FileImage = ({
           <div className="bg-fill-disable h-full w-full animate-pulse rounded-sm" />
         )}
       </div>
-
-      {hasIssue && (
-        <div className="bg-status-negative absolute -top-0.75 -left-0.75 h-1.5 w-1.5 rounded-full" />
-      )}
       <div className="flex min-w-0 flex-col gap-1.5">
         <span className="caption1-medium text-label-normal truncate">
           {fileName}

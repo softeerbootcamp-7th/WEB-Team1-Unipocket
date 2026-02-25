@@ -36,19 +36,6 @@ const ImageResultContent = ({
         <TabProvider variant="underline" defaultValue={String(files[0].fileId)}>
           <TabList>
             {files.map((file) => {
-              const { successCount, warningCount } = file.expenses.reduce(
-                (acc, e) => {
-                  if (e.status === 'NORMAL') {
-                    acc.successCount++;
-                  } else {
-                    acc.warningCount++;
-                  }
-                  return acc;
-                },
-                { successCount: 0, warningCount: 0 },
-              );
-              const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
-
               return (
                 <TabTrigger
                   key={file.fileId}
@@ -59,10 +46,9 @@ const ImageResultContent = ({
                     accountBookId={accountBookId}
                     metaId={metaId}
                     fileId={file.fileId}
-                    fileName={fileName}
-                    successCount={successCount}
-                    warningCount={warningCount}
-                    hasIssue={warningCount > 0}
+                    fileName={file.fileName}
+                    successCount={file.normalCount + file.abnormalCount}
+                    warningCount={file.incompleteCount}
                     variant="tab"
                   />
                 </TabTrigger>
@@ -71,8 +57,6 @@ const ImageResultContent = ({
           </TabList>
           <div className="h-10" />
           {files.map((file) => {
-            const fileName = file.s3Key.split('/').pop() ?? file.s3Key;
-
             return (
               <TabContent key={file.fileId} value={String(file.fileId)}>
                 <div className="flex flex-col gap-4.5 lg:flex-row">
@@ -80,7 +64,7 @@ const ImageResultContent = ({
                     accountBookId={accountBookId}
                     metaId={metaId}
                     fileId={file.fileId}
-                    fileName={fileName}
+                    fileName={file.fileName}
                     variant="preview"
                   />
                   <ImageResultTable data={file.expenses} />

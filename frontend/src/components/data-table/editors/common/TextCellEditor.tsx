@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useDataTable } from '@/components/data-table/context';
 import { CellEditorAnchor } from '@/components/data-table/editors/CellEditorAnchor';
-import { useInlineExpenseUpdate } from '@/components/data-table/editors/useInlineExpenseUpdate';
 import type { ActiveCellState } from '@/components/data-table/type';
 
-const TextCellEditor = () => {
+interface TextCellEditorProps {
+  onUpdate: (rowId: string, value: string) => void;
+}
+
+const TextCellEditor = ({ onUpdate }: TextCellEditorProps) => {
   const { tableState } = useDataTable();
   const { textCell } = tableState;
 
@@ -15,15 +18,21 @@ const TextCellEditor = () => {
     <TextCellEditorContent
       key={`${textCell.rowId}-${textCell.columnId}`}
       textCell={textCell}
+      onUpdate={onUpdate}
     />
   );
 };
 
-const TextCellEditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
+const TextCellEditorContent = ({
+  textCell,
+  onUpdate,
+}: {
+  textCell: ActiveCellState;
+} & TextCellEditorProps) => {
   const { dispatch } = useDataTable();
-  const [value, setValue] = useState(String(textCell.value));
+  // null 대비 안전한 초기값 설정
+  const [value, setValue] = useState(String(textCell.value || ''));
   const inputRef = useRef<HTMLInputElement>(null);
-  const { updateInline } = useInlineExpenseUpdate();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -31,8 +40,8 @@ const TextCellEditorContent = ({ textCell }: { textCell: ActiveCellState }) => {
   }, []);
 
   const handleSave = () => {
-    if (value.trim() !== '' && value !== String(textCell.value)) {
-      updateInline(textCell.rowId, 'merchantName', value);
+    if (value.trim() !== '' && value !== String(textCell.value || '')) {
+      onUpdate(textCell.rowId, value);
     }
     dispatch({ type: 'SET_TEXT_CELL', payload: null });
   };

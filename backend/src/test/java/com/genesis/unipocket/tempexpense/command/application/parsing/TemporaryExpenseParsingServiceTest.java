@@ -46,41 +46,35 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TemporaryExpenseParsingServiceTest {
 
-	@Mock
-	private FileRepository fileRepository;
-	@Mock
-	private TemporaryExpenseRepository temporaryExpenseRepository;
-	@Mock
-	private AccountBookRateInfoProvider accountBookRateInfoProvider;
-	@Mock
-	private ExchangeRateProvider exchangeRateProvider;
-	@Mock
-	private TemporaryExpenseParseClient temporaryExpenseParseClient;
-	@Mock
-	private TemporaryExpenseFieldParser fieldParser;
-	@Mock
-	private ParsingProgressPublisher progressPublisher;
-	@Mock
-	private TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
+	@Mock private FileRepository fileRepository;
+	@Mock private TemporaryExpenseRepository temporaryExpenseRepository;
+	@Mock private AccountBookRateInfoProvider accountBookRateInfoProvider;
+	@Mock private ExchangeRateProvider exchangeRateProvider;
+	@Mock private TemporaryExpenseParseClient temporaryExpenseParseClient;
+	@Mock private TemporaryExpenseFieldParser fieldParser;
+	@Mock private ParsingProgressPublisher progressPublisher;
+	@Mock private TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 
 	private TemporaryExpenseParsingService service;
 
 	@BeforeEach
 	void setUp() {
-		TemporaryExpensePersistenceService temporaryExpensePersistenceService = new TemporaryExpensePersistenceService(
-				temporaryExpenseRepository,
-				new TempExpenseStatusPolicy(),
-				exchangeRateProvider);
-		service = new TemporaryExpenseParsingService(
-				fileRepository,
-				accountBookRateInfoProvider,
-				fieldParser,
-				temporaryExpenseParseClient,
-				temporaryExpensePersistenceService,
-				progressPublisher,
-				temporaryExpenseScopeValidator,
-				Runnable::run,
-				Runnable::run);
+		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
+				new TemporaryExpensePersistenceService(
+						temporaryExpenseRepository,
+						new TempExpenseStatusPolicy(),
+						exchangeRateProvider);
+		service =
+				new TemporaryExpenseParsingService(
+						fileRepository,
+						accountBookRateInfoProvider,
+						fieldParser,
+						temporaryExpenseParseClient,
+						temporaryExpensePersistenceService,
+						progressPublisher,
+						temporaryExpenseScopeValidator,
+						Runnable::run,
+						Runnable::run);
 	}
 
 	@Test
@@ -88,16 +82,18 @@ class TemporaryExpenseParsingServiceTest {
 	void parseBatchSingleFile_mapsCategoryAndLooksUpExchangeRatePerItem() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-1.jpg";
-		File file = File.builder()
-				.fileId(1L)
-				.tempExpenseMetaId(10L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key(s3Key)
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(10L)
-				.accountBookId(accountBookId)
-				.build();
+		File file =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(10L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(10L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -136,9 +132,9 @@ class TemporaryExpenseParsingServiceTest {
 												null)),
 								null));
 		when(exchangeRateProvider.getExchangeRate(
-				CurrencyCode.JPY,
-				CurrencyCode.KRW,
-				LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
+						CurrencyCode.JPY,
+						CurrencyCode.KRW,
+						LocalDateTime.of(2026, 2, 1, 0, 0).atOffset(ZoneOffset.UTC)))
 				.thenReturn(new BigDecimal("9.50"));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
@@ -171,16 +167,18 @@ class TemporaryExpenseParsingServiceTest {
 	void parseBatchSingleFile_incompleteItemSkipsExchangeLookup() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-2.jpg";
-		File file = File.builder()
-				.fileId(2L)
-				.tempExpenseMetaId(11L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key(s3Key)
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(11L)
-				.accountBookId(accountBookId)
-				.build();
+		File file =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(11L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(11L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -226,16 +224,18 @@ class TemporaryExpenseParsingServiceTest {
 	void parseBatchSingleFile_usesProvidedBaseAmount_skipsExchangeLookup() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-base-amount.jpg";
-		File file = File.builder()
-				.fileId(3L)
-				.tempExpenseMetaId(12L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key(s3Key)
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(12L)
-				.accountBookId(accountBookId)
-				.build();
+		File file =
+				File.builder()
+						.fileId(3L)
+						.tempExpenseMetaId(12L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(12L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -288,22 +288,25 @@ class TemporaryExpenseParsingServiceTest {
 	@DisplayName("배치 파싱은 전달된 파일 목록을 순회해 처리한다")
 	void parseBatchFiles_iteratesOverGivenFiles() {
 		Long accountBookId = 1L;
-		File fileA = File.builder()
-				.fileId(1L)
-				.tempExpenseMetaId(100L)
-				.fileType(File.FileType.CSV)
-				.s3Key("docs/a.csv")
-				.build();
-		File fileB = File.builder()
-				.fileId(2L)
-				.tempExpenseMetaId(100L)
-				.fileType(File.FileType.CSV)
-				.s3Key("docs/b.csv")
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(100L)
-				.accountBookId(accountBookId)
-				.build();
+		File fileA =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(100L)
+						.fileType(File.FileType.CSV)
+						.s3Key("docs/a.csv")
+						.build();
+		File fileB =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(100L)
+						.fileType(File.FileType.CSV)
+						.s3Key("docs/b.csv")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(100L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -324,46 +327,51 @@ class TemporaryExpenseParsingServiceTest {
 	@Test
 	@DisplayName("startParseAsync는 s3Keys가 null이어도 NPE 없이 메타 전체 파일을 대상으로 시작한다")
 	void startParseAsync_acceptsNullS3Keys() {
-		TemporaryExpensePersistenceService temporaryExpensePersistenceService = new TemporaryExpensePersistenceService(
-				temporaryExpenseRepository,
-				new TempExpenseStatusPolicy(),
-				exchangeRateProvider);
-		TemporaryExpenseParsingService asyncStartOnlyService = new TemporaryExpenseParsingService(
-				fileRepository,
-				accountBookRateInfoProvider,
-				fieldParser,
-				temporaryExpenseParseClient,
-				temporaryExpensePersistenceService,
-				progressPublisher,
-				temporaryExpenseScopeValidator,
-				runnable -> {
-				},
-				Runnable::run);
+		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
+				new TemporaryExpensePersistenceService(
+						temporaryExpenseRepository,
+						new TempExpenseStatusPolicy(),
+						exchangeRateProvider);
+		TemporaryExpenseParsingService asyncStartOnlyService =
+				new TemporaryExpenseParsingService(
+						fileRepository,
+						accountBookRateInfoProvider,
+						fieldParser,
+						temporaryExpenseParseClient,
+						temporaryExpensePersistenceService,
+						progressPublisher,
+						temporaryExpenseScopeValidator,
+						runnable -> {},
+						Runnable::run);
 
 		Long accountBookId = 1L;
 		Long metaId = 10L;
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(metaId)
-				.accountBookId(accountBookId)
-				.build();
-		File file1 = File.builder()
-				.fileId(1L)
-				.tempExpenseMetaId(metaId)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/a.png")
-				.build();
-		File file2 = File.builder()
-				.fileId(2L)
-				.tempExpenseMetaId(metaId)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/b.png")
-				.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(metaId)
+						.accountBookId(accountBookId)
+						.build();
+		File file1 =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(metaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/a.png")
+						.build();
+		File file2 =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(metaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/b.png")
+						.build();
 
 		when(temporaryExpenseScopeValidator.validateMetaScope(accountBookId, metaId))
 				.thenReturn(meta);
 		when(fileRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(file1, file2));
 
-		ParseStartResult result = asyncStartOnlyService.startParseAsync(accountBookId, metaId, null);
+		ParseStartResult result =
+				asyncStartOnlyService.startParseAsync(accountBookId, metaId, null);
 
 		assertThat(result.totalFiles()).isEqualTo(2);
 		verify(progressPublisher).registerTask(anyString(), eq(accountBookId));
@@ -374,16 +382,18 @@ class TemporaryExpenseParsingServiceTest {
 	void parseBatchSingleFile_ignoresBaseAmountWhenBaseCurrencyCodeMissing() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/image-base-missing-currency.jpg";
-		File file = File.builder()
-				.fileId(4L)
-				.tempExpenseMetaId(13L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key(s3Key)
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(13L)
-				.accountBookId(accountBookId)
-				.build();
+		File file =
+				File.builder()
+						.fileId(4L)
+						.tempExpenseMetaId(13L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(13L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -393,7 +403,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 		when(exchangeRateProvider.getExchangeRate(
-				eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any()))
+						eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any()))
 				.thenReturn(new BigDecimal("1300"));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
@@ -436,22 +446,25 @@ class TemporaryExpenseParsingServiceTest {
 	@DisplayName("Gemini 429 응답은 파일 실패로 집계되고 배치 종료 시 error 요약을 발행한다")
 	void parseBatchFiles_aggregatesRateLimitFailuresAndPublishesSummaryError() {
 		Long accountBookId = 1L;
-		File first = File.builder()
-				.fileId(1L)
-				.tempExpenseMetaId(200L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/first.jpg")
-				.build();
-		File second = File.builder()
-				.fileId(2L)
-				.tempExpenseMetaId(200L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/second.jpg")
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(200L)
-				.accountBookId(accountBookId)
-				.build();
+		File first =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(200L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/first.jpg")
+						.build();
+		File second =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(200L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/second.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(200L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -486,22 +499,25 @@ class TemporaryExpenseParsingServiceTest {
 	@DisplayName("여러 파일 파싱 중 후속 파일이 429로 실패해도 이전 성공 파일은 저장된다")
 	void parseBatchFiles_persistsSuccessfulFilesBeforeRateLimitFailure() {
 		Long accountBookId = 1L;
-		File first = File.builder()
-				.fileId(10L)
-				.tempExpenseMetaId(210L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/first-success.jpg")
-				.build();
-		File second = File.builder()
-				.fileId(11L)
-				.tempExpenseMetaId(210L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/second-rate-limit.jpg")
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(210L)
-				.accountBookId(accountBookId)
-				.build();
+		File first =
+				File.builder()
+						.fileId(10L)
+						.tempExpenseMetaId(210L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/first-success.jpg")
+						.build();
+		File second =
+				File.builder()
+						.fileId(11L)
+						.tempExpenseMetaId(210L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/second-rate-limit.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(210L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -511,7 +527,7 @@ class TemporaryExpenseParsingServiceTest {
 		when(fieldParser.parseCurrencyCode(eq("USD"), any())).thenReturn(CurrencyCode.USD);
 		when(fieldParser.parseCurrencyCode(isNull(), any())).thenAnswer(i -> i.getArgument(1));
 		when(exchangeRateProvider.getExchangeRate(
-				eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any()))
+						eq(CurrencyCode.USD), eq(CurrencyCode.KRW), any()))
 				.thenReturn(new BigDecimal("1300"));
 		when(temporaryExpenseRepository.saveAll(anyList()))
 				.thenAnswer(invocation -> invocation.getArgument(0));
@@ -559,22 +575,25 @@ class TemporaryExpenseParsingServiceTest {
 	@DisplayName("파일별 progress 이벤트는 성공/429 실패 코드를 구조화해 발행한다")
 	void parseBatchFiles_publishesStructuredProgressCodeForSuccessAndRateLimit() {
 		Long accountBookId = 1L;
-		File first = File.builder()
-				.fileId(21L)
-				.tempExpenseMetaId(220L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/first.jpg")
-				.build();
-		File second = File.builder()
-				.fileId(22L)
-				.tempExpenseMetaId(220L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/second.jpg")
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(220L)
-				.accountBookId(accountBookId)
-				.build();
+		File first =
+				File.builder()
+						.fileId(21L)
+						.tempExpenseMetaId(220L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/first.jpg")
+						.build();
+		File second =
+				File.builder()
+						.fileId(22L)
+						.tempExpenseMetaId(220L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/second.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(220L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(
@@ -609,16 +628,18 @@ class TemporaryExpenseParsingServiceTest {
 	void parseBatchSingleFile_swapsCurrenciesWhenGeminiReturnsThemReversed() {
 		Long accountBookId = 1L;
 		String s3Key = "temp/shinhan-csv.csv";
-		File file = File.builder()
-				.fileId(5L)
-				.tempExpenseMetaId(14L)
-				.fileType(File.FileType.CSV)
-				.s3Key(s3Key)
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(14L)
-				.accountBookId(accountBookId)
-				.build();
+		File file =
+				File.builder()
+						.fileId(5L)
+						.tempExpenseMetaId(14L)
+						.fileType(File.FileType.CSV)
+						.s3Key(s3Key)
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(14L)
+						.accountBookId(accountBookId)
+						.build();
 
 		// AccountBook: base=KRW, local=USD (미국 여행)
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
@@ -673,16 +694,18 @@ class TemporaryExpenseParsingServiceTest {
 	@DisplayName("파일별 progress 이벤트는 일반 실패를 INTERNAL_SERVER_ERROR 코드로 발행한다")
 	void parseBatchFiles_publishesStructuredProgressCodeForInternalFailure() {
 		Long accountBookId = 1L;
-		File file = File.builder()
-				.fileId(23L)
-				.tempExpenseMetaId(230L)
-				.fileType(File.FileType.IMAGE)
-				.s3Key("temp/internal.jpg")
-				.build();
-		TempExpenseMeta meta = TempExpenseMeta.builder()
-				.tempExpenseMetaId(230L)
-				.accountBookId(accountBookId)
-				.build();
+		File file =
+				File.builder()
+						.fileId(23L)
+						.tempExpenseMetaId(230L)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/internal.jpg")
+						.build();
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(230L)
+						.accountBookId(accountBookId)
+						.build();
 
 		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
 				.thenReturn(

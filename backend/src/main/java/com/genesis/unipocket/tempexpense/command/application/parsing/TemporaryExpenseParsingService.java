@@ -42,7 +42,8 @@ public class TemporaryExpenseParsingService {
 	private static final int MAX_DOCUMENT_PARSE_FILES = 1;
 	private static final int MAX_IMAGE_PARSE_FILES = 3;
 	private static final String FILE_PROGRESS_CODE_SUCCESS = "SUCCESS";
-	private static final String FILE_PROGRESS_CODE_FAILED_TOO_MANY_REQUEST = "FAILED_TOO_MANY_REQUEST";
+	private static final String FILE_PROGRESS_CODE_FAILED_TOO_MANY_REQUEST =
+			"FAILED_TOO_MANY_REQUEST";
 	private static final String FILE_PROGRESS_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 	private final FileRepository fileRepository;
@@ -53,11 +54,9 @@ public class TemporaryExpenseParsingService {
 	private final ParsingProgressPublisher progressPublisher;
 	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 
-	@Qualifier("parsingExecutor")
-	private final Executor parsingExecutor;
+	@Qualifier("parsingExecutor") private final Executor parsingExecutor;
 
-	@Qualifier("fileParsingExecutor")
-	private final Executor fileParsingExecutor;
+	@Qualifier("fileParsingExecutor") private final Executor fileParsingExecutor;
 
 	public ParseStartResult startParseAsync(
 			Long accountBookId, Long tempExpenseMetaId, List<String> s3Keys) {
@@ -67,7 +66,8 @@ public class TemporaryExpenseParsingService {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_META_NOT_FOUND);
 		}
 
-		TempExpenseMeta meta = temporaryExpenseScopeValidator.validateMetaScope(accountBookId, tempExpenseMetaId);
+		TempExpenseMeta meta =
+				temporaryExpenseScopeValidator.validateMetaScope(accountBookId, tempExpenseMetaId);
 
 		List<File> metaFiles = fileRepository.findByTempExpenseMetaId(tempExpenseMetaId);
 
@@ -79,8 +79,9 @@ public class TemporaryExpenseParsingService {
 		if (requestedS3Keys.isEmpty()) {
 			files = metaFiles;
 		} else {
-			Map<String, File> metaFileByKey = metaFiles.stream()
-					.collect(Collectors.toMap(File::getS3Key, Function.identity()));
+			Map<String, File> metaFileByKey =
+					metaFiles.stream()
+							.collect(Collectors.toMap(File::getS3Key, Function.identity()));
 			Set<String> distinctKeys = new HashSet<>(requestedS3Keys);
 			files = distinctKeys.stream().map(metaFileByKey::get).filter(Objects::nonNull).toList();
 			if (files.size() != distinctKeys.size()) {
@@ -102,10 +103,12 @@ public class TemporaryExpenseParsingService {
 	}
 
 	private void validateParseFileLimit(List<File> files) {
-		boolean hasDocument = files.stream()
-				.anyMatch(
-						f -> f.getFileType() == File.FileType.CSV
-								|| f.getFileType() == File.FileType.EXCEL);
+		boolean hasDocument =
+				files.stream()
+						.anyMatch(
+								f ->
+										f.getFileType() == File.FileType.CSV
+												|| f.getFileType() == File.FileType.EXCEL);
 		if (hasDocument && files.size() > MAX_DOCUMENT_PARSE_FILES) {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FILE_LIMIT_EXCEEDED);
 		}
@@ -121,8 +124,9 @@ public class TemporaryExpenseParsingService {
 		try {
 			rateContext = resolveRateContext(meta.getAccountBookId());
 		} catch (Exception e) {
-			ErrorCode errorCode = TemporaryExpenseTaskSupport.resolveErrorCode(
-					e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
+			ErrorCode errorCode =
+					TemporaryExpenseTaskSupport.resolveErrorCode(
+							e, ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
 			progressPublisher.publishError(taskId, errorCode);
 			throw TemporaryExpenseTaskSupport.rethrow(e);
 		}
@@ -134,56 +138,63 @@ public class TemporaryExpenseParsingService {
 		progressPublisher.publishProgress(taskId, 0);
 
 		final AccountBookRateContext finalRateContext = rateContext;
-		List<CompletableFuture<Void>> futures = files.stream()
-				.map(
-						file -> CompletableFuture.runAsync(
-								() -> {
-									String progressMessage = "PROCESSING: " + file.getS3Key();
-									String progressCode = null;
-									try {
-										parseAndPersistExpenses(
-												file, meta, finalRateContext);
-										succeededFileKeys.add(file.getS3Key());
-										progressMessage = buildPerFileProgressMessage(
-												file.getS3Key(),
-												true,
-												null);
-										progressCode = buildPerFileProgressCode(
-												true, null);
-									} catch (Exception e) {
-										ErrorCode errorCode = TemporaryExpenseTaskSupport
-												.resolveErrorCode(
-														e,
-														ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
-										failedFiles.add(
-												new FailedFile(
-														file.getS3Key(),
-														errorCode));
-										progressMessage = buildPerFileProgressMessage(
-												file.getS3Key(),
-												false,
-												errorCode);
-										progressCode = buildPerFileProgressCode(
-												false, errorCode);
-										log.error(
-												"Failed to parse file: {}",
-												file.getS3Key(),
-												e);
-									} finally {
-										int done = completed.incrementAndGet();
-										progressPublisher.publishProgress(
-												taskId,
-												TemporaryExpenseTaskSupport
-														.toPercent(
-																done,
-																total),
-												progressMessage,
-												progressCode,
-												file.getS3Key());
-									}
-								},
-								fileParsingExecutor))
-				.toList();
+		List<CompletableFuture<Void>> futures =
+				files.stream()
+						.map(
+								file ->
+										CompletableFuture.runAsync(
+												() -> {
+													String progressMessage =
+															"PROCESSING: " + file.getS3Key();
+													String progressCode = null;
+													try {
+														parseAndPersistExpenses(
+																file, meta, finalRateContext);
+														succeededFileKeys.add(file.getS3Key());
+														progressMessage =
+																buildPerFileProgressMessage(
+																		file.getS3Key(),
+																		true,
+																		null);
+														progressCode =
+																buildPerFileProgressCode(
+																		true, null);
+													} catch (Exception e) {
+														ErrorCode errorCode =
+																TemporaryExpenseTaskSupport
+																		.resolveErrorCode(
+																				e,
+																				ErrorCode
+																						.TEMP_EXPENSE_PARSE_FAILED);
+														failedFiles.add(
+																new FailedFile(
+																		file.getS3Key(),
+																		errorCode));
+														progressMessage =
+																buildPerFileProgressMessage(
+																		file.getS3Key(),
+																		false,
+																		errorCode);
+														progressCode =
+																buildPerFileProgressCode(
+																		false, errorCode);
+														log.error(
+																"Failed to parse file: {}",
+																file.getS3Key(),
+																e);
+													} finally {
+														int done = completed.incrementAndGet();
+														progressPublisher.publishProgress(
+																taskId,
+																TemporaryExpenseTaskSupport
+																		.toPercent(done, total),
+																progressMessage,
+																progressCode,
+																file.getS3Key());
+													}
+												},
+												fileParsingExecutor))
+						.toList();
 
 		CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
 
@@ -192,11 +203,14 @@ public class TemporaryExpenseParsingService {
 			return;
 		}
 
-		ErrorCode terminalCode = failedFiles.stream()
-				.allMatch(
-						failedFile -> failedFile.errorCode() == ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT)
-								? ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT
-								: ErrorCode.TEMP_EXPENSE_PARSE_FAILED;
+		ErrorCode terminalCode =
+				failedFiles.stream()
+								.allMatch(
+										failedFile ->
+												failedFile.errorCode()
+														== ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT)
+						? ErrorCode.TEMP_EXPENSE_PARSE_RATE_LIMIT
+						: ErrorCode.TEMP_EXPENSE_PARSE_FAILED;
 		String summaryMessage = buildTerminalSummaryMessage(succeededFileKeys, failedFiles);
 		progressPublisher.publishError(taskId, terminalCode, summaryMessage);
 	}
@@ -217,25 +231,29 @@ public class TemporaryExpenseParsingService {
 			throw new BusinessException(ErrorCode.TEMP_EXPENSE_PARSE_FAILED);
 		}
 
-		List<NormalizedParsedExpenseItem> normalizedItems = geminiResponse.items().stream()
-				.map(item -> normalizeParsedItem(item, rateContext))
-				.toList();
+		List<NormalizedParsedExpenseItem> normalizedItems =
+				geminiResponse.items().stream()
+						.map(item -> normalizeParsedItem(item, rateContext))
+						.toList();
 
 		temporaryExpensePersistenceService.persist(file, meta, normalizedItems, rateContext);
 	}
 
 	private NormalizedParsedExpenseItem normalizeParsedItem(
 			GeminiService.ParsedExpenseItem item, AccountBookRateContext rateContext) {
-		CurrencyCode parsedLocalCurrency = fieldParser.parseCurrencyCode(
-				item.localCurrency(), rateContext.defaultLocalCurrencyCode());
+		CurrencyCode parsedLocalCurrency =
+				fieldParser.parseCurrencyCode(
+						item.localCurrency(), rateContext.defaultLocalCurrencyCode());
 		CurrencyCode parsedBaseCurrency = fieldParser.parseCurrencyCode(item.baseCurrency(), null);
 
-		boolean isForeignTravelContext = rateContext.baseCurrencyCode() != rateContext.defaultLocalCurrencyCode();
-		boolean shouldSwap = isForeignTravelContext
-				&& parsedLocalCurrency != null
-				&& parsedBaseCurrency != null
-				&& parsedLocalCurrency == rateContext.baseCurrencyCode()
-				&& parsedBaseCurrency == rateContext.defaultLocalCurrencyCode();
+		boolean isForeignTravelContext =
+				rateContext.baseCurrencyCode() != rateContext.defaultLocalCurrencyCode();
+		boolean shouldSwap =
+				isForeignTravelContext
+						&& parsedLocalCurrency != null
+						&& parsedBaseCurrency != null
+						&& parsedLocalCurrency == rateContext.baseCurrencyCode()
+						&& parsedBaseCurrency == rateContext.defaultLocalCurrencyCode();
 
 		if (shouldSwap) {
 			return new NormalizedParsedExpenseItem(
@@ -285,9 +303,10 @@ public class TemporaryExpenseParsingService {
 	private String buildTerminalSummaryMessage(
 			List<String> succeededFileKeys, List<FailedFile> failedFiles) {
 		String succeeded = succeededFileKeys.isEmpty() ? "-" : String.join(", ", succeededFileKeys);
-		String failed = failedFiles.stream()
-				.map(file -> file.s3Key() + " [" + file.errorCode().getCode() + "]")
-				.collect(Collectors.joining(", "));
+		String failed =
+				failedFiles.stream()
+						.map(file -> file.s3Key() + " [" + file.errorCode().getCode() + "]")
+						.collect(Collectors.joining(", "));
 		return "TEMP_EXPENSE_PARSE_RESULT success="
 				+ succeededFileKeys.size()
 				+ " ("
@@ -299,6 +318,5 @@ public class TemporaryExpenseParsingService {
 				+ ")";
 	}
 
-	private record FailedFile(String s3Key, ErrorCode errorCode) {
-	}
+	private record FailedFile(String s3Key, ErrorCode errorCode) {}
 }

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { type Cell, flexRender, type Row } from '@tanstack/react-table';
+import clsx from 'clsx';
 
 import { useDataTable } from '@/components/data-table/context';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -98,16 +99,23 @@ const DataTable = <TData,>({
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-              </TableHead>
-            ))}
+            {headerGroup.headers.map((header) => {
+              const isSelectColumn = header.column.id === 'select';
+              const columnWidth = isSelectColumn
+                ? '48px'
+                : `${header.column.getSize()}%`;
+
+              return (
+                <TableHead key={header.id} style={{ width: columnWidth }}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              );
+            })}
           </TableRow>
         ))}
       </TableHeader>
@@ -173,6 +181,9 @@ const DataTable = <TData,>({
                         // 첫 번째 셀(체크박스)이면서 그룹화가 되어있을 때 들여쓰기(pl-11) 적용
                         const isSecondCell = index === 1;
                         const shouldIndent = groupBy && isSecondCell;
+
+                        const isEditable =
+                          !!cell.column.columnDef.meta?.cellEditor;
                         return (
                           <TableCell
                             key={cell.id}
@@ -180,7 +191,10 @@ const DataTable = <TData,>({
                               handleCellClick(cell, e.currentTarget)
                             }
                             // 두 번째 셀일 때만 좌측 패딩(pl-8) 추가
-                            className={`cursor-pointer ${shouldIndent ? 'pl-8' : ''}`}
+                            className={clsx(
+                              shouldIndent ? 'pl-8' : '',
+                              isEditable ? 'cursor-pointer' : '',
+                            )}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

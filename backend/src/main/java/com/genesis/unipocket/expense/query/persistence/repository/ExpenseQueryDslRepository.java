@@ -131,14 +131,21 @@ public class ExpenseQueryDslRepository {
 		if (hasValues(filter.category())) {
 			predicate.and(expense.category.in(filter.category()));
 		}
-		if (hasValues(filter.cardNumber())) {
-			predicate.and(userCard.cardNumber.in(filter.cardNumber()));
-		}
-		if (filter.isCash() != null) {
-			predicate.and(
-					Boolean.TRUE.equals(filter.isCash())
-							? expense.userCardId.isNull()
-							: expense.userCardId.isNotNull());
+		// 결제수단 필터: cardNumber와 isCash는 OR 조건으로 묶음
+		boolean hasCard = hasValues(filter.cardNumber());
+		boolean hasCash = filter.isCash() != null && Boolean.TRUE.equals(filter.isCash());
+
+		if (hasCard || hasCash) {
+			BooleanBuilder paymentOr = new BooleanBuilder();
+			if (hasCard) {
+				paymentOr.or(userCard.cardNumber.in(filter.cardNumber()));
+			}
+			if (hasCash) {
+				paymentOr.or(expense.userCardId.isNull());
+			}
+			predicate.and(paymentOr);
+		} else if (filter.isCash() != null && Boolean.FALSE.equals(filter.isCash())) {
+			predicate.and(expense.userCardId.isNotNull());
 		}
 		if (hasValues(filter.merchantName())) {
 			BooleanBuilder merchantOr = new BooleanBuilder();
@@ -215,6 +222,23 @@ public class ExpenseQueryDslRepository {
 
 	private EnumExpression<CurrencyCode> displayBaseCurrencyCodeExpression(QExpenseEntity expense) {
 		return new CaseBuilder()
+				.when(
+						expense.exchangeInfo
+								.baseCurrencyAmount
+								.isNotNull()
+								.and(expense.exchangeInfo.calculatedBaseCurrencyAmount.isNotNull())
+								.and(
+										expense.exchangeInfo
+												.baseCurrencyAmount
+												.subtract(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount)
+												.abs()
+												.gt(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount
+																.multiply(new BigDecimal("0.10")))))
+				.then(expense.exchangeInfo.calculatedBaseCurrencyCode)
 				.when(expense.exchangeInfo.baseCurrencyAmount.isNotNull())
 				.then(expense.exchangeInfo.baseCurrencyCode)
 				.otherwise(expense.exchangeInfo.calculatedBaseCurrencyCode);
@@ -222,6 +246,23 @@ public class ExpenseQueryDslRepository {
 
 	private NumberExpression<BigDecimal> displayBaseAmountExpression(QExpenseEntity expense) {
 		return new CaseBuilder()
+				.when(
+						expense.exchangeInfo
+								.baseCurrencyAmount
+								.isNotNull()
+								.and(expense.exchangeInfo.calculatedBaseCurrencyAmount.isNotNull())
+								.and(
+										expense.exchangeInfo
+												.baseCurrencyAmount
+												.subtract(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount)
+												.abs()
+												.gt(
+														expense.exchangeInfo
+																.calculatedBaseCurrencyAmount
+																.multiply(new BigDecimal("0.10")))))
+				.then(expense.exchangeInfo.calculatedBaseCurrencyAmount)
 				.when(expense.exchangeInfo.baseCurrencyAmount.isNotNull())
 				.then(expense.exchangeInfo.baseCurrencyAmount)
 				.otherwise(expense.exchangeInfo.calculatedBaseCurrencyAmount);

@@ -52,15 +52,23 @@ const AccountBookConfigurator = ({
     accountBooks[0].accountBookId.toString(),
   );
 
+  // 렌더 중 동기적으로 유효한 ID 계산 (삭제된 ID로 상세 조회 방지)
+  const activeIdExists = accountBooks.some(
+    (book) => String(book.accountBookId) === activeAccountBookId,
+  );
+  const resolvedActiveId = activeIdExists
+    ? activeAccountBookId
+    : accountBooks[0].accountBookId.toString();
+
   const { data: accountBookDetail } = useAccountBookDetailQuery(
-    Number(activeAccountBookId),
+    Number(resolvedActiveId),
   );
 
   return (
     <SettingSection>
       <SettingTitle>가계부 설정</SettingTitle>
       <TabProvider
-        value={activeAccountBookId}
+        value={resolvedActiveId}
         onValueChange={setActiveAccountBookId}
       >
         <div className="flex flex-wrap items-end gap-5">
@@ -91,7 +99,7 @@ const AccountBookConfigurator = ({
           </button>
         </div>
 
-        <TabContent value={activeAccountBookId}>
+        <TabContent value={resolvedActiveId}>
           {accountBookDetail && (
             <AccountBookSettingsForm
               key={accountBookDetail.accountBookId}

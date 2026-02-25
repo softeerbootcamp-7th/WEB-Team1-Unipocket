@@ -64,19 +64,21 @@ public class AccountBookAmountQueryService {
 				resolveThisMonthAmount(
 						accountBookId, localCurrencyCode, zoneId, thisMonthStart, dirtyMonths);
 
+		OffsetDateTime oldest = null;
+		OffsetDateTime newest = null;
 		Object[] dateRange = expenseRepository.findOccurredAtRangeByAccountBookId(accountBookId);
-		Object[] row =
-				(dateRange != null && dateRange.length == 1 && dateRange[0] instanceof Object[])
-						? (Object[]) dateRange[0]
-						: dateRange;
-		OffsetDateTime oldest =
-				row != null && row.length > 0 && row[0] != null
-						? OffsetDateTimeConverter.from(row[0])
-						: null;
-		OffsetDateTime newest =
-				row != null && row.length > 1 && row[1] != null
-						? OffsetDateTimeConverter.from(row[1])
-						: null;
+		if (dateRange != null) {
+			Object[] row = dateRange;
+			if (dateRange.length == 1 && dateRange[0] instanceof Object[] inner) {
+				row = inner;
+			}
+			if (row.length > 0 && row[0] != null && !(row[0] instanceof Object[])) {
+				oldest = OffsetDateTimeConverter.from(row[0]);
+			}
+			if (row.length > 1 && row[1] != null && !(row[1] instanceof Object[])) {
+				newest = OffsetDateTimeConverter.from(row[1]);
+			}
+		}
 
 		return new AccountBookAmountResponse(
 				localCountryCode,
@@ -113,6 +115,14 @@ public class AccountBookAmountQueryService {
 								accountBookId, AnalysisMetricType.TOTAL_BASE_AMOUNT, QUALITY_TYPE);
 
 		if (dirtyMonths == null || dirtyMonths.isEmpty()) {
+			// aggregate가 존재하면 그대로 사용, 없으면(batch 미실행) expense 직접 집계
+			if (totalLocal.signum() != 0 || totalBase.signum() != 0) {
+				return new AmountPair(totalLocal, totalBase);
+			}
+			// batch가 한 번도 돌지 않은 경우: expense에서 전체 집계
+			if (expenseRepository.existsByAccountBookId(accountBookId)) {
+				return resolveAllRawAmount(accountBookId, accountBookLocalCurrency, zoneId);
+			}
 			return new AmountPair(totalLocal, totalBase);
 		}
 
@@ -176,6 +186,19 @@ public class AccountBookAmountQueryService {
 
 		return resolveMonthlyRawAmount(
 				accountBookId, accountBookLocalCurrency, zoneId, thisMonthStart);
+	}
+
+	private AmountPair resolveAllRawAmount(
+			Long accountBookId, CurrencyCode accountBookLocalCurrency, ZoneId zoneId) {
+		var raw = analysisBatchAggregationRepository.aggregateAccountBookTotalRaw(accountBookId);
+		BigDecimal correctedLocal =
+				computeCorrectedLocalAmount(
+						analysisBatchAggregationRepository.aggregateAllLocalAmountGroupedByCurrency(
+								accountBookId),
+						accountBookLocalCurrency,
+						OffsetDateTime.now(zoneId));
+
+		return new AmountPair(correctedLocal, raw.totalBaseAmount());
 	}
 
 	private AmountPair resolveMonthlyRawAmount(

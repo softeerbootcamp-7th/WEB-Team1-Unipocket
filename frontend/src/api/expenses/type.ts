@@ -42,7 +42,6 @@ interface Expense {
   localCurrencyCode: CurrencyCode;
   baseCurrencyAmount: number;
   baseCurrencyCode: CurrencyCode;
-  memo: string | null;
   source: ExpenseSourceType;
   approvalNumber: string | null;
   cardNumber: string | null;
@@ -74,7 +73,6 @@ type UpdateExpenseRequest = Partial<
     | 'localCurrencyAmount'
     | 'localCurrencyCode'
     | 'baseCurrencyAmount'
-    | 'memo'
   > & { userCardId: number | null; travelId: number | null }
 >;
 
@@ -96,7 +94,6 @@ type CreateManualExpenseRequest = Required<
     | 'baseCurrencyAmount'
   >
 > & {
-  memo?: string;
   userCardId?: number; // 안 보낼 경우 cash로 처리
   travelId?: number;
 };
@@ -117,6 +114,7 @@ type ExpenseSearchFilter = Partial<{
   startDate: string;
   endDate: string;
   travelId: number;
+  isCash: boolean;
   page: number;
   size: number;
   sort: string[];
@@ -141,7 +139,6 @@ type BulkUpdateExpenseItem = { expenseId: number } & Partial<
     | 'localCurrencyAmount'
     | 'localCurrencyCode'
     | 'baseCurrencyAmount'
-    | 'memo'
   > & { userCardId: number | null; travelId: number | null }
 >;
 

@@ -40,6 +40,7 @@ interface customFetchParams {
   params?: Record<string, string | string[]>;
   options?: RequestInit;
   isRetry?: boolean; // 재시도 여부 플래그 -> 401 재발급 시도 무한 루프 방지용
+  timeout?: number | null; // null 전달 시 타임아웃 비활성화
 }
 
 export const customFetch = async <T>({
@@ -47,12 +48,14 @@ export const customFetch = async <T>({
   params,
   options = {},
   isRetry = false,
+  timeout = DEFAULT_TIMEOUT,
 }: customFetchParams): Promise<T> => {
   const { headers, ...restOptions } = options;
 
   // 타임아웃 설정을 위한 AbortController
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+  const timeoutId =
+    timeout != null ? setTimeout(() => controller.abort(), timeout) : null;
 
   // 1. 쿼리 스트링 처리 로직 분리 및 정렬 적용
   let queryString = '';
@@ -89,7 +92,7 @@ export const customFetch = async <T>({
     });
 
     // 응답이 왔으므로 타이머 해제
-    clearTimeout(timeoutId);
+    if (timeoutId != null) clearTimeout(timeoutId);
 
     // accessToken 만료로 401 응답이 온 경우
     // 재시도 중이 아니라면 토큰 재발급 시도
@@ -136,7 +139,7 @@ export const customFetch = async <T>({
     if (!text) return undefined as T;
     return JSON.parse(text) as T;
   } catch (error) {
-    clearTimeout(timeoutId); // 에러 발생 시에도 타이머 해제 필수
+    if (timeoutId != null) clearTimeout(timeoutId); // 에러 발생 시에도 타이머 해제 필수
 
     // 타임아웃 에러 처리 (AbortError)
     if (error instanceof Error && error.name === ERROR_NAMES.ABORT_ERROR) {

@@ -9,6 +9,7 @@ import {
   useGetTravelImageUrlQuery,
   useGetTravelPresignedUrlMutation,
 } from '@/api/travels/query';
+import { POLICY } from '@/constants/message';
 
 interface TravelPocketImgModalProps extends Omit<
   ModalProps,
@@ -108,7 +109,11 @@ const TravelPocketImgModal = ({
           <p className="label2-regular text-label-alternative">현재 썸네일</p>
         </div>
         <div className="h-40 w-115">
-          <UploadBox type="image" onFilesSelected={handleFilesSelected} />
+          <UploadBox
+            type="image"
+            onFilesSelected={handleFilesSelected}
+            message={POLICY.TRAVEL_MODAL}
+          />
         </div>
         {isUploading && (
           <p className="body2-normal-medium text-label-alternative animate-pulse">

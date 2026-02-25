@@ -31,49 +31,51 @@ const ImageResultContent = ({
   }
 
   return (
-    <div>
-      <div className="px-4.25">
-        <TabProvider variant="underline" defaultValue={String(files[0].fileId)}>
-          <TabList>
-            {files.map((file) => {
-              return (
-                <TabTrigger
-                  key={file.fileId}
-                  value={String(file.fileId)}
-                  className="w-full"
-                >
-                  <FileImage
-                    accountBookId={accountBookId}
-                    metaId={metaId}
-                    fileId={file.fileId}
-                    fileName={file.fileName}
-                    successCount={file.normalCount + file.abnormalCount}
-                    warningCount={file.incompleteCount}
-                    variant="tab"
-                  />
-                </TabTrigger>
-              );
-            })}
-          </TabList>
-          <div className="h-10" />
+    <div className="flex h-full min-h-0 flex-col px-4.25">
+      <TabProvider
+        variant="underline"
+        defaultValue={String(files[0].fileId)}
+        className="flex h-full min-h-0 flex-col"
+      >
+        <TabList>
           {files.map((file) => {
             return (
-              <TabContent key={file.fileId} value={String(file.fileId)}>
-                <div className="flex flex-col gap-4.5 lg:flex-row">
-                  <FileImage
-                    accountBookId={accountBookId}
-                    metaId={metaId}
-                    fileId={file.fileId}
-                    fileName={file.fileName}
-                    variant="preview"
-                  />
-                  <ImageResultTable data={file.expenses} />
-                </div>
-              </TabContent>
+              <TabTrigger
+                key={file.fileId}
+                value={String(file.fileId)}
+                className="w-full"
+              >
+                <FileImage
+                  accountBookId={accountBookId}
+                  metaId={metaId}
+                  fileId={file.fileId}
+                  fileName={file.fileName}
+                  successCount={file.normalCount + file.abnormalCount}
+                  warningCount={file.incompleteCount}
+                  variant="tab"
+                />
+              </TabTrigger>
             );
           })}
-        </TabProvider>
-      </div>
+        </TabList>
+        <div className="h-10 shrink-0" />
+        {files.map((file) => {
+          return (
+            <TabContent key={file.fileId} value={String(file.fileId)}>
+              <div className="flex min-h-0 flex-1 flex-col gap-4.5 lg:flex-row">
+                <FileImage
+                  accountBookId={accountBookId}
+                  metaId={metaId}
+                  fileId={file.fileId}
+                  fileName={file.fileName}
+                  variant="preview"
+                />
+                <ImageResultTable data={file.expenses} />
+              </div>
+            </TabContent>
+          );
+        })}
+      </TabProvider>
     </div>
   );
 };

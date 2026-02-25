@@ -2,6 +2,7 @@ package com.genesis.unipocket.analysis.command.persistence.repository;
 
 import com.genesis.unipocket.analysis.command.persistence.entity.AccountMonthlyCategoryAggregateEntity;
 import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
+import com.genesis.unipocket.analysis.common.enums.CurrencyType;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,6 +23,13 @@ public interface AccountMonthlyCategoryAggregateRepository
 			""")
 	List<LocalDate> findDistinctTargetYearMonthsByAccountBookId(
 			@Param("accountBookId") Long accountBookId);
+
+	List<AccountMonthlyCategoryAggregateEntity>
+			findByAccountBookIdAndTargetYearMonthAndQualityTypeAndCurrencyType(
+					Long accountBookId,
+					LocalDate targetYearMonth,
+					AnalysisQualityType qualityType,
+					CurrencyType currencyType);
 
 	void deleteByAccountBookId(Long accountBookId);
 }

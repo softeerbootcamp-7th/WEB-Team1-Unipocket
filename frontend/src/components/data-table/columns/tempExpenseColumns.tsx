@@ -40,22 +40,25 @@ export const getTempExpenseColumns = ({
     },
     {
       accessorKey: 'merchantName',
+      size: 30,
       header: () => <>거래처</>,
       meta: { cellEditor: 'text' },
       cell: ({ row }) => (
         <div className="relative flex items-center">
-          <span>{row.original.merchantName || '-'}</span>
+          <span className="truncate">{row.original.merchantName || '-'}</span>
         </div>
       ),
     },
     {
       accessorKey: 'category',
+      size: 15,
       meta: { cellEditor: 'category' },
       header: () => <>카테고리</>,
       cell: ({ row }) => <CategoryChip categoryId={row.original.category} />,
     },
     {
       accessorKey: 'localCountryCode',
+      size: 15,
       header: () => <>현지 통화</>,
       cell: ({ row }) => {
         const code = row.original.localCountryCode;
@@ -64,6 +67,7 @@ export const getTempExpenseColumns = ({
     },
     {
       accessorKey: 'localCurrencyAmount',
+      size: 20,
       meta: { cellEditor: 'amount' },
       header: () => <>현지 금액</>,
       cell: ({ row }) => {
@@ -74,9 +78,9 @@ export const getTempExpenseColumns = ({
       },
     },
 
-    // 조건에 따라 기준 금액 열 삽입
     showBaseCurrencyAmount && {
       accessorKey: 'baseCurrencyAmount',
+      size: 20,
       meta: { cellEditor: 'amount' },
       header: () => <>기준 금액</>,
       cell: ({ row }) => {
@@ -86,9 +90,9 @@ export const getTempExpenseColumns = ({
       },
     },
 
-    // 조건에 따라 결제 수단 열 삽입
     showPaymentMethod && {
       id: 'paymentMethod',
+      size: 20, // (20%)
       header: () => <>결제 수단</>,
       meta: { cellEditor: 'method' },
       cell: ({ row }) => (

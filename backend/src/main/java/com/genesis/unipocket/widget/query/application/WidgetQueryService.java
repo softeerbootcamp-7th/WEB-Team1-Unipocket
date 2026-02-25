@@ -1,5 +1,15 @@
 package com.genesis.unipocket.widget.query.application;
 
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookAmountResponse;
+import com.genesis.unipocket.accountbook.query.service.AccountBookAmountQueryService;
+import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
+import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.AnalysisMonthlyDirtyRepository;
+import com.genesis.unipocket.analysis.command.persistence.repository.PairMonthlyAggregateRepository;
+import com.genesis.unipocket.analysis.common.enums.AnalysisBatchJobStatus;
+import com.genesis.unipocket.analysis.common.enums.AnalysisMetricType;
+import com.genesis.unipocket.analysis.common.enums.AnalysisQualityType;
 import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
@@ -27,6 +37,7 @@ import com.genesis.unipocket.widget.query.persistence.response.PeriodWidgetRespo
 import com.genesis.unipocket.widget.query.persistence.response.PeriodWidgetResponse.PeriodItem;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -34,6 +45,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,6 +64,12 @@ public class WidgetQueryService {
 	private final WidgetQueryRepository widgetQueryRepository;
 	private final UserAccountBookValidator userAccountBookValidator;
 	private final UserTravelValidator userTravelValidator;
+	private final AnalysisMonthlyDirtyRepository analysisMonthlyDirtyRepository;
+	private final AccountMonthlyAggregateRepository accountMonthlyAggregateRepository;
+	private final AccountMonthlyCategoryAggregateRepository
+			accountMonthlyCategoryAggregateRepository;
+	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	private final AccountBookAmountQueryService accountBookAmountQueryService;
 
 	public Object getWidget(
 			UUID userId,
@@ -90,6 +108,7 @@ public class WidgetQueryService {
 
 		WidgetQueryContext context =
 				new WidgetQueryContext(
+						userId,
 						accountBookId,
 						travelId,
 						resolvedCurrencyType,
@@ -116,22 +135,38 @@ public class WidgetQueryService {
 						? widgetQueryRepository.getTravelBudget(context.travelId())
 						: widgetQueryRepository.getBudget(context.accountBookId());
 
+		String baseSpentAmount;
+		String localSpentAmount;
+
+		if (context.travelId() != null) {
+			// 여행인 경우 기존 방식 유지 (travel별 집계 테이블 없음)
+			baseSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(),
+									context.travelId(),
+									CurrencyType.BASE));
+			localSpentAmount =
+					AmountFormatUtil.format(
+							widgetQueryRepository.getTotalSpentByAccountBookId(
+									context.accountBookId(),
+									context.travelId(),
+									CurrencyType.LOCAL));
+		} else {
+			// 가게부인 경우 환율 변환이 적용된 정확한 금액 사용
+			AccountBookAmountResponse amounts =
+					accountBookAmountQueryService.getAccountBookAmount(
+							context.userId().toString(), context.accountBookId());
+			baseSpentAmount = AmountFormatUtil.format(amounts.totalBaseAmount());
+			localSpentAmount = AmountFormatUtil.format(amounts.totalLocalAmount());
+		}
+
 		return BudgetWidgetResponse.builder()
 				.budget(AmountFormatUtil.format(budget))
 				.baseCountryCode(context.baseCountryCode())
 				.localCountryCode(context.localCountryCode())
-				.baseSpentAmount(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getTotalSpentByAccountBookId(
-										context.accountBookId(),
-										context.travelId(),
-										CurrencyType.BASE)))
-				.localSpentAmount(
-						AmountFormatUtil.format(
-								widgetQueryRepository.getTotalSpentByAccountBookId(
-										context.accountBookId(),
-										context.travelId(),
-										CurrencyType.LOCAL)))
+				.baseSpentAmount(baseSpentAmount)
+				.localSpentAmount(localSpentAmount)
 				.build();
 	}
 
@@ -240,20 +275,50 @@ public class WidgetQueryService {
 						? context.localCountryCode()
 						: context.baseCountryCode();
 
-		BigDecimal mySpentAmount =
-				widgetQueryRepository.findMonthlyTotalByAccountBookId(
-						context.accountBookId(),
-						context.travelId(),
-						context.currencyType(),
-						utcMonthStart,
-						utcMonthEnd);
+		LocalDate targetYearMonth = monthStart.toLocalDate().withDayOfMonth(1);
+
+		// 내 지출: dirty이면 expense 직접 집계, 아니면 analysis 캐시 사용
+		BigDecimal mySpentAmount;
+		if (context.travelId() != null
+				|| isDirty(context.accountBookId(), context.localCountryCode(), targetYearMonth)) {
+			mySpentAmount =
+					widgetQueryRepository.findMonthlyTotalByAccountBookId(
+							context.accountBookId(),
+							context.travelId(),
+							context.currencyType(),
+							utcMonthStart,
+							utcMonthEnd);
+		} else {
+			AnalysisMetricType metricType = toAnalysisMetricType(context.currencyType());
+			mySpentAmount =
+					accountMonthlyAggregateRepository
+							.sumMetricValueByAccountBookIdAndTargetYearMonthInAndMetricTypeAndQualityType(
+									context.accountBookId(),
+									List.of(targetYearMonth),
+									metricType,
+									AnalysisQualityType.CLEANED);
+		}
+
+		// 동료 평균: PairMonthlyAggregate에서 바로 조회
+		AnalysisMetricType peerMetric = toAnalysisMetricType(context.currencyType());
+		Optional<PairMonthlyAggregateEntity> peerOpt =
+				pairMonthlyAggregateRepository
+						.findByLocalCountryCodeAndBaseCountryCodeAndTargetYearMonthAndQualityTypeAndMetricType(
+								context.localCountryCode(),
+								context.baseCountryCode(),
+								targetYearMonth,
+								AnalysisQualityType.CLEANED,
+								peerMetric);
 
 		BigDecimal averageSpentAmount =
-				widgetQueryRepository.findAverageMonthlySpentByCountryCode(
-						context.localCountryCode(),
-						context.currencyType(),
-						utcMonthStart,
-						utcMonthEnd);
+				peerOpt.map(PairMonthlyAggregateEntity::getAverageMetricValue)
+						.orElseGet(
+								() ->
+										widgetQueryRepository.findAverageMonthlySpentByCountryCode(
+												context.localCountryCode(),
+												context.currencyType(),
+												utcMonthStart,
+												utcMonthEnd));
 
 		BigDecimal spentAmountDiff = mySpentAmount.subtract(averageSpentAmount).abs();
 
@@ -387,5 +452,28 @@ public class WidgetQueryService {
 			return bd.setScale(2, RoundingMode.DOWN);
 		}
 		return new BigDecimal(value.toString()).setScale(2, RoundingMode.DOWN);
+	}
+
+	/**
+	 * 해당 월이 dirty 상태(집계가 최신이 아님)인지 확인한다.
+	 * dirty row가 존재하고 status가 SUCCESS가 아니면 dirty로 판단.
+	 */
+	private boolean isDirty(Long accountBookId, CountryCode countryCode, LocalDate yearMonth) {
+		return analysisMonthlyDirtyRepository
+				.existsByCountryCodeAndAccountBookIdAndTargetYearMonthAndStatusNot(
+						countryCode, accountBookId, yearMonth, AnalysisBatchJobStatus.SUCCESS);
+	}
+
+	private AnalysisMetricType toAnalysisMetricType(CurrencyType currencyType) {
+		return currencyType == CurrencyType.LOCAL
+				? AnalysisMetricType.TOTAL_LOCAL_AMOUNT
+				: AnalysisMetricType.TOTAL_BASE_AMOUNT;
+	}
+
+	private com.genesis.unipocket.analysis.common.enums.CurrencyType toAnalysisCurrencyType(
+			CurrencyType widgetCurrencyType) {
+		return widgetCurrencyType == CurrencyType.LOCAL
+				? com.genesis.unipocket.analysis.common.enums.CurrencyType.LOCAL
+				: com.genesis.unipocket.analysis.common.enums.CurrencyType.BASE;
 	}
 }

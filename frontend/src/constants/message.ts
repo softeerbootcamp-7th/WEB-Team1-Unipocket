@@ -16,3 +16,16 @@ export const PAGE_TITLE = {
       '내 월별 소비를 같은 국가 교환학생과 비교하고 전월 대비 현재 지출 변화를 살펴봐요',
   },
 } as const;
+
+export const LOGIN_MODAL_TEXT = {
+  REACTIVATE_ACCOUNT: {
+    title: '계정 복구',
+    description: '탈퇴한 계정입니다.',
+    subDescription: '계정을 복구하고 \n다시 로그인하시겠습니까?',
+    confirmButtonLabel: '복구하기',
+  },
+} as const;
+
+export const POLICY = {
+  TRAVEL_MODAL: '지원 형식: jpg, jpeg, png',
+};

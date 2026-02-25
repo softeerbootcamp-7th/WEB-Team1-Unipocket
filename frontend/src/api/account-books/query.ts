@@ -4,6 +4,7 @@ import {
   useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 import type { CurrencyType } from '@/types/currency';
@@ -27,10 +28,27 @@ import type {
 import { widgetKeys } from '@/api/widget/query';
 import type { CurrencyCode } from '@/data/country/currencyCode';
 import { queryClient } from '@/main';
-import { useRequiredAccountBook } from '@/stores/accountBookStore';
+import {
+  useAccountBookStore,
+  useRequiredAccountBook,
+} from '@/stores/accountBookStore';
+
+const accountBookKeys = {
+  all: ['accountBooks'] as const,
+
+  list: () => [...accountBookKeys.all, 'list'] as const,
+
+  details: () => [...accountBookKeys.all, 'detail'] as const,
+  detail: (accountBookId: number | null) =>
+    [...accountBookKeys.details(), accountBookId] as const,
+
+  amounts: () => [...accountBookKeys.all, 'amount'] as const,
+  amount: (accountBookId: number | string | undefined) =>
+    [...accountBookKeys.amounts(), accountBookId] as const,
+};
 
 const accountBooksQueryOptions = queryOptions({
-  queryKey: ['accountBooks', 'list'],
+  queryKey: accountBookKeys.list(),
   queryFn: getAccountBooks,
   staleTime: 1000 * 30,
   meta: {
@@ -42,21 +60,22 @@ const useGetAccountBooksQuery = () => {
   return useSuspenseQuery(accountBooksQueryOptions);
 };
 
-const useCreateAccountBookMutation = () =>
-  useMutation({
+const useCreateAccountBookMutation = () => {
+  return useMutation({
     mutationFn: (data: CreateAccountBookRequest) => createAccountBook(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
+      queryClient.invalidateQueries({ queryKey: accountBookKeys.list() });
       toast.success('가계부가 생성되었어요.');
     },
     onError: () => {
       toast.error('가계부 생성에 실패했어요.');
     },
   });
+};
 
 const accountBookDetailQueryOptions = (accountBookId: number | null) =>
   queryOptions({
-    queryKey: ['accountBooks', 'detail', accountBookId],
+    queryKey: accountBookKeys.detail(accountBookId),
     queryFn: () => getAccountBookDetail(accountBookId as number),
     enabled: !!accountBookId,
     meta: {
@@ -67,20 +86,49 @@ const accountBookDetailQueryOptions = (accountBookId: number | null) =>
 const useAccountBookDetailQuery = (accountBookId: number | null) =>
   useQuery(accountBookDetailQueryOptions(accountBookId));
 
-const useDeleteAccountBookMutation = () =>
-  useMutation({
+const useDeleteAccountBookMutation = () => {
+  const navigate = useNavigate();
+  const clearAccountBook = useAccountBookStore((s) => s.clearAccountBook);
+
+  return useMutation({
     mutationFn: (accountBookId: number) => deleteAccountBook(accountBookId),
     onSuccess: (_, accountBookId) => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
-      queryClient.removeQueries({
-        queryKey: ['accountBooks', 'detail', accountBookId],
-      });
-      toast.success('가계부가 삭제되었어요.');
+      const cached = queryClient.getQueryData<{ accountBookId: number }[]>([
+        'accountBooks',
+        'list',
+      ]);
+
+      const isLastOne = !cached || cached.length <= 1;
+
+      if (isLastOne) {
+        void navigate({ to: '/init' }).then(() => {
+          queryClient.removeQueries({ queryKey: accountBookKeys.list() });
+          queryClient.removeQueries({
+            queryKey: accountBookKeys.detail(accountBookId),
+          });
+          clearAccountBook();
+        });
+      } else {
+        // 리스트 캐시에서 삭제된 항목을 즉시 제거 (낙관적 업데이트)
+        // → resolvedActiveId가 같은 렌더에서 바로 다른 ID로 전환
+        // → detail 구독자가 없어진 후에 removeQueries 호출 → 404 재조회 방지
+        queryClient.setQueryData<{ accountBookId: number }[]>(
+          accountBookKeys.list(),
+          (old) =>
+            old?.filter((ab) => ab.accountBookId !== accountBookId) ?? [],
+        );
+        queryClient.removeQueries({
+          queryKey: accountBookKeys.detail(accountBookId),
+        });
+        queryClient.invalidateQueries({ queryKey: accountBookKeys.list() });
+        toast.success('가계부가 삭제되었어요.');
+      }
     },
     onError: () => {
       toast.error('가계부 삭제에 실패했어요.');
     },
   });
+};
 
 const useUpdateAccountBookMutation = () =>
   useMutation({
@@ -92,9 +140,9 @@ const useUpdateAccountBookMutation = () =>
       data: UpdateAccountBookRequest;
     }) => updateAccountBook(accountBookId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['accountBooks', 'list'] });
+      queryClient.invalidateQueries({ queryKey: accountBookKeys.list() });
       queryClient.invalidateQueries({
-        queryKey: ['accountBooks', 'detail', variables.accountBookId],
+        queryKey: accountBookKeys.detail(variables.accountBookId),
       });
       toast.success('가계부가 수정되었어요.');
     },
@@ -157,7 +205,7 @@ const useGetAccountBookAmountQuery = () => {
   const { accountBookId } = useRequiredAccountBook();
 
   return useQuery({
-    queryKey: ['accountBooks', 'amount', accountBookId],
+    queryKey: accountBookKeys.amount(accountBookId),
     queryFn: () => getAccountBookAmount(accountBookId),
     enabled: !!accountBookId,
   });
@@ -165,6 +213,7 @@ const useGetAccountBookAmountQuery = () => {
 
 export {
   accountBookDetailQueryOptions,
+  accountBookKeys,
   accountBooksQueryOptions,
   useAccountBookDetailQuery,
   useAnalysisQuery,

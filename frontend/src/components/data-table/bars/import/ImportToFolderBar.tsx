@@ -20,10 +20,9 @@ const ImportToFolderBar = ({ onSuccess }: ImportToFolderBarProps) => {
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const { mutate: bulkUpdate } = useBulkUpdateExpensesMutation();
 
-  const { travelId: travelIdParam } = useParams({
+  const { travelId } = useParams({
     from: '/_app/travel/$travelId',
   });
-  const travelId = Number(travelIdParam);
 
   if (!tableState.selectionMode) return null;
 
@@ -39,8 +38,7 @@ const ImportToFolderBar = ({ onSuccess }: ImportToFolderBarProps) => {
         localCurrencyAmount: original.localCurrencyAmount,
         localCurrencyCode: original.localCurrencyCode,
         baseCurrencyAmount: original.baseCurrencyAmount,
-        memo: original.memo || '',
-        travelId: travelId,
+        travelId: Number(travelId),
         userCardId: original.paymentMethod.isCash
           ? null
           : original.paymentMethod.card?.userCardId,
@@ -48,7 +46,7 @@ const ImportToFolderBar = ({ onSuccess }: ImportToFolderBarProps) => {
     });
 
     bulkUpdate(
-      { accountBookId, data: { items } },
+      { accountBookId, data: { items }, travelId },
       {
         onSuccess: () => {
           // 업데이트 성공 시 선택 초기화

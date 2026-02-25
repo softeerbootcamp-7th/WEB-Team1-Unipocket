@@ -1,6 +1,8 @@
 package com.genesis.unipocket.tempexpense.command.application;
 
+import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.accountbook.common.validation.AccountBookPeriodValidator;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.entity.dto.ExpenseManualCreateArgs;
@@ -51,6 +53,7 @@ public class TemporaryExpenseConversionService {
 	private final AccountBookRateInfoProvider accountBookRateInfoProvider;
 	private final TemporaryExpenseScopeValidationProvider temporaryExpenseScopeValidator;
 	private final TemporaryExpenseValidator temporaryExpenseValidator;
+	private final AccountBookPeriodValidator accountBookPeriodValidator;
 	private final AccountBookCommandRepository accountBookCommandRepository;
 	private final UserCardCommandRepository userCardCommandRepository;
 
@@ -68,7 +71,8 @@ public class TemporaryExpenseConversionService {
 		CurrencyCode defaultBaseCurrencyCode = rateInfo.baseCurrencyCode();
 		CurrencyCode defaultLocalCurrencyCode = rateInfo.localCurrencyCode();
 		ZoneId localZoneId = CountryCodeTimezoneMapper.getZoneId(rateInfo.localCountryCode());
-		CardMatchContext cardMatchContext = buildCardMatchContext(accountBookId);
+		AccountBookEntity accountBook = getAccountBook(accountBookId);
+		CardMatchContext cardMatchContext = buildCardMatchContext(accountBook);
 
 		List<TempExpenseConvertValidationException.Violation> violations = new ArrayList<>();
 		for (TemporaryExpense expense : expenses) {
@@ -89,6 +93,7 @@ public class TemporaryExpenseConversionService {
 			convertOne(
 					accountBookId,
 					expense,
+					accountBook,
 					defaultBaseCurrencyCode,
 					defaultLocalCurrencyCode,
 					localZoneId,
@@ -100,6 +105,7 @@ public class TemporaryExpenseConversionService {
 	private void convertOne(
 			Long accountBookId,
 			TemporaryExpense temp,
+			AccountBookEntity accountBook,
 			CurrencyCode defaultBaseCurrencyCode,
 			CurrencyCode defaultLocalCurrencyCode,
 			ZoneId localZoneId,
@@ -116,6 +122,11 @@ public class TemporaryExpenseConversionService {
 						.atZone(localZoneId)
 						.withZoneSameInstant(ZoneOffset.UTC)
 						.toOffsetDateTime();
+		accountBookPeriodValidator.validate(
+				accountBook.getLocalCountryCode(),
+				accountBook.getStartDate(),
+				accountBook.getEndDate(),
+				occurredAtUtc);
 
 		var amountInfo = temp.getAmountInfoOrEmpty();
 		TempExpenseConversionAmount conversionAmount =
@@ -154,11 +165,7 @@ public class TemporaryExpenseConversionService {
 		tempExpenseRepository.delete(temp);
 	}
 
-	private CardMatchContext buildCardMatchContext(Long accountBookId) {
-		var accountBook =
-				accountBookCommandRepository
-						.findById(accountBookId)
-						.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
+	private CardMatchContext buildCardMatchContext(AccountBookEntity accountBook) {
 		List<UserCardEntity> userCards =
 				userCardCommandRepository.findAllByUser_Id(accountBook.getUser().getId());
 		Map<String, Long> cardIdByLastFourDigits =
@@ -197,6 +204,12 @@ public class TemporaryExpenseConversionService {
 			return null;
 		}
 		return cardMatchContext.cardIdByLastFourDigits().get(cardLastFourDigits);
+	}
+
+	private AccountBookEntity getAccountBook(Long accountBookId) {
+		return accountBookCommandRepository
+				.findById(accountBookId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_BOOK_NOT_FOUND));
 	}
 
 	private record CardMatchContext(

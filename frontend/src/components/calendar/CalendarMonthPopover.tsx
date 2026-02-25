@@ -55,13 +55,17 @@ const CalendarMonthView = ({
         </h3>
 
         <div className="flex gap-2.5">
-          <button onClick={() => handleYearChange(-1)}>
-            <Icon iconName="ChevronBack" color="text-label-alternative" />
-          </button>
+          <Icon
+            iconName="ChevronBack"
+            color="text-label-alternative"
+            onClick={() => handleYearChange(-1)}
+          />
 
-          <button onClick={() => handleYearChange(1)}>
-            <Icon iconName="ChevronForward" color="text-label-alternative" />
-          </button>
+          <Icon
+            iconName="ChevronForward"
+            color="text-label-alternative"
+            onClick={() => handleYearChange(1)}
+          />
         </div>
       </div>
 
@@ -111,7 +115,7 @@ const CalendarMonthPopover = ({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen} modal={modal}>
       <PopoverTrigger asChild>
-        <button className="text-label-normal headline1-bold flex cursor-pointer items-center gap-1.5 text-center">
+        <div className="text-label-normal headline1-bold flex cursor-pointer items-center gap-1.5 text-center">
           {date.getFullYear()}년 {date.getMonth() + 1}월
           <div
             className={clsx(
@@ -121,7 +125,7 @@ const CalendarMonthPopover = ({
           >
             <Icon iconName="CaretDown" width={16} height={16} />
           </div>
-        </button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-auto border-none bg-transparent pt-3 shadow-none">
         <CalendarMonthView displayDate={date} onDateChange={handleDateChange} />

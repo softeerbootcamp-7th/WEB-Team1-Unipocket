@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -25,12 +26,16 @@ interface DateTimePickerProps {
   onDateTimeSelect: (date: Date) => void;
   onClose?: () => void;
   initialDateTime: Date | null;
+  startDate?: Date | null;
+  endDate?: Date | null;
 }
 
 const DateTimePicker = ({
   onDateTimeSelect,
   onClose,
   initialDateTime,
+  startDate,
+  endDate,
 }: DateTimePickerProps) => {
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     const baseDate = initialDateTime ?? new Date();
@@ -78,12 +83,36 @@ const DateTimePicker = ({
     }
   };
 
+  const isToday = (date: Date | null) => {
+    if (!date) return false;
+    const now = new Date();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  };
+
   const handleHourSelect = (hourValue: number) => {
+    if (selectedDate && isToday(selectedDate)) {
+      const candidate = createDateTime(selectedDate, hourValue, minute);
+      if (candidate > new Date()) {
+        toast.error('미래 날짜와 시간은 입력할 수 없어요.');
+        return;
+      }
+    }
     setHour(hourValue);
     updateDateTime(hourValue, minute);
   };
 
   const handleMinuteSelect = (minuteValue: number) => {
+    if (selectedDate && isToday(selectedDate)) {
+      const candidate = createDateTime(selectedDate, hour, minuteValue);
+      if (candidate > new Date()) {
+        toast.error('미래 날짜와 시간은 입력할 수 없어요.');
+        return;
+      }
+    }
     setMinute(minuteValue);
     updateDateTime(hour, minuteValue);
   };
@@ -138,6 +167,35 @@ const DateTimePicker = ({
     setCurrentMonth(new Date(year, month + monthOffset));
   };
 
+  const todayStart = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const effectiveEnd = useMemo(() => {
+    if (endDate) {
+      const endDateNormalized = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        endDate.getDate(),
+      );
+      return endDateNormalized < todayStart ? endDateNormalized : todayStart;
+    }
+    return todayStart;
+  }, [endDate, todayStart]);
+
+  const effectiveStart = useMemo(() => {
+    if (startDate) {
+      return new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate(),
+      );
+    }
+    return null;
+  }, [startDate]);
+
   return (
     <div
       ref={containerRef}
@@ -175,15 +233,29 @@ const DateTimePicker = ({
         {dates.map((date) => {
           const isCurrentMonth = date.getMonth() === month;
           const isSelected = selectedDate && isSameDay(date, selectedDate);
+          const dateStart = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+          );
+          const isDisabled =
+            dateStart > effectiveEnd ||
+            (effectiveStart !== null && dateStart < effectiveStart);
 
           return (
             <button
               key={date.toISOString()}
-              onClick={() => handleDateClick(date)}
+              onClick={() => !isDisabled && handleDateClick(date)}
+              disabled={isDisabled}
               className={clsx(
                 'figure-body2-14-semibold mx-auto flex h-7 w-8 items-center justify-center rounded-full',
-                !isCurrentMonth && !isSelected && 'text-label-disable',
-                !isSelected &&
+                isDisabled && 'text-label-disable cursor-not-allowed',
+                !isDisabled &&
+                  !isSelected &&
+                  !isCurrentMonth &&
+                  'text-label-alternative',
+                !isDisabled &&
+                  !isSelected &&
                   'hover:bg-inverse-label hover:text-primary-normal',
                 isSelected && 'bg-primary-normal text-inverse-label',
               )}
@@ -214,6 +286,20 @@ const DateTimePicker = ({
             itemWidth="w-18"
           />
         </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <p className="text-label-neutral label1-normal-medium text-center">
+          해당 기간 내에서만 선택 가능합니다.
+        </p>
+        {(startDate || endDate) && (
+          <p className="text-label-alternative label2-medium text-center">
+            가계부 기간:{' '}
+            {`${startDate!.getFullYear()}.${String(startDate!.getMonth() + 1).padStart(2, '0')}.${String(startDate!.getDate()).padStart(2, '0')}`}
+            {' ~ '}
+            {`${endDate!.getFullYear()}.${String(endDate!.getMonth() + 1).padStart(2, '0')}.${String(endDate!.getDate()).padStart(2, '0')}`}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 
-import CurrencyAmountDisplay from '@/components/currency/CurrencyAmountDisplay';
 import CurrencyBadge from '@/components/currency/CurrencyBadge';
+import ScaledAmountDisplay from '@/components/currency/ScaledAmountDisplay';
 
 import { type CategoryType } from '@/types/category';
 import type { CurrencyType } from '@/types/currency';
@@ -41,10 +41,11 @@ const CategoryLegendItem = ({
           <CurrencyBadge countryCode={countryCode} />
         </div>
 
-        <div className="max-w-25 truncate">
-          <CurrencyAmountDisplay
+        <div className="max-w-25 overflow-hidden">
+          <ScaledAmountDisplay
             countryCode={countryCode}
             amount={amount}
+            maxWidth={100}
             size="sm"
             className="text-label-neutral"
           />

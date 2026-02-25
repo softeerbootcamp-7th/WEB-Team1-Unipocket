@@ -61,7 +61,7 @@ const AccountBookSettingsForm = ({
     <div className="flex flex-col items-start gap-5">
       <div className="border-line-normal-normal flex w-full flex-col items-start gap-2 border-y px-4 py-4.5">
         <SettingRow
-          label="이름 수정"
+          label="이름"
           value={detail.title}
           onEdit={() =>
             openEditAccountBookName(
@@ -72,7 +72,7 @@ const AccountBookSettingsForm = ({
           }
         />
         <SettingRow
-          label="기준 통화 변경"
+          label="기준 통화"
           value={baseCurrencyDisplay}
           onEdit={() =>
             openEditBaseCurrency(
@@ -83,7 +83,7 @@ const AccountBookSettingsForm = ({
           }
         />
         <SettingRow
-          label="국가/통화 변경"
+          label="국가/통화"
           value={localCountryDisplay}
           onEdit={() =>
             openEditLocalCurrency(
@@ -94,7 +94,7 @@ const AccountBookSettingsForm = ({
           }
         />
         <SettingRow
-          label="가계부 기간 변경"
+          label="가계부 기간"
           value={periodDisplay}
           onEdit={() =>
             openEditAccountBookPeriod(

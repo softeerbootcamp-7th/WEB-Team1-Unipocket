@@ -181,7 +181,7 @@ public class AuthCommandController {
 							: loginFacade.login(providerType, code, state);
 		} catch (BusinessException e) {
 			if (e.getCode() == ErrorCode.USER_WITHDRAWN) {
-				response.sendRedirect(frontendUrl + "/login?reason=withdrawn");
+				response.sendRedirect(createWithdrawnRedirectUrl(provider));
 				return;
 			}
 			throw e;
@@ -212,6 +212,15 @@ public class AuthCommandController {
 	 */
 	private String createRedirectUrl() {
 		return UriComponentsBuilder.fromUriString(frontendUrl).path("/home").build().toUriString();
+	}
+
+	private String createWithdrawnRedirectUrl(String provider) {
+		return UriComponentsBuilder.fromUriString(frontendUrl)
+				.path("/login")
+				.queryParam("reason", "withdrawn")
+				.queryParam("provider", provider)
+				.build()
+				.toUriString();
 	}
 
 	/**

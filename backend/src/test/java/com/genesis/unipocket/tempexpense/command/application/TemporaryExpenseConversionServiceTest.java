@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.genesis.unipocket.accountbook.command.persistence.entity.AccountBookEntity;
 import com.genesis.unipocket.accountbook.command.persistence.repository.AccountBookCommandRepository;
+import com.genesis.unipocket.accountbook.common.validation.AccountBookPeriodValidator;
 import com.genesis.unipocket.exchange.common.service.ExchangeRateService;
 import com.genesis.unipocket.expense.command.persistence.entity.ExpenseEntity;
 import com.genesis.unipocket.expense.command.persistence.repository.ExpenseRepository;
@@ -16,6 +17,8 @@ import com.genesis.unipocket.global.common.enums.Category;
 import com.genesis.unipocket.global.common.enums.CountryCode;
 import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
+import com.genesis.unipocket.global.exception.ErrorCode;
+import com.genesis.unipocket.global.util.CountryCodeTimezoneMapper;
 import com.genesis.unipocket.tempexpense.command.application.result.ConfirmStartResult;
 import com.genesis.unipocket.tempexpense.command.facade.port.AccountBookRateInfoProvider;
 import com.genesis.unipocket.tempexpense.command.facade.port.dto.AccountBookRateInfo;
@@ -29,7 +32,9 @@ import com.genesis.unipocket.tempexpense.common.validation.TemporaryExpenseValid
 import com.genesis.unipocket.user.command.persistence.entity.UserEntity;
 import com.genesis.unipocket.user.command.persistence.repository.UserCardCommandRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,6 +59,8 @@ class TemporaryExpenseConversionServiceTest {
 	@Mock private UserCardCommandRepository userCardCommandRepository;
 
 	private TemporaryExpenseConversionService service;
+	private final AccountBookPeriodValidator accountBookPeriodValidator =
+			new AccountBookPeriodValidator();
 
 	@BeforeEach
 	void setUp() {
@@ -66,6 +73,7 @@ class TemporaryExpenseConversionServiceTest {
 						accountBookRateInfoProvider,
 						temporaryExpenseScopeValidationProvider,
 						temporaryExpenseValidator,
+						accountBookPeriodValidator,
 						accountBookCommandRepository,
 						userCardCommandRepository);
 	}
@@ -111,6 +119,8 @@ class TemporaryExpenseConversionServiceTest {
 										.user(UserEntity.reference(ownerId))
 										.title("test")
 										.bucketOrder(1)
+										.startDate(LocalDate.of(2000, 1, 1))
+										.endDate(LocalDate.of(2099, 12, 31))
 										.build()));
 		when(userCardCommandRepository.findAllByUser_Id(ownerId)).thenReturn(List.of());
 		when(fileRepository.findById(fileId))
@@ -194,6 +204,8 @@ class TemporaryExpenseConversionServiceTest {
 										.user(UserEntity.reference(ownerId))
 										.title("test")
 										.bucketOrder(1)
+										.startDate(LocalDate.of(2000, 1, 1))
+										.endDate(LocalDate.of(2099, 12, 31))
 										.build()));
 		when(userCardCommandRepository.findAllByUser_Id(ownerId)).thenReturn(List.of());
 		when(fileRepository.findById(30L))
@@ -211,5 +223,64 @@ class TemporaryExpenseConversionServiceTest {
 		service.startConfirmAsync(accountBookId, metaId);
 
 		verify(exchangeRateService, never()).getExchangeRate(any(), any(), any());
+	}
+
+	@Test
+	@DisplayName("confirm은 가계부 종료일이 없으면 오늘 이후 지출을 예외 처리한다")
+	void startConfirmAsync_throwsWhenOccurredAtAfterToday_ifAccountBookEndDateNull() {
+		Long accountBookId = 1L;
+		Long metaId = 10L;
+		Long fileId = 30L;
+		ZoneId accountBookZoneId = CountryCodeTimezoneMapper.getZoneId(CountryCode.US);
+		LocalDate tomorrow = LocalDate.now(accountBookZoneId).plusDays(1);
+
+		TemporaryExpense tempExpense =
+				TemporaryExpense.builder()
+						.tempExpenseId(100L)
+						.tempExpenseMetaId(metaId)
+						.fileId(fileId)
+						.merchantName("상호")
+						.category(Category.FOOD)
+						.localCountryCode(CurrencyCode.USD)
+						.localCurrencyAmount(new BigDecimal("10.00"))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(new BigDecimal("13000.00"))
+						.occurredAt(tomorrow.atTime(10, 0))
+						.build();
+
+		when(temporaryExpenseScopeValidationProvider.validateMetaScope(accountBookId, metaId))
+				.thenReturn(
+						TempExpenseMeta.builder()
+								.tempExpenseMetaId(metaId)
+								.accountBookId(accountBookId)
+								.build());
+		when(temporaryExpenseRepository.findByTempExpenseMetaId(metaId))
+				.thenReturn(List.of(tempExpense));
+		when(accountBookRateInfoProvider.getRateInfo(accountBookId))
+				.thenReturn(
+						new AccountBookRateInfo(
+								CurrencyCode.KRW, CurrencyCode.USD, CountryCode.US));
+		UUID ownerId = UUID.randomUUID();
+		when(accountBookCommandRepository.findById(accountBookId))
+				.thenReturn(
+						Optional.of(
+								AccountBookEntity.builder()
+										.user(UserEntity.reference(ownerId))
+										.title("test")
+										.bucketOrder(1)
+										.startDate(LocalDate.now(accountBookZoneId).minusDays(30))
+										.endDate(null)
+										.build()));
+		when(userCardCommandRepository.findAllByUser_Id(ownerId)).thenReturn(List.of());
+
+		assertThatThrownBy(() -> service.startConfirmAsync(accountBookId, metaId))
+				.isInstanceOf(BusinessException.class)
+				.satisfies(
+						ex ->
+								assertThat(((BusinessException) ex).getCode())
+										.isEqualTo(ErrorCode.EXPENSE_OUT_OF_ACCOUNT_BOOK_PERIOD));
+
+		verify(expenseRepository, never()).save(any(ExpenseEntity.class));
+		verify(temporaryExpenseRepository, never()).delete(any(TemporaryExpense.class));
 	}
 }

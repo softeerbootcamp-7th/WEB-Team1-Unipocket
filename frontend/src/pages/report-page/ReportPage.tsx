@@ -9,8 +9,6 @@ import ReportSection from '@/components/report-page/ReportSection';
 import {
   canGoToMonth,
   dateToYearMonth,
-  getMaxYearMonth,
-  parseYearMonth,
 } from '@/pages/report-page/report.utils';
 
 import { type CurrencyType } from '@/types/currency';
@@ -26,14 +24,8 @@ const ReportPage = () => {
 
   const now = new Date();
   const [selectedDate, setSelectedDate] = useState(now);
-  const startDate = useRequiredAccountBook().startDate;
-  const endDate = useRequiredAccountBook().endDate;
-
-  const startYearMonth = parseYearMonth(startDate);
-  const endYearMonth = parseYearMonth(endDate);
 
   const nowYearMonth = dateToYearMonth(now);
-  const maxYearMonth = getMaxYearMonth(endYearMonth, nowYearMonth);
 
   const handleMonthChange = (offset: number) => {
     setSelectedDate((prev) => {
@@ -43,20 +35,20 @@ const ReportPage = () => {
     });
   };
 
-  const canGoPrev = canGoToMonth(
-    selectedDate,
-    -1,
-    startYearMonth,
-    maxYearMonth,
-  );
-  const canGoNext = canGoToMonth(selectedDate, 1, startYearMonth, maxYearMonth);
+  const canGoPrev = true;
+  const canGoNext = canGoToMonth(selectedDate, 1, null, nowYearMonth);
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
   const isCurrentMonth =
     year === now.getFullYear() && month === now.getMonth() + 1;
 
-  const { data } = useAnalysisQuery(accountBookId, year, month, currencyType);
+  const { data, isPlaceholderData } = useAnalysisQuery(
+    accountBookId,
+    year,
+    month,
+    currencyType,
+  );
 
   const { ref, scale } = useAutoFitScaleToViewport<HTMLDivElement>(16, 0.9, [
     data,
@@ -82,14 +74,14 @@ const ReportPage = () => {
           }
         />
 
-        {/* @TODO: data 없을 때 보여줄 화면 추가하기 */}
         {data && (
           <ReportSection
-            key={`${year}-${month}`}
+            key={`${year}-${month}-${currencyType}`}
             data={data}
             currencyType={currencyType}
             onCurrencyTypeChange={setCurrencyType}
             isCurrentMonth={isCurrentMonth}
+            isPlaceholderData={isPlaceholderData}
           />
         )}
       </div>

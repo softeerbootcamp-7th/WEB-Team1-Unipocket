@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
@@ -31,6 +31,8 @@ interface CurrencyConverterProps {
   rateUpdatedAt?: Date;
   onValuesChange?: (values: CurrencyValues) => void;
   onBaseCurrencyChange?: (amount: number) => void;
+  resetTrigger?: number;
+  initialBaseCurrency?: number;
 }
 
 const formatRateDate = (date: Date): string => {
@@ -64,13 +66,17 @@ const CurrencyConverter = ({
   rateUpdatedAt,
   onValuesChange,
   onBaseCurrencyChange,
+  resetTrigger,
+  initialBaseCurrency,
 }: CurrencyConverterProps) => {
   const rateDate = formatRateDate(rateUpdatedAt ?? new Date());
   const modalContext = useContext(ModalContext);
   const { localCountryCode } = useRequiredAccountBook();
   const [localCurrencyType, setLocalCurrencyType] = useState(() => {
-    const idx = Object.keys(countryData).indexOf(localCountryCode);
-    return idx >= 0 ? idx + 1 : 1;
+    const localCurrencyName =
+      countryData[localCountryCode as keyof typeof countryData]?.currencyName;
+    const option = currencyOptions.find((o) => o.name === localCurrencyName);
+    return option?.id ?? 1;
   });
 
   const {
@@ -98,7 +104,29 @@ const CurrencyConverter = ({
     baseError,
     handleCurrencyChange,
     isValid,
+    reset,
   } = useCurrencyConverter(rate ?? 0);
+
+  useEffect(() => {
+    if (!resetTrigger) return;
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetTrigger]);
+
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (
+      !rate ||
+      !initialBaseCurrency ||
+      initialBaseCurrency <= 0 ||
+      initializedRef.current
+    )
+      return;
+    initializedRef.current = true;
+    handleCurrencyChange(String(initialBaseCurrency), 'toLocal');
+    // rate 첫 로드 시 1회만 초기화
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rate]);
 
   const setActionReady = modalContext?.setActionReady;
 

@@ -9,6 +9,7 @@ import { DEFAULT_PAGE_SIZE } from '@/constants/column';
 
 const paymentMethodColumn: ColumnDef<TempExpense> = {
   id: 'paymentMethod',
+  size: 20,
   header: () => <>결제 수단</>,
   cell: ({ row }) => {
     const digits = row.original.cardLastFourDigits;

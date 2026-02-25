@@ -42,6 +42,7 @@ interface TabProviderProps extends Omit<
   value?: string;
   onValueChange?: (value: string) => void;
   variant?: TabVariant;
+  className?: string;
 }
 
 const TabProvider = ({
@@ -49,7 +50,9 @@ const TabProvider = ({
   defaultValue = '',
   value: controlledValue,
   onValueChange,
+  className,
   variant = 'underline',
+  ...props
 }: TabProviderProps) => {
   // 1. 내부 비제어 상태 (value가 없을 때 사용됨)
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
@@ -78,7 +81,9 @@ const TabProvider = ({
         variant,
       }}
     >
-      <div>{children}</div>
+      <div className={className} {...props}>
+        {children}
+      </div>
     </TabContext.Provider>
   );
 };

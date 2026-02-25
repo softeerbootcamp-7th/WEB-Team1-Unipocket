@@ -30,20 +30,33 @@ const TextCellEditorContent = ({
   textCell: ActiveCellState;
 } & TextCellEditorProps) => {
   const { dispatch } = useDataTable();
-  // null 대비 안전한 초기값 설정
   const [value, setValue] = useState(String(textCell.value || ''));
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const isCancelingRef = useRef(false);
 
   useEffect(() => {
     inputRef.current?.focus();
     inputRef.current?.select();
   }, []);
 
+  const handleCancel = () => {
+    isCancelingRef.current = true;
+    dispatch({ type: 'SET_TEXT_CELL', payload: null });
+  };
+
   const handleSave = () => {
+    if (isCancelingRef.current) return;
+
     if (value.trim() !== '' && value !== String(textCell.value || '')) {
       onUpdate(textCell.rowId, value);
     }
     dispatch({ type: 'SET_TEXT_CELL', payload: null });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') handleCancel();
   };
 
   return (
@@ -57,7 +70,7 @@ const TextCellEditorContent = ({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={handleSave}
-        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+        onKeyDown={handleKeyDown}
       />
     </CellEditorAnchor>
   );

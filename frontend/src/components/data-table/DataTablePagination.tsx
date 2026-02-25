@@ -56,7 +56,7 @@ export const DataTablePagination = ({
       <div className="from-background-normal to-background-normal/0 pointer-events-none absolute -top-8 left-0 h-8 w-full bg-linear-to-t" />
 
       <PaginationButton
-        onClick={() => handlePageChange(page - 1)} // 핸들러 변경
+        onClick={() => handlePageChange(page - 1)}
         disabled={!canGoPrev}
         ariaLabel="이전 페이지"
       >
@@ -68,7 +68,7 @@ export const DataTablePagination = ({
       </div>
 
       <PaginationButton
-        onClick={() => handlePageChange(page + 1)} // 핸들러 변경
+        onClick={() => handlePageChange(page + 1)}
         disabled={!canGoNext}
         ariaLabel="다음 페이지"
       >

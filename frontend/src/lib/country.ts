@@ -40,7 +40,7 @@ export const formatAmountByCountry = (
 ): string => {
   const locale = COUNTRY_LOCALE_MAP[countryCode] || 'en-US';
 
-  return amount.toLocaleString(locale, {
+  return Number(amount).toLocaleString(locale, {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });

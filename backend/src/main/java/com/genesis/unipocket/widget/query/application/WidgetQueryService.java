@@ -1,5 +1,7 @@
 package com.genesis.unipocket.widget.query.application;
 
+import com.genesis.unipocket.accountbook.query.persistence.response.AccountBookAmountResponse;
+import com.genesis.unipocket.accountbook.query.service.AccountBookAmountQueryService;
 import com.genesis.unipocket.analysis.command.persistence.entity.PairMonthlyAggregateEntity;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyAggregateRepository;
 import com.genesis.unipocket.analysis.command.persistence.repository.AccountMonthlyCategoryAggregateRepository;
@@ -67,6 +69,7 @@ public class WidgetQueryService {
 	private final AccountMonthlyCategoryAggregateRepository
 			accountMonthlyCategoryAggregateRepository;
 	private final PairMonthlyAggregateRepository pairMonthlyAggregateRepository;
+	private final AccountBookAmountQueryService accountBookAmountQueryService;
 
 	public Object getWidget(
 			UUID userId,
@@ -150,15 +153,12 @@ public class WidgetQueryService {
 									context.travelId(),
 									CurrencyType.LOCAL));
 		} else {
-			// 기존 방식: expense 직접 집계
-			baseSpentAmount =
-					AmountFormatUtil.format(
-							widgetQueryRepository.getTotalSpentByAccountBookId(
-									context.accountBookId(), null, CurrencyType.BASE));
-			localSpentAmount =
-					AmountFormatUtil.format(
-							widgetQueryRepository.getTotalSpentByAccountBookId(
-									context.accountBookId(), null, CurrencyType.LOCAL));
+			// 가게부인 경우 환율 변환이 적용된 정확한 금액 사용
+			AccountBookAmountResponse amounts =
+					accountBookAmountQueryService.getAccountBookAmount(
+							context.userId().toString(), context.accountBookId());
+			baseSpentAmount = AmountFormatUtil.format(amounts.totalBaseAmount());
+			localSpentAmount = AmountFormatUtil.format(amounts.totalLocalAmount());
 		}
 
 		return BudgetWidgetResponse.builder()

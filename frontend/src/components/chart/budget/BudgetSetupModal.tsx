@@ -8,10 +8,15 @@ import { useContextualBudgetMutation } from '@/api/widget/query';
 interface BudgetSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialBudget?: number;
 }
 
-const BudgetSetupModal = ({ isOpen, onClose }: BudgetSetupModalProps) => {
-  const [budgetAmount, setBudgetAmount] = useState<number>(0);
+const BudgetSetupModal = ({
+  isOpen,
+  onClose,
+  initialBudget,
+}: BudgetSetupModalProps) => {
+  const [budgetAmount, setBudgetAmount] = useState<number>(initialBudget ?? 0);
 
   const { mutate: updateBudget } = useContextualBudgetMutation();
 
@@ -36,7 +41,10 @@ const BudgetSetupModal = ({ isOpen, onClose }: BudgetSetupModalProps) => {
 
         {/* input section */}
         <div className="w-full py-13">
-          <CurrencyConverter onBaseCurrencyChange={setBudgetAmount} />
+          <CurrencyConverter
+            onBaseCurrencyChange={setBudgetAmount}
+            initialBaseCurrency={initialBudget}
+          />
         </div>
       </div>
     </Modal>

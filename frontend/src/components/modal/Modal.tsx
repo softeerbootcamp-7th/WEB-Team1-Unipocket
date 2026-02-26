@@ -20,6 +20,7 @@ export interface ModalProps {
   onClose: () => void;
   onAction: () => void;
   className?: string;
+  backdropClassName?: string;
   cancelButton?: ModalButton | null; // null로 전달 시 버튼 숨김
   confirmButton?: ModalButton | null; // null로 전달 시 버튼 숨김
 }
@@ -36,6 +37,7 @@ const Modal = ({
   onClose,
   onAction,
   className,
+  backdropClassName,
   cancelButton,
   confirmButton,
 }: ModalProps) => {
@@ -70,7 +72,10 @@ const Modal = ({
         <ModalContext.Provider value={contextValue}>
           {/* Backdrop */}
           <motion.div
-            className="bg-dimmer-strong z-overlay fixed inset-0 flex items-center justify-center"
+            className={clsx(
+              'bg-dimmer-strong fixed inset-0 flex items-center justify-center',
+              backdropClassName ?? 'z-overlay',
+            )}
             onClick={handleBackdropClick}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

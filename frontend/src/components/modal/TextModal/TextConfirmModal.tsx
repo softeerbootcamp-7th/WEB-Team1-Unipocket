@@ -9,6 +9,7 @@ export interface TextConfirmModalProps {
   description?: string;
   subDescription?: string;
   confirmButton?: ModalButton;
+  backdropClassName?: string;
 }
 
 const TextConfirmModal = ({
@@ -19,12 +20,14 @@ const TextConfirmModal = ({
   description,
   subDescription,
   confirmButton = { label: '삭제', variant: 'danger' },
+  backdropClassName,
 }: TextConfirmModalProps) => (
   <Modal
     isOpen={isOpen}
     onClose={onClose}
     onAction={onAction}
     confirmButton={confirmButton}
+    backdropClassName={backdropClassName}
   >
     <TextContent
       title={title}

@@ -44,7 +44,15 @@ const LocaleSelectModal = ({
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <LocaleSelectContent {...contentProps} isLoading={isLoading} />
+            <LocaleSelectContent
+              {...contentProps}
+              baseCountryCode={
+                contentProps.mode === 'INIT'
+                  ? 'KR'
+                  : contentProps.baseCountryCode
+              }
+              isLoading={isLoading}
+            />
           </motion.div>
         </motion.div>
       )}

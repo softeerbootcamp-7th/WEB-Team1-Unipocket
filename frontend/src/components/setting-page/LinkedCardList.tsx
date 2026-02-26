@@ -47,21 +47,25 @@ const LinkedCardList = ({
   return (
     <SettingSection>
       <SettingTitle>국내카드 연동 목록</SettingTitle>
-      <div className="flex flex-col">
-        {cards.length === 0 ? (
-          <p className="body2-normal-regular text-label-assistive">
-            아직 등록된 카드가 없어요.
-          </p>
-        ) : (
-          cards.map((card) => (
-            <LinkedCardItem
-              key={card.userCardId}
-              card={card}
-              onEdit={(c) => openEditCardNickname(c.userCardId, c.nickName)}
-              onDelete={(c) => openDeleteCard(c.userCardId, c.nickName)}
-            />
-          ))
-        )}
+      <div className="w-280">
+        <div className="overflow-x-auto px-2">
+          <div className="grid w-max auto-cols-max grid-flow-col grid-rows-3 gap-x-4 py-2">
+            {cards.length === 0 ? (
+              <p className="body2-normal-regular text-label-assistive">
+                아직 등록된 카드가 없어요.
+              </p>
+            ) : (
+              cards.map((card) => (
+                <LinkedCardItem
+                  key={card.userCardId}
+                  card={card}
+                  onEdit={(c) => openEditCardNickname(c.userCardId, c.nickName)}
+                  onDelete={(c) => openDeleteCard(c.userCardId, c.nickName)}
+                />
+              ))
+            )}
+          </div>
+        </div>
 
         <button
           className="flex cursor-pointer items-center gap-4 py-3"

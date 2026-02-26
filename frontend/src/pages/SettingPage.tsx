@@ -11,10 +11,6 @@ import {
   LinkedCardList,
   LinkedCardListSkeleton,
 } from '@/components/setting-page/LinkedCardList';
-import {
-  MainAccountBookSelector,
-  MainAccountBookSkeleton,
-} from '@/components/setting-page/MainAccountBookSelector';
 import SettingModalManager from '@/components/setting-page/modal/SettingModalManager';
 import { useSettingModal } from '@/components/setting-page/modal/useSettingModal';
 
@@ -46,9 +42,6 @@ const SettingPage = () => {
         <h1 className="title2-semibold text-label-normal">설정</h1>
       </div>
       <div className="flex flex-1 flex-col gap-3.5">
-        <Suspense fallback={<MainAccountBookSkeleton />}>
-          <MainAccountBookSelector />
-        </Suspense>
         <Suspense fallback={<LinkedCardListSkeleton />}>
           <LinkedCardList
             openEditCardNickname={openEditCardNickname}

@@ -80,8 +80,7 @@ export const useFileUpload = (accountBookId: number) => {
       !current ||
       current.status !== UPLOAD_STATUS.UPLOADED ||
       !current.s3Key ||
-      !metaIdRef.current ||
-      isParsing
+      !metaIdRef.current
     ) {
       return false;
     }

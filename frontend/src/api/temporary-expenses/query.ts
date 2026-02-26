@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { accountBookKeys } from '@/api/account-books/query';
 import { ApiError } from '@/api/config/error';
 import { expenseKeys } from '@/api/expenses/query';
 import {
@@ -172,6 +173,9 @@ const useConfirmMetaMutation = (accountBookId: number) =>
       });
       queryClient.invalidateQueries({
         queryKey: widgetKeys.allDetails(accountBookId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accountBookKeys.amount(accountBookId),
       });
       toast.success('임시지출이 확정됐어요.');
     },

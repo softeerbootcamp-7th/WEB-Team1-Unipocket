@@ -21,8 +21,6 @@ import {
 } from '@/api/account-books/query';
 import { Icons } from '@/assets';
 
-import Chip from '../common/Chip';
-
 const ConfiguratorSkeleton = () => (
   <div className="h-32 w-full animate-pulse rounded-md bg-black/10" />
 );
@@ -80,13 +78,6 @@ const AccountBookConfigurator = ({
               >
                 <span className="headline1-bold text-label-normal flex min-w-0 items-center justify-center gap-3 px-3.5 pt-3">
                   <span className="min-w-25 truncate">{book.title}</span>
-                  {book.isMain && (
-                    <Chip
-                      label="메인"
-                      bgClassName="bg-primary-normal/8"
-                      textClassName="text-primary-normal"
-                    />
-                  )}
                 </span>
               </TabTrigger>
             ))}

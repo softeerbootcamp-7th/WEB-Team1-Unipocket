@@ -37,7 +37,6 @@ export const useParseSSE = (accountBookId: number) => {
       es.close();
       delete eventSourcesRef.current[taskId];
     }
-    delete completedRef.current[taskId];
     delete successCountRef.current[taskId];
   };
 
@@ -64,6 +63,7 @@ export const useParseSSE = (accountBookId: number) => {
 
     eventSourcesRef.current[taskId] = eventSource;
     successCountRef.current[taskId] = 0;
+    completedRef.current[taskId] = false;
 
     addSnackbar({
       id: taskId,
@@ -126,7 +126,7 @@ export const useParseSSE = (accountBookId: number) => {
       });
     };
 
-    eventSource.addEventListener('progress', (event) => {
+    const handleSseEvent = (event: Event) => {
       try {
         const parsed = JSON.parse((event as MessageEvent).data);
         handleProgressValue(parsed);
@@ -138,7 +138,10 @@ export const useParseSSE = (accountBookId: number) => {
         callbacks?.onError?.();
         disconnect(taskId);
       }
-    });
+    };
+
+    eventSource.addEventListener('progress', handleSseEvent);
+    eventSource.addEventListener('complete', handleSseEvent);
 
     eventSource.onerror = () => {
       if (!completedRef.current[taskId]) {
@@ -154,6 +157,7 @@ export const useParseSSE = (accountBookId: number) => {
     connect,
     disconnect,
     disconnectAll,
+    closeSnackbar,
     resetParseState: resetAll,
   };
 };

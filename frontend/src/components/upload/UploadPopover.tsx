@@ -2,6 +2,7 @@ import { PopoverContent } from '@/components/ui/popover';
 import { type UploadEntryType } from '@/components/upload/UploadMenu';
 
 import { Icons } from '@/assets';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 interface UploadMenuItemProps {
   Icon: (typeof Icons)[keyof typeof Icons];
@@ -73,12 +74,21 @@ const UploadPopover = ({ onOpenUpload }: UploadPopoverProps) => {
     }
   };
 
+  const { startDate, endDate } = useRequiredAccountBook();
+
+  const formattedStartDate = startDate.replace(/-/g, '.');
+  const formattedEndDate = endDate.replace(/-/g, '.');
+
   return (
     <PopoverContent
       align="end"
       sideOffset={12}
       className="rounded-modal-20 border-line-normal-alternative shadow-backdrop flex w-fit flex-col items-center justify-center gap-2 border bg-white px-5 py-3.5"
     >
+      <p className="label1-normal-medium text-status-cautionary text-center">
+        가계부 기간 내 지출 내역만 업로드할 수 있어요. <br />
+        가계부 기간: {formattedStartDate} ~ {formattedEndDate}
+      </p>
       {UPLOAD_MENU_ITEMS.map((item) => (
         <UploadMenuItem
           key={item.key}

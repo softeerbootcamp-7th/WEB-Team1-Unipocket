@@ -43,24 +43,17 @@ const SidePanel = ({ isOpen, onClose }: SidePanelProps) => {
 
   const defaultDate = (() => {
     const today = new Date();
-    const todayStart = new Date(
+    const todayNormalized = new Date(
       today.getFullYear(),
       today.getMonth(),
       today.getDate(),
     );
-    const startStart = new Date(
-      accountBookStartDate.getFullYear(),
-      accountBookStartDate.getMonth(),
-      accountBookStartDate.getDate(),
-    );
-    const endStart = new Date(
+    const endNormalized = new Date(
       accountBookEndDate.getFullYear(),
       accountBookEndDate.getMonth(),
       accountBookEndDate.getDate(),
     );
-    return todayStart >= startStart && todayStart <= endStart
-      ? today
-      : accountBookEndDate;
+    return todayNormalized <= endNormalized ? today : accountBookEndDate;
   })();
 
   const { data: cards = [] } = useGetCardsQuery();

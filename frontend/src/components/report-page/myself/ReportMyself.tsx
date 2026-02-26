@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { useAutoFitScale } from '@/hooks/useAutoFitScale';
 
 import ReportContainer from '@/components/report-page/layout/ReportContainer';
@@ -29,17 +31,21 @@ interface ReportMyselfProps {
   };
 }
 
-const ReportMyself = ({
-  data,
-  isCurrentMonth,
-  isPlaceholderData,
-}: ReportMyselfProps) => {
+const ReportMyself = ({ data, isCurrentMonth }: ReportMyselfProps) => {
   const { currencyType } = useReportContext();
-  const countryCode = useAccountBookCountryCode(currencyType);
   const { baseCountryCode } = useRequiredAccountBook();
-  const displayCountryCode = isPlaceholderData ? baseCountryCode : countryCode;
-  const unit = getCountryInfo(displayCountryCode)?.currencyUnitKor || '';
+  const countryCode = useAccountBookCountryCode(currencyType);
+  // 단위는 currencyType이 바뀔 때만 변경
+  const displayCountryCode = useMemo(
+    () => (currencyType === 'LOCAL' ? countryCode : baseCountryCode),
+    [currencyType, countryCode, baseCountryCode],
+  );
+  const unit = useMemo(
+    () => getCountryInfo(displayCountryCode)?.currencyUnitKor || '',
+    [displayCountryCode],
+  );
 
+  // 숫자만 placeholderData 여부에 따라 바뀜
   const diffValue = Number(data.diff);
   const diff = Math.abs(diffValue);
   const isLess = diffValue < 0;

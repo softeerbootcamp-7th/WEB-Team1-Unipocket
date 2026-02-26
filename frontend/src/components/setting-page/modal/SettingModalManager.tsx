@@ -139,11 +139,6 @@ const SettingModalManager = ({
               )
             : ''
         }
-        subDescription={
-          activeModal.type === 'DELETE_ACCOUNT_BOOK' && activeModal.isMain
-            ? SETTING_MODAL_TEXT.DELETE_ACCOUNT_BOOK.subDescription
-            : undefined
-        }
         onAction={() => {
           if (activeModal.type === 'DELETE_ACCOUNT_BOOK') {
             deleteAccountBookMutation.mutate(activeModal.accountBookId, {

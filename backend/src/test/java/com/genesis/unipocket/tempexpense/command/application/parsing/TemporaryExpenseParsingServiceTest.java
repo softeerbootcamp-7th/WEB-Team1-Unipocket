@@ -384,6 +384,69 @@ class TemporaryExpenseParsingServiceTest {
 
 		assertThat(result.totalFiles()).isEqualTo(2);
 		verify(progressPublisher).registerTask(anyString(), eq(accountBookId));
+		verify(fileRepository, never()).deleteAll(anyList());
+	}
+
+	@Test
+	@DisplayName("startParseAsync는 s3Keys에 포함되지 않은 파일을 삭제 처리한다")
+	void startParseAsync_deletesUnselectedFiles() {
+		TemporaryExpensePersistenceService temporaryExpensePersistenceService =
+				new TemporaryExpensePersistenceService(
+						temporaryExpenseRepository,
+						new TempExpenseStatusPolicy(),
+						exchangeRateProvider);
+		TemporaryExpenseParsingService asyncStartOnlyService =
+				new TemporaryExpenseParsingService(
+						fileRepository,
+						accountBookRateInfoProvider,
+						fieldParser,
+						temporaryExpenseParseClient,
+						temporaryExpensePersistenceService,
+						progressPublisher,
+						temporaryExpenseScopeValidator,
+						runnable -> {},
+						Runnable::run);
+
+		Long accountBookId = 1L;
+		Long metaId = 10L;
+		TempExpenseMeta meta =
+				TempExpenseMeta.builder()
+						.tempExpenseMetaId(metaId)
+						.accountBookId(accountBookId)
+						.build();
+		File file1 =
+				File.builder()
+						.fileId(1L)
+						.tempExpenseMetaId(metaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/a.png")
+						.build();
+		File file2 =
+				File.builder()
+						.fileId(2L)
+						.tempExpenseMetaId(metaId)
+						.fileType(File.FileType.IMAGE)
+						.s3Key("temp/b.png")
+						.build();
+
+		when(temporaryExpenseScopeValidator.validateMetaScope(accountBookId, metaId))
+				.thenReturn(meta);
+		when(fileRepository.findByTempExpenseMetaId(metaId)).thenReturn(List.of(file1, file2));
+
+		// Call with only "temp/a.png" in s3Keys. "temp/b.png" is unselected.
+		ParseStartResult result =
+				asyncStartOnlyService.startParseAsync(accountBookId, metaId, List.of("temp/a.png"));
+
+		assertThat(result.totalFiles()).isEqualTo(1); // Only 1 file should be selected to parse
+		verify(progressPublisher).registerTask(anyString(), eq(accountBookId));
+
+		@SuppressWarnings("unchecked")
+		ArgumentCaptor<List<File>> captor = ArgumentCaptor.forClass(List.class);
+		verify(fileRepository, times(1)).deleteAll(captor.capture());
+
+		List<File> deletedFiles = captor.getValue();
+		assertThat(deletedFiles).hasSize(1);
+		assertThat(deletedFiles.get(0).getS3Key()).isEqualTo("temp/b.png");
 	}
 
 	@Test

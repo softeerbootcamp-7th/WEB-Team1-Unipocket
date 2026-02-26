@@ -268,6 +268,7 @@ class TemporaryExpenseConversionServiceTest {
 										.user(UserEntity.reference(ownerId))
 										.title("test")
 										.bucketOrder(1)
+										.localCountryCode(CountryCode.US)
 										.startDate(LocalDate.now(accountBookZoneId).minusDays(30))
 										.endDate(null)
 										.build()));

@@ -15,11 +15,20 @@ public final class OffsetDateTimeConverter {
 		if (value instanceof OffsetDateTime offsetDateTime) {
 			return offsetDateTime;
 		}
+		if (value instanceof java.time.Instant instant) {
+			return instant.atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof java.time.ZonedDateTime zonedDateTime) {
+			return zonedDateTime.toOffsetDateTime();
+		}
 		if (value instanceof LocalDateTime localDateTime) {
 			return localDateTime.atOffset(ZoneOffset.UTC);
 		}
 		if (value instanceof java.sql.Timestamp timestamp) {
 			return timestamp.toLocalDateTime().atOffset(ZoneOffset.UTC);
+		}
+		if (value instanceof java.sql.Date sqlDate) {
+			return sqlDate.toLocalDate().atStartOfDay().atOffset(ZoneOffset.UTC);
 		}
 		if (value instanceof java.util.Date date) {
 			return date.toInstant().atOffset(ZoneOffset.UTC);

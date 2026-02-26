@@ -21,14 +21,14 @@ public record TemporaryExpenseUpdateCommand(
 	public static TemporaryExpenseUpdateCommand from(
 			TemporaryExpenseMetaBulkUpdateItemRequest request) {
 		return new TemporaryExpenseUpdateCommand(
-				request.merchantName(),
-				request.category(),
-				request.localCountryCode(),
-				request.localCurrencyAmount(),
-				request.baseCountryCode(),
-				request.baseCurrencyAmount(),
-				request.memo(),
-				request.occurredAt(),
-				request.cardLastFourDigits());
+				request.getMerchantName(),
+				request.getCategory(),
+				request.getLocalCountryCode(),
+				request.getLocalCurrencyAmount(),
+				request.getBaseCountryCode(),
+				request.getBaseCurrencyAmount(),
+				request.getMemo(),
+				request.getOccurredAt(),
+				request.getCardLastFourDigits());
 	}
 }

@@ -130,6 +130,7 @@ export const useFileUpload = (accountBookId: number) => {
       URL.revokeObjectURL(itemRef.current.url);
     }
     setItem(null);
+    metaIdRef.current = undefined;
   };
 
   const removeItem = () => {

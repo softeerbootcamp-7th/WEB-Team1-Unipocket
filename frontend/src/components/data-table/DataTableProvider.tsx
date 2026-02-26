@@ -47,8 +47,7 @@ const tableReducer = (state: TableUIState, action: TableUIAction) => {
       return { ...state, ...resetCells, amountCell: action.payload };
     case 'SET_METHOD_CELL':
       return { ...state, ...resetCells, methodCell: action.payload };
-    case 'SET_WARNING_CELL':
-      return { ...state, ...resetCells, warningCell: action.payload };
+
     case 'SET_TRAVEL_CELL':
       return { ...state, ...resetCells, travelCell: action.payload };
     case 'SET_ACTIVE_ROW':

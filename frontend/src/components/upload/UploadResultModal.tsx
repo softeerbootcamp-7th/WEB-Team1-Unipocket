@@ -63,7 +63,7 @@ export default function UploadResultModal({
           onClick={onClose}
         />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-10 px-8">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 px-8">
         <div className="flex flex-col gap-2">
           <h2
             id="upload-result-title"
@@ -84,7 +84,23 @@ export default function UploadResultModal({
           </div>
         </div>
 
-        <main className="flex min-h-0 flex-1 flex-col pb-4">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col gap-2 pb-4">
+          <div className="flex items-center justify-end gap-2 px-6">
+            <div className="flex items-center justify-center gap-1">
+              <div className="bg-status-negative/60 h-3 w-4" />
+              <span className="body1-normal-medium text-label-alternative">
+                삭제 대상
+              </span>
+            </div>
+            <div className="flex items-center justify-center gap-1">
+              <div className="bg-status-cautionary/60 h-3 w-4" />
+              <span className="body1-normal-medium text-label-alternative">
+                수정 필요
+              </span>
+            </div>
+          </div>
+          {children}
+        </main>
       </div>
       <footer className="bg-background-normal border-line-normal-neutral flex h-28 justify-end gap-4 border-t p-8">
         <Button variant="outlined" size="lg" onClick={onClose}>

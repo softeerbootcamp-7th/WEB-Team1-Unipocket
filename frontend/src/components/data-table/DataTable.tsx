@@ -3,6 +3,7 @@ import { type Cell, flexRender, type Row } from '@tanstack/react-table';
 import clsx from 'clsx';
 
 import { useDataTable } from '@/components/data-table/context';
+import type { RowIssueType } from '@/components/expense/BaseExpenseTable';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -18,7 +19,7 @@ interface DataTableProps<TData> {
   groupDisplay?: (groupKey: string) => string;
   enableGroupSelection?: boolean;
   blankFallbackText?: string;
-  getRowIssue?: (row: TData) => boolean;
+  getRowIssue?: (row: TData) => RowIssueType;
 }
 
 const DataTable = <TData,>({
@@ -83,12 +84,6 @@ const DataTable = <TData,>({
             break;
         }
         return;
-      }
-
-      const hasIssue = getRowIssue ? getRowIssue(cell.row.original) : false;
-
-      if (hasIssue) {
-        dispatch({ type: 'SET_WARNING_CELL', payload });
       }
     },
     [dispatch, getRowIssue],
@@ -168,14 +163,23 @@ const DataTable = <TData,>({
 
                 {/* 실제 데이터 행들 */}
                 {dateRows.map((row) => {
-                  const hasIssue = getRowIssue
+                  const issueType = getRowIssue
                     ? getRowIssue(row.original)
                     : false;
+
+                  // 상태에 따른 클래스 분기
+                  let rowClassName = '';
+                  if (issueType === 'incomplete') {
+                    rowClassName =
+                      'bg-status-cautionary/10 hover:bg-status-cautionary/20 '; // hover 효과가 필요하다면 등을 추가
+                  } else if (issueType === 'impossible') {
+                    rowClassName = 'bg-red-100 hover:bg-red-200';
+                  }
                   return (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
-                      className={hasIssue ? 'bg-red-50 hover:bg-red-100' : ''}
+                      className={rowClassName}
                     >
                       {row.getVisibleCells().map((cell, index) => {
                         // 첫 번째 셀(체크박스)이면서 그룹화가 되어있을 때 들여쓰기(pl-11) 적용

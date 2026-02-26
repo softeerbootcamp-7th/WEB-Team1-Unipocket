@@ -6,11 +6,13 @@ import TempAmountCellEditor from '@/components/data-table/editors/temp-expense/T
 import TempCategoryCellEditor from '@/components/data-table/editors/temp-expense/TempCategoryCellEditor';
 import TempMethodCellEditor from '@/components/data-table/editors/temp-expense/TempMethodCellEditor';
 import TempTextCellEditor from '@/components/data-table/editors/temp-expense/TempTextCellEditor';
+import { getRowIssue } from '@/components/data-table/rows/getIssue';
 import { getTempExpenseGroupKey } from '@/components/data-table/utils/grouping';
 import BaseExpenseTable from '@/components/expense/BaseExpenseTable';
 
 import type { TempExpense } from '@/api/temporary-expenses/type';
 import { DEFAULT_PAGE_SIZE } from '@/constants/column';
+import { useRequiredAccountBook } from '@/stores/accountBookStore';
 
 interface ImageResultTableProps {
   data: TempExpense[];
@@ -18,6 +20,7 @@ interface ImageResultTableProps {
 
 const ImageResultTable = ({ data }: ImageResultTableProps) => {
   const dummyFilter = { page: 0 };
+  const { startDate, endDate } = useRequiredAccountBook();
   const dummyUpdateFilter = () => {};
   const totalPages = Math.ceil(data.length / DEFAULT_PAGE_SIZE);
   const groupBy = getTempExpenseGroupKey;
@@ -33,7 +36,8 @@ const ImageResultTable = ({ data }: ImageResultTableProps) => {
     [],
   );
 
-  const getRowIssue = (row: TempExpense) => row.status === 'INCOMPLETE';
+  const checkRowIssue = (row: TempExpense) =>
+    getRowIssue(row, startDate, endDate);
 
   return (
     <div className="bg-background-normal shadow-semantic-subtle relative flex min-h-0 flex-1 flex-col rounded-2xl px-2 py-4">
@@ -46,7 +50,7 @@ const ImageResultTable = ({ data }: ImageResultTableProps) => {
         hideFilters={true}
         groupBy={groupBy}
         groupDisplay={groupDisplay}
-        getRowIssue={getRowIssue}
+        getRowIssue={checkRowIssue}
       >
         <TempUpdateActionBar />
 

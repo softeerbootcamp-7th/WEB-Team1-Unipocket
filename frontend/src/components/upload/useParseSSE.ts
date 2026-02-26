@@ -157,6 +157,7 @@ export const useParseSSE = (accountBookId: number) => {
     connect,
     disconnect,
     disconnectAll,
+    closeSnackbar,
     resetParseState: resetAll,
   };
 };

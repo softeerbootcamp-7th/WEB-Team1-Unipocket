@@ -12,8 +12,7 @@ export const useFileUpload = (accountBookId: number) => {
   const itemRef = useRef<UploadItem | null>(null);
   const metaIdRef = useRef<number | undefined>(undefined);
 
-  const { connect, disconnectAll, resetParseState } =
-    useParseSSE(accountBookId);
+  const { connect, disconnect, closeSnackbar } = useParseSSE(accountBookId);
 
   useEffect(() => {
     itemRef.current = item;
@@ -134,9 +133,12 @@ export const useFileUpload = (accountBookId: number) => {
   };
 
   const removeItem = () => {
-    disconnectAll();
-    resetParseState();
-    if (item?.url) URL.revokeObjectURL(item.url);
+    const current = itemRef.current;
+    if (current?.taskId) {
+      disconnect(current.taskId);
+      closeSnackbar(current.taskId);
+    }
+    if (current?.url) URL.revokeObjectURL(current.url);
     setItem(null);
     metaIdRef.current = undefined;
     setIsParsing(false);

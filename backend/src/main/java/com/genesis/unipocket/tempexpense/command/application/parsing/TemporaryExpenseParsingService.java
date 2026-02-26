@@ -87,6 +87,14 @@ public class TemporaryExpenseParsingService {
 			if (files.size() != distinctKeys.size()) {
 				throw new BusinessException(ErrorCode.TEMP_EXPENSE_FILE_NOT_FOUND);
 			}
+
+			List<File> filesToDelete =
+					metaFiles.stream()
+							.filter(file -> !distinctKeys.contains(file.getS3Key()))
+							.toList();
+			if (!filesToDelete.isEmpty()) {
+				fileRepository.deleteAll(filesToDelete);
+			}
 		}
 
 		validateParseFileLimit(files);

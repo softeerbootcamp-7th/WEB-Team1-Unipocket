@@ -13,6 +13,8 @@ import SortDropdown from '@/components/data-table/filters/SortDropdown';
 
 import type { ExpenseSearchFilter } from '@/api/expenses/type';
 
+export type RowIssueType = 'incomplete' | 'impossible' | false;
+
 interface BaseExpenseTableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, unknown>[];
@@ -25,7 +27,7 @@ interface BaseExpenseTableProps<TData> {
   hideFilters?: boolean;
   groupBy?: (row: TData) => string;
   groupDisplay?: (groupKey: string) => string;
-  getRowIssue?: (row: TData) => boolean;
+  getRowIssue?: (row: TData) => RowIssueType;
 }
 
 const BaseExpenseTable = <TData,>({

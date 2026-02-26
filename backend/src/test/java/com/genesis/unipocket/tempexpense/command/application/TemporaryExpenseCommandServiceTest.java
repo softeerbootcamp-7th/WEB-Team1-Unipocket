@@ -48,6 +48,128 @@ class TemporaryExpenseCommandServiceTest {
 	}
 
 	@Test
+	@DisplayName("PATCH에서 cardLastFourDigits를 보내면 카드가 변경된다")
+	void updateTemporaryExpense_updatesCardLastFourDigitsWhenProvided() {
+		Long tempExpenseId = 1L;
+		Long metaId = 10L;
+
+		TemporaryExpense existing =
+				TemporaryExpense.builder()
+						.tempExpenseId(tempExpenseId)
+						.tempExpenseMetaId(metaId)
+						.fileId(200L)
+						.merchantName("가맹점")
+						.category(Category.FOOD)
+						.localCountryCode(CurrencyCode.USD)
+						.localCurrencyAmount(new BigDecimal("10.00"))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(new BigDecimal("13000.00"))
+						.memo("memo")
+						.occurredAt(LocalDateTime.of(2026, 2, 17, 10, 0))
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.cardLastFourDigits("1234")
+						.build();
+
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						null, null, null, null, null, null, null, null, Optional.of("5678"));
+
+		when(temporaryExpenseRepository.findById(tempExpenseId)).thenReturn(Optional.of(existing));
+		when(temporaryExpenseRepository.save(any(TemporaryExpense.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		service.updateTemporaryExpense(tempExpenseId, command);
+
+		ArgumentCaptor<TemporaryExpense> captor = ArgumentCaptor.forClass(TemporaryExpense.class);
+		verify(temporaryExpenseRepository).save(captor.capture());
+		TemporaryExpense saved = captor.getValue();
+
+		assertThat(saved.getCardLastFourDigits()).isEqualTo("5678");
+	}
+
+	@Test
+	@DisplayName("PATCH에서 cardLastFourDigits를 null로 보내면 카드가 초기화된다")
+	void updateTemporaryExpense_clearsCardWhenNullSent() {
+		Long tempExpenseId = 1L;
+		Long metaId = 10L;
+
+		TemporaryExpense existing =
+				TemporaryExpense.builder()
+						.tempExpenseId(tempExpenseId)
+						.tempExpenseMetaId(metaId)
+						.fileId(200L)
+						.merchantName("가맹점")
+						.category(Category.FOOD)
+						.localCountryCode(CurrencyCode.USD)
+						.localCurrencyAmount(new BigDecimal("10.00"))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(new BigDecimal("13000.00"))
+						.memo("memo")
+						.occurredAt(LocalDateTime.of(2026, 2, 17, 10, 0))
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.cardLastFourDigits("1234")
+						.build();
+
+		// Optional.empty() = "cardLastFourDigits": null (명시적 null → 초기화)
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						null, null, null, null, null, null, null, null, Optional.empty());
+
+		when(temporaryExpenseRepository.findById(tempExpenseId)).thenReturn(Optional.of(existing));
+		when(temporaryExpenseRepository.save(any(TemporaryExpense.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		service.updateTemporaryExpense(tempExpenseId, command);
+
+		ArgumentCaptor<TemporaryExpense> captor = ArgumentCaptor.forClass(TemporaryExpense.class);
+		verify(temporaryExpenseRepository).save(captor.capture());
+		TemporaryExpense saved = captor.getValue();
+
+		assertThat(saved.getCardLastFourDigits()).isNull();
+	}
+
+	@Test
+	@DisplayName("PATCH에서 cardLastFourDigits 필드를 보내지 않으면 기존 카드가 유지된다")
+	void updateTemporaryExpense_keepsExistingCardWhenFieldAbsent() {
+		Long tempExpenseId = 1L;
+		Long metaId = 10L;
+
+		TemporaryExpense existing =
+				TemporaryExpense.builder()
+						.tempExpenseId(tempExpenseId)
+						.tempExpenseMetaId(metaId)
+						.fileId(200L)
+						.merchantName("가맹점")
+						.category(Category.FOOD)
+						.localCountryCode(CurrencyCode.USD)
+						.localCurrencyAmount(new BigDecimal("10.00"))
+						.baseCountryCode(CurrencyCode.KRW)
+						.baseCurrencyAmount(new BigDecimal("13000.00"))
+						.memo("memo")
+						.occurredAt(LocalDateTime.of(2026, 2, 17, 10, 0))
+						.status(TemporaryExpenseStatus.INCOMPLETE)
+						.cardLastFourDigits("1234")
+						.build();
+
+		// null = 필드 미전송 → 기존값 유지
+		TemporaryExpenseUpdateCommand command =
+				new TemporaryExpenseUpdateCommand(
+						null, null, null, null, null, null, null, null, null);
+
+		when(temporaryExpenseRepository.findById(tempExpenseId)).thenReturn(Optional.of(existing));
+		when(temporaryExpenseRepository.save(any(TemporaryExpense.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
+
+		service.updateTemporaryExpense(tempExpenseId, command);
+
+		ArgumentCaptor<TemporaryExpense> captor = ArgumentCaptor.forClass(TemporaryExpense.class);
+		verify(temporaryExpenseRepository).save(captor.capture());
+		TemporaryExpense saved = captor.getValue();
+
+		assertThat(saved.getCardLastFourDigits()).isEqualTo("1234");
+	}
+
+	@Test
 	@DisplayName("PATCH에서 baseAmount만 들어오면 가계부 baseCurrency를 자동 채운다")
 	void updateTemporaryExpense_fillsBaseCurrencyFromAccountBookWhenOnlyBaseAmountProvided() {
 		Long tempExpenseId = 1L;

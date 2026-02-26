@@ -44,7 +44,7 @@ public class TempExpenseFileService {
 			try {
 				TemporaryExpense target =
 						temporaryExpenseRepository
-								.findScopedById(item.tempExpenseId(), tempExpenseMetaId, fileId)
+								.findScopedById(item.getTempExpenseId(), tempExpenseMetaId, fileId)
 								.orElseThrow(
 										() ->
 												new BusinessException(
@@ -59,15 +59,15 @@ public class TempExpenseFileService {
 				successCount++;
 				results.add(
 						new TemporaryExpenseMetaBulkUpdateResult.ItemResult(
-								item.tempExpenseId(), "SUCCESS", null, updated));
+								item.getTempExpenseId(), "SUCCESS", null, updated));
 			} catch (BusinessException e) {
 				results.add(
 						new TemporaryExpenseMetaBulkUpdateResult.ItemResult(
-								item.tempExpenseId(), "FAILED", e.getMessage(), null));
+								item.getTempExpenseId(), "FAILED", e.getMessage(), null));
 			} catch (Exception e) {
 				results.add(
 						new TemporaryExpenseMetaBulkUpdateResult.ItemResult(
-								item.tempExpenseId(),
+								item.getTempExpenseId(),
 								"FAILED",
 								ErrorCode.INTERNAL_SERVER_ERROR.getMessage(),
 								null));

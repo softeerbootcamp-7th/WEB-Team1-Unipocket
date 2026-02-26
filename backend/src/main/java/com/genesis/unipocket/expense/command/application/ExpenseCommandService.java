@@ -12,7 +12,6 @@ import com.genesis.unipocket.global.common.enums.CurrencyCode;
 import com.genesis.unipocket.global.exception.BusinessException;
 import com.genesis.unipocket.global.exception.ErrorCode;
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -101,9 +100,14 @@ public class ExpenseCommandService {
 				expenseRepository.findDistinctLocalCurrencyDatePairsByAccountBookId(accountBookId);
 
 		for (Object[] pair : localCurrencyDatePairs) {
-			if (!(pair[0] instanceof CurrencyCode localCurrencyCode)) {
+			CurrencyCode localCurrencyCode;
+			if (pair[0] instanceof CurrencyCode cc) {
+				localCurrencyCode = cc;
+			} else if (pair[0] instanceof String str) {
+				localCurrencyCode = CurrencyCode.valueOf(str);
+			} else {
 				throw new IllegalStateException(
-						"Expected CurrencyCode but got: "
+						"Expected CurrencyCode or String but got: "
 								+ (pair[0] == null ? "null" : pair[0].getClass().getName()));
 			}
 			if (pair[1] == null) {
@@ -130,20 +134,28 @@ public class ExpenseCommandService {
 								localToBaseRate,
 								dayStart,
 								nextDayStart);
-						analysisMonthlyDirtyMarkerService.markDirty(accountBookId, dayStart);
+						// 부모 트랜잭션인 AccountBookCommandService.update()에서
+						// 이미 markDirtyAllMonths를 호출해 Lock을 쥐고 있으므로 여기서 다시 호출하면 50s Lock Timeout
+						// (Self
+						// Deadlock) 발생
 						return null;
 					});
 		}
 	}
 
-	private LocalDate toLocalDate(Object dbDate) {
-		if (dbDate instanceof LocalDate localDate) {
-			return localDate;
-		}
-		if (dbDate instanceof Date sqlDate) {
+	private LocalDate toLocalDate(Object dateObj) {
+		if (dateObj instanceof java.sql.Date sqlDate) {
 			return sqlDate.toLocalDate();
+		} else if (dateObj instanceof java.sql.Timestamp sqlTimestamp) {
+			return sqlTimestamp.toLocalDateTime().toLocalDate();
+		} else if (dateObj instanceof java.time.LocalDate localDate) {
+			return localDate;
+		} else if (dateObj instanceof java.time.LocalDateTime localDateTime) {
+			return localDateTime.toLocalDate();
+		} else if (dateObj instanceof String strDate) {
+			return LocalDate.parse(strDate);
 		}
-		throw new IllegalStateException("Unsupported date type: " + dbDate.getClass().getName());
+		throw new IllegalStateException("Unexpected date type: " + dateObj.getClass().getName());
 	}
 
 	private ExpenseEntity findAndVerifyOwnership(Long expenseId, Long accountBookId) {

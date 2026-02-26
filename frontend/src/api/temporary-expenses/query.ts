@@ -272,13 +272,10 @@ const useDeleteOutOfPeriodExpensesMutation = (
 
       return outOfPeriodExpenses.length;
     },
-    onSuccess: (deletedCount) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: temporaryExpenseKeys.metaFiles(accountBookId, metaId),
       });
-      if (deletedCount >= 1) {
-        toast.success(`기간 외 지출내역이 ${deletedCount}건 삭제됐어요.`);
-      }
     },
     onError: (error) => {
       if (error instanceof ApiError) {

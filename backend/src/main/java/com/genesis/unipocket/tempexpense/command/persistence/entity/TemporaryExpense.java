@@ -48,14 +48,12 @@ public class TemporaryExpense {
 				column = @Column(name = "local_country_code")),
 		@AttributeOverride(
 				name = "localCurrencyAmount",
-				column = @Column(name = "local_currency_amount", precision = 10, scale = 2)),
+				column = @Column(name = "local_currency_amount")),
 		@AttributeOverride(name = "baseCurrencyCode", column = @Column(name = "base_country_code")),
 		@AttributeOverride(
 				name = "baseCurrencyAmount",
-				column = @Column(name = "base_currency_amount", precision = 10, scale = 2)),
-		@AttributeOverride(
-				name = "exchangeRate",
-				column = @Column(name = "exchange_rate", precision = 10, scale = 4))
+				column = @Column(name = "base_currency_amount")),
+		@AttributeOverride(name = "exchangeRate", column = @Column(name = "exchange_rate"))
 	})
 	private TempExpenseAmountInfo amountInfo;
 

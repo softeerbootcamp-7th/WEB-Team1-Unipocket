@@ -75,7 +75,8 @@ export default function UploadResultModal({
             <div className="body1-normal-medium text-label-alternative">
               수입 내역은 제외되어 생성됐어요. 일치하지 않은 정보가 있다면
               수정해주세요. <br />
-              결제 시점의 환율에 따라 기준 금액이 자동 계산됩니다.
+              결제 시점의 환율에 따라 기준 금액이 자동 계산됩니다. 확인되지 않은
+              카드는 현금으로 등록됩니다.
             </div>
             <div className="body1-normal-medium text-status-cautionary text-right">
               기간을 벗어난 지출내역은 가계부에 추가되지 않습니다. <br />

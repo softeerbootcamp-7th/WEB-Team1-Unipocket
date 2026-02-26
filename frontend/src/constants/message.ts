@@ -9,6 +9,7 @@ export const PAGE_TITLE = {
   TRAVEL: {
     title: '여행 포켓',
     subtitle: '여행별로 지출을 정리해두는 공간이에요',
+    tooltipContent: '여행 포켓을 우클릭하면 편집할 수 있어요.',
   },
   REPORT: {
     title: '분석',

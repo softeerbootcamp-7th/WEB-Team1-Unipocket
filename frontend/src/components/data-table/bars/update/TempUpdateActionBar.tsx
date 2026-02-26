@@ -142,6 +142,7 @@ const TempUpdateActionBar = () => {
         title="내역 삭제"
         description={`선택한 ${selectedRows.length}개의 내역을 삭제하시겠습니까?`}
         confirmButton={{ label: '삭제', variant: 'danger' }}
+        backdropClassName="z-modal"
       />
     </>
   );

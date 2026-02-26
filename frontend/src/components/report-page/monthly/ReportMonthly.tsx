@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import ComparisonCard from '@/components/chart/comparison/ComparisonCard';
 import ReportContainer from '@/components/report-page/layout/ReportContainer';
 import ReportContent from '@/components/report-page/layout/ReportContent';
@@ -21,27 +23,29 @@ interface ReportMonthlyProps {
   isPlaceholderData?: boolean;
 }
 
-const ReportMonthly = ({ data, isPlaceholderData }: ReportMonthlyProps) => {
+const ReportMonthly = ({ data }: ReportMonthlyProps) => {
   const { currencyType } = useReportContext();
   const { localCountryCode, baseCountryCode } = useRequiredAccountBook();
-  const currentCountryCode =
-    currencyType === 'LOCAL' ? localCountryCode : baseCountryCode;
-  const displayCountryCode = isPlaceholderData
-    ? baseCountryCode
-    : currentCountryCode;
-  const unit = getCountryInfo(displayCountryCode)?.currencyUnitKor || '';
+
+  // 단위는 currencyType이 바뀔 때만 변경
+  const displayCountryCode = useMemo(
+    () => (currencyType === 'LOCAL' ? localCountryCode : baseCountryCode),
+    [currencyType, localCountryCode, baseCountryCode],
+  );
+  const unit = useMemo(
+    () => getCountryInfo(displayCountryCode)?.currencyUnitKor || '',
+    [displayCountryCode],
+  );
 
   const localCountryName = getCountryInfo(localCountryCode)?.countryName || '';
-
   const isLocal = currencyType === 'LOCAL';
 
+  // 숫자만 placeholderData 여부에 따라 바뀜
   const me = Number(data.mySpentAmount);
   const average = Number(data.averageSpentAmount);
-
   const diff = Math.abs(average - me);
   const isLess = me < average;
   const isEqual = me === average;
-
   const formattedDiff = formatAmountByCountry(diff, displayCountryCode, 0);
 
   const [averageBarWidth, meBarWidth] = isEqual
